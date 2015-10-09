@@ -1,0 +1,34 @@
+<template>
+  <style>
+  .mdl-layout__header { background:white;}
+  .mdl-layout__header, .mdl-layout__drawer, .mdl-layout__header-row .mdl-navigation__link, .mdl-layout__header .mdl-layout__drawer-button { color:rgb(66,66,66);}
+
+  .mdl-layout__drawer .mdl-navigation .mdl-navigation__link { padding:16px; border-left:solid 3px white; }
+  .mdl-layout__drawer .mdl-navigation .mdl-navigation__link--current { border-left-color:red; background:#e0e0e0; color:inherit }
+
+  .mdl-layout__header-row .mdl-navigation__link { border-top:solid 3px white; }
+  .mdl-layout__header-row .mdl-navigation__link--current { font-weight:600;  border-top-color:red;}
+
+  .mdl-button--raised { background: rgb(77,80,86); color:white }
+  </style>
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+      <div class="mdl-layout__header-row">
+        <img src="src/styles/SIRUM.logo.notag.png" style="width:100px; margin-left:-16px">
+        <span class="mdl-layout-title"></span>
+        <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <nav class="mdl-navigation">
+          <a repeat.for="row of router.navigation" show.bind="row.isVisible" class="mdl-navigation__link ${row.isActive ? 'mdl-navigation__link--current' : ''}" href.bind="row.href" style="">
+            ${row.title}
+          </a>
+        </nav>
+      </div>
+    </header>
+    <main class="mdl-layout__content" style="background:#eee">
+      <div class="page-content">
+        <router-view></router-view>
+      </div>
+    </main>
+  </div>
+</template>

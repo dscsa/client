@@ -1,0 +1,7 @@
+<template>
+  <!-- This Creates One Style per Button which is a waste.   -->
+  <style>md-button { display:inline-block }</style>
+  <button ref="button" disabled.bind="disabled" click.trigger="click($event)" class="mdl-button mdl-js-button ${ primary != null && primary !== false && (disabled == null || disabled == false) ? 'mdl-button--primary' : '' } ${ accent != null && accent !== false && (disabled == null || disabled == false) ? 'mdl-button--accent' : '' } ${ raised != null && raised !== false ? 'mdl-button--raised' : '' } ${ fab > 0 ? 'mdl-button--fab' : ''} mdl-js-ripple-effect ${class}" css="width:100%; ${ fab > 0 ? 'height:'+fab+'px; width:'+fab+'px; min-width:'+fab+'px; font-size:'+fab*.66+'px' : ''}">
+    <content style="padding:auto"></content>
+  </button>
+</template>

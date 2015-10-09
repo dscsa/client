@@ -1,0 +1,90 @@
+<template>
+  <require from='./elems/md-shadow'></require>
+  <require from='./elems/md-drawer'></require>
+  <require from='./elems/md-table'></require>
+  <require from="./elems/md-input"></require>
+  <require from="./elems/md-select"></require>
+  <require from="./elems/md-button"></require>
+  <require from="./elems/md-switch"></require>
+  <require from="./elems/md-autocomplete"></require>
+  <md-drawer>
+    <md-input value.bind="filter" style="padding:0 8px;">Filter Inventory</md-input>
+    <md-select
+      value.bind="to"
+      options.bind="['', 'TLC', 'SET', 'BHP']"
+      style="padding:0 8px;">
+      Recipients
+    </md-select>
+    <div show.bind="to" style="margin:-70px 0 34px 100px;">
+      <md-button>Show</md-button>
+      <md-button>Ship</md-button>
+    </div>
+    <div style="margin:0 auto">
+      <md-button raised primary>Import</md-button>
+      <md-button raised>Export</md-button>
+    </div>
+  </md-drawer>
+  <section class="mdl-grid">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
+      <div class="mdl-card__title mdl-grid">
+        <div class="mdl-card__title-text mdl-cell mdl-cell--12-col">
+          ${ group.sources[0].name ? group.sources[0].name+' '+group.sources[0].strength : 'No Drug Selected'}
+        </div>
+        <div
+          class="mdl-cell mdl-cell--12-col"
+          style="margin-top:-8px;">
+          ${ group.sources[0].form || 'Add One' }
+          <img style="width:100%; margin-top:8px" src="${ group.image }">
+        </div>
+      </div>
+      <div
+        class="mdl-card__supporting-text"
+        style="font-size:13px; padding:0 16px">
+        <div repeat.for="source of group.sources"   focusout.delegate="$parent.drugs.save(source, $event, $this)" ref="$this">
+          <div style="display:inline-block; width:calc(100% - 155px)">${source.history.name || 'No Source'}</div>
+          <span style="white-space:nowrap">
+            <md-input style="width:60px" value.bind="source.lot.to" placeholder="Lot"></md-input>
+            <md-input pattern="([1-9]|1[012])/\d{2}" style="width:40px" value.bind="source.exp.to" placeholder="Exp"></md-input>
+            <md-input type="number" style="width:40px" value.bind="source.qty.to" input.delegate="$parent.input()" placeholder="Qty"></md-input>
+          </span>
+        </div>
+      </div>
+      <div class="mdl-card__actions mdl-card--border mdl-grid">
+        <md-switch checked.bind="repack" class="mdl-cell" style="width:calc(100% - 24px - 140px)"></md-switch>
+        <md-button primary raised.bind="repack" disabled.bind="!repack" click.delegate="repackage()" style="width:140px">${ repack ? 'Repackage '+group.total : 'Editing' }</md-button>
+      </div>
+    </div>
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
+      <md-autocomplete
+        style="margin-left:16px; margin-right:16px"
+        md-floating-label
+        value.bind="search"
+        query.bind="drugs.search"
+        select.bind="add"
+        placeholder="Search to add drugs...">
+      </md-autocomplete>
+      <table md-table style="margin:0 16px; width:calc(100% - 32px)">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="mdl-data-table__cell--non-numeric">Drug</th>
+            <th>NDC</th>
+            <th>Items</th>
+            <th>Value</th>
+            <th>Qty</th>
+          </tr>
+        </thead>
+        <tr repeat.for="group of groups" click.delegate="$parent.select(group)" class="${ $parent.group != group || 'is-selected'}">
+          <td style="font-size:45px; vertical-align:middle; padding-right:0">${ $even ? '*' : ''}</td>
+          <td class="mdl-data-table__cell--non-numeric">
+            ${ group.sources[0].name } ${ group.sources[0].strength }, ${ group.sources[0].form }
+          </td>
+          <td>${ group.sources[0].ndc }</td>
+          <td>${ group.sources.length }</td>
+          <td>${ (group.sources[0].nadac.price * group.total).toFixed(2) }</td>
+          <td>${ group.total}</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+</template>

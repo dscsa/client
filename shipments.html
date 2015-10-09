@@ -1,0 +1,155 @@
+<template>
+  <require from='./elems/md-shadow'></require>
+  <require from='./elems/md-drawer'></require>
+  <require from='./elems/md-table'></require>
+  <require from="./elems/md-input"></require>
+  <require from="./elems/md-select"></require>
+  <require from="./elems/md-switch"></require>
+  <require from="./elems/md-checkbox"></require>
+  <require from="./elems/md-button"></require>
+  <require from="./elems/md-autocomplete"></require>
+  <md-drawer>
+    <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter ${ role ? 'Sent' : 'Received'}</md-input>
+    <md-switch checked.bind="role" style="margin:-45px 0 0 197px;"></md-switch>
+    <a
+      repeat.for="shipment of shipments"
+      class="mdl-navigation__link ${ shipment._id == $parent.shipment._id ? 'mdl-navigation__link--current' : ''}"
+      show.bind="$parent.account == shipment[$parent.role ? 'from' : 'to'].account"
+      click.delegate="$parent.select(shipment)">
+      <div class="mdl-typography--title">${ shipment.to.name || 'New shipment' }</div>
+      ${ shipment._id ? '#'+shipment.tracking+', '+shipment.status : 'Create New Label' }
+    </a>
+  </md-drawer>
+  <section class="mdl-grid">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col">
+      <div class="mdl-card__title mdl-grid">
+        <div class="mdl-card__title-text mdl-cell mdl-cell--12-col">
+          Shipment Information
+        </div>
+        <div class="mdl-cell mdl-cell--12-col">
+          <strong>XXX</strong> units from
+          <strong>${transactions.length}</strong> items worth
+          <strong>$XXX</strong>
+        </div>
+      </div>
+      <div class="mdl-card__supporting-text" style="font-size:16px">
+        <md-select
+          value.bind="tracking"
+          options.bind="shipments"
+          change.delegate="setFrom(); setTo()"
+          property="tracking">
+          Tracking #
+        </md-select>
+        <md-select
+          value.bind="from"
+          options.bind="accounts"
+          property="name"
+          disabled.bind="tracking._id">
+          From
+        </md-select>
+        <md-select
+          value.bind="to"
+          options.bind="accounts"
+          property="name"
+          disabled.bind="tracking._id">
+          To
+        </md-select>
+        <div class="mdl-grid" style="padding:0">
+        <md-select
+          value.bind="shipment.status"
+          options.bind="stati"
+          class="mdl-cell mdl-cell--4-col"
+          style="margin:0"
+          disabled.bind="!shipment._id">
+          Status
+        </md-select>
+        <md-input
+          value.bind="shipment[shipment.status+'_at']"
+          type="date"
+          class="mdl-cell mdl-cell--8-col"
+          style="margin:0; margin-left:32px"
+          disabled.bind="!shipment._id"
+          focusout.delegate="save()">
+        </md-input>
+      </div>
+        <md-button primary raised style="width:100%" show.bind=" ! tracking._id " disabled.bind="! from.name || ! to.name" click.delegate="create()">Create Shipment with Selected</md-button>
+        <md-button primary raised style="width:100%" show.bind="   tracking._id && shipment._id != tracking._id" click.delegate="move()">Move Selected to Shipment</md-button>
+        <!-- TODO Have a dirty/clean field for checked that will disable this button if nothing as changed -->
+        <md-button primary raised style="width:100%" show.bind="   tracking._id && shipment._id == tracking._id" disabled.bind="account != shipment.to.account || ! checks.length" click.delegate="saveInventory()">Save Selected to Inventory</md-button>
+      </div>
+      <div if.bind="history" class="mdl-card__actions mdl-card--border">
+        <div class="mdl-card__title-text mdl-cell mdl-cell--12-col">
+          Transaction History
+        </div>
+        <style>a { text-decoration:none; color:black}</style>
+        <div innerHTML.bind="history" style="white-space:pre; font-size:12px"></div>
+      </div>
+    </div>
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
+      <md-autocomplete
+        style="margin-left:24px; margin-right:24px"
+        md-floating-label
+        value.bind="search"
+        query.bind="drugs.search"
+        select.bind="addTransaction"
+        placeholder="Search to add drugs...">
+      </md-autocomplete>
+      <table md-table style="margin:0 16px; width:calc(100% - 32px)">
+        <thead>
+          <tr>
+            <th style="width:4%;"></th>
+            <th style="text-align:left; padding-left:0">Drug</th>
+            <th>NDC</th>
+            <th>Value</th>
+            <th style="text-align:left; width:5%">Lot</th>
+            <th style="text-align:left; width:5%; padding-left:0px">Exp</th>
+            <th style="text-align:left; width:5%">Qty</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ref="$this" style="padding-top:7px;" repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="$parent.selectTransaction(transaction)">
+            <td style="padding-left:10px;">
+              <md-checkbox
+                click.delegate="$parent.check($index)">
+              </md-checkbox>
+            </td>
+            <td style="text-align:left; padding-left:0">
+              ${ transaction.name } ${ transaction.strength }, ${ transaction.form }
+            </td>
+            <td>${ transaction.ndc }</td>
+            <td>${ (transaction.nadac.price * (transaction.qty.to || 0)).toFixed(2) }</td>
+            <td style="padding-top:8px">
+              ${ transaction.lot[ ! $parent.role ? 'from' : 'to'] }
+              <md-input
+                focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
+                value.bind="transaction.lot[$parent.role ? 'from' : 'to']"
+                style="width:60px;"
+                placeholder>
+              </md-input>
+            </td>
+            <td style="padding:8px 0 0 0">
+              ${ transaction.exp[ ! $parent.role ? 'from' : 'to'] }
+              <md-input
+                focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
+                pattern="([1-9]|1[012])/\d{2}"
+                value.bind="transaction.exp[$parent.role ? 'from' : 'to']"
+                style="width:60px;"
+                placeholder>
+              </md-input>
+            </td>
+            <td style="padding-top:8px">
+              ${ transaction.qty[ ! $parent.role ? 'from' : 'to'] }
+              <md-input
+                focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
+                type="number"
+                value.bind="transaction.qty[$parent.role ? 'from' : 'to']"
+                style="width:60px;"
+                placeholder>
+              </md-input>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</template>

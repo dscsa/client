@@ -1,0 +1,74 @@
+<template>
+  <require from='./elems/md-shadow'></require>
+  <require from='./elems/md-drawer'></require>
+  <require from='./elems/md-table'></require>
+  <require from="./elems/md-input"></require>
+  <require from="./elems/md-select"></require>
+  <require from="./elems/md-button"></require>
+  <require from="./elems/md-switch"></require>
+  <require from="./elems/md-checkbox"></require>
+  <md-drawer>
+    <md-input value.bind="hello" style="padding:0 8px">Filter Users</md-input>
+    <a
+      repeat.for="user of users | filter:hello"
+      class="mdl-navigation__link ${ user.name == $parent.user.name ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="$parent.user = user; user.password = ''">
+      <div class="mdl-typography--title">${ user.first ? user.first+' '+user.last : 'New User'}</div>
+    </a>
+  </md-drawer>
+  <section class="mdl-grid">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col">
+      <div class="mdl-card__title">
+        <div class="mdl-card__title-text">
+          User Information
+        </div>
+      </div>
+      <div
+        class="mdl-card__supporting-text"
+        focusout.delegate="save($event, $this)"
+        ref="$this"
+        style="font-size:16px">
+        <md-input value.bind="user.first" style="width:49%">First Name</md-input>
+        <md-input value.bind="user.last" style="width:49%">Last Name</md-input>
+        <md-input value.bind="user.name" type="email">Email</md-input>
+        <md-input value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$">Phone</md-input>
+        <md-input value.bind="user.password">${ user._id ? 'Change password' : 'Password'}</md-input>
+        <md-button primary raised style="width:100%" if.bind="! user._id" disabled.bind="! user.name || ! user.password" focusin.delegate="create($event)">Create User</md-button>
+        <md-button primary raised style="width:100%" if.bind="user._id && user.name == session.name" click.delegate="logout()">Logout</md-button>
+        <md-button accent raised style="width:100%" if.bind="user._id && user.name != session.name" click.delegate="delete()">Delete User</md-button>
+      </div>
+    </div>
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
+      <table md-table style="margin:0 16px; width:calc(100% - 32px)">
+        <thead>
+          <tr>
+            <th class="mdl-data-table__cell--non-numeric">Authorized</th>
+            <th class="mdl-data-table__cell--non-numeric">
+              <md-select
+                value.bind="type"
+                options.bind="['From', 'To']"
+                style="width:50px; margin-bottom:-26px">
+              </md-select>
+            </th>
+            <th class="mdl-data-table__cell--non-numeric">License</th>
+            <th class="mdl-data-table__cell--non-numeric">Joined</th>
+            <th class="mdl-data-table__cell--non-numeric">Location</th>
+          </tr>
+        </thead>
+        <!-- <tr repeat.for="auth of account.authorized">
+          <td>Hi ${$index+' '+$even+' '+auth} Bye</td>
+        </tr> -->
+        <tr repeat.for="account of accounts" if.bind="account != $parent.account">
+          <td>
+            <md-checkbox if.bind="$parent.type != 'To'" checked.one-way="$parent.account.authorized.indexOf(account._id) != -1" change.delegate="$parent.authorize(account._id)"></md-checkbox>
+            <md-checkbox if.bind="$parent.type == 'To'" checked.one-way="account.authorized.indexOf($parent.account._id) != -1" disabled="true"></md-checkbox>
+          </td>
+          <td class="mdl-data-table__cell--non-numeric">${ account.name }</td>
+          <td class="mdl-data-table__cell--non-numeric">${ account.license }</td>
+          <td class="mdl-data-table__cell--non-numeric">${ account.created_at }</td>
+          <td class="mdl-data-table__cell--non-numeric">${ account.city+', '+account.state }</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+</template>

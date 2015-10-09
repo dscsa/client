@@ -1,0 +1,36 @@
+<template>
+  <require from='./elems/md-shadow'></require>
+  <require from='./elems/md-drawer'></require>
+  <require from="./elems/md-input"></require>
+  <require from="./elems/md-select"></require>
+  <require from="./elems/md-button"></require>
+  <require from="./elems/md-checkbox"></require>
+  <section class="mdl-grid" style="height:80vh;">
+    <div class="mdl-cell mdl-cell--11-col mdl-cell--middle mdl-grid" style="margin:0 auto; max-width:930px">
+      <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-grid" style="padding:16px">
+        <div class="mdl-card__title mdl-cell mdl-cell--12-col" style="padding:0">
+          <div class="mdl-card__title-text">
+            Register Your Facility
+          </div>
+        </div>
+        <md-input value.bind="account.name" class="mdl-cell mdl-cell--12-col">Facility</md-input>
+        <md-input value.bind="account.license" class="mdl-cell mdl-cell--12-col">License</md-input>
+        <md-input value.bind="account.street" class="mdl-cell mdl-cell--12-col">Street</md-input>
+        <md-input value.bind="account.city" class="mdl-cell mdl-cell--7-col">City</md-input>
+        <md-input value.bind="account.state" class="mdl-cell mdl-cell--2-col">State</md-input>
+        <md-input value.bind="account.zip" class="mdl-cell mdl-cell--3-col">Zip</md-input>
+      </div>
+      <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-grid" style="padding:16px">
+        <md-input value.bind="user.first" class="mdl-cell mdl-cell--6-col">First Name</md-input>
+        <md-input value.bind="user.last" class="mdl-cell mdl-cell--6-col">Last Name</md-input>
+        <md-input value.bind="user.name" class="mdl-cell mdl-cell--12-col" type="email">Email</md-input>
+        <md-input value.bind="user.phone" class="mdl-cell mdl-cell--12-col" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$">Phone</md-input>
+        <md-input value.bind="user.password" class="mdl-cell mdl-cell--12-col">Password</md-input>
+        <div class="mdl-cell mdl-cell--9-col mdl-grid" style="padding:18px 0">
+          <md-checkbox checked.bind="accept" style="margin-left:10px">I accept the terms of use</md-checkbox>
+        </div>
+        <md-button raised primary click.delegate="join()" disabled.bind="!accept" class="mdl-cell mdl-cell--3-col">Submit</md-button>
+      </div>
+    </div>
+  </section>
+</template>
