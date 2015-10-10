@@ -6,7 +6,6 @@ import {inject}     from 'aurelia-framework';
 import {Router}     from 'aurelia-router';
 import {Db}         from 'db/pouch'
 import {drugs}      from 'search'
-import pageState    from 'config/page-state'
 import {HttpClient} from 'aurelia-http-client';
 
 //@pageState()
