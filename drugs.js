@@ -1,7 +1,6 @@
 import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
-import {Db}  from 'db/pouch'
-import pageState from 'config/page-state'
+import {Db}     from 'db/pouch'
 
 //@pageState()
 @inject(Db, Router)
@@ -16,7 +15,7 @@ export class drugs {
 
 
     let _id = params.id ? 'drugs/'+params.id : undefined
-    
+
     this.db.drugs().then(drugs => {
       this.drugs = drugs
       this.add()

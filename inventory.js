@@ -1,13 +1,9 @@
 //TODO
 //Autofocus on new drug
-
-
 import {inject} from 'aurelia-framework';
-import {Db} from 'db/pouch'
-import {drugs} from 'search'
-import pageState from 'config/page-state'
+import {Db}     from 'db/pouch'
+import {drugs}  from 'search'
 
-//@pageState()
 @inject(Db, drugs)
 export class inventory {
 

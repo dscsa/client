@@ -19,8 +19,8 @@ export class App {
   }
 }
 
-import {inject} from 'aurelia-framework'
-import {Db}     from '../db/pouch'
+import {inject}   from 'aurelia-framework'
+import {Db}       from '../db/pouch'
 import {Redirect} from 'aurelia-router'
 
 @inject(Db)

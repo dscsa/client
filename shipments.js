@@ -2,11 +2,11 @@
 //Autofocus on new drug
 //Disable From/To based on Filter's switch
 
-import {inject} from 'aurelia-framework';
-import {Router} from 'aurelia-router';
-import {Db} from 'db/pouch'
-import {drugs} from 'search'
-import pageState from 'config/page-state'
+import {inject}     from 'aurelia-framework';
+import {Router}     from 'aurelia-router';
+import {Db}         from 'db/pouch'
+import {drugs}      from 'search'
+import pageState    from 'config/page-state'
 import {HttpClient} from 'aurelia-http-client';
 
 //@pageState()

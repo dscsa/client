@@ -1,8 +1,6 @@
 import {inject} from 'aurelia-framework';
-import {Db} from 'db/pouch'
-import pageState from 'config/page-state'
+import {Db}     from 'db/pouch'
 import {Router} from 'aurelia-router'
-
 
 //TODO this is causing Router to revert route and switches to not be upgraded @pageState()
 @inject(Db, Router)

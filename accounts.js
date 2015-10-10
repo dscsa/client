@@ -1,8 +1,6 @@
 import {inject} from 'aurelia-framework';
-import {Db} from 'db/pouch'
-import pageState from 'config/page-state'
+import {Db}     from 'db/pouch'
 
-//@pageState()
 @inject(Db)
 export class accounts {
 

@@ -1,5 +1,3 @@
-import {HttpClient} from 'aurelia-http-client';
-
 export function configure(aurelia) {
 
   console.log = console.log.bind(console)

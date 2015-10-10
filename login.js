@@ -1,9 +1,7 @@
 import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
-import {Db}  from 'db/pouch'
-import pageState from 'config/page-state'
+import {Db}     from 'db/pouch'
 
-@pageState()
 @inject(Db, Router)
 export class login {
 

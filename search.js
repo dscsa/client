@@ -5,7 +5,7 @@ let db
 
 //Wanted to make this.shipment have get and sets for the properties.  However that
 //was causing dirty checking and computedFrom doesn't allow setters https://github.com/aurelia/binding/issues/136
-@inject(Db)
+//@inject(Db)
 export class drugs {
 
   constructor(Db){
