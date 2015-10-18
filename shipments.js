@@ -14,10 +14,12 @@ export class shipments {
 
   constructor(db, drugs, router, http){
     this.db      = db
-    this.account = db.users(true).session().account
+    this.account = db.users(true).session().account._id
     this.drugs   = drugs
     this.router  = router
     this.http    = http
+    this.theirRole = 'from'
+    this.yourRole = 'to'
 
     this.stati   = ['pickup', 'shipped', 'received']
   }
@@ -27,19 +29,16 @@ export class shipments {
     return Promise.all([
       //Start all of our a sync tasks
       this.db.accounts(),
-      this.db.shipments({tracking:{$exists:true}})
+      this.db.shipments({'from.account':this.account}),
+      this.db.shipments({'to.account':this.account})
     ])
-    .then(([accounts, shipments]) => {
+    .then(([accounts, from, to]) => {
       //Set the view model
-      this.accounts     = ['', ...accounts]
-      this.shipments    = shipments
-
-      //If a parameter is passed select that shipment otherwise show a new one
-      let shipment = this.shipments.filter(shipment => shipment._id.split('.')[2] === params.id)[0]
-
-      //Add a new shipment button to the top
-      this.add()
-      this.select(shipment || shipments[0])
+      this.accounts  = ['', ...accounts]
+      this.shipments = {from, to}
+      this.add('from')
+      this.add('to')
+      this.setRole(params.id)
     })
   }
 
@@ -63,28 +62,38 @@ export class shipments {
     })
   }
 
+  setRole(id) {
+
+    var temp       = this.theirRole
+    this.theirRole = this.yourRole || 'to'
+    this.yourRole  = temp || 'from'
+
+    this.selected = this.shipments[this.theirRole]
+    console.log('selected', this.selected)
+
+    this.select(id //If a parameter is passed select that shipment otherwise show a new one
+       ? this.selected.filter(s => s._id && s._id.split('.')[2] === id)[0]
+       : this.selected[0]
+     )
+
+    return true
+  }
+
   //Tracking and Shipment start off the same but can diverge
   //this allows methods to reset them back to the same value
   reset() {
     this.tracking = this.shipment
-    this.setFrom()
-    this.setTo()
-  }
-
-  //Selected from != shipment.from because they are not references
-  //we need to manually find the correct from based on selected shipment
-  setFrom() {
-    this.from = this.accounts.filter(from => {
-      return from._id == this.tracking.from.account
-    })[0]
-    this.to = this.account
+    this.setAccounts()
   }
 
   //Selected to != shipment.to because they are not references
   //we need to manually find the correct from based on selected shipment
-  setTo() {
+  setAccounts() {
     this.to = this.accounts.filter(to => {
       return to._id == this.tracking.to.account
+    })[0]
+    this.from = this.accounts.filter(from => {
+      return from._id == this.tracking.from.account
     })[0]
   }
 
@@ -96,7 +105,7 @@ export class shipments {
   }
 
   //Called on constructor() and create() to ensure user can always add a new label.
-  add() {
+  add(key) {
 
     let shipment = {
       tracking:'New Tracking #',
@@ -107,8 +116,9 @@ export class shipments {
       to:{}
     }
 
-    this.shipments.unshift(Object.assign({}, shipment, {from:{account:this.account}}))
-    this.shipments.unshift(Object.assign({}, shipment, {to:{account:this.account}}))
+    this.shipments[key].unshift(Object.assign({}, shipment, {
+      [key]:{account:this.account}
+    }))
   }
 
   //Save the donation if someone changes the status/date
@@ -168,10 +178,11 @@ export class shipments {
 
     //Create shipment then move inventory transactions to it
     console.log('adding', this.shipment)
-    this.db.shipments.post(this.shipment).then(_ => this.move())
-
-    //Add a new shipment button in case user wants to add another
-    this.add()
+    this.db.shipments.post(this.shipment).then(shipment => {
+      this.add(this.role ? 'from' : 'to') //Add a new shipment button in case user wants to add another
+      this.move()
+      this.select(shipment)
+    })
   }
 
   saveInventory() {

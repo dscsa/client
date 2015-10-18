@@ -9,14 +9,13 @@
   <require from="./elems/md-button"></require>
   <require from="./elems/md-autocomplete"></require>
   <md-drawer>
-    <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter ${ role ? 'Sent' : 'Received'}</md-input>
-    <md-switch checked.bind="role" style="margin:-45px 0 0 197px;"></md-switch>
+    <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter ${ yourRole == 'from' ? 'Sent' : 'Received'}</md-input>
+    <md-switch click.delegate="setRole()" style="margin:-45px 0 0 197px;"></md-switch>
     <a
-      repeat.for="shipment of shipments"
+      repeat.for="shipment of selected"
       class="mdl-navigation__link ${ shipment._id == $parent.shipment._id ? 'mdl-navigation__link--current' : ''}"
-      show.bind="$parent.account == shipment[$parent.role ? 'from' : 'to'].account"
       click.delegate="$parent.select(shipment)">
-      <div class="mdl-typography--title">${ shipment.to.name || 'New shipment' }</div>
+      <div class="mdl-typography--title">${ shipment[$parent.theirRole].name || 'New shipment' }</div>
       ${ shipment._id ? '#'+shipment.tracking+', '+shipment.status : 'Create New Label' }
     </a>
   </md-drawer>
@@ -35,8 +34,8 @@
       <div class="mdl-card__supporting-text" style="font-size:16px">
         <md-select
           value.bind="tracking"
-          options.bind="shipments"
-          change.delegate="setFrom(); setTo()"
+          options.bind="selected"
+          change.delegate="setAccounts()"
           property="tracking">
           Tracking #
         </md-select>
@@ -44,14 +43,14 @@
           value.bind="from"
           options.bind="accounts"
           property="name"
-          disabled.bind="tracking._id">
+          disabled.bind="tracking._id || yourRole == 'from'">
           From
         </md-select>
         <md-select
           value.bind="to"
           options.bind="accounts"
           property="name"
-          disabled.bind="tracking._id">
+          disabled.bind="tracking._id || yourRole == 'to'">
           To
         </md-select>
         <div class="mdl-grid" style="padding:0">
@@ -119,30 +118,30 @@
             <td>${ transaction.ndc }</td>
             <td>${ (transaction.nadac.price * (transaction.qty.to || 0)).toFixed(2) }</td>
             <td style="padding-top:8px">
-              ${ transaction.lot[ ! $parent.role ? 'from' : 'to'] }
+              ${ transaction.lot[$parent.theirRole] }
               <md-input
                 focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
-                value.bind="transaction.lot[$parent.role ? 'from' : 'to']"
+                value.bind="transaction.lot[$parent.yourRole]"
                 style="width:60px;"
                 placeholder>
               </md-input>
             </td>
             <td style="padding:8px 0 0 0">
-              ${ transaction.exp[ ! $parent.role ? 'from' : 'to'] }
+              ${ transaction.exp[$parent.theirRole] }
               <md-input
                 focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
                 pattern="([1-9]|1[012])/\d{2}"
-                value.bind="transaction.exp[$parent.role ? 'from' : 'to']"
+                value.bind="transaction.exp[$parent.yourRole]"
                 style="width:60px;"
                 placeholder>
               </md-input>
             </td>
             <td style="padding-top:8px">
-              ${ transaction.qty[ ! $parent.role ? 'from' : 'to'] }
+              ${ transaction.qty[$parent.theirRole] }
               <md-input
                 focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
                 type="number"
-                value.bind="transaction.qty[$parent.role ? 'from' : 'to']"
+                value.bind="transaction.qty[$parent.yourRole]"
                 style="width:60px;"
                 placeholder>
               </md-input>
