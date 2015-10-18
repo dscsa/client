@@ -9,12 +9,12 @@ export class inventory {
 
   constructor(db, drugs){
     this.db      = db
-    this.account = db.users(true).session()
+    this.session = db.users(true).session()
     this.drugs   = drugs
   }
 
   activate() {
-    return this.db.transactions({shipment:this.account})
+    return this.db.transactions({shipment:this.session.account._id})
     .then(transactions => {
       let groups = {}
 

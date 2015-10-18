@@ -32,8 +32,8 @@ export class join {
 
   join() {
     this.db.accounts.post(this.account)
-    .then(_ => {
-      this.user.account = this.account._id
+    .then(account => {
+      this.user.account = account._id
       return this.db.users.post(this.user)
     })
     .then(user => {

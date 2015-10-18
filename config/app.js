@@ -40,7 +40,7 @@ export class AuthorizeStep {
         continue
       }
 
-      var role = session.account.length == 7 ? 'user' : session.account
+      var role = session.account._id.length == 7 ? 'user' : session.account
 
       row.isVisible = row.config.roles && ~row.config.roles.indexOf(role)
     }

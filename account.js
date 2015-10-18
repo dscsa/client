@@ -11,10 +11,10 @@ export class account {
     this.router = router
     this.session = db.users(true).session()
 
-    db.accounts({_id:this.session.account})
+    db.accounts({_id:this.session.account._id})
     .then(accounts => { console.log('accounts', accounts[0]); this.account = accounts[0]})
 
-    db.accounts()
+    db.accounts({_id:{$ne:this.session.account._id}, state:this.session.account.state})
     .then(accounts => {
       console.log('accounts', accounts)
       this.accounts = accounts
