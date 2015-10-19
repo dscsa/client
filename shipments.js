@@ -14,26 +14,27 @@ export class shipments {
 
   constructor(db, drugs, router, http){
     this.db      = db
-    this.account = db.users(true).session().account._id
+    this.account = db.users(true).session().account
     this.drugs   = drugs
     this.router  = router
     this.http    = http
-    this.theirRole = 'from'
-    this.yourRole = 'to'
-
+    this.role    = {account:'from', partner:'to'}
     this.stati   = ['pickup', 'shipped', 'received']
   }
 
   activate(params) {
-
+    console.log('this.account', this.account)
     return Promise.all([
       //Start all of our a sync tasks
-      this.db.accounts(),
-      this.db.shipments({'from.account':this.account}),
-      this.db.shipments({'to.account':this.account})
+      //TODO to = $elemMatch:this.account._id
+      //TODO from = $in:this.account.authorized
+      this.db.accounts({_id:{$ne:this.account._id}, state:this.account.state}), 
+      this.db.shipments({'from.account':this.account._id}),
+      this.db.shipments({'to.account':this.account._id})
     ])
     .then(([accounts, from, to]) => {
       //Set the view model
+      console.log('accounts', accounts)
       this.accounts  = ['', ...accounts]
       this.shipments = {from, to}
       this.add('from')
@@ -52,7 +53,7 @@ export class shipments {
     this.reset()
 
     //Display all transactions in the shipment
-    this.db.transactions({shipment:shipment._id || this.account})
+    this.db.transactions({shipment:shipment._id || this.account._id})
     .then(transactions => {
       this.transactions = transactions || []
       //Select first transaction and display its history
@@ -64,17 +65,16 @@ export class shipments {
 
   setRole(id) {
 
-    var temp       = this.theirRole
-    this.theirRole = this.yourRole || 'to'
-    this.yourRole  = temp || 'from'
+    var temp          = this.role.partner
+    this.role.partner = this.role.account
+    this.role.account = temp
 
-    this.selected = this.shipments[this.theirRole]
-    console.log('selected', this.selected)
+    this.selected = this.shipments[temp]
 
     this.select(id //If a parameter is passed select that shipment otherwise show a new one
        ? this.selected.filter(s => s._id && s._id.split('.')[2] === id)[0]
        : this.selected[0]
-     )
+    )
 
     return true
   }
@@ -117,7 +117,7 @@ export class shipments {
     }
 
     this.shipments[key].unshift(Object.assign({}, shipment, {
-      [key]:{account:this.account}
+      [key == 'from' ? 'to' : 'from']:{account:this.account._id}
     }))
   }
 
@@ -237,24 +237,3 @@ export class filterValueConverter {
     })
   }
 }
-
-// this.db.shipments({'from.account':shipment.from.account, 'to.account':shipment.to.account})
-// .then(trackings  => {
-//   //Wait until now to set this.shipment so that the wrong button doesn't Flash of Unstyled Content (FOUC)
-//   this.shipment = shipment
-//
-//   this.trackings =  [{tracking:'Create New Label'}].concat(trackings)
-//   this.tracking  = this.getTracking()
-//
-//   this.from     = this.getFrom()
-//   this.to       = this.getTo()
-// })
-
-
-//Selected tracking != shipment.tracking because they are not references
-//we need to manually find the correct tracking based on selected shipment
-// getTracking() {
-//   return this.trackings.filter(tracking => {
-//     return tracking._id == this.shipment._id
-//   })[0]
-// }
