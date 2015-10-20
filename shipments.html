@@ -9,10 +9,10 @@
   <require from="./elems/md-button"></require>
   <require from="./elems/md-autocomplete"></require>
   <md-drawer>
-    <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter shipments ${ role.partner } you</md-input>
+    <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter shipments ${ role.account } you</md-input>
     <md-switch click.delegate="setRole()" style="margin:-45px 0 0 197px;"></md-switch>
     <a
-      repeat.for="shipment of selected"
+      repeat.for="shipment of shipments[role.account]"
       class="mdl-navigation__link ${ shipment._id == $parent.shipment._id ? 'mdl-navigation__link--current' : ''}"
       click.delegate="$parent.select(shipment)">
       <div class="mdl-typography--title">${ shipment[$parent.role.partner].name || 'New shipment' }</div>
@@ -34,23 +34,23 @@
       <div class="mdl-card__supporting-text" style="font-size:16px">
         <md-select
           value.bind="tracking"
-          options.bind="selected"
+          options.bind="shipments[role.account]"
           change.delegate="setAccounts()"
           property="tracking">
           Tracking #
         </md-select>
         <md-select
           value.bind="from"
-          options.bind="role.account == 'from' ? accounts : [account]"
+          options.bind="role.partner == 'from' ? accounts : [account]"
           property="name"
-          disabled.bind="tracking._id || role.partner == 'from'">
+          disabled.bind="tracking._id || role.account == 'from'">
           From
         </md-select>
         <md-select
           value.bind="to"
-          options.bind="role.account == 'to' ? accounts : [account]"
+          options.bind="role.partner == 'to' ? accounts : [account]"
           property="name"
-          disabled.bind="tracking._id || role.partner == 'to'">
+          disabled.bind="tracking._id || role.account == 'to'">
           To
         </md-select>
         <div class="mdl-grid" style="padding:0">

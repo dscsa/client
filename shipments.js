@@ -28,7 +28,7 @@ export class shipments {
       //Start all of our a sync tasks
       //TODO to = $elemMatch:this.account._id
       //TODO from = $in:this.account.authorized
-      this.db.accounts({_id:{$ne:this.account._id}, state:this.account.state}), 
+      this.db.accounts({_id:{$ne:this.account._id}, state:this.account.state}),
       this.db.shipments({'from.account':this.account._id}),
       this.db.shipments({'to.account':this.account._id})
     ])
@@ -69,11 +69,9 @@ export class shipments {
     this.role.partner = this.role.account
     this.role.account = temp
 
-    this.selected = this.shipments[temp]
-
     this.select(id //If a parameter is passed select that shipment otherwise show a new one
-       ? this.selected.filter(s => s._id && s._id.split('.')[2] === id)[0]
-       : this.selected[0]
+       ? this.shipments[temp].filter(s => s._id && s._id.split('.')[2] === id)[0]
+       : this.shipments[temp][0]
     )
 
     return true
@@ -109,9 +107,10 @@ export class shipments {
 
     let shipment = {
       tracking:'New Tracking #',
-      pickup_at:"",
-      shipped_at:"",
-      received_at:"",
+      status:"pickup",
+      pickup_at:null,
+      shipped_at:null,
+      received_at:null,
       from:{},
       to:{}
     }
@@ -150,8 +149,7 @@ export class shipments {
     //if user cancels then revert the tracking# back to the original value
     //do not confirm if moving items from inventory into a specific donation
     if(
-        this.shipment._id &&
-        this.shipment._id != this.tracking._id &&
+        this.shipment._id && this.shipment._id != this.tracking._id &&
         ! confirm(`Move selected items from #${this.shipment.tracking} to #${this.tracking.tracking}? This operation cannot be undone!`)
       )
       return this.reset()
@@ -175,13 +173,14 @@ export class shipments {
     //Store some account information in the shipment but not everything
     this.shipment.to = {name:this.to.name, account:this.to._id}
     this.shipment.from = {name:this.from.name, account:this.from._id}
+    delete this.shipment.tracking //get rid of New Tracking# to have one assigned
 
     //Create shipment then move inventory transactions to it
     console.log('adding', this.shipment)
     this.db.shipments.post(this.shipment).then(shipment => {
+      Object.assign(this.shipment, shipment)
       this.add(this.role ? 'from' : 'to') //Add a new shipment button in case user wants to add another
       this.move()
-      this.select(shipment)
     })
   }
 
