@@ -59,10 +59,9 @@ export class shipments {
     this.db.transactions({shipment:this.shipment._id || this.account._id})
     .then(transactions => {
       this.transactions = transactions || []
-      //Select first transaction and display its history
-      this.selectTransaction(transactions[0])
-      //Check the appropriate boxes if any have been accepted
-      this.checks = this.transactions.map(o => !!o.accepted).filter(_ => _)
+      this.selectTransaction(transactions[0]) //Select first transaction and display its history
+      this.checks = this.transactions         //Check the appropriate boxes if any have been captured
+          .map(o => !!o.captured_at).filter(_ => _)
     })
   }
 
