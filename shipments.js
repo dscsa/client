@@ -71,10 +71,7 @@ export class shipments {
     this.role.partner = this.role.account
     this.role.account = temp
 
-    this.select(id //If a parameter is passed select that shipment otherwise show a new one
-       ? this.shipments[temp].filter(s => s._id && s._id.split('.')[2] === id)[0]
-       : this.shipments[temp][0]
-    )
+    this.select(id && this.shipments[temp].filter(s => s._id && s._id.split('.')[2] === id)[0])
 
     return true
   }
@@ -205,6 +202,7 @@ export class shipments {
     this.transaction = transaction
     this.http.get('//localhost:3000/transactions/'+transaction._id+'/history')
     .then(history => {
+      //TODO move this to /history?text=true. Other formatting options?
       this.history = JSON.stringify(
         history.content,
         function(k,v) { return v.text || v },
