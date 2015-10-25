@@ -74,7 +74,7 @@
         <md-button primary raised style="width:100%" show.bind=" ! shipment._id " disabled.bind="! from.name || ! to.name" click.delegate="create()">Create Shipment with Selected</md-button>
         <md-button primary raised style="width:100%" show.bind="   shipment._id && shipment._id != tracking._id" disabled.bind=" ! checks.length" click.delegate="move()">Move Selected to Shipment</md-button>
         <!-- TODO Have a dirty/clean field for checked that will disable this button if nothing as changed -->
-        <md-button primary raised style="width:100%" show.bind="   shipment._id && shipment._id == tracking._id" disabled.bind="account._id != shipment.to.account || ! checks.length" click.delegate="saveInventory()">Save Selected to Inventory</md-button>
+        <md-button primary raised style="width:100%" show.bind="   shipment._id && shipment._id == tracking._id" disabled.bind="account._id != shipment.to.account || ! diffs.length" click.delegate="saveInventory()">Save Selected to Inventory</md-button>
       </div>
       <div if.bind="history" class="mdl-card__actions mdl-card--border">
         <div class="mdl-card__title-text mdl-cell mdl-cell--12-col">
@@ -109,7 +109,7 @@
           <tr ref="$this" style="padding-top:7px;" repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="$parent.selectTransaction(transaction)">
             <td style="padding-left:10px;">
               <md-checkbox
-                click.delegate="$parent.check($index)">
+                checked.one-way="$parent.checks.indexOf($index) > -1" click.delegate="$parent.check($index)">
               </md-checkbox>
             </td>
             <td style="text-align:left; padding-left:0">

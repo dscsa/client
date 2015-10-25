@@ -60,8 +60,9 @@ export class shipments {
     .then(transactions => {
       this.transactions = transactions || []
       this.selectTransaction(transactions[0]) //Select first transaction and display its history
-      this.checks = this.transactions         //Check the appropriate boxes if any have been captured
-          .map(o => !!o.captured_at).filter(_ => _)
+      //Check boxes of captured, and track the differences
+      this.checks = this.transactions.map((o,i) => o.captured_at ? i : null).filter(_ => _ != null)
+      this.diffs  = []
     })
   }
 
@@ -132,12 +133,21 @@ export class shipments {
   }
 
   check($index) {
+    console.log('$index', $index)
     //with binding check array stayed same length and
     //just had falsey values, which we had to check for
     //in the "Save Selected for Inventory" button, move(),
     //and create().  Better just to change length manually
     let i = this.checks.indexOf($index)
-    ~ i ? this.checks.splice(i, 1) : this.checks.push($index)
+    ~ i ? this.checks.splice(i, 1)
+      : this.checks.push($index)
+
+    let j = this.diffs.indexOf($index)
+    ~ j ? this.diffs.splice(j, 1)
+      : this.diffs.push($index)
+
+    console.log('this.checks', this.checks, this.checks.length)
+    console.log('this.diffs', this.diffs, this.diffs.length)
     return true //Continue to bubble event
   }
 
@@ -186,12 +196,10 @@ export class shipments {
   saveInventory() {
     //__array_observer__ is an enumerable key in this.transactions here
     //for some reason. Current code catches this bug but be careful.
-    for (let i in this.transactions) {
-      let transaction = this.transactions[i]
-      if (this.checks.indexOf(+i) > -1 == ! transaction.captured_at) {
-        this.http.createRequest('//localhost:3000/transactions/'+transaction._id+'/captured')
-        .withCredentials(true)[ ~ this.checks.indexOf(+i) ? 'asPost' : 'asDelete' ]().send()
-      }
+    for (let i in this.diffs) {
+      let method = this.transactions[i].captured_at ? 'asDelete' : 'asPost'
+      this.http.createRequest('//localhost:3000/transactions/'+this.transactions[i]._id+'/captured')
+      .withCredentials(true)[method]().send()
     }
   }
 
@@ -228,9 +236,7 @@ export class shipments {
 //TODO make this work with added items
 export class filterValueConverter {
   toView(transactions = [], filter = ''){
-
     filter = filter.toLowerCase()
-
     return transactions.filter(transaction => {
       return ~ `${transaction.to.name} ${transaction.tracking} ${transaction.status}`.toLowerCase().indexOf(filter)
     })
