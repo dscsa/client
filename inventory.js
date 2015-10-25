@@ -52,8 +52,9 @@ export class inventory {
   add(transaction) {
     this.search = null
     this.drugs.add(transaction, {from:{}}).then(_ => {
-      console.log('adding')
-      this.activate()
+      //Wait for the server POST to sync with PouchDB
+      //TODO This is fragile. Is there a way to wait for sync to complete instead?
+      setTimeout(this.activate.bind(this), 50)
     })
     .catch(console.log)
   }
