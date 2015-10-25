@@ -12,7 +12,7 @@
     <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter shipments ${ role.account } you</md-input>
     <md-switch click.delegate="setRole()" style="margin:-45px 0 0 197px;"></md-switch>
     <a
-      repeat.for="shipment of shipments[role.account]"
+      repeat.for="shipment of shipments[role.account] | filter:filter"
       class="mdl-navigation__link ${ shipment._id == $parent.shipment._id ? 'mdl-navigation__link--current' : ''}"
       click.delegate="$parent.select(shipment)">
       <div class="mdl-typography--title">${ shipment[$parent.role.partner].name || 'New shipment' }</div>
