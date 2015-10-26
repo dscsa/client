@@ -3,7 +3,7 @@ export function configure(aurelia) {
   console.log = console.log.bind(console)
 
   aurelia.use
-    .developmentLogging()
+    //.developmentLogging()
     .standardConfiguration()
     .plugin('aurelia-animator-css')
 

@@ -133,7 +133,6 @@ export class shipments {
   }
 
   check($index) {
-    console.log('$index', $index)
     //with binding check array stayed same length and
     //just had falsey values, which we had to check for
     //in the "Save Selected for Inventory" button, move(),
@@ -146,8 +145,6 @@ export class shipments {
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
 
-    console.log('this.checks', this.checks, this.checks.length)
-    console.log('this.diffs', this.diffs, this.diffs.length)
     return true //Continue to bubble event
   }
 
@@ -199,8 +196,10 @@ export class shipments {
     for (let i in this.diffs) {
       let method = this.transactions[i].captured_at ? 'asDelete' : 'asPost'
       this.http.createRequest('//localhost:3000/transactions/'+this.transactions[i]._id+'/captured')
-      .withCredentials(true)[method]().send()
+      .withCredentials(true)[method]().send().catch(_ => _) //empty catch because failed post requests alrady appear in console
     }
+
+    this.diffs = []
   }
 
   selectTransaction(transaction) {
