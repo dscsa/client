@@ -71,10 +71,24 @@
           focusout.delegate="save()">
         </md-input>
       </div>
-        <md-button primary raised style="width:100%" show.bind=" ! shipment._id " disabled.bind="! from.name || ! to.name" click.delegate="create()">Create Shipment with Selected</md-button>
-        <md-button primary raised style="width:100%" show.bind="   shipment._id && shipment._id != tracking._id" disabled.bind=" ! checks.length" click.delegate="move()">Move Selected to Shipment</md-button>
-        <!-- TODO Have a dirty/clean field for checked that will disable this button if nothing as changed -->
-        <md-button primary raised style="width:100%" show.bind="   shipment._id && shipment._id == tracking._id" disabled.bind="account._id != shipment.to.account || ! diffs.length" click.delegate="saveInventory()">Save Selected to Inventory</md-button>
+        <md-button color raised style="width:100%"
+          if.bind=" ! shipment._id && ! tracking._id"
+          disabled.bind="! from.name || ! to.name"
+          click.delegate="create()">
+          Create Shipment with Selected
+        </md-button>
+        <md-button color raised style="width:100%"
+          if.bind="shipment._id && shipment._id == tracking._id"
+          disabled.bind="account._id != shipment.to.account || ! diffs.length"
+          click.delegate="saveInventory()">
+          Save Selected to Inventory
+        </md-button>
+        <md-button color raised style="width:100%"
+          if.bind="shipment._id != tracking._id"
+          disabled.bind="! checks.length"
+          click.delegate="move()">
+          Move Selected to Shipment
+        </md-button>
       </div>
       <div if.bind="history" class="mdl-card__actions mdl-card--border">
         <div class="mdl-card__title-text mdl-cell mdl-cell--12-col">
