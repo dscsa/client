@@ -1,6 +1,4 @@
-<template>
-  <!-- TODO Get rid of this div and move class to template element -->
-  <style>md-input { display:inline-block; width:100%; box-sizing: border-box; }</style>
+<template style="display:inline-block; width:100%; box-sizing:border-box;">
   <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ${ value ? 'is-dirty' : ''}" css="width:100%; font-size:inherit; ${ placeholder != null ? 'padding-top:1px;' : ''}">
     <input class="mdl-textfield__input" value.bind="value" disabled.bind="disabled" pattern.bind="pattern" type.bind="type" step.bind="step" placeholder.bind="placeholder || ''"  css="font-size:inherit; ${ type == 'date' ? 'height:18px;' : ''}"/>
     <label class="mdl-textfield__label"><content></content></label>
