@@ -12,9 +12,13 @@ export class MdButtonCustomElement {
     this.element = element
   }
 
-  //Make sure click.delegate doesn't bubble up when button is disabled.
+  //click.trigger won't trigger when button is disabled, but delegate will
+  //but we cant use trigger because $parent's delegate will still fire regardless
+  //so use delegate, but for some reason delegate stops bubbling even if we do
+  //"return true" so we need to to refire the event.
   click($event) {
-    return ! this.button || ! this.button.disabled
+    if ( ! this.button.disabled)
+      this.element.dispatchEvent(new MouseEvent($event.type, $event))
   }
 
   attached() {
@@ -22,9 +26,6 @@ export class MdButtonCustomElement {
       this.button.classList.add(this.class)
 
     //attributes are made an empty string by default, so we can't just test for truthiness
-    if (this.raised == "")
-      this.button.classList.add('mdl-button--raised')
-
     //primary and accent are dynamic/reactive based on disable so need to be in the template.
     if (typeof this.color == 'string') {
       this.color = 'mdl-button--'+(this.color || 'colored')
