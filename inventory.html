@@ -43,15 +43,21 @@
         <div repeat.for="source of group.sources"   focusout.delegate="$parent.drugs.save(source, $event, $this)" ref="$this">
           <div style="display:inline-block; width:calc(100% - 155px)">${source.history.name || 'No Source'}</div>
           <span style="white-space:nowrap">
-            <md-input style="width:60px" value.bind="source.lot.to" placeholder="Lot"></md-input>
-            <md-input pattern="([1-9]|1[012])/\d{2}" style="width:40px" value.bind="source.exp.to" placeholder="Exp"></md-input>
-            <md-input type="number" style="width:40px" value.bind="source.qty.to" input.delegate="$parent.input()" placeholder="Qty"></md-input>
+            <md-input style="width:60px" value.bind="source.lot.from" placeholder="Lot"></md-input>
+            <md-input pattern="([1-9]|1[012])/\d{2}" style="width:40px" value.bind="source.exp.from | date" placeholder="Exp"></md-input>
+            <md-input type="number" style="width:40px" value.bind="source.qty.from" input.delegate="$parent.input()" placeholder="Qty"></md-input>
           </span>
         </div>
       </div>
       <div class="mdl-card__actions mdl-card--border mdl-grid">
         <md-switch checked.bind="repack" class="mdl-cell" style="width:calc(100% - 24px - 140px)"></md-switch>
-        <md-button primary raised.bind="repack" disabled.bind="!repack" click.delegate="repackage()" style="width:140px">${ repack ? 'Repackage '+group.total : 'Editing' }</md-button>
+        <md-button color
+          raised.bind="repack"
+          disabled.bind="!repack"
+          click.delegate="repackage()"
+          style="width:140px">
+          ${ repack ? 'Repackage '+group.total : 'Editing' }
+        </md-button>
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->

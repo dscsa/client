@@ -20,11 +20,11 @@ export class inventory {
 
       for (let o of transactions.reverse()) {
         if (groups[o.ndc]) {
-          groups[o.ndc].total += +o.qty.to || 0
+          groups[o.ndc].total += +o.qty.from || 0
           groups[o.ndc].sources.push(o)
         }
         else {
-          groups[o.ndc] = {total:+o.qty.to || 0, sources:[o]}
+          groups[o.ndc] = {total:+o.qty.from || 0, sources:[o]}
 
           this.db.drugs({_id:o.drug})
           .then(drugs => groups[o.ndc].image = drugs[0].image)
@@ -38,6 +38,7 @@ export class inventory {
 
   select(group) {
     this.group = group || {sources:[]}
+    this.repack = false
   }
 
   //ValueConverter wasn't picking up on changes so trigger manually
@@ -45,7 +46,7 @@ export class inventory {
   //not sure if this is an html of aurelia bug
   input() {
     this.group.total = this.group.sources.reduce((a,b) => {
-      return a + (+b.qty.to || 0)
+      return a + (+b.qty.from || 0)
     }, 0)
   }
 
@@ -59,42 +60,39 @@ export class inventory {
     .catch(console.log)
   }
 
+//TODO don't bind when repacking so that you can skip and change things to get to 30
+//Skip over and dont delete items that have a repack quantity of 0
   repackage() {
-    //Since we don't know which facility right now, just use the first one
-    this.db.shipments({_id:this.group.sources[0]}).then(shipments => {
-
-      let repacked = {history:{name:shipments.pop().to.name, ids:[], qtys:[]}, qty:{from:0, to:0}}
-      repacked = Object.assign({}, this.group.sources[0], repacked)
-
-      //Go backwards since we are deleting array vals as we go
-      for (let i = this.group.sources.length - 1; i >= 0; i--) {
-
-        let source = this.group.sources[i]
-
-        if ( ! source.qty.to && ! source.qty.from)
-          continue
-
-        repacked.qty.from += +source.qty.from
-        repacked.qty.to   += +source.qty.to
-
-        if (Date(repacked.exp.from) > Date(source.exp.from))
-          repacked.exp.from = source.exp.from
-
-        if (Date(repacked.exp.to) > Date(source.exp.to))
-          repacked.exp.to = source.exp.to
-
-        //TODO add overlapping elements rather than repeating
-        if (source.history.ids) {
-          repacked.history.ids.push(...source.history.ids)
-          repacked.history.qtys.push(...source.history.qtys)
-        }
-
-        this.group.sources.splice(i, 1)
-        this.db.transactions.remove(source)
-      }
-
-      this.group.sources.unshift(repacked)
-      this.db.transactions.post(repacked)
+    let exp = null
+    let transaction = Object.assign({}, this.group.sources[0], {
+      qty:{from:0, to:0},
+      lot:{from:null, to:null},
+      history:[]
     })
+
+    //Go backwards since we are deleting array vals as we go
+    for (let source of this.group.sources) {
+
+      transaction.qty.from += +source.qty.from
+      let [month, year] = source.exp.from.split('/')
+      let date = new Date('20'+year, month-1) //month indexed to 0
+      if ( ! exp || exp > date)
+        exp = date
+
+      transaction.history.push(...source.history)
+    }
+    transaction.exp = {from:exp.toJSON(), to:null}
+    return this.db.transactions.post(transaction)
+    .then(transaction => {
+      this.repack = false
+      this.group.sources.forEach(this.db.transactions.remove)
+      this.group.sources = [transaction]
+    })
+  }
+}
+
+export class dateValueConverter {
+  toView(date){
+    return ! date || date.length != 24 ? date : date.slice(5,7)+'/'+date.slice(2,4)
   }
 }
