@@ -34,6 +34,7 @@ export class inventory {
         }
       }
       this.groups     = Object.values(groups)
+      this.groups.raw = groups
       this.select(groups[params.id] || this.groups[0])
     })
     .catch(console.log)
@@ -65,12 +66,22 @@ export class inventory {
     }, 0)
   }
 
-  add(transaction) {
+  add(drug) {
     this.search = null
-    this.drugs.add(transaction, {from:{}}).then(_ => {
-      //Wait for the server POST to sync with PouchDB
-      //TODO This is fragile. Is there a way to wait for sync to complete instead?
-      setTimeout(this.activate.bind(this), 50)
+    this.drugs.add(drug, {from:{}}).then(transaction => {
+      let group = this.groups.raw[transaction.ndc]
+
+      if (group)
+        group.sources.push(transaction)
+      else {
+        group = {total:0, sources:[transaction]}
+        this.groups.raw[transaction.ndc] = group
+        this.groups.unshift(group)
+        this.db.drugs({_id:transaction.drug})
+        .then(drugs => this.groups.raw[transaction.ndc].image = drugs[0].image)
+      }
+
+      this.select(group)
     })
     .catch(console.log)
   }
