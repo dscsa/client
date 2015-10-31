@@ -43,18 +43,20 @@ export class shipments {
 
   //Activated from constructor and each time a shipment is selected
   select(shipment) {
+    let url = 'shipments'
+    if (shipment && shipment._id) {  //selecting a new shipment will be an object but no id
+      var shipment_id = shipment._id
+      url += '/'+shipment._id.split('.')[2]
+    } else {
+      shipment        = this.shipments[this.role.account][0]
+      var shipment_id = this.role.account == 'from' && this.account._id
+    }
 
-    //if no/missing shipment specified, show new shipment
-    this.shipment = shipment || this.shipments[this.role.account][0]
-
-    //Update URL with lifecycle methods so we can come back to this shipment
-    let id = this.shipment._id ? '/'+this.shipment._id.split('.')[2] : ''
-    this.router.navigate('shipments'+id , { trigger: false })
-
+    this.shipment = shipment
+    this.router.navigate(url, { trigger: false })
     this.reset()
 
-    //Display all transactions in the shipment
-    this.db.transactions({shipment:this.shipment._id || this.account._id})
+    this.db.transactions({shipment:shipment_id})
     .then(transactions => {
       this.transactions = transactions || []
       this.selectTransaction(transactions[0]) //Select first transaction and display its history
