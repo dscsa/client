@@ -3,17 +3,20 @@
 import {inject} from 'aurelia-framework';
 import {Db}     from 'db/pouch'
 import {drugs}  from 'search'
+import {Router}     from 'aurelia-router';
 
-@inject(Db, drugs)
+
+@inject(Db, drugs, Router)
 export class inventory {
 
-  constructor(db, drugs){
+  constructor(db, drugs, router){
     this.db      = db
     this.session = db.users(true).session()
     this.drugs   = drugs
+    this.router  = router
   }
 
-  activate() {
+  activate(params) {
     return this.db.transactions({shipment:this.session.account._id})
     .then(transactions => {
       let groups = {}
@@ -30,14 +33,21 @@ export class inventory {
           .then(drugs => groups[o.ndc].image = drugs[0].image)
         }
       }
-      this.groups = Object.keys(groups).map(group => groups[group])
-      this.select(this.groups[0])
+      this.groups     = Object.values(groups)
+      this.select(groups[params.id] || this.groups[0])
     })
     .catch(console.log)
   }
 
   select(group) {
-    this.group = group || {sources:[]}
+    //Update URL with lifecycle methods so we can come back to this shipment
+    if (group) {
+      this.group = group
+      this.router.navigate('inventory/'+group.sources[0].ndc , { trigger: false })
+    }
+    else {
+      this.group = {sources:[]}
+    }
     this.mode = false
   }
 
@@ -70,6 +80,8 @@ export class inventory {
   repackage() {
 
     let transaction = Object.assign({}, this.group.sources[0], {
+    let exp = null
+    let transaction = {
       qty:{from:0, to:0},
       lot:{from:null, to:null},
       exp:{from:null, to:null},

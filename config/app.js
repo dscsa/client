@@ -8,7 +8,7 @@ export class App {
     config.map([
       { route: 'login',                        moduleId: '../login',     title:'Login',     nav:true},
       { route: ['join', ''],                   moduleId: '../join',      title:'Join',      nav:true},
-      { route: 'inventory',                    moduleId: '../inventory', title:'Inventory', nav:true, roles:["user"]},
+      { route: ['inventory', 'inventory/:id'], moduleId: '../inventory', title:'Inventory', nav:true, roles:["user"]},
       { route: ['shipments', 'shipments/:id'], moduleId: '../shipments', title:'Shipments', nav:true, roles:["user"]},
       { route: 'account',                      moduleId: '../account',   title:'Account',   nav:true, roles:["user"]},
       { route: ['drugs', 'drugs/:id'],         moduleId: '../drugs',     title:'Drugs',     nav:true, roles:["admin"]},
