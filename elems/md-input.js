@@ -7,6 +7,7 @@ import {bindable, bindingMode} from 'aurelia-framework';
 @bindable('type')
 @bindable('placeholder')
 @bindable('input')
+@bindable('max')
 export class MdInputCustomElement {
 
   attached() {
