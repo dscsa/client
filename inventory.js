@@ -19,23 +19,20 @@ export class inventory {
   activate(params) {
     return this.db.transactions({shipment:this.session.account._id})
     .then(transactions => {
-      let groups = {}
+      this.groups = {}
 
       for (let o of transactions.reverse()) {
-        if (groups[o.ndc]) {
-          groups[o.ndc].total += +o.qty.from || 0
-          groups[o.ndc].sources.push(o)
+        if (this.groups[o.ndc]) {
+          this.groups[o.ndc].total += +o.qty.from || 0
+          this.groups[o.ndc].sources.push(o)
         }
         else {
-          groups[o.ndc] = {total:+o.qty.from || 0, sources:[o]}
-
+          this.groups[o.ndc] = {total:+o.qty.from || 0, sources:[o]}
           this.db.drugs({_id:o.drug})
-          .then(drugs => groups[o.ndc].image = drugs[0].image)
+          .then(drugs => this.groups[o.ndc].image = drugs[0].image)
         }
       }
-      this.groups     = Object.values(groups)
-      this.groups.raw = groups
-      this.select(groups[params.id] || this.groups[0])
+      this.select(this.groups[params.id] || this.groups[0])
     })
     .catch(console.log)
   }
@@ -69,16 +66,15 @@ export class inventory {
   add(drug) {
     this.search = null
     this.drugs.add(drug, {from:{}}).then(transaction => {
-      let group = this.groups.raw[transaction.ndc]
+      let group = this.groups[transaction.ndc]
 
       if (group)
         group.sources.push(transaction)
       else {
         group = {total:0, sources:[transaction]}
-        this.groups.raw[transaction.ndc] = group
-        this.groups.unshift(group)
+        this.groups[transaction.ndc] = group
         this.db.drugs({_id:transaction.drug})
-        .then(drugs => this.groups.raw[transaction.ndc].image = drugs[0].image)
+        .then(drugs => this.groups[transaction.ndc].image = drugs[0].image)
       }
 
       this.select(group)
@@ -129,5 +125,11 @@ export class inventory {
 export class dateValueConverter {
   toView(date){
     return ! date || date.length != 24 ? date : date.slice(5,7)+'/'+date.slice(2,4)
+  }
+}
+
+export class toArrayValueConverter {
+  toView(obj){
+    return Object.values(obj)
   }
 }
