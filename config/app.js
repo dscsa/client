@@ -32,7 +32,7 @@ export class AuthorizeStep {
   run(routing, next) {
 
     let session = this.db.users(true).session()
-
+console.log(session)
     for (let row of routing.router.navigation) {
 
       if ( ! session) {
@@ -41,8 +41,9 @@ export class AuthorizeStep {
       }
 
       var role = session.account._id.length == 7 ? 'user' : session.account
-
+console.log('role', role)
       row.isVisible = row.config.roles && ~row.config.roles.indexOf(role)
+      console.log('isVisible', !!row.isVisible, row.title)
     }
 
     if (routing.nextInstructions.some(i => i.config.navModel.isVisible))

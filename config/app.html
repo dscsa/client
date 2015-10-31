@@ -19,7 +19,8 @@
         <!-- Add spacer, to align navigation to the right -->
         <div class="mdl-layout-spacer"></div>
         <nav class="mdl-navigation">
-          <a repeat.for="row of router.navigation" show.bind="row.isVisible" class="mdl-navigation__link ${row.isActive ? 'mdl-navigation__link--current' : ''}" href.bind="row.href" style="">
+          <!-- show.bind="row.isVisible"  -->
+          <a repeat.for="row of router.navigation" if.bind="row.isVisible" class="mdl-navigation__link ${row.isActive ? 'mdl-navigation__link--current' : ''}" href.bind="row.href" style="">
             ${row.title}
           </a>
         </nav>
