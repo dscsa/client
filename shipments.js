@@ -23,7 +23,6 @@ export class shipments {
   }
 
   activate(params) {
-    console.log('this.account', this.account)
     return Promise.all([
       //Start all of our a sync tasks
       //TODO to = $elemMatch:this.account._id
@@ -34,7 +33,6 @@ export class shipments {
     ])
     .then(([accounts, from, to]) => {
       //Set the view model
-      console.log('accounts', accounts)
       this.accounts  = ['', ...accounts]
       this.shipments = {from, to}
       this.add('from')
