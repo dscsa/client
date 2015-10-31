@@ -38,7 +38,12 @@ export class inventory {
 
   select(group) {
     this.group = group || {sources:[]}
-    this.repack = false
+    this.mode = false
+  }
+
+  toggleRepack() {
+    this.repack = this.group.sources.map(s => s.qty.from)
+    return true
   }
 
   //ValueConverter wasn't picking up on changes so trigger manually
@@ -63,31 +68,38 @@ export class inventory {
 //TODO don't bind when repacking so that you can skip and change things to get to 30
 //Skip over and dont delete items that have a repack quantity of 0
   repackage() {
-    let exp = null
+
     let transaction = Object.assign({}, this.group.sources[0], {
       qty:{from:0, to:0},
       lot:{from:null, to:null},
+      exp:{from:null, to:null},
       history:[]
     })
 
+    let exp = null
+console.log(this.group.sources, this.repack)
     //Go backwards since we are deleting array vals as we go
-    for (let source of this.group.sources) {
-
-      transaction.qty.from += +source.qty.from
-      let [month, year] = source.exp.from.split('/')
-      let date = new Date('20'+year, month-1) //month indexed to 0
-      if ( ! exp || exp > date)
-        exp = date
-
+    for (let i=this.repack.length-1; i>=0; i--) {
+      let qty = +this.repack[i]
+      if ( ! qty) continue
+      transaction.qty.from += qty
+      let source = this.group.sources[i]
+      console.log('i', i, this.repack[i], source)
+      if (source.exp.from) {
+        console.log(source.exp, typeof source.exp)
+        let [month, year] = source.exp.from.split('/')
+        let date = new Date('20'+year, month-1) //month indexed to 0
+        if ( ! transaction.exp.from || transaction.exp.from > date)
+          transaction.exp.from = date
+      }
       transaction.history.push(...source.history)
+      this.db.transactions.remove(source)
+      this.group.sources.splice(i, 1)
     }
-    transaction.exp = {from:exp.toJSON(), to:null}
+    transaction.exp.from = transaction.exp.from.toJSON()
+    this.mode = false
+    this.group.sources.push(transaction)
     return this.db.transactions.post(transaction)
-    .then(transaction => {
-      this.repack = false
-      this.group.sources.forEach(this.db.transactions.remove)
-      this.group.sources = [transaction]
-    })
   }
 }
 
