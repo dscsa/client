@@ -33,9 +33,9 @@
         <md-input value.bind="user.name" type="email">Email</md-input>
         <md-input value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$">Phone</md-input>
         <md-input value.bind="user.password">${ user._id ? 'Change password' : 'Password'}</md-input>
-        <md-button primary raised style="width:100%" if.bind="! user._id" disabled.bind="! user.name || ! user.password" focusin.delegate="create($event)">Create User</md-button>
-        <md-button primary raised style="width:100%" if.bind="user._id && user.name == session.name" click.delegate="logout()">Logout</md-button>
-        <md-button accent raised style="width:100%" if.bind="user._id && user.name != session.name" click.delegate="delete()">Delete User</md-button>
+        <md-button color raised style="width:100%" if.bind="! user._id" disabled.bind="! user.name || ! user.password" focusin.delegate="create($event)">Create User</md-button>
+        <md-button color raised style="width:100%" if.bind="user._id && user.name == session.name" click.delegate="logout()">Logout</md-button>
+        <md-button color="accent" raised style="width:100%" if.bind="user._id && user.name != session.name" click.delegate="delete()">Delete User</md-button>
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
