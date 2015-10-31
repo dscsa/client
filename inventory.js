@@ -5,7 +5,6 @@ import {Db}     from 'db/pouch'
 import {drugs}  from 'search'
 import {Router}     from 'aurelia-router';
 
-
 @inject(Db, drugs, Router)
 export class inventory {
 
@@ -21,7 +20,7 @@ export class inventory {
     .then(transactions => {
       this.groups = {}
 
-      for (let o of transactions.reverse()) {
+      for (let o of transactions) {
         if (this.groups[o.ndc]) {
           this.groups[o.ndc].total += +o.qty.from || 0
           this.groups[o.ndc].sources.push(o)
@@ -32,7 +31,7 @@ export class inventory {
           .then(drugs => this.groups[o.ndc].image = drugs[0].image)
         }
       }
-      this.select(this.groups[params.id] || this.groups[0])
+      this.select(this.groups[params.id] || Object.values(this.groups)[0])
     })
     .catch(console.log)
   }
@@ -113,7 +112,7 @@ export class inventory {
         this.group.sources.splice(i, 1)
       })
     }
-    transaction.exp.from = transaction.exp.from.toJSON()
+    transaction.exp.from = transaction.exp.from == null ? null : transaction.exp.from.toJSON()
     return this.db.transactions.post(transaction)
     .then(_ => {
       this.mode = false
