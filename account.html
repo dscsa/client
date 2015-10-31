@@ -27,12 +27,12 @@
         class="mdl-card__supporting-text"
         focusout.delegate="save($event, $this)"
         ref="$this"
-        style="font-size:16px">
-        <md-input value.bind="user.first" style="width:49%">First Name</md-input>
-        <md-input value.bind="user.last" style="width:49%">Last Name</md-input>
-        <md-input value.bind="user.name" type="email">Email</md-input>
-        <md-input value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$">Phone</md-input>
-        <md-input value.bind="user.password">${ user._id ? 'Change password' : 'Password'}</md-input>
+        style="font-size:16px;">
+        <md-input style="width:49%" value.bind="user.first">First Name</md-input>
+        <md-input style="width:49%" value.bind="user.last">Last Name</md-input>
+        <md-input style="width:100%" value.bind="user.name" type="email">Email</md-input>
+        <md-input style="width:100%" value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$">Phone</md-input>
+        <md-input style="width:100%" value.bind="user.password">${ user._id ? 'Change password' : 'Password'}</md-input>
         <md-button color raised style="width:100%" if.bind="! user._id" disabled.bind="! user.name || ! user.password" focusin.delegate="create($event)">Create User</md-button>
         <md-button color raised style="width:100%" if.bind="user._id && user.name == session.name" click.delegate="logout()">Logout</md-button>
         <md-button color="accent" raised style="width:100%" if.bind="user._id && user.name != session.name" click.delegate="delete()">Delete User</md-button>
