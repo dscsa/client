@@ -44,7 +44,7 @@
           <div style="display:inline-block; width:calc(100% - 155px)">${source.history.name || 'No Source'}</div>
           <span style="white-space:nowrap">
             <md-input style="width:60px" value.bind="source.lot.from" placeholder="Lot"></md-input>
-            <md-input pattern="([1-9]|1[012])/\d{2}" style="width:40px" value.bind="source.exp.from | date" placeholder="Exp"></md-input>
+            <md-input pattern="(0?[1-9]|1[012])/\d{2}" style="width:40px" value.bind="source.exp.from | date" placeholder="Exp"></md-input>
             <md-input
               if.bind=" ! $parent.mode"
               type="number"
