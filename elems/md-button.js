@@ -24,10 +24,9 @@ export class MdButtonCustomElement {
   attached() {
     if (this.class)
       this.button.classList.add(this.class)
-
     //attributes are made an empty string by default, so we can't just test for truthiness
     //primary and accent are dynamic/reactive based on disable so need to be in the template.
-    if (typeof this.color == 'string') {
+    if (typeof this.color == 'string' && this.color.slice(0, 4) != 'mdl-') {
       this.color = 'mdl-button--'+(this.color || 'colored')
     }
 
