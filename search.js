@@ -1,21 +1,16 @@
 import {inject} from 'aurelia-framework';
 import {Db} from 'db/pouch'
 
-let db
-
-//Wanted to make this.shipment have get and sets for the properties.  However that
-//was causing dirty checking and computedFrom doesn't allow setters https://github.com/aurelia/binding/issues/136
 @inject(Db)
 export class drugs {
 
   constructor(Db){
-    db = Db
+    this.db = Db
   }
 
-  //TODO Do we query PouchDB everytime or query once and filter the results?
-  //Right now PouchDB-Find doesn't have $regex or $text so we must resort to query()
+  //TODO change to PouchDB-Find $regex or $text once available
   search(now, old) {
-    return db.drugs.query(`function(doc) {
+    return this.db.drugs.query(`function(doc) {
         if ( ~ doc.name.indexOf('${now}'))
           emit(true)
     }`)
@@ -35,7 +30,7 @@ export class drugs {
       exp:{from:null, to:null}
     }
 
-    return db.transactions.post(transaction)
+    return this.db.transactions.post(transaction)
   }
 
   save(drug, $event, $this) {
@@ -45,6 +40,6 @@ export class drugs {
       return
 
     console.log('saving', drug)
-    return db.transactions.put(drug)
+    return this.db.transactions.put(drug)
   }
 }
