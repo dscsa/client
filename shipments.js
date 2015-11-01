@@ -35,8 +35,7 @@ export class shipments {
       //Set the view model
       this.accounts  = ['', ...accounts]
       this.shipments = {from, to}
-      this.add('from')
-      this.add('to')
+      this.add()
       this.setRole(params.id)
     })
   }
@@ -44,19 +43,17 @@ export class shipments {
   //Activated from constructor and each time a shipment is selected
   select(shipment) {
     let url = 'shipments'
-    if (shipment && shipment._id) {  //selecting a new shipment will be an object but no id
-      var shipment_id = shipment._id
+
+    if (shipment && shipment._id)  //selecting a new shipment will be an object but no id
       url += '/'+shipment._id.split('.')[2]
-    } else {
-      shipment        = this.shipments[this.role.account][0]
-      var shipment_id = this.role.account == 'from' && this.account._id
-    }
+    else
+      shipment = this.shipments[this.role.account][0]
 
     this.shipment = shipment
     this.router.navigate(url, { trigger: false })
     this.reset()
 
-    this.db.transactions({shipment:shipment_id})
+    this.db.transactions({shipment:shipment._id || this.account._id})
     .then(transactions => {
       this.transactions = transactions || []
       this.selectTransaction(transactions[0]) //Select first transaction and display its history
@@ -103,21 +100,19 @@ export class shipments {
   }
 
   //Called on constructor() and create() to ensure user can always add a new label.
-  add(key) {
-
-    let shipment = {
+  add() {
+    this.shipments.from.unshift({
       tracking:'New Tracking #',
       status:"pickup",
       pickup_at:null,
       shipped_at:null,
       received_at:null,
       from:{},
-      to:{}
-    }
-
-    this.shipments[key].unshift(Object.assign({}, shipment, {
-      [key == 'from' ? 'to' : 'from']:{account:this.account._id}
-    }))
+      to:{
+        name:this.account.name,
+        account:this.account._id
+      }
+    })
   }
 
   //Save the donation if someone changes the status/date
@@ -185,7 +180,7 @@ export class shipments {
     console.log('adding', this.shipment)
     this.db.shipments.post(this.shipment).then(shipment => {
       Object.assign(this.shipment, shipment)
-      this.add(this.role ? 'from' : 'to') //Add a new shipment button in case user wants to add another
+      this.add() //Add a new shipment button in case user wants to add another
       this.move()
     })
   }
