@@ -11,7 +11,7 @@ export class App {
       { route: ['inventory', 'inventory/:id'], moduleId: '../inventory', title:'Inventory', nav:true, roles:["user"]},
       { route: ['shipments', 'shipments/:id'], moduleId: '../shipments', title:'Shipments', nav:true, roles:["user"]},
       { route: 'account',                      moduleId: '../account',   title:'Account',   nav:true, roles:["user"]},
-      { route: ['drugs', 'drugs/:id'],         moduleId: '../drugs',     title:'Drugs',     nav:true, roles:["admin"]},
+      { route: ['drugs', 'drugs/:id'],         moduleId: '../drugs',     title:'Drugs',     nav:true, roles:["user"]},
       { route: 'accounts',                     moduleId: '../accounts',  title:'Accounts',  nav:true, roles:["admin"]}
     ]);
 

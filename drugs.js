@@ -12,22 +12,17 @@ export class drugs {
   }
 
   activate(params) {
-
-
-    let _id = params.id ? 'drugs/'+params.id : undefined
-
     this.db.drugs().then(drugs => {
       this.drugs = drugs
       this.add()
-      this.select(this.drugs.filter(drug => drug._id === _id)[0])
+      this.select(this.drugs.filter(drug => drug._id === params.id)[0] || this.drugs[0])
     })
   }
 
   select(drug) {
-
+    let url = drug._id ? 'drugs/'+drug._id : 'drugs'
+    this.router.navigate(url, { trigger: false })
     this.drug  = drug
-
-    this.router.navigate(drug._id || 'drugs', { trigger: false })
   }
 
   add() {
@@ -64,11 +59,8 @@ export class drugs {
 
 //TODO make this work with added items
 export class filterValueConverter {
-
   toView(drugs = [], filter = ''){
-
     filter = filter.toLowerCase()
-
     return drugs.filter(drug => {
       return ~ `${drug.name} ${drug.tracking} ${drug.status}`.toLowerCase().indexOf(filter)
     })
