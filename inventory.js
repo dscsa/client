@@ -127,8 +127,12 @@ export class dateValueConverter {
   }
 }
 
-export class toArrayValueConverter {
-  toView(obj){
-    return Object.values(obj)
+//ADDED step of converting object to array
+export class filterValueConverter {
+  toView(transactions = {}, filter = ''){
+    filter = filter.toLowerCase()
+    return Object.values(transactions).filter(transaction => {
+      return ~ `${transaction.sources[0].name} ${transaction.sources[0].strength} ${transaction.sources[0].form} ${transaction.sources[0].drug}`.toLowerCase().indexOf(filter)
+    })
   }
 }

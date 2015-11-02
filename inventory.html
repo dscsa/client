@@ -11,14 +11,10 @@
     <md-input value.bind="filter" style="padding:0 8px;">Filter Inventory</md-input>
     <md-select
       value.bind="to"
-      options.bind="['', 'TLC', 'SET', 'BHP']"
+      options.bind="['', 'All Ordered', 'Not Ordered', 'TLC', 'SET', 'BHP']"
       style="padding:0 8px;">
-      Recipients
+      Requested by
     </md-select>
-    <div show.bind="to" style="margin:-70px 0 34px 100px;">
-      <md-button>Show</md-button>
-      <md-button>Ship</md-button>
-    </div>
     <div style="margin:0 auto">
       <md-button raised>Export</md-button>
     </div>
@@ -101,7 +97,7 @@
             <th>Qty</th>
           </tr>
         </thead>
-        <tr repeat.for="group of groups | toArray" click.delegate="$parent.select(group)" class="${ $parent.group != group || 'is-selected'}">
+        <tr repeat.for="group of groups | filter:filter" click.delegate="$parent.select(group)" class="${ $parent.group != group || 'is-selected'}">
           <td style="font-size:45px; vertical-align:middle; padding-right:0">${ $even ? '*' : ''}</td>
           <td class="mdl-data-table__cell--non-numeric">
             ${ group.sources[0].name } ${ group.sources[0].strength }, ${ group.sources[0].form }
