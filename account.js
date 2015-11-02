@@ -39,6 +39,7 @@ export class account {
       password:'',
       account:this.session.account
     })
+    this.users = this.users.slice() //Aurelia hack to reactivate the filter
   }
 
   save($event, $this) {

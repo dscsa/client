@@ -36,6 +36,7 @@ export class drugs {
       ndc:'',
       price:''
     })
+    this.drugs = this.drugs.slice() //Aurelia hack to reactivate the filter
   }
 
   save($event, $this) {
