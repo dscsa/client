@@ -26,7 +26,11 @@
           style="margin-top:-8px;">
           ${drug.form || 'New drug'}
         </div>
+        <div style="font-size:13px;margin:5px 0 -15px 8px">
+          UPC: ${ drug.ndc.replace('-', '') }, NDC9: ${ ("00000"+drug.ndc.split('-')[0]).slice(-5)+("0000"+drug.ndc.split('-')[1]).slice(-4) }
+        </div>
       </div>
+
       <div
         class="mdl-card__supporting-text"
         focusout.delegate="save($event, $this)"
@@ -34,47 +38,62 @@
         style="font-size:16px">
         <md-input
           style="width:100%"
+          value.bind="drug.ndc"
+          disabled.bind="drug._id"
+          pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
+          NDC
+        </md-input>
+        <md-input
+          style="width:100%"
           value.bind="drug.name">
           Drug Name
         </md-input>
         <md-input
-          style="width:100%"
+          style="width:49%"
           value.bind="drug.strength">
           Strength
         </md-input>
         <md-select
-          style="width:100%"
+          style="width:49%"
           value.bind="drug.form"
-          options.bind="['Tablet', 'Capsule', 'Injection', 'Patch']">
+          options.bind="['', 'Tablet', 'Capsule', 'Injection', 'Patch']">
           Form
         </md-select>
         <md-input
           style="width:100%"
           value.bind="drug.brand">
-          Brand
+          Brand Name
         </md-input>
-
         <md-input
           style="width:100%"
           value.bind="drug.labeler">
           Labeler
         </md-input>
         <md-input
-          value.bind="drug.ndc"
-          pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}"
-          style="width:200px">
-          NDC
-        </md-input>
-        <md-input
-          value.bind="drug.nadac.price"
+          value.bind="drug[priceType].price"
           type="number"
           step=".01"
-          style="width:83px">
+          style="width:49%">
           Price
         </md-input>
-      </div>
-      <div class="mdl-card__actions mdl-card--border">
-        <md-button>View Updates</md-button>
+        <md-select
+          style="width:49%"
+          value.bind="priceType"
+          options.bind="['retail', 'wholesale']">
+        </md-select>
+        <md-button color raised
+          style="width:100%"
+          if.bind="! drug._id"
+          disabled.bind=" ! drug.ndc || ! drug.name || ! drug.strength"
+          click.delegate="create()">
+          Add Drug
+        </md-button>
+        <md-button color="accent" raised
+          style="width:100%"
+          if.bind="drug._id"
+          click.delegate="delete()">
+          Delete Drug
+        </md-button>
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
