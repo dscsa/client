@@ -12,7 +12,7 @@ export class drugs {
   }
 
   activate(params) {
-    this.db.drugs().then(drugs => {
+    return this.db.drugs().then(drugs => {
       this.drugs = drugs
       this.add()
       this.select(this.drugs.filter(drug => drug._id === params.id)[0] || this.drugs[0])
