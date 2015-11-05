@@ -5,16 +5,6 @@ export class MdTableCustomAttribute {
 
   constructor(element) {
 
-    //TODO does this render multiple ones per table. Maybe we just add to head once.
-    let css = document.createElement("style");
-    css.type = "text/css";
-    css.innerHTML =
-      `.mdl-data-table td {
-        border:none;
-      }`;
-
-    document.body.appendChild(css);
-
     element.classList.add("mdl-data-table")
     element.classList.add("mdl-js-data-table")
     element.style.border = "none"
