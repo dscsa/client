@@ -227,8 +227,13 @@ export class shipments {
     }) //Add the drug to the view
   }
 }
+//TODO consolidate with filter in inventory
+export class dateValueConverter {
+  toView(date){
+    return ! date || date.length != 24 ? date : date.slice(5,7)+'/'+date.slice(2,4)
+  }
+}
 
-//TODO make this work with added items
 export class filterValueConverter {
   toView(transactions = [], filter = ''){
     filter = filter.toLowerCase()

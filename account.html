@@ -65,7 +65,7 @@
           </td>
           <td class="mdl-data-table__cell--non-numeric">${ account.name }</td>
           <td class="mdl-data-table__cell--non-numeric">${ account.license }</td>
-          <td class="mdl-data-table__cell--non-numeric">${ account.created_at }</td>
+          <td class="mdl-data-table__cell--non-numeric">${ account.created_at | date }</td>
           <td class="mdl-data-table__cell--non-numeric">${ account.city+', '+account.state }</td>
         </tr>
       </table>

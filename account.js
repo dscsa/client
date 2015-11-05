@@ -17,10 +17,7 @@ export class account {
     .then(accounts => { console.log('accounts', accounts[0]); this.account = accounts[0]})
 
     this.db.accounts({_id:{$ne:this.session.account._id}, state:this.session.account.state})
-    .then(accounts => {
-      console.log('accounts', accounts)
-      this.accounts = accounts
-    })
+    .then(accounts => this.accounts = accounts)
 
     return this.db.users()
     .then(users => {
@@ -68,6 +65,12 @@ export class account {
 
   logout() {
     this.router.navigate('login')
+  }
+}
+
+export class dateValueConverter {
+  toView(date = ''){  
+    return date.slice(0, 10)
   }
 }
 

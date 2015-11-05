@@ -134,8 +134,8 @@
             <td style="text-align:left; padding-left:0">
               ${ transaction.name } ${ transaction.strength }, ${ transaction.form }
             </td>
-            <td>${ transaction.ndc }</td>
-            <td>${ (transaction.nadac.price * (transaction.qty.to || 0)).toFixed(2) }</td>
+            <td>${ transaction.drug }</td>
+            <td>${ (transaction.wholesale.price * (transaction.qty.to || 0)).toFixed(2) }</td>
             <td style="padding-top:8px">
               ${ transaction.lot[$parent.role.partner] }
               <md-input
@@ -146,11 +146,11 @@
               </md-input>
             </td>
             <td style="padding:8px 0 0 0">
-              ${ transaction.exp[$parent.role.partner] }
+              ${ transaction.exp[$parent.role.partner] | date }
               <md-input
                 focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
                 pattern="([1-9]|1[012])/\d{2}"
-                value.bind="transaction.exp[$parent.role.account]"
+                value.bind="transaction.exp[$parent.role.account] | date"
                 style="width:60px;"
                 placeholder>
               </md-input>
