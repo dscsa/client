@@ -11,7 +11,7 @@ export class drugs {
   //TODO change to PouchDB-Find $regex or $text once available
   search(now, old) {
     return this.db.drugs.query(`function(doc) {
-        if ( ~ doc.name.indexOf('${now}'))
+        if ( ~ doc.name.toLowerCase().indexOf('${ (now || '').toLowerCase()}'))
           emit(true)
     }`)
   }
@@ -23,8 +23,8 @@ export class drugs {
       name:drug.name,
       strength:drug.strength,
       form:drug.form,
-      ndc:drug.ndc,
-      nadac:drug.nadac,
+      retail:drug.retail,
+      wholesale:drug.wholesale,
       qty:{from:null, to:null},
       lot:{from:null, to:null},
       exp:{from:null, to:null}
