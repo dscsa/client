@@ -89,7 +89,6 @@
       <table md-table style="margin:0 16px; width:calc(100% - 32px)">
         <thead>
           <tr>
-            <th></th>
             <th class="mdl-data-table__cell--non-numeric">Drug</th>
             <th>NDC</th>
             <th>Items</th>
@@ -98,7 +97,6 @@
           </tr>
         </thead>
         <tr repeat.for="group of groups | filter:filter" click.delegate="$parent.select(group)" class="${ $parent.group != group || 'is-selected'}">
-          <td style="font-size:45px; vertical-align:middle; padding-right:0">${ $even ? '*' : ''}</td>
           <td class="mdl-data-table__cell--non-numeric">
             ${ group.sources[0].name } ${ group.sources[0].strength }, ${ group.sources[0].form }
           </td>
