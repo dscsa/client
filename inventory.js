@@ -40,7 +40,7 @@ export class inventory {
     //Update URL with lifecycle methods so we can come back to this shipment
     if (group) {
       this.group = group
-      this.router.navigate('inventory/'+group.sources[0].ndc , { trigger: false })
+      this.router.navigate('inventory/'+group.sources[0].drug , { trigger: false })
     }
     else {
       this.group = {sources:[]}
