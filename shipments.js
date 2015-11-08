@@ -18,7 +18,9 @@ export class shipments {
     this.drugs   = drugs
     this.router  = router
     this.http    = http
-    this.role    = {account:'from', partner:'to'}
+    //must start with "to" because it is guaranteed to have at least one shipment - a new shipment
+    //where as from might have nothing and cause a navigation error
+    this.role    = {account:'to', partner:'from'}
     this.stati   = ['pickup', 'shipped', 'received']
   }
 
@@ -48,6 +50,9 @@ export class shipments {
       url += '/'+shipment._id.split('.')[2]
     else
       shipment = this.shipments[this.role.account][0]
+
+    if ( ! shipment)
+      return this.transactions = []
 
     this.shipment = shipment
     this.router.navigate(url, { trigger: false })
@@ -189,7 +194,7 @@ export class shipments {
   saveInventory() {
     //__array_observer__ is an enumerable key in this.transactions here
     //for some reason. Current code catches this bug but be careful.
-    for (let i in this.diffs) {
+    for (let i of this.diffs) {
       let method = this.transactions[i].captured_at ? 'asDelete' : 'asPost'
       this.http.createRequest('//localhost:3000/transactions/'+this.transactions[i]._id+'/captured')
       .withCredentials(true)[method]().send().catch(_ => _) //empty catch because failed post requests alrady appear in console
