@@ -107,10 +107,14 @@ export class inventory {
           transaction.exp.from = date
       }
       transaction.history.push(...source.history)
-      this.db.transactions.remove(source)
-      .then(_ => {
-        this.group.sources.splice(i, 1)
-      })
+
+      if (source.qty.from == qty) {
+        this.db.transactions.remove(source)
+        .then(_ => this.group.sources.splice(i, 1))
+      } else {
+        source.qty.from -= qty
+        this.db.transactions.put(source)
+      }
     }
     transaction.exp.from = transaction.exp.from == null ? null : transaction.exp.from.toJSON()
     return this.db.transactions.post(transaction)
