@@ -1,5 +1,6 @@
 <template>
   <style>
+  body { background:#eee }
   .mdl-layout__container { position:static } /*this helps with printing*/
   .mdl-layout__header { background:white;}
   .mdl-layout__header, .mdl-layout__drawer, .mdl-layout__header-row .mdl-navigation__link, .mdl-layout__header .mdl-layout__drawer-button { color:rgb(66,66,66);}
@@ -28,7 +29,7 @@
         </nav>
       </div>
     </header>
-    <main class="mdl-layout__content" style="background:#eee">
+    <main class="mdl-layout__content">
       <div class="page-content">
         <router-view></router-view>
       </div>
