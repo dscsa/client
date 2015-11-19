@@ -4,6 +4,7 @@ import {bindable, bindingMode, inject} from 'aurelia-framework';
 @bindable('style')
 @bindable('options')
 @bindable('disabled')
+@bindable('required')
 @bindable('property')
 export class MdSelectCustomElement {
 
