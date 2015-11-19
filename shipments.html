@@ -45,6 +45,7 @@
           value.bind="from"
           options.bind="role.partner == 'from' ? accounts : [account]"
           property="name"
+          required
           disabled.bind="tracking._id || role.account == 'from'">
           From
         </md-select>
@@ -53,6 +54,7 @@
           value.bind="to"
           options.bind="role.partner == 'to' ? accounts : [account]"
           property="name"
+          required
           disabled.bind="tracking._id || role.account == 'to'">
           To
         </md-select>
@@ -62,28 +64,29 @@
             value.bind="shipment.status"
             options.bind="stati"
             class="mdl-cell mdl-cell--4-col"
-            disabled.bind="!shipment._id">
+            disabled.bind="! shipment._id">
             Status
           </md-select>
           <md-input
             value.bind="shipment[shipment.status+'_at']"
             type="date"
+            style="padding-top:20px"
             class="mdl-cell mdl-cell--8-col"
-            disabled.bind="!shipment._id"
+            disabled.bind="! shipment._id"
             focusout.delegate="save()">
           </md-input>
         </div>
         <md-button color raised
           style="width:100%"
-          if.bind=" ! shipment._id && ! tracking._id"
+          if.bind="! shipment._id && ! tracking._id"
           disabled.bind="! from.name || ! to.name"
           click.delegate="create()">
-          Create Shipment ${ checks.length ? 'with Selected' : ''}
+          Create Shipment With ${ checks.length ? 'Selected' : 'No Items'}
         </md-button>
         <md-button color raised
           style="width:100%"
-          if.bind="shipment._id && shipment._id == tracking._id"
-          disabled.bind="account._id != shipment.to.account || ! diffs.length"
+          if.bind="shipment._id && shipment._id == tracking._id && role.account == 'to'"
+          disabled.bind="! diffs.length"
           click.delegate="saveInventory()">
           Save Selected to Inventory
         </md-button>
@@ -121,14 +124,14 @@
           <tr ref="$this" style="padding-top:7px;" repeat.for="transaction of transactions">
             <td style="padding-left:10px;">
               <md-checkbox
-                checked.one-way="$parent.checks.indexOf($index) > -1" click.delegate="$parent.check($index)">
+                disabled.bind="$parent.shipment._id && $parent.role.account == 'from'" checked.one-way="$parent.checks.indexOf($index) > -1" click.delegate="$parent.check($index)">
               </md-checkbox>
             </td>
             <td style="text-align:left; padding-left:0">
               ${ transaction.name } ${ transaction.strength }, ${ transaction.form }
             </td>
             <td>${ transaction.drug }</td>
-            <td>${ (transaction.wholesale.price * (transaction.qty.to || 0)).toFixed(2) }</td>
+            <td>${ (transaction.wholesale.price * (transaction.qty.to || transaction.qty.from || 0)).toFixed(2) }</td>
             <td style="padding-top:8px">
               ${ transaction.lot[$parent.role.partner] }
               <md-input
@@ -144,7 +147,7 @@
                 focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
                 pattern="([1-9]|1[012])/\d{2}"
                 value.bind="transaction.exp[$parent.role.account] | date"
-                style="width:60px;"
+                style="width:40px;"
                 placeholder>
               </md-input>
             </td>
@@ -154,7 +157,7 @@
                 focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
                 type="number"
                 value.bind="transaction.qty[$parent.role.account]"
-                style="width:60px;"
+                style="width:40px;"
                 placeholder>
               </md-input>
             </td>
