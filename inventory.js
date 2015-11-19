@@ -131,6 +131,12 @@ export class dateValueConverter {
   }
 }
 
+export class totalValueConverter {
+  toView(arr){
+    return arr.reduce((a,b) => (+a)+(+b))
+  }
+}
+
 //ADDED step of converting object to array
 export class filterValueConverter {
   toView(transactions = {}, filter = ''){
