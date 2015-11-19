@@ -100,7 +100,14 @@
           <td class="mdl-data-table__cell--non-numeric">
             ${ group.sources[0].name } ${ group.sources[0].strength }, ${ group.sources[0].form }
           </td>
-          <td>${ group.sources[0].ndc }</td>
+          <td>
+            ${ group.sources[0].drug }-
+            <md-select
+              style="margin-left:-3px"
+              value.bind="package"
+              options.bind="['', '00','01','10','90']">
+            </md-select>
+          </td>
           <td>${ group.sources.length }</td>
           <td>${ (group.sources[0].nadac.price * group.total).toFixed(2) }</td>
           <td>${ group.total}</td>

@@ -21,14 +21,14 @@ export class inventory {
       this.groups = {}
 
       for (let o of transactions) {
-        if (this.groups[o.ndc]) {
-          this.groups[o.ndc].total += +o.qty.from || 0
-          this.groups[o.ndc].sources.push(o)
+        if (this.groups[o.drug]) {
+          this.groups[o.drug].total += +o.qty.from || 0
+          this.groups[o.drug].sources.push(o)
         }
         else {
-          this.groups[o.ndc] = {total:+o.qty.from || 0, sources:[o]}
+          this.groups[o.drug] = {total:+o.qty.from || 0, sources:[o]}
           this.db.drugs({_id:o.drug})
-          .then(drugs => this.groups[o.ndc].image = drugs[0].image)
+          .then(drugs => this.groups[o.drug].image = drugs[0].image)
         }
       }
       this.select(this.groups[params.id] || Object.values(this.groups)[0])
@@ -65,15 +65,15 @@ export class inventory {
   add(drug) {
     this.search = null
     this.drugs.add(drug, {from:{}}).then(transaction => {
-      let group = this.groups[transaction.ndc]
+      let group = this.groups[transaction.drug]
 
       if (group)
         group.sources.push(transaction)
       else {
         group = {total:0, sources:[transaction]}
-        this.groups[transaction.ndc] = group
+        this.groups[transaction.drug] = group
         this.db.drugs({_id:transaction.drug})
-        .then(drugs => this.groups[transaction.ndc].image = drugs[0].image)
+        .then(drugs => this.groups[transaction.drug].image = drugs[0].image)
       }
 
       this.select(group)
