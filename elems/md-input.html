@@ -1,6 +1,6 @@
 <template style="display:inline-block; box-sizing:border-box;">
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ${ value ? 'is-dirty' : ''}" css="width:100%; font-size:inherit; ${ placeholder != null ? 'padding-top:1px;' : ''}">
+  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ${ value ? 'is-dirty' : ''}" css="width:100%; font-size:inherit; ${label.innerText ? '' : 'padding-top:1px'}">
     <input class="mdl-textfield__input" value.bind="value" disabled.bind="disabled" max.bind="max" pattern.bind="pattern || '.*'" type.bind="type" step.bind="step" placeholder.bind="placeholder || ''"  css="font-size:inherit; ${ type == 'date' ? 'height:18px;' : ''}"/>
-    <label class="mdl-textfield__label"><content></content></label>
+    <label class="mdl-textfield__label" ref="label"><content></content></label>
   </div>
 </template>
