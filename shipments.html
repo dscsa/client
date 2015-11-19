@@ -130,7 +130,14 @@
             <td style="text-align:left; padding-left:0">
               ${ transaction.name } ${ transaction.strength }, ${ transaction.form }
             </td>
-            <td>${ transaction.drug }</td>
+            <td>
+              ${ transaction.drug }-
+              <md-select
+                style="margin-left:-3px"
+                value.bind="package"
+                options.bind="['', '00','01','10','90']">
+              </md-select>
+            </td>
             <td>${ (transaction.wholesale.price * (transaction.qty.to || transaction.qty.from || 0)).toFixed(2) }</td>
             <td style="padding-top:8px">
               ${ transaction.lot[$parent.role.partner] }
