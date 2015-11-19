@@ -27,7 +27,7 @@
           ${drug.form || 'New drug'}
         </div>
         <div style="font-size:13px;margin:5px 0 -15px 8px">
-          UPC: ${ drug.ndc.replace('-', '') }, NDC9: ${ ("00000"+drug.ndc.split('-')[0]).slice(-5)+("0000"+drug.ndc.split('-')[1]).slice(-4) }
+          UPC: ${ "3"+(ndc.replace('-', '')+"***********").slice(0, 11) }, NDC9: ${ ("00000"+ndc.split('-')[0]).slice(-5)+("0000"+ndc.split('-')[1]).slice(-4) }
         </div>
       </div>
 
@@ -38,10 +38,10 @@
         style="font-size:16px">
         <md-input
           style="width:100%"
-          value.bind="drug.ndc"
+          value.bind="ndc"
           disabled.bind="drug._id"
           pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
-          NDC
+          NDC Product Code
         </md-input>
         <md-input
           style="width:100%"

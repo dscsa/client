@@ -20,7 +20,9 @@ export class drugs {
   }
 
   select(drug) {
-    let url = drug._id ? 'drugs/'+drug._id : 'drugs'
+    //console.log('selecting drug', drug)
+    let url  = drug._id ? 'drugs/'+drug._id : 'drugs'
+    this.ndc = drug._id || ''
     this.router.navigate(url, { trigger: false })
     this.drug  = drug
   }
