@@ -1,0 +1,79 @@
+<template>
+  <require from='./elems/md-shadow'></require>
+  <require from='./elems/md-drawer'></require>
+  <require from='./elems/md-table'></require>
+  <require from="./elems/md-input"></require>
+  <require from="./elems/md-select"></require>
+  <require from="./elems/md-switch"></require>
+  <require from="./elems/md-checkbox"></require>
+  <require from="./elems/md-button"></require>
+  <require from="./elems/md-autocomplete"></require>
+  <md-drawer>
+    <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter ${ type ? 'Dispositioned' : 'Received' }</md-input>
+    <md-switch click.delegate="type = !type; return true" style="margin:-45px 0 0 197px;"></md-switch>
+    <div class="mdl-grid" style="margin:0;padding:0">
+      <md-select
+        value.bind="month"
+        options.bind="months"
+        class="mdl-cell mdl-cell--6-col">
+        Month
+      </md-select>
+      <md-select
+        value.bind="year"
+        options.bind="[2015,2014,2013,2012,2011,2010]"
+        class="mdl-cell mdl-cell--6-col">
+        Year
+      </md-select>
+      <md-select
+        value.bind="transaction_date"
+        options.bind="['pickup', 'shipped', 'received', 'verified']"
+        class="mdl-cell mdl-cell--6-col">
+        Transaction Date
+      </md-select>
+    </div>
+    <div style="margin:0 auto">
+      <md-button raised>Export As CSV</md-button>
+    </div>
+  </md-drawer>
+  <section class="mdl-grid">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col">
+      <div class="mdl-card__title">
+        <div class="mdl-card__title-text">
+          Transaction History
+        </div>
+      </div>
+      <style>a { text-decoration:none; color:black}</style>
+      <div innerHTML.bind="history" class="mdl-grid" style="font-size:12px; font-family:Monaco; margin:0 8px; white-space:pre-wrap; line-height:15px"></div>
+    </div>
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
+      <table md-table style="margin:0 16px; width:calc(100% - 32px)">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding-left:0">${ type ? 'Disposition' : 'Received' } Record for ${month} ${year}</th>
+            <th>NDC</th>
+            <th style="text-align:left; width:5%">Lot</th>
+            <th style="text-align:left; width:5%; padding-left:0px">Exp</th>
+            <th style="text-align:left; width:5%">Qty</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ref="$this" style="padding-top:7px;" repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="$parent.select(transaction)">
+            <td style="text-align:left;">
+              ${ transaction.name } ${ transaction.strength }, ${ transaction.form }
+            </td>
+            <td>${ transaction.drug }</td>
+            <td style="padding-top:8px">
+              ${ transaction.lot.to }
+            </td>
+            <td style="padding:8px 0 0 0">
+              ${ transaction.exp.to | date }
+            </td>
+            <td style="padding-top:8px">
+              ${ transaction.qty.to }
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</template>
