@@ -195,8 +195,8 @@ export class shipments {
     //__array_observer__ is an enumerable key in this.transactions here
     //for some reason. Current code catches this bug but be careful.
     for (let i of this.diffs) {
-      let method = this.transactions[i].captured_at ? 'asDelete' : 'asPost'
-      this.http.createRequest('//localhost:3000/transactions/'+this.transactions[i]._id+'/captured')
+      let method = this.transactions[i].verified_at ? 'asDelete' : 'asPost'
+      this.http.createRequest('//localhost:3000/transactions/'+this.transactions[i]._id+'/verified')
       .withCredentials(true)[method]().send().catch(_ => _) //empty catch because failed post requests alrady appear in console
     }
 
