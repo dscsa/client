@@ -95,13 +95,6 @@
           Move Selected to Shipment
         </md-button>
       </div>
-      <div if.bind="history" class="mdl-card__actions mdl-card--border">
-        <div class="mdl-card__title-text mdl-cell mdl-cell--12-col">
-          Transaction History
-        </div>
-        <style>a { text-decoration:none; color:black}</style>
-        <div innerHTML.bind="history" style="white-space:pre; font-size:12px"></div>
-      </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
       <md-autocomplete
@@ -125,7 +118,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ref="$this" style="padding-top:7px;" repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="$parent.selectTransaction(transaction)">
+          <tr ref="$this" style="padding-top:7px;" repeat.for="transaction of transactions">
             <td style="padding-left:10px;">
               <md-checkbox
                 checked.one-way="$parent.checks.indexOf($index) > -1" click.delegate="$parent.check($index)">

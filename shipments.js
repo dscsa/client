@@ -61,21 +61,17 @@ export class shipments {
     this.db.transactions({shipment:shipment._id || this.account._id})
     .then(transactions => {
       this.transactions = transactions || []
-      this.selectTransaction(transactions[0]) //Select first transaction and display its history
-      //Check boxes of captured, and track the differences
-      this.checks = this.transactions.map((o,i) => o.captured_at ? i : null).filter(_ => _ != null)
+      //Check boxes of verified, and track the differences
+      this.checks = this.transactions.map((o,i) => o.verified_at ? i : null).filter(_ => _ != null)
       this.diffs  = []
     })
   }
 
   setRole(id) {
-
     var temp          = this.role.partner
     this.role.partner = this.role.account
     this.role.account = temp
-
     this.select(id && this.shipments[temp].filter(s => s._id && s._id.split('.')[2] === id)[0])
-
     return true
   }
 
@@ -201,26 +197,6 @@ export class shipments {
     }
 
     this.diffs = []
-  }
-
-  selectTransaction(transaction) {
-    if ( ! transaction || this.transaction == transaction)
-      return true //avoid extra work but propogate event
-
-    this.transaction = transaction
-    this.http.get('//localhost:3000/transactions/'+transaction._id+'/history')
-    .then(history => {
-      //TODO move this to /history?text=true. Other formatting options?
-      this.history = JSON.stringify(
-        history.content,
-        function(k,v) { return v.text || v },
-        "  "
-      )
-      .replace(/[\]\n\s]*\]/g, '')   //Get rid of all the ending brackets with all associated newlines
-      .replace(/[\[\n\s]*\[/g, '\n') //Get rid of all the starting brackets and condense to one new line
-      .replace(/^\n*|",?/g, '')
-    })
-    return true  //So event continues to propogate hitting checkbox
   }
 
   addTransaction(drug) {
