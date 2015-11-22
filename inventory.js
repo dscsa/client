@@ -62,65 +62,56 @@ export class inventory {
     }, 0)
   }
 
-  add(drug) {
-    this.search = null
-    this.drugs.add(drug, {from:{}}).then(transaction => {
-      let group = this.groups[transaction.drug]
-
-      if (group)
-        group.sources.push(transaction)
-      else {
-        group = {total:0, sources:[transaction]}
-        this.groups[transaction.drug] = group
-        this.db.drugs({_id:transaction.drug})
-        .then(drugs => this.groups[transaction.drug].image = drugs[0].image)
-      }
-
-      this.select(group)
-    })
-    .catch(console.log)
-  }
-
 //TODO don't bind when repacking so that you can skip and change things to get to 30
 //Skip over and dont delete items that have a repack quantity of 0
   repackage() {
 
-    let exp = null
-    let transaction = {
+    let exp   = null
+    let trans = {
       qty:{from:0, to:0},
       lot:{from:null, to:null},
-      exp:{from:null, to:null},
+      exp:{from:Infinity, to:Infinity}, //JSON.stringify will convert these to null if neccessary
       history:[]
     }
 
-    transaction = Object.assign({}, this.group.sources[0], transaction)
+    trans = Object.assign({}, this.group.sources[0], trans)
     //Go backwards since we are deleting array vals as we go
     for (let i=this.repack.length-1; i>=0; i--) {
       let qty = +this.repack[i]
-      if ( ! qty) continue
-      transaction.qty.from += qty
-      let source = this.group.sources[i]
-      if (source.exp.from) {
-        let [month, year] = source.exp.from.split('/')
-        let date = new Date('20'+year, month-1) //month indexed to 0
-        if ( ! transaction.exp.from || transaction.exp.from > date)
-          transaction.exp.from = date
-      }
-      transaction.history.push(...source.history)
+      let src = this.group.sources[i]
 
-      if (source.qty.from == qty) {
-        this.db.transactions.remove(source)
+      //Falsey quantity such as null, "", or 0 should mean skip this source
+      //Do not allow items to be repackaged a 2nd time with a partial quantity
+      //because we don't know by how much to reduce each of the original qtys
+      if ( ! qty || (src.qty.from != qty && src.history.length >1))
+        continue
+
+      trans.qty.from += qty
+
+      if (src.qty.from == qty) {
+        trans.history.push(...src.history)
+        this.db.transactions.remove(src)
         .then(_ => this.group.sources.splice(i, 1))
-      } else {
-        source.qty.from -= qty
-        this.db.transactions.put(source)
+      } else { //history must have length <= 1
+        if (src.history.length == 1) {
+          let [{transaction}] = src.history
+          trans.history.push({transaction, qty})
+        }
+        src.qty.from -= qty
+        this.db.transactions.put(src)
       }
+
+      if ( ! src.exp.from) continue //We are done unless we have an expiration date
+
+      let [m,y] = src.exp.from.split('/')
+      trans.exp.from = new Date(Math.min(trans.exp.from, new Date('20'+y, m-1))) //month is indexed to 0
     }
-    transaction.exp.from = transaction.exp.from == null ? null : transaction.exp.from.toJSON()
-    return this.db.transactions.post(transaction)
-    .then(_ => {
+    console.log(trans.exp.from, typeof trans.exp.from)
+    //trans.exp.from = trans.exp.from && new Date(trans.exp.from).toJSON()
+    return this.db.transactions.post(trans)
+    .then(trans => {
       this.mode = false
-      this.group.sources.push(transaction)
+      this.group.sources.push(trans)
     })
   }
 }
