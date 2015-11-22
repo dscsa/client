@@ -38,41 +38,49 @@ export class shipments {
       this.accounts  = ['', ...accounts]
       this.shipments = {from, to}
       this.add()
-      this.setRole(params.id)
+      this.role = {account:'from', partner:'to'}
+      //default is start with "from" because it is guaranteed to have at least one shipment
+      //- a new shipment where as from might have nothing and cause a navigation error
+      let shipment, _default = from[0]
+      //If shipment id exists then switch to the correct role
+      if (params.id) {
+        shipment = to.filter(filter)[0]
+        if (shipment)
+          this.role = {account:'to', partner:'from'}
+        else
+          shipment = from.filter(filter)[0]
+      }
+      this.select(shipment || _default)
     })
   }
 
   //Activated from constructor and each time a shipment is selected
   select(shipment) {
+    this.shipment = shipment
     let url = 'shipments'
-
-    if (shipment && shipment._id)  //selecting a new shipment will be an object but no id
+    if (shipment._id)
       url += '/'+shipment._id.split('.')[2]
-    else
-      shipment = this.shipments[this.role.account][0]
-
-    if ( ! shipment)
+    else //selecting a new shipment will be an object but no id
       return this.transactions = []
 
-    this.shipment = shipment
     this.router.navigate(url, { trigger: false })
     this.reset()
 
     this.db.transactions({shipment:shipment._id || this.account._id})
     .then(transactions => {
-      this.transactions = transactions || []
-      //Check boxes of verified, and track the differences
-      this.checks = this.transactions.map((o,i) => o.verified_at ? i : null).filter(_ => _ != null)
-      this.diffs  = []
+      this.transactions = transactions
+      this.diffs  = [] //Check boxes of verified, and track the differences
+      this.checks = this.transactions
+        .map((o,i) => o.verified_at ? i : null)
+        .filter(_ => _ != null)
     })
   }
 
-  setRole(id) {
+  swapRole() { //Swap roles
     var temp          = this.role.partner
     this.role.partner = this.role.account
     this.role.account = temp
-    this.select(id && this.shipments[temp].filter(s => s._id && s._id.split('.')[2] === id)[0])
-    return true
+    this.select(this.shipments[this.role.account][0])
   }
 
   //Tracking and Shipment start off the same but can diverge
