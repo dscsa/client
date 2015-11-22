@@ -1,19 +1,24 @@
 <template>
+  <require from='./elems/md-table'></require>
   <require from='./elems/md-shadow'></require>
   <require from='./elems/md-drawer'></require>
   <require from="./elems/md-input"></require>
   <require from="./elems/md-select"></require>
   <require from="./elems/md-button"></require>
   <md-drawer>
-    <md-input value.bind="filter" style="padding:0 8px">Filter Drugs</md-input>
-    <a
-      repeat.for="drug of drugs | filter:filter"
-      class="mdl-navigation__link ${ drug._id == $parent.drug._id ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="$parent.select(drug)">
-      <div class="mdl-typography--title" style="font-size:13px">
-        ${ drug.name ? drug.name+' '+drug.strength : 'Add New Drug'}
-      </div>
-    </a>
+    <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter Drugs</md-input>
+    <md-select
+      options.bind="['', 'Retail', 'Wholesale', 'Name', 'Image']"
+      style="padding:0 8px;">
+      Empty Field
+    </md-select>
+    <div style="margin:0 auto">
+      <md-button raised color>Import CSV</md-button>
+      <md-button raised
+        click.delegate="add()">
+        Add Drug
+      </md-button>
+    </div>
   </md-drawer>
   <section class="mdl-grid">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col">
@@ -26,11 +31,10 @@
           style="margin-top:-8px;">
           ${drug.form || 'New drug'}
         </div>
-        <div style="font-size:13px;margin:5px 0 -15px 8px">
-          UPC: ${ "3"+(ndc.replace('-', '')+"***********").slice(0, 11) }, NDC9: ${ ("00000"+ndc.split('-')[0]).slice(-5)+("0000"+ndc.split('-')[1]).slice(-4) }
+        <div style="font-size:13px;margin:0 0 -15px 8px;">
+          UPC: ${ "3"+(drug._id.replace('-', '')+"***********").slice(0, 11) }, NDC9: ${ ("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
         </div>
       </div>
-
       <div
         class="mdl-card__supporting-text"
         focusout.delegate="save($event, $this)"
@@ -38,8 +42,8 @@
         style="font-size:16px">
         <md-input
           style="width:100%"
-          value.bind="ndc"
-          disabled.bind="drug._id"
+          value.bind="drug._id"
+          disabled.bind="drug._rev"
           pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
           NDC Product Code
         </md-input>
@@ -81,30 +85,53 @@
           value.bind="priceType"
           options.bind="['retail', 'wholesale']">
         </md-select>
-        <md-button color raised
-          style="width:100%"
-          if.bind="! drug._id"
-          disabled.bind=" ! drug.ndc || ! drug.name || ! drug.strength"
-          click.delegate="create()">
-          Add Drug
-        </md-button>
+        <md-input
+          value.bind="drug.image"
+          focusout.delegate="save($event, $this)"
+          ref="$this"
+          style="width:100%; font-size:9px">
+          Image
+        </md-input>
+        <img
+          style="width:100%; margin:-10px 0 10px 0"
+          if.bind="drug.image"
+          src.bind="drug.image">
         <md-button color="accent" raised
           style="width:100%"
-          if.bind="drug._id"
           click.delegate="delete()">
           Delete Drug
         </md-button>
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
-      <md-input
-        value.bind="drug.image"
-        focusout.delegate="save($event, $this)"
-        ref="$this"
-        style="margin:0 16px 0 16px">
-        Image
-      </md-input>
-      <img style="margin:0 16px 16px 16px" if.bind="drug.image" src.bind="drug.image">
+      <table md-table style="margin:0 16px; width:calc(100% - 32px)">
+        <thead>
+          <tr>
+            <th class="mdl-data-table__cell--non-numeric">Drug</th>
+            <th>Strength</th>
+            <th class="mdl-data-table__cell--non-numeric">Form</th>
+            <th class="mdl-data-table__cell--non-numeric">NDC</th>
+            <th class="mdl-data-table__cell--non-numeric">Price</th>
+          </tr>
+        </thead>
+        <tr repeat.for="drug of drugs | filter:filter" click.delegate="$parent.select(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
+          <td class="mdl-data-table__cell--non-numeric">
+            ${ drug.name } ${ drug.brand ? '('+drug.brand+')' : ''}
+          </td>
+          <td>
+            ${ drug.strength }
+          </td>
+          <td class="mdl-data-table__cell--non-numeric">
+            ${ drug.form }
+          </td>
+          <td class="mdl-data-table__cell--non-numeric">
+            ${ drug._id }
+          </td>
+          <td class="mdl-data-table__cell--non-numeric">
+            ${ drug.wholesale.price | price } / ${ drug.retail.price | price }
+          </td>
+        </tr>
+      </table>
     </div>
   </section>
 </template>

@@ -13,42 +13,31 @@ export class drugs {
 
   activate(params) {
     return this.db.drugs().then(drugs => {
+      console.log(drugs)
       this.drugs = drugs
-      this.add()
-      this.select(this.drugs.filter(drug => drug._id === params.id)[0] || this.drugs[0])
+      this.select(params.id ? this.drugs.filter(drug => drug._id === params.id)[0] : this.drugs[0])
     })
   }
 
   select(drug) {
     //console.log('selecting drug', drug)
     let url  = drug._id ? 'drugs/'+drug._id : 'drugs'
-    this.ndc = drug._id || ''
     this.router.navigate(url, { trigger: false })
     this.drug  = drug
   }
 
   add() {
     this.drugs.unshift({
+      _id:'',
       name:'',
       strength:'',
       form:'',
       brand:'',
       image:'',
       labeler:'',
-      ndc:''
     })
+    this.drug  = this.drugs[0]
     this.drugs = this.drugs.slice() //Aurelia hack to reactivate the filter
-  }
-
-  create() {
-    if ( ! confirm('Are you sure that you want to add this new drug?'))
-      return
-    console.log('adding', this.drug)
-    return this.db.drugs.post(this.drug).then(drug => {
-      this.add()
-      this.drug._id = drug._id
-      this.drug._rev = drug._rev
-    })
   }
 
   save($event, $this) {
@@ -57,7 +46,18 @@ export class drugs {
       return
 
     console.log('saving', this.drug)
-    return this.db.drugs.put(this.drug)
+    return this.db.drugs.put(this.drug).then(drug => {
+      if (this.drug._id) return
+      this.drug._id = drug._id
+      this.add()
+    })
+  }
+}
+
+export class priceValueConverter {
+  toView(price){
+    //I think couchdb is doing something weird, sometimes/unpredictably converting numbers to strings
+    return price && '$'+(+price).toFixed(2)
   }
 }
 
@@ -66,7 +66,7 @@ export class filterValueConverter {
   toView(drugs = [], filter = ''){
     filter = filter.toLowerCase()
     return drugs.filter(drug => {
-      return ~ `${drug.name} ${drug.strength} ${drug.form} ${drug.ndc}`.toLowerCase().indexOf(filter)
+      return ~ `${drug.name} ${drug.strength} ${drug.form} ${drug._id}`.toLowerCase().indexOf(filter)
     })
   }
 }
