@@ -22,14 +22,14 @@ export class shipments {
   }
 
   activate(params) {
+
     //TODO only search for selected date {'captured_at':new Date(this.month+' 01 '+this.year)}
     //TODO search based on type, donation vs destruction
     return this.db.transactions()
     .then(transactions => {
       //TODO do not include inventory items in original search rather than doing filter here
-      this.transactions = transactions.filter(t => ~ t.shipment.indexOf('.'))
-      let selected      = this.transactions.filter(t => t._id === params.id)[0]
-
+      this.transactions = transactions.filter(t => t.shipment && ~ t.shipment.indexOf('.'))
+      let selected = this.transactions.filter(t => t._id === params.id)[0]
       return this.select(selected || this.transactions[0])
     })
   }
