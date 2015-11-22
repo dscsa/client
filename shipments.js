@@ -18,13 +18,15 @@ export class shipments {
     this.drugs   = drugs
     this.router  = router
     this.http    = http
-    //must start with "to" because it is guaranteed to have at least one shipment - a new shipment
-    //where as from might have nothing and cause a navigation error
-    this.role    = {account:'to', partner:'from'}
     this.stati   = ['pickup', 'shipped', 'received']
   }
 
   activate(params) {
+    //Keep url concise by using the last segment of the id
+    function filter(s) {
+      return s._id && s._id.split('.')[2] === params.id
+    }
+
     return Promise.all([
       //Start all of our a sync tasks
       //TODO to = $elemMatch:this.account._id
