@@ -139,6 +139,18 @@ export class shipments {
     //TODO reschedule pickup if a date was changed
   }
 
+  multiAdd(transaction, $event, $index) {
+    if ($event.which != 188) return
+
+    let copy = Object.assign({}, transaction)
+    transaction.qty = {from:null, to:null}
+    this.db.transactions.post(copy)
+    .then(transaction => {
+      console.log('multiAdd triggered', $event, $event.which, transaction, $index)
+      this.transactions.splice($index+1, 0, transaction)
+    })
+  }
+
   check($index) {
     //with binding check array stayed same length and
     //just had falsey values, which we had to check for
