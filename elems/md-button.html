@@ -1,10 +1,10 @@
-<template style="display:inline-block">
+<template style="display:inline-block; height:36px; line-height:36px">
   <button
     ref="button"
     disabled.bind="disabled || disabled === ''"
     click.delegate="click($event)"
     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ raised || raised === '' ? 'mdl-button--raised' : '' } ${ ! disabled && color }"
-    style="width:100%;">
+    style="width:100%; height:inherit; line-height:inherit">
     <content style="padding:auto"></content>
   </button>
 </template>
