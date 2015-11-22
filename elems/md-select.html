@@ -1,6 +1,6 @@
 <template style="display:inline-block; box-sizing:border-box;">
-  <div ref="div" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ${ (value || options[0]) ? 'is-dirty' : ''}" style="width:100%; font-size:inherit; ${label.innerText ? '' : 'padding-top:1px'}">
-    <select class="mdl-textfield__input" value.bind="value" disabled.bind="disabled" required.bind="required != null" style="border-radius:0;  font-size:inherit; -webkit-appearance:none;" />
+  <div ref="div" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ${ (value || options[0]) ? 'is-dirty' : ''} ${ required != null && ! disabled && ! value && 'is-invalid'}" style="width:100%; font-size:inherit; ${label.innerText ? '' : 'padding-top:1px'}">
+    <select class="mdl-textfield__input" value.bind="value" disabled.bind="disabled" style="border-radius:0;  font-size:inherit; -webkit-appearance:none;" />
       <option model.bind="option" repeat.for="option of options">
         ${ $parent.property ? option[$parent.property] : option }
       </option>
