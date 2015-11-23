@@ -75,32 +75,6 @@ export class shipments {
   }
 }
 
-// this.history = JSON.stringify(
-//   history.content,
-//   function(k,v) {
-//     if (Array.isArray(v))
-//       return v
-//
-//     return true
-//       ? `<table>
-//           <tr><td>${v.from.name}</td><td>${v.type}</td></tr>
-//           <tr><td>${v.from.street}</td>
-//             <td><a href='/#/shipments/${v.shipment._id.split('.')[2]}'>Date ${ (v.shipment[this.transaction_date + '_at'] || v.verified_at || '').slice(2, 10)}</a></td>
-//           </tr>
-//           <tr><td>${v.from.city+', '+v.from.state+' '+v.from.zip}</td><td>Quantity ${v.qty.to}</td></tr>
-//         </table>`
-//       : ''
-//   },
-//   "#"
-// )
-// .replace(/#+"<table>/g, function(key) {
-//   return "<table style='display:inline-block; height:80px; padding-left:"+((key.length-8)*8)+"px'>"
-// })
-// .replace(/\],/g, '<br><br>')
-// .replace(/#|\[|\]|"|,/g, '')
-// //.replace(/["\[\]]/g, '')
-// .replace(/\\n/g, '')
-// .slice(0, -3)
 //TODO consolidate with filter in inventory
 export class dateValueConverter {
   toView(date){

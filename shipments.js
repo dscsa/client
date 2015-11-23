@@ -124,7 +124,7 @@ export class shipments {
         account:this.account._id
       }
     })
-     this.shipments.from = this.shipments.from.slice() //Aurelia hack to reactivate the filter
+    this.shipments.from = this.shipments.from.slice() //Aurelia hack to reactivate the filter
   }
 
   //Save the donation if someone changes the status/date
