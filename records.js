@@ -60,9 +60,9 @@ export class shipments {
             let date = v.shipment[this.transaction_date + '_at'] || v.verified_at || ''
             let href = '/#/shipments/'+v.shipment._id.split('.')[2]
 
-            return "<a href='"+href+"'>"+pad(v.from.name)+v.type+'<br>'+
+            return pad(v.from.name)+"<a href='"+href+"'>"+v.type+'</a><br>'+
                    pad(v.from.street)+'Date '+date.slice(2, 10)+'<br>'+
-                   pad(v.from.city+', '+v.from.state+' '+v.from.zip)+'Quantity '+v.qty.to+'</a>'
+                   pad(v.from.city+', '+v.from.state+' '+v.from.zip)+'Quantity '+(v.qty.to || v.qty.from)
         },
         "   "
       )

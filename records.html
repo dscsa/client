@@ -68,7 +68,7 @@
               ${ transaction.exp.to | date }
             </td>
             <td style="padding-top:8px">
-              ${ transaction.qty.to }
+              ${ transaction.qty.to || transaction.qty.from }
             </td>
           </tr>
         </tbody>
