@@ -139,16 +139,22 @@ export class shipments {
     //TODO reschedule pickup if a date was changed
   }
 
-  multiAdd(transaction, $event, $index) {
-    if ($event.which != 188) return
+  qtyShortcuts(transaction, $event, $index) {
+    if ($event.which == 188) {
+      let copy = Object.assign({}, transaction)
+      transaction.qty = {from:null, to:null}
+      this.db.transactions.post(copy)
+      .then(transaction => this.transactions.splice($index+1, 0, transaction))
+    }
+    if (
+      (! transaction.qty.from && transaction.qty.to === "0") ||
+      (transaction.qty.from === "0" && ! transaction.qty.to)
+    ) {
+      console.log('before remove', transaction)
+      this.db.transactions.remove(transaction)
+      .then(_ => this.transactions.splice($index, 1))
+    }
 
-    let copy = Object.assign({}, transaction)
-    transaction.qty = {from:null, to:null}
-    this.db.transactions.post(copy)
-    .then(transaction => {
-      console.log('multiAdd triggered', $event, $event.which, transaction, $index)
-      this.transactions.splice($index+1, 0, transaction)
-    })
   }
 
   check($index) {
