@@ -31,15 +31,21 @@
           style="margin-top:-8px;">
           ${drug.form || 'New drug'}
         </div>
-        <div style="font-size:13px;margin:0 0 -15px 8px;">
-          UPC: ${ drug._id && "3"+(drug._id.replace('-', '')+"***********").slice(0, 11) }, NDC9: ${ drug._id && ("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
-        </div>
       </div>
       <div
         class="mdl-card__supporting-text"
         focusout.delegate="save($event, form)"
         ref="form"
         style="font-size:16px">
+        <img
+          style="width:100%;"
+          if.bind="drug.image"
+          src.bind="drug.image">
+        <md-input
+          value.bind="drug.image"
+          placeholder="Image"
+          style="width:100%; font-size:9px">
+        </md-input>
         <md-input
           style="width:49%"
           value.bind="drug._id"
@@ -52,6 +58,9 @@
           value.bind="drug.brand">
           Brand Name
         </md-input>
+        <div style="font-size:12px;margin-top:-15px; margin-bottom:15px">
+          UPC: ${ drug._id && "3"+(drug._id.replace('-', '')+"***********").slice(0, 11) }, NDC9: ${ drug._id && ("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
+        </div>
         <md-input repeat.for="_ of drug.names"
           style="width:100%"
           value.bind="$parent.drug.names[$index]">
@@ -86,15 +95,6 @@
           style="width:49%">
           Wholesale Price
         </md-input>
-        <md-input
-          value.bind="drug.image"
-          style="width:100%; font-size:9px">
-          Image
-        </md-input>
-        <img
-          style="width:100%; margin:-10px 0 10px 0"
-          if.bind="drug.image"
-          src.bind="drug.image">
         <md-button color="accent" raised
           style="width:100%"
           click.delegate="delete()">
