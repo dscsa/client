@@ -95,6 +95,15 @@ export class drugs {
     })
   }
 
+  drugName() {
+    console.log('modifying name')
+    this.drug.names[this.drug.names.length-1]
+      ? this.drug.names.push('')
+      : this.drug.names.pop()
+
+    return true
+  }
+
   save($event, form) {
     console.log('$this', form)
     //Do not save if clicking around within the same/new drug.

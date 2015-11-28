@@ -61,16 +61,18 @@
         <div style="font-size:12px;margin-top:-15px; margin-bottom:15px">
           UPC: ${ drug._id && "3"+(drug._id.replace('-', '')+"***********").slice(0, 11) }, NDC9: ${ drug._id && ("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
         </div>
+        <!-- click event fires after focusout (form was already saved).  mousedown fires before focusout -->
+        <md-button color
+          if.bind="drug.names[0]"
+          mousedown.delegate="drugName()"
+          style="position:absolute; width:32px; overflow:hidden; right:150px; height:23px; line-height:23px; z-index:1">
+          ${ drug.names[drug.names.length-1] ? '+' : '-'}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </md-button>
         <md-input repeat.for="_ of drug.names"
           style="width:100%"
           value.bind="$parent.drug.names[$index]">
-          Drug Names & Strengths
+          ${ $index == 0 ? 'Drug Names & Strengths' : ''}
         </md-input>
-        <!-- <md-button color
-          click.delegate="drug.names.unshift('')"
-          style="position:absolute; right:18px; margin-top:-48px; height:24px; line-height:24px">
-          ${ drug.names.length == 1 || drug.names[drug.names.length - 1] ? 'Add' : 'Remove'}
-        </md-button> -->
         <md-input
           style="width:100%"
           value.bind="drug.form">
