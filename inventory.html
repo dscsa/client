@@ -34,7 +34,7 @@
       <div
         class="mdl-card__supporting-text"
         style="font-size:13px; padding:0 16px">
-        <div repeat.for="source of group.sources"   focusout.delegate="$parent.drugs.save(source, $event, $this)" ref="$this">
+        <div repeat.for="source of group.sources"   focusout.delegate="$parent.drugs.save(source, $event, form)" ref="form">
           <div style="display:inline-block; width:calc(100% - 155px)">
             <a href.bind="'/#/records/'+source.history[0].transaction">${source.history[0].transaction ||  'No Source'}</a>
           </div>

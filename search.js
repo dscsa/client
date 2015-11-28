@@ -41,10 +41,10 @@ export class drugs {
     })
   }
 
-  save(drug, $event, $this) {
+  save(drug, $event, form) {
     //Do not save if clicking around within the same drug.
     //TODO only save if change occured
-    if ($this.contains($event.relatedTarget))
+    if (form.contains($event.relatedTarget))
       return
 
     console.log('saving', drug)

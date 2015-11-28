@@ -138,7 +138,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ref="$this" style="padding-top:7px;" repeat.for="transaction of transactions">
+          <tr ref="form" style="padding-top:7px;" repeat.for="transaction of transactions">
             <td style="padding-left:10px;">
               <md-checkbox
                 disabled.bind="$parent.shipment._id && $parent.role.account == 'from'" checked.one-way="$parent.checks.indexOf($index) > -1" click.delegate="$parent.check($index)">
@@ -159,7 +159,7 @@
             <td style="padding-top:8px">
               ${ transaction.lot[$parent.role.partner] }
               <md-input
-                focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
+                focusout.delegate="$parent.drugs.save(transaction, $event, form)"
                 value.bind="transaction.lot[$parent.role.account]"
                 style="width:60px;"
                 placeholder>
@@ -168,7 +168,7 @@
             <td style="padding:8px 0 0 0">
               ${ transaction.exp[$parent.role.partner] }
               <md-input
-                focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
+                focusout.delegate="$parent.drugs.save(transaction, $event, form)"
                 pattern="([1-9]|1[012])/\d{2}"
                 value.bind="transaction.exp[$parent.role.account]"
                 style="width:40px;"
@@ -178,7 +178,7 @@
             <td style="padding-top:8px">
               ${ transaction.qty[$parent.role.partner] }
               <md-input
-                focusout.delegate="$parent.drugs.save(transaction, $event, $this)"
+                focusout.delegate="$parent.drugs.save(transaction, $event, form)"
                 keyup.delegate="$parent.qtyShortcuts(transaction, $event, $index)"
                 type="number"
                 value.bind="transaction.qty[$parent.role.account]"

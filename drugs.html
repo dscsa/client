@@ -37,8 +37,8 @@
       </div>
       <div
         class="mdl-card__supporting-text"
-        focusout.delegate="save($event, $this)"
-        ref="$this"
+        focusout.delegate="save($event, form)"
+        ref="form"
         style="font-size:16px">
         <md-input
           style="width:49%"
@@ -55,7 +55,7 @@
         <md-input repeat.for="_ of drug.names"
           style="width:100%"
           value.bind="$parent.drug.names[$index]">
-          ${name}
+          Drug Names & Strengths
         </md-input>
         <!-- <md-button color
           click.delegate="drug.names.unshift('')"
@@ -88,8 +88,6 @@
         </md-input>
         <md-input
           value.bind="drug.image"
-          focusout.delegate="save($event, $this)"
-          ref="$this"
           style="width:100%; font-size:9px">
           Image
         </md-input>
