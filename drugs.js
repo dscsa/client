@@ -37,7 +37,7 @@ export class drugs {
     .then(drugs => {
       console.log('drugs', drugs)
       this.drugs = drugs
-      //this.select(params.id ? this.drugs.filter(drug => drug._id === params.id)[0] : this.drugs[0])
+      this.select(this.drugs[0].id)
     })
   }
 
