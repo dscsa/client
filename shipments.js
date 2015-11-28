@@ -227,9 +227,9 @@ export class shipments {
     this.diffs = []
   }
 
-  addTransaction(drug) {
+  addTransaction(key) {
     this.search = null //Reset search's auto-complete
-    return this.drugs.add(drug, this.shipment)  //Add the drug to the database
+    return this.drugs.add(key.id, this.shipment)  //Add the drug to the database
     .then(transaction => {
       console.log(transaction)
       this.transactions.unshift(transaction)

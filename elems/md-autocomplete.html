@@ -9,7 +9,7 @@
       style="background:white; width:100%;"
       class="md-autocomplete-suggestions">
       <li repeat.for="item of items" style="position:static; width:100%; text-align:left;" class="mdl-button mdl-js-button mdl-js-ripple-effect" click.delegate="$parent.action(item)">
-          ${item.name} ${item.strength}, ${item.form}
+          ${ item.value.before }<strong>${ item.value.key }</strong>${ item.value.after }
       </li>
     </ul>
   </md-autocomplete-wrap>
