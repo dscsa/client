@@ -14,8 +14,7 @@ export class drugs {
   }
 
   activate(params) {
-    if (params.id)
-      this.select(params.id)
+    params.id && this.select(params.id)
   }
 
   select(_id) {
@@ -31,10 +30,10 @@ export class drugs {
 
   search($event) {
     if ($event.target.value.length < 4)
-      return
+      return this.drugs = []
 
     console.log('searching for', $event.target.value)
-    return this.db.drugs.query('drug/search', {key:$event.target.value})
+    return this.db.drugs.query('drug/search', {key:$event.target.value.replace(/-/g, '').toLowerCase()})
     .then(drugs => {
       console.log('drugs', drugs)
       this.drugs = drugs
@@ -119,19 +118,7 @@ export class drugs {
   }
 }
 
-export class priceValueConverter {
-  toView(price){
-    //I think couchdb is doing something weird, sometimes/unpredictably converting numbers to strings
-    return price && '$'+(+price).toFixed(2)
-  }
-}
-
-//TODO make this work with added items
-export class filterValueConverter {
-  toView(drugs = [], filter = ''){
-    filter = filter.toLowerCase()
-    return drugs.filter(drug => {
-      return ~ `${drug.name} ${drug.strength} ${drug.form} ${drug._id}`.toLowerCase().indexOf(filter)
-    })
+  delete() {
+    console.log('TO BE IMPLEMENETED')
   }
 }
