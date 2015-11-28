@@ -25,8 +25,8 @@
       </div>
       <div
         class="mdl-card__supporting-text"
-        focusout.delegate="save($event, $this)"
-        ref="$this"
+        focusout.delegate="save($event, form)"
+        ref="form"
         style="font-size:16px;">
         <md-input style="width:49%" value.bind="user.first">First Name</md-input>
         <md-input style="width:49%" value.bind="user.last">Last Name</md-input>

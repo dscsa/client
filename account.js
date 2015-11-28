@@ -39,10 +39,10 @@ export class account {
     this.users = this.users.slice() //Aurelia hack to reactivate the filter
   }
 
-  save($event, $this) {
+  save($event, form) {
     //Do not save if clicking around within the same transaction.
     //TODO only save if change occured
-    if ($this.contains($event.relatedTarget))
+    if (form.contains($event.relatedTarget))
       return
 
     console.log('saving', this.user)

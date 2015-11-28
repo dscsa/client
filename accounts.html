@@ -37,8 +37,8 @@
       </div>
       <div
         class="mdl-card__supporting-text"
-        focusout.delegate="save($event, $this)"
-        ref="$this"
+        focusout.delegate="save($event, form)"
+        ref="form"
         style="font-size:16px">
         <md-input value.bind="account.name">Facility</md-input>
         <md-select
