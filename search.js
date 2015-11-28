@@ -10,27 +10,35 @@ export class drugs {
 
   //TODO change to PouchDB-Find $regex or $text once available
   search(now, old) {
-    return this.db.drugs.query(`function(doc) {
-        if ( ~ doc.name.toLowerCase().indexOf('${ (now || '').toLowerCase()}'))
-          emit(true)
-    }`)
+    if ( ! now || now.length < 4)
+      return Promise.resolve([])
+
+    let start = performance.now()
+    //  console.log(this.db.drugs.toString())
+    //TODO would a limit speep this up? now.length < 7 ? {limit:5} : {limit:50}
+    return this.db.drugs.query('drug/search', {key:now.replace(/-/g, '').toLowerCase()})
+    .then(drugs => {
+      console.log('searching drugs', now, performance.now() - start)
+      return drugs.reverse()
+    })
   }
 
-  add(drug, shipment) {
-    let transaction = {
-      drug:drug._id,
-      shipment:shipment._id, //if undefined server will assume inventory and put account_id here.
-      name:drug.name,
-      strength:drug.strength,
-      form:drug.form,
-      retail:drug.retail,
-      wholesale:drug.wholesale,
-      qty:{from:null, to:null},
-      lot:{from:null, to:null},
-      exp:{from:null, to:null}
-    }
-
-    return this.db.transactions.post(transaction)
+  add(_id, shipment) {
+    return this.db.drugs({_id}).then(drugs => {
+      let transaction = {
+        drug:drugs[0]._id,
+        shipment:shipment._id, //if undefined server will assume inventory and put account_id here.
+        names:drugs[0].names,
+        form:drugs[0].form,
+        retail:drugs[0].retail,
+        wholesale:drugs[0].wholesale,
+        qty:{from:null, to:null},
+        lot:{from:null, to:null},
+        exp:{from:null, to:null}
+      }
+      console.log(drugs[0], transaction)
+      return this.db.transactions.post(transaction)
+    })
   }
 
   save(drug, $event, $this) {
