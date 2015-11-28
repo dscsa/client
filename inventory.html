@@ -91,7 +91,7 @@
         </thead>
         <tr repeat.for="group of groups | filter:filter" click.delegate="$parent.select(group)" class="${ $parent.group != group || 'is-selected'}">
           <td class="mdl-data-table__cell--non-numeric">
-            ${ group.sources[0].name } ${ group.sources[0].strength }, ${ group.sources[0].form }
+            ${ group.sources[0].names.join(', ') } ${ group.sources[0].form }
           </td>
           <td>
             ${ group.sources[0].drug }
