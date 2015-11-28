@@ -144,8 +144,8 @@
                 disabled.bind="$parent.shipment._id && $parent.role.account == 'from'" checked.one-way="$parent.checks.indexOf($index) > -1" click.delegate="$parent.check($index)">
               </md-checkbox>
             </td>
-            <td style="text-align:left; padding-left:0">
-              <a href="/#/records/${ transaction._id }">${ transaction.name } ${ transaction.strength }, ${ transaction.form }</a>
+            <td style="text-align:left; padding-left:0; max-width:300px;overflow:scroll">
+              <a href="/#/records/${ transaction._id }">${ transaction.names.join(', ') } ${ transaction.form }</a>
             </td>
             <td style="padding-top:9px">
               ${ transaction.drug }-
