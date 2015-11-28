@@ -27,6 +27,11 @@ export class account {
     })
   }
 
+  select(user) {
+    user.password = ''
+    this.user = user
+  }
+
   add() {
     this.users.unshift({
       first:'',
@@ -69,7 +74,7 @@ export class account {
 }
 
 export class dateValueConverter {
-  toView(date = ''){  
+  toView(date = ''){
     return date.slice(0, 10)
   }
 }
