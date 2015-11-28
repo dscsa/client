@@ -6,7 +6,6 @@
   <require from="./elems/md-select"></require>
   <require from="./elems/md-button"></require>
   <md-drawer>
-    <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter Drugs</md-input>
     <md-select
       options.bind="['', 'Retail', 'Wholesale', 'Name', 'Image']"
       style="padding:0 8px;">
@@ -33,7 +32,7 @@
           ${drug.form || 'New drug'}
         </div>
         <div style="font-size:13px;margin:0 0 -15px 8px;">
-          UPC: ${ "3"+(drug._id.replace('-', '')+"***********").slice(0, 11) }, NDC9: ${ ("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
+          UPC: ${ drug._id && "3"+(drug._id.replace('-', '')+"***********").slice(0, 11) }, NDC9: ${ drug._id && ("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
         </div>
       </div>
       <div
@@ -42,7 +41,7 @@
         ref="$this"
         style="font-size:16px">
         <md-input
-          style="width:100%"
+          style="width:49%"
           value.bind="drug._id"
           disabled.bind="drug._rev"
           pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
@@ -50,6 +49,8 @@
         </md-input>
         <md-input
           style="width:49%"
+          value.bind="drug.brand">
+          Brand Name
         </md-input>
         <md-input repeat.for="_ of drug.names"
           style="width:100%"
@@ -63,8 +64,8 @@
         </md-button> -->
         <md-input
           style="width:100%"
-          value.bind="drug.brand">
-          Brand Name
+          value.bind="drug.form">
+          Form
         </md-input>
         <md-input
           style="width:100%"
@@ -72,17 +73,19 @@
           Labeler
         </md-input>
         <md-input
-          value.bind="drug[priceType].price"
+          value.bind="drug.retail.price"
           type="number"
           step=".01"
           style="width:49%">
-          Price
+          Retail Price
         </md-input>
-        <md-select
-          style="width:49%"
-          value.bind="priceType"
-          options.bind="['retail', 'wholesale']">
-        </md-select>
+        <md-input
+          value.bind="drug.wholesale.price"
+          type="number"
+          step=".01"
+          style="width:49%">
+          Wholesale Price
+        </md-input>
         <md-input
           value.bind="drug.image"
           focusout.delegate="save($event, $this)"
@@ -102,31 +105,11 @@
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
-      <table md-table style="margin:0 16px; width:calc(100% - 32px)">
-        <thead>
-          <tr>
-            <th class="mdl-data-table__cell--non-numeric">Drug</th>
-            <th>Strength</th>
-            <th class="mdl-data-table__cell--non-numeric">Form</th>
-            <th class="mdl-data-table__cell--non-numeric">NDC</th>
-            <th class="mdl-data-table__cell--non-numeric">Price</th>
-          </tr>
-        </thead>
-        <tr repeat.for="drug of drugs | filter:filter" click.delegate="$parent.select(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
+      <md-input placeholder="Search Drugs..." input.delegate="search($event)" style="margin:10px 16px -20px 16px; font-size:20px;"></md-input>
+      <table md-table style="width:calc(100% - 32px); margin:0 16px;">
+        <tr repeat.for="drug of drugs" click.delegate="$parent.select(drug.id)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
           <td class="mdl-data-table__cell--non-numeric">
-            ${ drug.name } ${ drug.brand ? '('+drug.brand+')' : ''}
-          </td>
-          <td>
-            ${ drug.strength }
-          </td>
-          <td class="mdl-data-table__cell--non-numeric">
-            ${ drug.form }
-          </td>
-          <td class="mdl-data-table__cell--non-numeric">
-            ${ drug._id }
-          </td>
-          <td class="mdl-data-table__cell--non-numeric">
-            ${ drug.wholesale.price | price } / ${ drug.retail.price | price }
+            ${ drug.value.before }<strong>${ drug.value.key }</strong>${ drug.value.after }
           </td>
         </tr>
       </table>

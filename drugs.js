@@ -7,23 +7,40 @@ import {Db}     from 'db/pouch'
 export class drugs {
   //constructor(HttpClient = 'aurelia-http-client', Db = './pouch'){
   constructor(db, router){
-    this.db = db
+    this.db     = db
     this.router = router
+    this.drugs  = []
+    this.drug   = {names:['']}
   }
 
   activate(params) {
-    return this.db.drugs().then(drugs => {
-      console.log(drugs)
-      this.drugs = drugs
-      this.select(params.id ? this.drugs.filter(drug => drug._id === params.id)[0] : this.drugs[0])
+    if (params.id)
+      this.select(params.id)
+  }
+
+  select(_id) {
+    //console.log('selecting drug', drug)
+    this.db.drugs({_id})
+    .then(drugs => {
+      let url  = drugs[0]._id ? 'drugs/'+drugs[0]._id : 'drugs'
+      this.router.navigate(url, { trigger: false })
+      this.drug  = drugs[0]
+      console.log('this.drug', this.drug)
     })
   }
 
-  select(drug) {
-    //console.log('selecting drug', drug)
-    let url  = drug._id ? 'drugs/'+drug._id : 'drugs'
-    this.router.navigate(url, { trigger: false })
-    this.drug  = drug
+  search($event) {
+    if ($event.target.value.length < 4)
+      return
+
+    console.log('searching for', $event.target.value)
+    return this.db.drugs.query('drug/search', {key:$event.target.value})
+    .then(drugs => {
+      console.log('drugs', drugs)
+      this.drugs = drugs
+      //this.select(params.id ? this.drugs.filter(drug => drug._id === params.id)[0] : this.drugs[0])
+    })
+    console.log()
   }
 
   add() {
