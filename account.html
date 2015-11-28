@@ -8,11 +8,11 @@
   <require from="./elems/md-switch"></require>
   <require from="./elems/md-checkbox"></require>
   <md-drawer>
-    <md-input value.bind="hello" style="padding:0 8px">Filter Users</md-input>
+    <md-input value.bind="filter" style="padding:0 8px">Filter Users</md-input>
     <a
-      repeat.for="user of users | filter:hello"
+      repeat.for="user of users | filter:filter"
       class="mdl-navigation__link ${ user.name == $parent.user.name ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="$parent.user = user; user.password = ''">
+      click.delegate="select(user)">
       <div class="mdl-typography--title">${ user.first ? user.first+' '+user.last : 'New User'}</div>
     </a>
   </md-drawer>
