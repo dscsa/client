@@ -14,10 +14,6 @@
     <div style="margin:0 auto">
       <md-button raised color click.delegate="$file.click()">Import CSV</md-button>
       <input ref="$file" change.delegate="import()" style="display:none" type="file" />
-      <md-button raised
-        click.delegate="add()">
-        Add Drug
-      </md-button>
     </div>
   </md-drawer>
   <section class="mdl-grid">
@@ -98,9 +94,16 @@
           Wholesale Price
         </md-input>
         <md-button color="accent" raised
+          if.bind="drug._rev"
           style="width:100%"
           click.delegate="delete()">
           Delete Drug
+        </md-button>
+        <md-button color raised
+          if.bind=" ! drug._rev"
+          style="width:100%"
+          click.delegate="save()">
+          Add Drug
         </md-button>
       </div>
     </div>

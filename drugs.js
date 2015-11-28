@@ -39,21 +39,6 @@ export class drugs {
       this.drugs = drugs
       //this.select(params.id ? this.drugs.filter(drug => drug._id === params.id)[0] : this.drugs[0])
     })
-    console.log()
-  }
-
-  add() {
-    this.drugs.unshift({
-      _id:'',
-      name:'',
-      strength:'',
-      form:'',
-      brand:'',
-      image:'',
-      labeler:'',
-    })
-    this.drug  = this.drugs[0]
-    this.drugs = this.drugs.slice() //Aurelia hack to reactivate the filter
   }
 
   import() {
@@ -104,19 +89,12 @@ export class drugs {
   }
 
   save($event, form) {
-    console.log('$this', form)
     //Do not save if clicking around within the same/new drug.
-    if ( ! this.drug._id || form.contains($event.relatedTarget))
+    if (this.drug._rev ? form.contains($event.relatedTarget) : $event)
       return
-
     console.log('saving', this.drug)
-    return this.db.drugs.put(this.drug).then(drug => {
-      if (this.drug._id) return
-      this.drug._id = drug._id
-      this.add()
-    })
+    return this.db.drugs.put(this.drug)
   }
-}
 
   delete() {
     console.log('TO BE IMPLEMENETED')
