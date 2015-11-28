@@ -39,7 +39,7 @@ export class AuthorizeStep {
       var role = session.account._id.length == 7 ? 'user' : session.account
       row.isVisible = row.config.roles && ~row.config.roles.indexOf(role)
     }
-    if (routing.nextInstructions.some(i => i.config.navModel.isVisible))
+    if (routing.getAllInstructions().some(i => i.config.navModel.isVisible))
         return next()
     console.log('Authorization Failed')
     return next.cancel(new Redirect('login'))
