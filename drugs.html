@@ -13,7 +13,8 @@
       Empty Field
     </md-select>
     <div style="margin:0 auto">
-      <md-button raised color>Import CSV</md-button>
+      <md-button raised color click.delegate="$file.click()">Import CSV</md-button>
+      <input ref="$file" change.delegate="import()" style="display:none" type="file" />
       <md-button raised
         click.delegate="add()">
         Add Drug

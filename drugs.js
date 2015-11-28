@@ -40,6 +40,44 @@ export class drugs {
     this.drugs = this.drugs.slice() //Aurelia hack to reactivate the filter
   }
 
+  import() {
+    let db    = this.db
+    let data  = []
+    let start = Date.now()
+
+    function capitalize(txt) {
+      return txt ? txt.replace(/\w+/g, txt => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()) : ''
+    }
+
+    Papa.parse(this.$file.files[0], {
+      header:true,
+      //worker:true,
+      step: function(results, parser) {
+        let row = results.data[0]
+
+        if ( ! row.rxstring || ! row.spl_strength || ! row.product_code)
+          return
+
+        let brand = row.rxstring.split(' [')
+      	data.push({
+          _id:row.product_code,
+          names:capitalize(row.spl_strength.slice(0, -1)).split(';'),
+          brand: brand.length > 1 ? capitalize(row.medicine_name) : '',
+          form:brand[0].split(' ').slice(-2).join(' '),
+          ndc9:row.ndc9,
+          upc:row.product_code.replace('-', ''),
+          image:row.splimage ? "http://pillbox.nlm.nih.gov/assets/large/"+row.splimage+".jpg" : null,
+          labeler:capitalize(row.author.split(/,|\.| LLC| Inc| \(| USA| -|limit/)[0])
+        })
+      },
+      complete: function(results, file) {
+        console.log(Date.now() - start)
+      	db.drugs.bulkDocs(data)
+        .then(_ => console.log(Date.now() - start, _))
+      }
+    })
+  }
+
   save($event, $this) {
     //Do not save if clicking around within the same/new drug.
     if ( ! this.drug._id || $this.contains($event.relatedTarget))
