@@ -95,7 +95,7 @@ export class drugs {
     })
   }
 
-  save($event, $this) {
+  save($event, form) {
     console.log('$this', form)
     //Do not save if clicking around within the same/new drug.
     if ( ! this.drug._id || form.contains($event.relatedTarget))
