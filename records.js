@@ -75,13 +75,6 @@ export class shipments {
   }
 }
 
-//TODO consolidate with filter in inventory
-export class dateValueConverter {
-  toView(date){
-    return date ? date.slice(2,10) : ''
-  }
-}
-
 export class filterValueConverter {
   toView(transactions = [], filter = ''){
     filter = filter.toLowerCase()

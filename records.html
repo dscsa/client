@@ -5,9 +5,7 @@
   <require from="./elems/md-input"></require>
   <require from="./elems/md-select"></require>
   <require from="./elems/md-switch"></require>
-  <require from="./elems/md-checkbox"></require>
   <require from="./elems/md-button"></require>
-  <require from="./elems/md-autocomplete"></require>
   <md-drawer>
     <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter ${ type ? 'Dispositioned' : 'Received' }</md-input>
     <md-switch click.delegate="type = !type; return true" style="margin:-45px 0 0 197px;"></md-switch>
@@ -62,10 +60,10 @@
             </td>
             <td>${ transaction.drug }</td>
             <td style="padding-top:8px">
-              ${ transaction.lot.to }
+              ${ transaction.lot.to || transaction.lot.from }
             </td>
             <td style="padding:8px 0 0 0">
-              ${ transaction.exp.to | date }
+              ${ transaction.exp.to || transaction.exp.from }
             </td>
             <td style="padding-top:8px">
               ${ transaction.qty.to || transaction.qty.from }
