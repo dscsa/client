@@ -26,18 +26,17 @@ export class shipments {
     function filter(s) {
       return s._id && s._id.split('.')[2] === params.id
     }
-
     return Promise.all([
       //Start all of our a sync tasks
       //TODO to = $elemMatch:this.account._id
       //TODO from = $in:this.account.authorized
-      this.db.accounts({_id:{$ne:this.account._id}, state:this.account.state}),
+      this.db.accounts({state:'FL'}),
       this.db.shipments({'from.account':this.account._id}),
       this.db.shipments({'to.account':this.account._id})
     ])
     .then(([accounts, from, to]) => {
-      //Set the view model
-      this.accounts  = ['', ...accounts]
+      //TODO $ne didn't seem to work in version 0.7.0 of pouchdb-find
+      this.accounts  = ['', ...accounts.filter(acc => acc._id != this.account._id)]
       this.shipments = {from, to}
       this.add()
       this.role = {account:'from', partner:'to'}
@@ -58,24 +57,25 @@ export class shipments {
 
   //Activated from constructor and each time a shipment is selected
   select(shipment) {
+
     this.shipment = shipment
     let url = 'shipments'
     if (shipment._id)
       url += '/'+shipment._id.split('.')[2]
-    else //selecting a new shipment will be an object but no id
-      return this.transactions = []
 
     this.router.navigate(url, { trigger: false })
     this.reset()
 
     this.db.transactions({shipment:shipment._id || this.account._id})
     .then(transactions => {
+      console.log('trans', transactions)
       this.transactions = transactions
       this.diffs  = [] //Check boxes of verified, and track the differences
       this.checks = this.transactions
         .map((o,i) => o.verified_at ? i : null)
         .filter(_ => _ != null)
     })
+    .catch(console.log)
   }
 
   swapRole() { //Swap roles
