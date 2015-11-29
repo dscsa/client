@@ -34,6 +34,11 @@ export class shipments {
     })
   }
 
+  toggleType() {
+    this.type = !this.type
+    return true
+  }
+
   //Activated from constructor and each time a shipment is selected
   select(transaction) {
     this.transaction = transaction

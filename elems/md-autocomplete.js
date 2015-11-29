@@ -12,23 +12,19 @@ export class MdAutocompleteCustomElement {
   }
 
   valueChanged(now, old) {
-
     let query = this.query.call(this.parent, now, old)
 
     if ( ! query.then)
       query = Promise.resolve(query)
 
     query.then(items => {
-
       this.show = now && items.length
-
       this.items = items
     })
   }
 
   action(item) {
     this.select.call(this.parent, item)
-
     this.show = false
   }
 }

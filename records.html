@@ -8,7 +8,7 @@
   <require from="./elems/md-button"></require>
   <md-drawer>
     <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter ${ type ? 'Dispositioned' : 'Received' }</md-input>
-    <md-switch click.delegate="type = !type; return true" style="margin:-45px 0 0 197px;"></md-switch>
+    <md-switch click.delegate="toggleType()" style="margin:-45px 0 0 197px;"></md-switch>
     <div class="mdl-grid" style="margin:0;padding:0">
       <md-select
         value.bind="month"
@@ -54,7 +54,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ref="$this" style="padding-top:7px;" repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="$parent.select(transaction)">
+          <tr style="padding-top:7px;" repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="$parent.select(transaction)">
             <td style="text-align:left;">
               ${ transaction.name } ${ transaction.strength }, ${ transaction.form }
             </td>

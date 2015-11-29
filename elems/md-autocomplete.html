@@ -1,6 +1,10 @@
 <template>
   <!-- z-index of 2 is > than checkboxes which have z-index of 1 -->
-  <md-autocomplete-wrap focusout.delegate="show = $this.contains($event.relatedTarget)" ref="$this" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="z-index:2; width:100%; padding-top:10px">
+  <md-autocomplete-wrap
+    focusout.delegate="show = form.contains($event.relatedTarget)"
+    ref="form"
+    class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+    style="z-index:2; width:100%; padding-top:10px">
     <input class="md-input mdl-textfield__input" value.bind="value" disabled.bind="disabled" placeholder.bind="placeholder" focus.delegate="show = true" style="font-size:20px;">
     <label class="mdl-textfield__label"><content></content></label>
     <ul
@@ -8,7 +12,11 @@
       if.bind="show"
       style="background:white; width:100%;"
       class="md-autocomplete-suggestions">
-      <li repeat.for="item of items" style="position:static; width:100%; text-align:left;" class="mdl-button mdl-js-button mdl-js-ripple-effect" click.delegate="$parent.action(item)">
+      <li
+        repeat.for="item of items"
+        style="position:static; width:100%; text-align:left;"
+        class="mdl-button mdl-js-button mdl-js-ripple-effect"
+        click.delegate="action(item)">
           ${ item.value.before }<strong>${ item.value.key }</strong>${ item.value.after }
       </li>
     </ul>
