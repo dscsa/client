@@ -50,7 +50,7 @@ export class shipments {
         console.log(o, typeof o)
         if (Array.isArray(o))
           return o
-        return o.from.name+' '+o._id
+        return o.shipment.from.name+' '+o._id
       }
       console.log('history', JSON.stringify(history.content, id, "*"))
       function pad(word) {
@@ -65,9 +65,9 @@ export class shipments {
             let date = v.shipment[this.transaction_date + '_at'] || v.verified_at || ''
             let href = '/#/shipments/'+v.shipment._id.split('.')[2]
 
-            return pad(v.from.name)+"<a href='"+href+"'>"+v.type+'</a><br>'+
-                   pad(v.from.street)+'Date '+date.slice(2, 10)+'<br>'+
-                   pad(v.from.city+', '+v.from.state+' '+v.from.zip)+'Quantity '+(v.qty.to || v.qty.from)
+            return pad(v.shipment.from.name)+"<a href='"+href+"'>"+v.type+'</a><br>'+
+                   pad(v.shipment.from.street)+'Date '+date.slice(2, 10)+'<br>'+
+                   pad(v.shipment.from.city+', '+v.shipment.from.state+' '+v.shipment.from.zip)+'Quantity '+(v.qty.to || v.qty.from)
         },
         "   "
       )
