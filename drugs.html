@@ -114,7 +114,7 @@
       <table md-table style="width:calc(100% - 32px); margin:0 16px;">
         <tr repeat.for="drug of drugs" click.delegate="select(drug.id)" class="${ drug.id == $parent.drug._id ? 'is-selected' : ''}">
           <td class="mdl-data-table__cell--non-numeric">
-            ${ drug.value.before }<strong>${ drug.value.key }</strong>${ drug.value.after }
+            ${ drug.value[0] }<strong>${ drug.value[1] ? drug.key[0].toUpperCase()+drug.key.slice(1) : '' }</strong>${ drug.value[1] }
           </td>
         </tr>
       </table>

@@ -17,7 +17,7 @@
         style="position:static; width:100%; text-align:left;"
         class="mdl-button mdl-js-button mdl-js-ripple-effect"
         click.delegate="action(item)">
-          ${ item.value.before }<strong>${ item.value.key }</strong>${ item.value.after }
+          ${ item.value[0] }<strong>${ item.value[1] ? item.key[0].toUpperCase()+item.key.slice(1) : '' }</strong>${ item.value[1] }
       </li>
     </ul>
   </md-autocomplete-wrap>
