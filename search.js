@@ -12,7 +12,7 @@ export class drugs {
   search(now, old) {
     if ( ! now || now.length < 4)
       return Promise.resolve([])
-
+    console.log('starting search')
     let start = performance.now()
     //  console.log(this.db.drugs.toString())
     //TODO would a limit speep this up? now.length < 7 ? {limit:5} : {limit:50}

@@ -34,7 +34,7 @@
       <div
         class="mdl-card__supporting-text"
         style="font-size:13px; padding:0 16px">
-        <div repeat.for="source of group.sources"   focusout.delegate="$parent.drugs.save(source, $event, form)" ref="form">
+        <div repeat.for="source of group.sources"   focusout.delegate="drugs.save(source, $event, form)" ref="form">
           <div style="display:inline-block; width:calc(100% - 155px)">
             <a href.bind="'/#/records/'+source.history[0].transaction">${source.history[0].transaction ||  'No Source'}</a>
           </div>
@@ -50,19 +50,19 @@
               placeholder="Exp">
             </md-input>
             <md-input
-              if.bind=" ! $parent.mode"
+              if.bind=" ! mode"
               type="number"
               style="width:40px"
               value.bind="source.qty.from"
-              input.delegate="$parent.input()"
+              input.delegate="input()"
               placeholder="Qty">
             </md-input>
             <md-input
-              if.bind="$parent.mode"
+              if.bind="mode"
               type="number"
               max.bind="source.qty.from"
               style="width:40px"
-              value.bind="$parent.repack[$index]"
+              value.bind="repack[$index]"
               placeholder="Qty">
             </md-input>
           </span>
@@ -97,7 +97,7 @@
             <th>Qty</th>
           </tr>
         </thead>
-        <tr repeat.for="group of groups | filter:filter" click.delegate="$parent.select(group)" class="${ $parent.group != group || 'is-selected'}">
+        <tr repeat.for="group of groups | filter:filter" click.delegate="select(group)" class="${ $parent.group != group || 'is-selected'}">
           <td class="mdl-data-table__cell--non-numeric">
             ${ group.sources[0].names.join(', ') } ${ group.sources[0].form }
           </td>

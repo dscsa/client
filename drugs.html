@@ -67,7 +67,7 @@
         </md-button>
         <md-input repeat.for="_ of drug.names"
           style="width:100%"
-          value.bind="$parent.drug.names[$index]">
+          value.bind="drug.names[$index]">
           ${ $index == 0 ? 'Drug Names & Strengths' : ''}
         </md-input>
         <md-input
@@ -110,9 +110,9 @@
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
-      <md-input placeholder="Search Drugs..." input.delegate="search($event)" style="margin:10px 16px -20px 16px; font-size:20px;"></md-input>
+      <md-input placeholder="Search Drugs..." input.delegate="search($event) & debounce" style="margin:10px 16px -20px 16px; font-size:20px;"></md-input>
       <table md-table style="width:calc(100% - 32px); margin:0 16px;">
-        <tr repeat.for="drug of drugs" click.delegate="$parent.select(drug.id)" class="${ drug.id == $parent.drug._id ? 'is-selected' : ''}">
+        <tr repeat.for="drug of drugs" click.delegate="select(drug.id)" class="${ drug.id == $parent.drug._id ? 'is-selected' : ''}">
           <td class="mdl-data-table__cell--non-numeric">
             ${ drug.value.before }<strong>${ drug.value.key }</strong>${ drug.value.after }
           </td>

@@ -54,7 +54,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr style="padding-top:7px;" repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="$parent.select(transaction)">
+          <tr style="padding-top:7px;" repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="select(transaction)">
             <td style="text-align:left;">
               ${ transaction.names.join(', ') } ${ transaction.form }
             </td>

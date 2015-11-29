@@ -14,8 +14,8 @@
     <a
       repeat.for="shipment of shipments[role.account] | filter:filter"
       class="mdl-navigation__link ${ shipment._id == $parent.shipment._id ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="$parent.select(shipment)">
-      <div class="mdl-typography--title">${ shipment[$parent.role.partner].name || 'New shipment' }</div>
+      click.delegate="select(shipment)">
+      <div class="mdl-typography--title">${ shipment[role.partner].name || 'New shipment' }</div>
       ${ shipment._id ? '#'+shipment.tracking+', '+shipment.status : 'Create New Label' }
     </a>
   </md-drawer>
@@ -141,7 +141,7 @@
           <tr ref="form" style="padding-top:7px;" repeat.for="transaction of transactions">
             <td style="padding-left:10px;">
               <md-checkbox
-                disabled.bind="$parent.shipment._id && $parent.role.account == 'from'" checked.one-way="$parent.checks.indexOf($index) > -1" click.delegate="$parent.check($index)">
+                disabled.bind="shipment._id && role.account == 'from'" checked.one-way="checks.indexOf($index) > -1" click.delegate="check($index)">
               </md-checkbox>
             </td>
             <td style="text-align:left; padding-left:0; max-width:300px;overflow:scroll">
@@ -157,31 +157,31 @@
             </td>
             <td>${ (transaction.wholesale.price * (transaction.qty.to || transaction.qty.from || 0)).toFixed(2) }</td>
             <td style="padding-top:8px">
-              ${ transaction.lot[$parent.role.partner] }
+              ${ transaction.lot[role.partner] }
               <md-input
-                focusout.delegate="$parent.drugs.save(transaction, $event, form)"
-                value.bind="transaction.lot[$parent.role.account]"
+                focusout.delegate="drugs.save(transaction, $event, form)"
+                value.bind="transaction.lot[role.account]"
                 style="width:60px;"
                 placeholder>
               </md-input>
             </td>
             <td style="padding:8px 0 0 0">
-              ${ transaction.exp[$parent.role.partner] }
+              ${ transaction.exp[role.partner] }
               <md-input
-                focusout.delegate="$parent.drugs.save(transaction, $event, form)"
+                focusout.delegate="drugs.save(transaction, $event, form)"
                 pattern="([1-9]|1[012])/\d{2}"
-                value.bind="transaction.exp[$parent.role.account]"
+                value.bind="transaction.exp[role.account]"
                 style="width:40px;"
                 placeholder>
               </md-input>
             </td>
             <td style="padding-top:8px">
-              ${ transaction.qty[$parent.role.partner] }
+              ${ transaction.qty[role.partner] }
               <md-input
-                focusout.delegate="$parent.drugs.save(transaction, $event, form)"
-                keyup.delegate="$parent.qtyShortcuts(transaction, $event, $index)"
+                focusout.delegate="drugs.save(transaction, $event, form)"
+                keyup.delegate="qtyShortcuts(transaction, $event, $index)"
                 type="number"
-                value.bind="transaction.qty[$parent.role.account]"
+                value.bind="transaction.qty[role.account]"
                 style="width:40px;"
                 placeholder>
               </md-input>
