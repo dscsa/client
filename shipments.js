@@ -57,18 +57,14 @@ export class shipments {
 
   //Activated from constructor and each time a shipment is selected
   select(shipment) {
-
     this.shipment = shipment
     let url = 'shipments'
     if (shipment._id)
       url += '/'+shipment._id.split('.')[2]
-
     this.router.navigate(url, { trigger: false })
     this.reset()
-
     this.db.transactions({shipment:shipment._id || this.account._id})
     .then(transactions => {
-      console.log('trans', transactions)
       this.transactions = transactions
       this.diffs  = [] //Check boxes of verified, and track the differences
       this.checks = this.transactions
@@ -124,7 +120,6 @@ export class shipments {
         account:this.account._id
       }
     })
-    this.shipments.from = this.shipments.from.slice() //Aurelia hack to reactivate the filter
   }
 
   //Save the donation if someone changes the status/date
@@ -223,7 +218,6 @@ export class shipments {
       this.http.createRequest('//localhost:3000/transactions/'+this.transactions[i]._id+'/verified')
       .withCredentials(true)[method]().send().catch(_ => _) //empty catch because failed post requests alrady appear in console
     }
-
     this.diffs = []
   }
 
@@ -231,7 +225,6 @@ export class shipments {
     this.search = null //Reset search's auto-complete
     return this.drugs.add(key.id, this.shipment)  //Add the drug to the database
     .then(transaction => {
-      console.log(transaction)
       this.transactions.unshift(transaction)
     }) //Add the drug to the view
   }

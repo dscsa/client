@@ -36,7 +36,7 @@ export class drugs {
         lot:{from:null, to:null},
         exp:{from:null, to:null}
       }
-      console.log(drugs[0], transaction)
+      console.log('adding', drugs[0], transaction)
       return this.db.transactions.post(transaction)
     })
   }
