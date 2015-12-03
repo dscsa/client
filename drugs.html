@@ -110,7 +110,7 @@
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
-      <md-input placeholder="Search Drugs..." input.delegate="search($event) & debounce" style="margin:10px 16px -20px 16px; font-size:20px;"></md-input>
+      <md-input placeholder="Search Drugs..." input.delegate="search($event)" style="margin:10px 16px -20px 16px; font-size:20px;"></md-input>
       <table md-table style="width:calc(100% - 32px); margin:0 16px;">
         <tr repeat.for="drug of drugs" click.delegate="select(drug.id)" class="${ drug.id == $parent.drug._id ? 'is-selected' : ''}">
           <td class="mdl-data-table__cell--non-numeric">
