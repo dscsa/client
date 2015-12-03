@@ -42,22 +42,23 @@
           placeholder="Image"
           style="width:100%; font-size:9px; margin-bottom:-10px">
         </md-input>
+        <div style="position:relative;width:58%;display:inline-block">
+          <md-input
+            style="width:100%"
+            value.bind="drug._id"
+            disabled.bind="drug._rev"
+            pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
+            NDC Product Code
+          </md-input>
+          <div style="font-size:10px;position:absolute;top:30px; right:0px; line-height:12px">
+            ${ drug._id && "NDC9: "+("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
+          </div>
+        </div>
         <md-input
-          style="width:49%"
-          value.bind="drug._id"
-          disabled.bind="drug._rev"
-          pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
-          NDC Product Code
-        </md-input>
-        <md-input
-          style="width:49%"
+          style="width:40%"
           value.bind="drug.brand">
           Brand Name
         </md-input>
-        <div style="font-size:12px;margin-top:-15px; margin-bottom:15px">
-          UPC: ${ drug._id && "3"+(drug._id.replace('-', '')+"***********").slice(0, 11) },
-          NDC9: ${ drug._id && ("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
-        </div>
         <!-- click event fires after focusout (form was already saved).  mousedown fires before focusout -->
         <md-button color fab="11"
           if.bind="drug.names[0]"
