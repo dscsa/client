@@ -57,7 +57,9 @@ export class shipments {
 
   //Activated from constructor and each time a shipment is selected
   select(shipment) {
-    this.shipment = shipment
+    this.shipment   = shipment
+    this.attachment = null
+
     let url = 'shipments'
     if (shipment._id)
       url += '/'+shipment._id.split('.')[2]
