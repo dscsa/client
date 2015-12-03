@@ -34,7 +34,9 @@ export class MdButtonCustomElement {
       this.button.classList.add('mdl-button--fab')
       this.button.style.height = this.fab+'px'
       this.button.style.width  = this.fab+'px'
-      this.button.style['font-size'] = this.fab*.66+'px'
+      this.button.style['min-width'] = this.button.style.width
+      this.button.style['font-size'] = this.fab*.75+'px'
+      this.button.style['line-height'] = this.fab+'px'
       //this.button.style['min-width'] = this.element.fab+'px'
     }
 

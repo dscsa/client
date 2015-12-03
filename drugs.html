@@ -59,11 +59,11 @@
           NDC9: ${ drug._id && ("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
         </div>
         <!-- click event fires after focusout (form was already saved).  mousedown fires before focusout -->
-        <md-button color
+        <md-button color fab="11"
           if.bind="drug.names[0]"
           mousedown.delegate="drugName()"
-          style="position:absolute; width:32px; overflow:hidden; right:150px; height:23px; line-height:23px; z-index:1">
-          ${ drug.names[drug.names.length-1] ? '+' : '-'}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          style="position:absolute; left:152px; margin-top:-6px; z-index:1">
+          ${ drug.names[drug.names.length-1] ? '+' : '-'}
         </md-button>
         <md-input repeat.for="_ of drug.names"
           style="width:100%"
