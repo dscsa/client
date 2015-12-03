@@ -63,6 +63,7 @@ export class shipments {
       url += '/'+shipment._id.split('.')[2]
     this.router.navigate(url, { trigger: false })
     this.reset()
+
     this.db.transactions({shipment:shipment._id || this.account._id})
     .then(transactions => {
       this.transactions = transactions
@@ -126,12 +127,36 @@ export class shipments {
   save() {
     //If dates were set, status may have changed
     this.shipment.status = this.getStatus()
-
     //Save an existing shipment
     console.log('saving', this.shipment)
     return this.db.shipments.put(this.shipment)
-
     //TODO reschedule pickup if a date was changed
+  }
+
+  setAttachment(attachment) {
+    attachment._id  = this.attachment.name
+    attachment._rev = this.shipment._rev
+    this.db.shipments({_id:this.shipment._id})
+    .attachment(attachment)
+    .then(res => {
+      this.shipment._rev   = res.rev
+      this.attachment.type = attachment.type
+      //TODO use service worker to rename this URL so title bar isn't nasty
+      //http://stackoverflow.com/questions/283956/is-there-any-way-to-specify-a-suggested-filename-when-using-data-uri
+      this.attachment.url  = URL.createObjectURL(attachment)
+      console.log('setAttachment', attachment, _)
+    })
+  }
+
+  getAttachment() {
+    this.db.shipments({_id:this.shipment._id})
+    .attachment(this.attachment.name)
+    .then(attachment => {
+      this.attachment.type = attachment.type
+      this.attachment.url  = URL.createObjectURL(attachment)
+      console.log('getAttachment', attachment, this.attachment.url)
+    })
+    .catch(this.attachment.url = null)
   }
 
   qtyShortcuts(transaction, $event, $index) {

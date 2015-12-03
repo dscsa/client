@@ -90,17 +90,31 @@
         </div>
         <md-select
           style="width:100%"
-          value.bind="attachment"
-          options.bind="['','Shipping Label', 'Manifest']"
-          disabled.bind=" ! shipment._id || shipment._id != tracking._id">
-          Attachments
+          value.bind="attachment.name"
+          change.delegate="getAttachment()"
+          options.bind="['','Shipping Label', 'Manifest']">
+          Attachment
         </md-select>
         <md-button color
-          if.bind="attachment"
+          if.bind="attachment.name"
+          click.delegate="upload.click()"
           style="position:absolute; right:18px; margin-top:-48px; height:24px; line-height:24px"
           disabled.bind=" ! shipment._id || shipment._id != tracking._id">
           Upload
         </md-button>
+        <input
+          type="file"
+          ref="upload"
+          change.delegate="setAttachment(upload.files[0])"
+          style="display:none">
+        <!-- The below padding / positioning keeps a constant aspect ratio for the embeded pdf  -->
+        <div style="width: 100%; padding-top:56px; padding-bottom:129%; position:relative;">
+          <embed
+            if.bind="attachment.url"
+            src.bind="attachment.url"
+            type.bind="attachment.type"
+            style="position:absolute; height:100%; width:100%; top:0; bottom:0">
+        </div>
         <md-button color raised
           style="width:100%"
           if.bind="! shipment._id && ! tracking._id"
