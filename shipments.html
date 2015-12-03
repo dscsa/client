@@ -92,7 +92,8 @@
           style="width:100%"
           value.bind="attachment.name"
           change.delegate="getAttachment()"
-          options.bind="['','Shipping Label', 'Manifest']">
+          options.bind="['','Shipping Label', 'Manifest']"
+          disabled.bind=" ! shipment._id || shipment._id != tracking._id">
           Attachment
         </md-select>
         <md-button color
