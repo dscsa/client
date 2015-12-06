@@ -155,8 +155,7 @@
       <table md-table style="margin:0 16px; width:calc(100% - 32px)">
         <thead>
           <tr>
-            <th style="width:4%;"></th>
-            <th class="mdl-data-table__cell--non-numeric">Drug</th>
+            <th class="mdl-data-table__cell--non-numeric" style="padding-left:39px">Drug</th>
             <th>NDC</th>
             <th>Value</th>
             <th style="text-align:left; width:5%">Lot</th>
@@ -166,15 +165,16 @@
         </thead>
         <tbody>
           <tr ref="form" style="padding-top:7px;" repeat.for="transaction of transactions">
-            <td style="padding-left:10px;">
+            <td class="mdl-data-table__cell--non-numeric" style="max-width:300px; overflow:scroll;">
               <md-checkbox
+                style="position:absolute; left:10px"
                 disabled.bind="shipment._id && role.account == 'from'"
                 checked.one-way="checks.indexOf($index) > -1"
                 click.delegate="check($index)">
               </md-checkbox>
-            </td>
-            <td class="mdl-data-table__cell--non-numeric">
-              <a href="/#/records/${ transaction._id }">${ transaction.names.join(', ') } ${ transaction.form }</a>
+              <a href="/#/records/${ transaction._id }" style="padding-left:16px">
+                ${ transaction.names.join(', ') } ${ transaction.form }
+              </a>
             </td>
             <td style="padding-top:9px">
               ${ transaction.drug }-
