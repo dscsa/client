@@ -60,12 +60,14 @@
           Brand Name
         </md-input>
         <!-- click event fires after focusout (form was already saved).  mousedown fires before focusout -->
-        <md-button color fab="11"
-          if.bind="drug.names[0]"
-          mousedown.delegate="drugName()"
-          style="position:absolute; left:152px; margin-top:-6px; z-index:1">
-          ${ drug.names[drug.names.length-1] ? '+' : '-'}
-        </md-button>
+        <div style="position:relative">
+          <md-button color fab="11"
+            if.bind="drug.names[0]"
+            mousedown.delegate="drugName()"
+            style="position:absolute; left:140px; margin-top:-5px; z-index:1">
+            ${ drug.names[drug.names.length-1] ? '+' : '-'}
+          </md-button>
+        </div>
         <md-input repeat.for="_ of drug.names"
           style="width:100%"
           value.bind="drug.names[$index]">
@@ -95,6 +97,26 @@
           style="width:49%">
           Wholesale Price
         </md-input>
+        <div style="position:relative">
+          <md-button color fab="11"
+            if.bind="drug.pkgs[0].code && drug.pkgs[0].size"
+            mousedown.delegate="drugPkg()"
+            style="position:absolute; left:90px; margin-top:-5px; z-index:1">
+            ${ drug.pkgs[drug.pkgs.length-1].code  ? '+' : '-'}
+          </md-button>
+        </div>
+        <div repeat.for="_ of drug.pkgs">
+          <md-input
+            style="width:49%"
+            value.bind="drug.pkgs[$index].code">
+            ${ $index == 0 ? 'Package Codes' : ''}
+          </md-input>
+          <md-input
+            style="width:49%"
+            value.bind="drug.pkgs[$index].size">
+            ${ $index == 0 ? 'Container Size' : ''}
+          </md-input>
+        </div>
         <md-button color="accent" raised
           if.bind="drug._rev"
           style="width:100%"

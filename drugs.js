@@ -10,7 +10,7 @@ export class drugs {
     this.db     = db
     this.router = router
     this.drugs  = []
-    this.drug   = {names:['']}
+    this.drug   = {names:[''], pkgs:[{code:'', size:''}]}
   }
 
   activate(params) {
@@ -24,6 +24,7 @@ export class drugs {
       let url  = drugs[0]._id ? 'drugs/'+drugs[0]._id : 'drugs'
       this.router.navigate(url, { trigger: false })
       this.drug  = drugs[0]
+      this.drug.pkgs = [{code:'', size:''}]
       console.log('this.drug', this.drug)
     })
   }
@@ -84,6 +85,16 @@ export class drugs {
     this.drug.names[this.drug.names.length-1]
       ? this.drug.names.push('')
       : this.drug.names.pop()
+
+    return true
+  }
+
+  drugPkg() {
+    console.log('modifying pkg')
+    let i = this.drug.pkgs.length-1
+    this.drug.pkgs[i].code && this.drug.pkgs[i].size
+      ? this.drug.pkgs.push({code:'', size:''})
+      : this.drug.pkgs.pop()
 
     return true
   }
