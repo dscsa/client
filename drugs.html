@@ -17,10 +17,10 @@
     </div>
   </md-drawer>
   <section class="mdl-grid au-animate">
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col">
-      <div class="mdl-card__title mdl-grid" style="margin-left:0; margin-bottom:-30px;">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col" style="height:90vh;">
+      <div class="mdl-card__title mdl-grid" style="margin-left:0;">
         <div class="mdl-card__title-text mdl-cell mdl-cell--12-col" style="font-size:21px">
-          ${ drug.names[0] ? drug.names.join(', ') : 'Add New Drug'}
+          ${  drug.generics.length > 3 && drug.brand ? drug.brand : drug | drugName }
         </div>
         <div
           class="mdl-cell mdl-cell--12-col"
@@ -32,49 +32,56 @@
         class="mdl-card__supporting-text"
         focusout.delegate="save($event, form)"
         ref="form"
-        style="font-size:16px">
+        style="font-size:16px; overflow-y:scroll;width:92%">
         <img
           style="width:100%;"
           if.bind="drug.image"
           src.bind="drug.image">
         <md-input
+          type="url"
           value.bind="drug.image"
           placeholder="Image"
           style="width:100%; font-size:9px; margin-bottom:-10px">
         </md-input>
-        <div style="position:relative;width:58%;display:inline-block">
-          <md-input
-            style="width:100%"
-            value.bind="drug._id"
-            disabled.bind="drug._rev"
-            pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
-            NDC Product Code
-          </md-input>
-          <div style="font-size:10px;position:absolute;top:30px; right:0px; line-height:12px">
-            ${ drug._id && "NDC9: "+("00000"+drug._id.split('-')[0]).slice(-5)+("0000"+drug._id.split('-')[1]).slice(-4) }
-          </div>
-        </div>
         <md-input
-          style="width:40%"
-          value.bind="drug.brand">
-          Brand Name
+          style="width:49%"
+          value.bind="drug._id"
+          disabled.bind="drug._rev"
+          pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
+          Hyphenated NDC
+        </md-input>
+        <md-input style="width:49%"
+          value.one-way="drug._id ? ('00000'+drug._id.split('-').slice(0,1)).slice(-5)+('0000'+drug._id.split('-').slice(1)).slice(-4) : ''"
+          disabled="true">
+          NDC9
         </md-input>
         <!-- click event fires after focusout (form was already saved).  mousedown fires before focusout -->
         <div style="position:relative">
           <md-button color fab="11"
-            if.bind="drug.names[0]"
+            if.bind="drug.generics[0]"
             mousedown.delegate="drugName()"
-            style="position:absolute; left:140px; margin-top:-5px; z-index:1">
-            ${ drug.names[drug.names.length-1] ? '+' : '-'}
+            style="position:absolute; left:153px; margin-top:-5px; z-index:1">
+            ${ drug.generics[drug.generics.length-1] ? '+' : '-'}
           </md-button>
         </div>
-        <md-input repeat.for="_ of drug.names"
-          style="width:100%"
-          value.bind="drug.names[$index]">
-          ${ $index == 0 ? 'Drug Names & Strengths' : ''}
+        <div repeat.for="generic of drug.generics">
+          <md-input
+            style="width:82%"
+            value.bind="generic.name">
+            ${ $index == 0 ? 'Generic Names & Strengths' : ''}
+          </md-input>
+          <md-input
+            style="width:16%"
+            value.bind="generic.strength">
+          </md-input>
+        </div>
+        <md-input
+          style="width:49%"
+          value.bind="drug.brand">
+          Brand Name
         </md-input>
         <md-input
-          style="width:100%"
+          style="width:49%"
           value.bind="drug.form">
           Form
         </md-input>
@@ -130,17 +137,28 @@
           disabled.bind=" ! drug._id">
           Add Drug
         </md-button>
+
+         genericSearch ${db.genericSearch.ready} ndcSearch ${db.ndcSearch.ready}
       </div>
     </div>
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
-      <md-input placeholder="Search Drugs..." input.delegate="search($event)" style="margin:10px 16px -20px 16px; font-size:20px;"></md-input>
-      <table md-table style="width:calc(100% - 32px); margin:0 16px;">
-        <tr repeat.for="drug of drugs" click.delegate="select(drug.id)" class="${ drug.id == $parent.drug._id ? 'is-selected' : ''}">
-          <td class="mdl-data-table__cell--non-numeric">
-            ${ drug.value[0] }<strong>${ drug.value[1] ? drug.key[0].toUpperCase()+drug.key.slice(1) : '' }</strong>${ drug.value[1] }
-          </td>
-        </tr>
-      </table>
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col" style="height:90vh">
+      <md-input placeholder.bind="(db.genericSearch.ready && db.ndcSearch.ready) ? 'Search by Generic Name or NDC...' : 'Loading Drug Search...'" disabled.bind="! db.genericSearch.ready || ! db.ndcSearch.ready" input.delegate="search($event)" style="margin:10px 16px -20px 16px; font-size:20px;"></md-input>
+      <div style="overflow-y:scroll">
+        <table md-table style="width:calc(100% - 32px); margin:0 16px;">
+          <tr if.bind="drugs.length">
+            <th class="mdl-data-table__cell--non-numeric">Drug</th>
+            <th class="mdl-data-table__cell--non-numeric">Ndc</th>
+            <th class="mdl-data-table__cell--non-numeric">Form</th>
+            <th class="mdl-data-table__cell--non-numeric">Labeler</th>
+          </tr>
+          <tr repeat.for="drug of drugs" click.delegate="select(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
+            <td class="mdl-data-table__cell--non-numeric" style="max-width:60%; white-space:normal" innerHTML.bind="drug | drugName:regex"></td>
+            <td class="mdl-data-table__cell--non-numeric">${ drug._id}</td>
+            <td class="mdl-data-table__cell--non-numeric">${ drug.form}</td>
+            <td class="mdl-data-table__cell--non-numeric">${ drug.labeler.split(' ').slice(0,2).join(' ')}</td>
+          </tr>
+        </table>
+      </div>
     </div>
   </section>
 </template>
