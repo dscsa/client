@@ -319,3 +319,10 @@ export class filterValueConverter {
     })
   }
 }
+
+export class valueValueConverter {
+  toView(transactions = [], filter='') {
+    console.log('trans', transactions)
+    return transactions.reduce((a, b) => {console.log('a', a, 'b', b, (b.drug.retail || {price:0}).price); +(b.drug.retail || {}).price+a}, 0)
+  }
+}
