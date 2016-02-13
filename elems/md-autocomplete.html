@@ -1,25 +1,23 @@
-<template>
+<template style="box-shadow:none">
   <!-- z-index of 2 is > than checkboxes which have z-index of 1 -->
   <md-autocomplete-wrap
-    focusout.delegate="show = form.contains($event.relatedTarget)"
+
     ref="form"
     class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
     style="z-index:2; width:100%; padding-top:10px">
-    <input class="md-input mdl-textfield__input" value.bind="value" disabled.bind="disabled" placeholder.bind="placeholder" focus.delegate="show = true" style="font-size:20px;">
-    <label class="mdl-textfield__label"><content></content></label>
-    <ul
+    <input class="md-input mdl-textfield__input"
+      value.bind="value"
+      disabled.bind="disabled"
+      placeholder.bind="placeholder"
+      focus.trigger="toggleResults()"
+      focusout.delegate="toggleResults()"
+      style="font-size:20px;">
+    <div show.bind="showResults"
       tabindex="-1"
-      if.bind="show"
-      style="background:white; width:100%;"
+      style="width:100%; overflow-y:scroll; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); max-height: 400px !important;"
       class="md-autocomplete-suggestions">
-      <li
-        repeat.for="item of items"
-        style="position:static; width:100%; text-align:left;"
-        class="mdl-button mdl-js-button mdl-js-ripple-effect"
-        click.delegate="action(item)">
-          ${ item.value[0] }<strong>${ item.value[1] ? item.key[0].toUpperCase()+item.key.slice(1) : '' }</strong>${ item.value[1] }
-      </li>
-    </ul>
+      <content></content>
+    </div>
   </md-autocomplete-wrap>
   <style>
   @-webkit-keyframes md-autocomplete-list-out {
@@ -203,25 +201,29 @@
       md-autocomplete li:focus {
         color: #fff; } }
 
-  .md-autocomplete-suggestions {
-    position: absolute;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  .md-autocomplete-suggestions table, .md-autocomplete-suggestions ul {
+    width:100%;         //added by adam
+    background:white;   //added by adam
+    position: relative;
     margin: 0;
     list-style: none;
     padding: 0;
-    overflow: auto;
-    max-height: 225.5px;
     z-index: 100; }
     .md-autocomplete-suggestions li {
+      line-height: 48px; //separated by adam
+    }
+    .md-autocomplete-suggestions li, .md-autocomplete-suggestions tr {
+      /*added by adam */
+      width:100%;
+      text-align: left;
+      position: static !important;
+      text-transform: none;
+      /* end addition */
       cursor: pointer;
       font-size: 14px;
       overflow: hidden;
-      padding: 0 15px;
-      line-height: 48px;
-      height: 48px;
+
       transition: background 0.15s linear;
-      margin: 0;
-      white-space: nowrap;
       text-overflow: ellipsis; }
       .md-autocomplete-suggestions li.ng-enter, .md-autocomplete-suggestions li.ng-hide-remove {
         transition: none;
