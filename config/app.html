@@ -12,11 +12,16 @@
   .mdl-layout__header-row .mdl-navigation__link { border-top:solid 3px white; }
   .mdl-layout__header-row .mdl-navigation__link--current { font-weight:600;  border-top-color:red;}
 
-  .mdl-data-table td { border:none };
-  .mdl-button--raised { background: rgb(77,80,86); color:white }
-  .mdl-button--fab.mdl-button--colored{ background:rgb(0,88,123);}
+  .mdl-data-table th { height:40px }
+  .mdl-data-table tbody tr { height:auto }
+  .mdl-data-table td { border:none; padding-top:8px; padding-bottom:8px; height:auto }
 
-  .mdl-textfield--floating-label.is-invalid .mdl-textfield__label { font-size:inherit }
+  .mdl-data-table .mdl-textfield { padding:0 } /* get rid of 20px padding-bottom that makes rows wide */
+  .mdl-data-table .mdl-textfield__input { padding:0 } /* fix inline input from being a little to low*/
+  .mdl-data-table .mdl-textfield__label:after { bottom:0 } /*fix blue underline onfocus from being to high*/
+
+  .mdl-button--raised { box-shadow:none } /*otherwise disabled.bind has weird animaiton twitching */
+  .mdl-button--fab.mdl-button--colored{ background:rgb(0,88,123);}
 
   /* animate page transitions */
   .au-enter-active {
