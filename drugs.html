@@ -5,29 +5,22 @@
   <require from="./elems/md-input"></require>
   <require from="./elems/md-select"></require>
   <require from="./elems/md-button"></require>
+  <require from="./elems/md-switch"></require>
+  <require from="./elems/md-autocomplete"></require>
   <md-drawer>
     <md-select
-      options.bind="['', 'Retail', 'Wholesale', 'Name', 'Image']"
+      options.bind="['', 'Retail Price', 'Wholesale Price', 'Image']"
       style="padding:0 8px;">
-      Empty Field
+      Drugs with Missing
     </md-select>
     <div style="margin:0 auto">
+      <md-button raised>Ordered</md-button>
       <md-button raised color click.delegate="$file.click()">Import CSV</md-button>
-      <input ref="$file" change.delegate="import()" style="display:none" type="file" />
+      <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
     </div>
   </md-drawer>
   <section class="mdl-grid au-animate">
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col" style="height:90vh;">
-      <div class="mdl-card__title mdl-grid" style="margin-left:0;">
-        <div class="mdl-card__title-text mdl-cell mdl-cell--12-col" style="font-size:21px">
-          ${  drug.generics.length > 3 && drug.brand ? drug.brand : drug | drugName }
-        </div>
-        <div
-          class="mdl-cell mdl-cell--12-col"
-          style="margin-top:-8px;">
-          ${drug.form }
-        </div>
-      </div>
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col" style="height:calc(100vh - 96px);">
       <div
         class="mdl-card__supporting-text"
         focusout.delegate="save($event, form)"
@@ -48,7 +41,7 @@
           value.bind="drug._id"
           disabled.bind="drug._rev"
           pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
-          Hyphenated NDC
+          Product NDC
         </md-input>
         <md-input style="width:49%"
           value.one-way="drug._id ? ('00000'+drug._id.split('-').slice(0,1)).slice(-5)+('0000'+drug._id.split('-').slice(1)).slice(-4) : ''"
@@ -56,12 +49,18 @@
           NDC9
         </md-input>
         <!-- click event fires after focusout (form was already saved).  mousedown fires before focusout -->
-        <div style="position:relative">
+        <div if.bind="drug.generics[0]" style="position:relative">
           <md-button color fab="11"
-            if.bind="drug.generics[0]"
-            mousedown.delegate="drugName()"
+            if.bind="drug.generics[drug.generics.length-1]"
+            mousedown.delegate="addGeneric()"
             style="position:absolute; left:153px; margin-top:-5px; z-index:1">
-            ${ drug.generics[drug.generics.length-1] ? '+' : '-'}
+            +
+          </md-button>
+          <md-button color fab="11"
+            if.bind="! drug.generics[drug.generics.length-1]"
+            mousedown.delegate="removeGeneric()"
+            style="position:absolute; left:153px; margin-top:-5px; z-index:1">
+            -
           </md-button>
         </div>
         <div repeat.for="generic of drug.generics">
@@ -104,12 +103,18 @@
           style="width:49%">
           Wholesale Price
         </md-input>
-        <div style="position:relative">
+        <div if.bind="drug.pkgs[0].code && drug.pkgs[0].size" style="position:relative">
           <md-button color fab="11"
-            if.bind="drug.pkgs[0].code && drug.pkgs[0].size"
-            mousedown.delegate="drugPkg()"
+            if.bind="drug.pkgs[drug.pkgs.length-1].code"
+            mousedown.delegate="addPkgSize()"
             style="position:absolute; left:90px; margin-top:-5px; z-index:1">
-            ${ drug.pkgs[drug.pkgs.length-1].code  ? '+' : '-'}
+            -
+          </md-button>
+          <md-button color fab="11"
+            if.bind="! drug.pkgs[drug.pkgs.length-1].code"
+            mousedown.delegate="removePkgSize()"
+            style="position:absolute; left:90px; margin-top:-5px; z-index:1">
+            +
           </md-button>
         </div>
         <div repeat.for="_ of drug.pkgs">
@@ -137,32 +142,52 @@
           disabled.bind=" ! drug._id">
           Add Drug
         </md-button>
-
-         genericSearch ${db.genericSearch.ready} ndcSearch ${db.ndcSearch.ready}
       </div>
     </div>
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col" style="height:90vh">
-      <md-input placeholder.bind="(db.genericSearch.ready && db.ndcSearch.ready) ? 'Search by Generic Name or NDC...' : 'Loading Drug Search...'" disabled.bind="! db.genericSearch.ready || ! db.ndcSearch.ready" input.delegate="search($event)" style="margin:10px 16px -20px 16px; font-size:20px;"></md-input>
-      <div style="overflow-y:scroll">
-        <table md-table style="width:calc(100% - 32px); margin:0 16px;">
-          <tr if.bind="drugs.length">
-            <th class="mdl-data-table__cell--non-numeric">Drug</th>
-            <th class="mdl-data-table__cell--non-numeric">Ndc</th>
-            <th class="mdl-data-table__cell--non-numeric">Form</th>
-            <th class="mdl-data-table__cell--non-numeric">Labeler</th>
-          </tr>
-          <tr repeat.for="drug of drugs" click.delegate="select(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
-            <td class="mdl-data-table__cell--non-numeric" style="max-width:60%; white-space:normal" innerHTML.bind="drug | drugName:regex"></td>
-            <td class="mdl-data-table__cell--non-numeric">${ drug._id}</td>
-            <td class="mdl-data-table__cell--non-numeric">${ drug.form}</td>
-            <td class="mdl-data-table__cell--non-numeric">${ drug.labeler.split(' ').slice(0,2).join(' ')}</td>
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col" style="height:calc(100vh - 96px);">
       <md-switch
         class=""
         style="position:absolute; right:20px; top:10px; z-index:3"
         checked.bind="ordered">
       </md-switch>
+      <md-autocomplete
+        placeholder.bind="searchReady ? 'Add Drugs by Generic Name...' : 'Loading Drug Search...'"
+        disabled.bind="! searchReady"
+        value.bind="term"
+        input.delegate="search()"
+        style="margin:0px 16px">
+        <table md-table>
+          <tr
+            repeat.for="group of groups"
+            click.delegate="selectGroup(group, true)"
+            class="${ $parent.group && group.name == $parent.group.name && 'mdl-navigation__link--current'}">
+            <td
+              class="mdl-data-table__cell--non-numeric"
+              innerHTML.bind="group.name.replace(regex, '<strong>$1</strong>')">
+            </td>
           </tr>
         </table>
+      </md-autocomplete>
+
+      <div class="mdl-grid" style="width:100%; height:100%; box-sizing:border-box">
+        <div class="mdl-cell ${ ordered ? 'mdl-cell--9-col' : 'mdl-cell--12-col' }" style="height:100%; overflow-y:scroll; margin:-8px 2px">
+          <table md-table style="width:100%">
+            <thead>
+              <tr>
+                <th class="mdl-data-table__cell--non-numeric">Ndc</th>
+                <th class="mdl-data-table__cell--non-numeric">Labeler</th>
+                <th class="mdl-data-table__cell--non-numeric">Brand</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
+              <td class="mdl-data-table__cell--non-numeric">${ drug._id }</td>
+              <td class="mdl-data-table__cell--non-numeric">${ drug.labeler.split(' ').slice(0,2).join(' ')}</td>
+              <td class="mdl-data-table__cell--non-numeric">${ drug.brand }</td>
+              <td>${ drug.wholesale.price }</td>
+            </tr>
+          </table>
+        </div>
         <div show.bind="ordered" class="mdl-cell mdl-cell--3-col" style="border-left:1px solid #e0e0e0; margin:0; overflow:hidden; padding-left:8px;">
           Ordered
           <md-input

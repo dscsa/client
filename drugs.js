@@ -14,17 +14,38 @@ export class drugs {
   }
 
   activate(params) {
-    params.id && this.select(params.id)
+    let search = this.db.search.then(_ => this.searchReady = true)
+
+    if ( ! params.id)
+      return
+
+    let drug = this.db.drugs({_id:params.id})
+    .then(drugs => {
+      drugs[0].generic = drugs[0].generics.map(generic => generic.name+" "+generic.strength).join(', ')
+      this.selectDrug(drugs[0])
+    })
+
+    Promise.all([drug, search]).then(all => {
+      this.search()
+      let groups  = this.groups.filter(group => group.name == this.term)
+      this.selectGroup(groups[0])
+    })
   }
 
-  select(drug) {
-    //console.log('selecting drug', drug)
+  selectGroup(group, autoselect) {
+    console.log('selectGroup', group.name)
+    this.group = group
+
+    if (autoselect)
+      this.selectDrug(group.drugs[0])
+  }
+
+  selectDrug(drug) {
     let url        = drug._id ? 'drugs/'+drug._id : 'drugs'
+    this.term = drug.generic+' '+drug.form
     this.router.navigate(url, { trigger: false })
     this.drug      = drug
     this.drug.pkgs = [{code:'', size:''}]
-    console.log('this.drug', this.drug)
-
   }
 
   search() {
@@ -54,7 +75,7 @@ export class drugs {
     this.groups = Object.values(groups)
   }
 
-  import() {
+  importCSV() {
     let db    = this.db
     let data  = []
     let start = Date.now()
@@ -96,22 +117,23 @@ export class drugs {
     })
   }
 
-  genericName() {
-    console.log('modifying name')
-    this.drug.generics[this.drug.generics.length-1]
-      ? this.drug.generics.push('')
-      : this.drug.generics.pop()
-
+  addGeneric() {
+    this.drug.generics.push('')
     return true
   }
 
-  drugPkg() {
-    console.log('modifying pkg')
-    let i = this.drug.pkgs.length-1
-    this.drug.pkgs[i].code && this.drug.pkgs[i].size
-      ? this.drug.pkgs.push({code:'', size:''})
-      : this.drug.pkgs.pop()
+  removeGeneric() {
+    this.drug.generics.pop()
+    return true
+  }
 
+  addPkgSize() {
+    this.drug.pkgs.push({code:'', size:''})
+    return true
+  }
+
+  removePkgSize() {
+    this.drug.pkgs.pop()
     return true
   }
 
@@ -130,12 +152,12 @@ export class drugs {
 
 export class drugNameValueConverter {
   toView(drug, regex){
+    //console.log('filter run', regex)
     if ( ! drug.generics[0])
       return
 
-    let name = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')
-    return name.replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
-    console.log('filter run')
+    let generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')
+    return generic.replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
   }
 }
 
