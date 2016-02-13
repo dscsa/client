@@ -5,17 +5,16 @@
 import {inject}     from 'aurelia-framework';
 import {Router}     from 'aurelia-router';
 import {Db}         from 'db/pouch'
-import {drugs}      from 'search'
 import {HttpClient} from 'aurelia-http-client';
 
 //@pageState()
-@inject(Db, drugs, Router, HttpClient)
+@inject(Db, Router, HttpClient)
 export class shipments {
 
-  constructor(db, drugs, router, http){
+  constructor(db, router, http){
     this.db      = db
     this.account = db.users(true).session().account
-    this.drugs   = drugs
+    this.drugs   = []
     this.router  = router
     this.http    = http
     this.stati   = ['pickup', 'shipped', 'received']
@@ -38,7 +37,7 @@ export class shipments {
       //TODO $ne didn't seem to work in version 0.7.0 of pouchdb-find
       this.accounts  = ['', ...accounts.filter(acc => acc._id != this.account._id)]
       this.shipments = {from, to}
-      this.add()
+      this.addShipment()
       this.role = {account:'from', partner:'to'}
       //default is start with "from" because it is guaranteed to have at least one shipment
       //- a new shipment where as from might have nothing and cause a navigation error
@@ -51,12 +50,12 @@ export class shipments {
         else
           shipment = from.filter(filter)[0]
       }
-      this.select(shipment || _default)
+      this.selectShipment(shipment || _default)
     })
   }
 
   //Activated from constructor and each time a shipment is selected
-  select(shipment) {
+  selectShipment(shipment) {
     this.shipment   = shipment
     this.attachment = null
 
@@ -64,7 +63,7 @@ export class shipments {
     if (shipment._id)
       url += '/'+shipment._id.split('.')[2]
     this.router.navigate(url, { trigger: false })
-    this.reset()
+    this.resetShipment()
 
     this.db.transactions({'shipment._id':shipment._id || this.account._id})
     .then(transactions => {
@@ -77,16 +76,16 @@ export class shipments {
     .catch(console.log)
   }
 
-  swapRole() { //Swap roles
+  swapRole() { //Swap donor-donee roles
     var temp          = this.role.partner
     this.role.partner = this.role.account
     this.role.account = temp
-    this.select(this.shipments[this.role.account][0])
+    this.selectShipment(this.shipments[this.role.account][0])
   }
 
   //Tracking and Shipment start off the same but can diverge
   //this allows methods to reset them back to the same value
-  reset() {
+  resetShipment() {
     this.tracking = this.shipment
     this.setAccounts()
   }
@@ -110,7 +109,7 @@ export class shipments {
   }
 
   //Called on constructor() and create() to ensure user can always add a new label.
-  add() {
+  addShipment() {
     this.shipments.from.unshift({
       tracking:'New Tracking #',
       status:"pickup",
@@ -128,7 +127,7 @@ export class shipments {
   }
 
   //Save the donation if someone changes the status/date
-  save() {
+  saveShipment() {
     //If dates were set, status may have changed
     this.shipment.status = this.getStatus()
     //Save an existing shipment
@@ -186,9 +185,9 @@ export class shipments {
     //just had falsey values, which we had to check for
     //in the "Save Selected for Inventory" button, move(),
     //and create().  Better just to change length manually
-    let i = this.checks.indexOf($index)
-    ~ i ? this.checks.splice(i, 1)
-      : this.checks.push($index)
+    let i = this.checkmarks.indexOf($index)
+    ~ i ? this.checkmarks.splice(i, 1)
+      : this.checkmarks.push($index)
 
     let j = this.diffs.indexOf($index)
     ~ j ? this.diffs.splice(j, 1)
@@ -199,7 +198,7 @@ export class shipments {
 
   //Move these items to a different "alternative" shipment then select it
   //TODO need to select the new shipment once user confirms the move
-  move() {
+  moveShipment() {
     //Confirm with user if we are moving items between existing shipments.
     //if user cancels then revert the tracking# back to the original value
     //do not confirm if moving items from inventory into a specific donation
@@ -207,22 +206,22 @@ export class shipments {
         this.shipment._id && this.shipment._id != this.tracking._id &&
         ! confirm(`Move selected items from #${this.shipment.tracking} to #${this.tracking.tracking}? This operation cannot be undone!`)
       )
-      return this.reset()
+      return this.resetShipment()
 
     //Change all selected transactions to the new or existing shipment
     //If new, tracking._id is not set but shipment._id was just set
-    for (let i of this.checks) {
+    for (let i of this.checkmarks) {
       this.transactions[i].shipment = this.tracking._id || this.shipment._id
       this.db.transactions.put(this.transactions[i])
     }
 
     //Display existing shipment or the newly created shipment
-    this.select(this.tracking._id ? this.tracking : this.shipment)
+    this.selectShipment(this.tracking._id ? this.tracking : this.shipment)
   }
 
-  create() {
+  createShipment() {
 
-    if ( ! this.checks.length && ! confirm('You have not selected any items.  Are you sure you want to create an empty shipment?'))
+    if ( ! this.checkmarks.length && ! confirm('You have not selected any items.  Are you sure you want to create an empty shipment?'))
       return
 
     //Store some account information in the shipment but not everything
@@ -234,8 +233,8 @@ export class shipments {
     console.log('adding', this.shipment)
     this.db.shipments.post(this.shipment).then(shipment => {
       Object.assign(this.shipment, shipment)
-      this.add() //Add a new shipment button in case user wants to add another
-      this.move()
+      this.addShipment() //Add a new shipment button in case user wants to add another
+      this.moveShipment()
     })
   }
 
@@ -316,6 +315,7 @@ export class filterValueConverter {
     filter = filter.toLowerCase()
     return transactions.filter(transaction => {
       return ~ `${transaction.to.name} ${transaction.tracking} ${transaction.status}`.toLowerCase().indexOf(filter)
+      return ~ `${transaction.account.to.name} ${transaction.tracking} ${transaction.status}`.toLowerCase().indexOf(filter)
     })
   }
 }

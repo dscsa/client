@@ -22,7 +22,7 @@
     <a
       repeat.for="shipment of shipments[role.account] | filter:filter"
       class="mdl-navigation__link ${ shipment._id == $parent.shipment._id ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="select(shipment)">
+      click.delegate="selectShipment(shipment)">
       <div class="mdl-typography--title">
         ${ shipment[role.partner].name || 'New shipment' }
       </div>
@@ -70,24 +70,21 @@
           disabled.bind="tracking._id || role.account == 'to'">
           To
         </md-select>
-        <div class="mdl-grid" style="padding:0;">
-          <md-select
-            style="margin-left:0"
-            value.bind="shipment.status"
-            options.bind="stati"
-            class="mdl-cell mdl-cell--4-col"
-            disabled.bind="! shipment._id">
-            Status
-          </md-select>
-          <md-input
-            value.bind="shipment[shipment.status+'_at']"
-            type="date"
-            style="padding-top:20px"
-            class="mdl-cell mdl-cell--8-col"
-            disabled.bind="! shipment._id"
-            focusout.delegate="save()">
-          </md-input>
-        </div>
+        <md-select
+          style="width:32%"
+          value.bind="shipment.status"
+          options.bind="stati"
+          disabled.bind="! shipment._id"
+          >
+          Status
+        </md-select>
+        <md-input
+          type="date"
+          style="width:64%"
+          value.bind="shipment[shipment.status+'At']"
+          disabled.bind="! shipment._id"
+          focusout.delegate="saveShipment()">
+        </md-input>
         <md-select
           style="width:100%"
           value.bind="attachment.name"
@@ -120,8 +117,8 @@
           style="width:100%"
           if.bind="! shipment._id && ! tracking._id"
           disabled.bind="! from.name || ! to.name"
-          click.delegate="create()">
-          Create Shipment With ${ checks.length ? 'Selected' : 'No Items'}
+          click.delegate="createShipment()">
+          Create Shipment With ${ checkmarks.length ? 'Selected' : 'No Items'}
         </md-button>
         <md-button color raised
           style="width:100%"
@@ -133,8 +130,8 @@
         <md-button color raised
           style="width:100%"
           if.bind="shipment._id != tracking._id"
-          disabled.bind="! checks.length"
-          click.delegate="move()">
+          disabled.one-way="! checkmarks.length"
+          click.delegate="moveShipment()">
           Move Selected to Shipment
         </md-button>
       </div>
