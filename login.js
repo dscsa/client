@@ -15,6 +15,47 @@ export class login {
   }
 
   login() {
+
+    // indexedDB.deleteDatabase('drugSearch');
+    // var request = window.indexedDB.open("drugSearch");
+    //
+    // request.onerror = function(event) {
+    //     console.log("onerror1", event) ;
+    // };
+    //
+    // request.onupgradeneeded = function(event) {
+    //     const drugData = [
+    //         { name: "metformin", strength:50},
+    //         { name: "metformin", strength:100},
+    //         { name: "zyprexa", strength:2},
+    //         { name: "zyprexa", strength:50},
+    //     ];
+    //
+    //     var db = event.target.result;
+    //     var objectStore = db.createObjectStore("drugs", { keyPath:["name", "strength"] });
+    //     objectStore.createIndex("name", ["name", "strength"], { unique: false });
+    //     for (var i in drugData) {
+    //         objectStore.add(drugData[i]);
+    //     }
+    // };
+    //
+    // request.onsuccess = function(event) {
+    //   console.log('hi')
+    //     var db = event.target.result;
+    //     var transaction = db.transaction(['drugs'],'readonly');
+    //     var store = transaction.objectStore('drugs');
+    //     var index = store.index('name').openCursor(IDBKeyRange.bound(['zyprex', '100'], ['zyprex\uffff', '100\uffff']))
+    //
+    //     index.onsuccess = function(event) {
+    //         if (! event.target.result) return
+    //         alert("index.get is " + JSON.stringify(event.target.result.key) + " " + JSON.stringify(event.target.result.value));
+    //         event.target.result.continue()
+    //     };
+    //     index.onerror = function(event) {
+    //         console.log("onerror2", event) ;
+    //     };
+    // }
+
     let session = this.db.users({_id:this.name}).session
 
     this.enabled = false
@@ -28,7 +69,7 @@ export class login {
     .catch(err => {
       this.enabled = true
       this.loading = null
-      console.log('login failed because', err.message)
+      console.log('login failed because', err.message, err.stack)
     })
   }
 }

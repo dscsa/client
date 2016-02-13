@@ -8,9 +8,11 @@
   <require from="./elems/md-checkbox"></require>
   <require from="./elems/md-button"></require>
   <require from="./elems/md-autocomplete"></require>
+  <require from="./elems/md-snackbar"></require>
   <md-drawer>
     <md-input
       value.bind="filter"
+      autoselect
       style="padding:0 8px; width:auto">
       Filter shipments ${ role.account } you
     </md-input>
@@ -24,26 +26,25 @@
       class="mdl-navigation__link ${ shipment._id == $parent.shipment._id ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(shipment)">
       <div class="mdl-typography--title">
-        ${ shipment[role.partner].name || 'New shipment' }
+        ${ shipment._id ? shipment.account[role.partner].name : 'Create'}
       </div>
-      ${ shipment._id ? '#'+shipment.tracking+', '+shipment.status : 'Create New Label' }
+      ${ shipment._id ? '#0'+shipment.tracking+', '+shipment.status : 'Shipment From You' }
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col" style="">
       <div class="mdl-card__title mdl-grid">
         <div
-          class="mdl-card__title-text mdl-cell mdl-cell--12-col"
-          style="text-transform:capitalize">
-          Shipment ${ role.account } you
+          class="mdl-card__title-text mdl-cell mdl-cell--12-col">
+          ${ shipment._id ? 'Shipment #0'+shipment.tracking : 'New Shipment From You' }
         </div>
-        <div class="mdl-cell mdl-cell--12-col">
-          <strong>XXX</strong> units from
+        <div class="mdl-cell mdl-cell--12-col" style="margin-top:0px; margin-bottom:-5px">
           <strong>${transactions.length}</strong> items worth
           <strong>$${ transactions | value }</strong>
         </div>
       </div>
-      <div class="mdl-card__supporting-text" style="font-size:16px;">
+      <!-- Put calculated height here not on the card because changing height made input shift up and down when select changed values -->
+      <div class="mdl-card__supporting-text" style="font-size:16px; height:calc(100vh - 200px); padding-top:0px; overflow-y:scroll">
         <md-select
           style="width:100%"
           value.bind="tracking"
@@ -52,8 +53,9 @@
           property="tracking">
           Tracking #
         </md-select>
+        <!-- css="${ role.partner == 'from' && 'font-weight:bold;' }" -->
         <md-select
-          style="width:100%"
+          style="width:100%;"
           value.bind="from"
           options.bind="role.partner == 'from' ? accounts : [account]"
           property="name"
@@ -61,8 +63,9 @@
           disabled.bind="tracking._id || role.account == 'from'">
           From
         </md-select>
+        <!-- css = "${ role.partner == 'to' && 'font-weight:bold;' }" -->
         <md-select
-          style="width:100%"
+          style="width:100%;"
           value.bind="to"
           options.bind="role.partner == 'to' ? accounts : [account]"
           property="name"
@@ -106,9 +109,8 @@
           change.delegate="setAttachment(upload.files[0])"
           style="display:none">
         <!-- The below padding / positioning keeps a constant aspect ratio for the embeded pdf  -->
-        <div style="width: 100%; padding-top:56px; padding-bottom:129%; position:relative;">
+        <div if.bind="attachment.url" style="width: 100%; padding-top:56px; padding-bottom:129%; position:relative;">
           <embed
-            if.bind="attachment.url"
             src.bind="attachment.url"
             type.bind="attachment.type"
             style="position:absolute; height:100%; width:100%; top:0; bottom:0">
@@ -136,7 +138,7 @@
         </md-button>
       </div>
     </div>
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col" style="height:calc(100vh - 96px);">
       <md-autocomplete
         placeholder.bind="(db.genericSearch.ready && db.ndcSearch.ready) ? 'Add Drugs by Generic Name or NDC...' : 'Loading Drug Search...'"
         disabled.bind="! db.genericSearch.ready || ! db.ndcSearch.ready"
@@ -222,5 +224,6 @@
         </table>
       </div>
     </div>
+    <md-snackbar ref="snackbar"></md-snackbar>
   </section>
 </template>

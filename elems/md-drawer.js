@@ -23,7 +23,7 @@ export class MdDrawerCustomElement {
   }
 
   attached() {
-
     componentHandler.upgradeAllRegistered()
+    header.firstChild.click()
   }
 }

@@ -38,10 +38,11 @@ export class shipments {
       this.accounts  = ['', ...accounts.filter(acc => acc._id != this.account._id)]
       this.shipments = {from, to}
       this.addShipment()
+      console.log(this.shipments)
       this.role = {account:'from', partner:'to'}
       //default is start with "from" because it is guaranteed to have at least one shipment
       //- a new shipment where as from might have nothing and cause a navigation error
-      let shipment, _default = from[0]
+      let shipment, _default = from[0] || {}
       //If shipment id exists then switch to the correct role
       if (params.id) {
         shipment = to.filter(filter)[0]
@@ -72,7 +73,10 @@ export class shipments {
       this.checkmarks = this.transactions
         .map((o,i) => o.verifiedAt ? i : null)
         .filter(_ => _ != null)
+
+        console.log('done', this.shipments)
     })
+
     .catch(console.log)
   }
 
@@ -248,7 +252,7 @@ export class shipments {
     //__array_observer__ is an enumerable key in this.transactions here
     //for some reason. Current code catches this bug but be careful.
     for (let i of this.diffs) {
-      let method = this.transactions[i].verified_at ? 'asDelete' : 'asPost'
+      let method = this.transactions[i].verifiedAt ? 'asDelete' : 'asPost'
       this.http.createRequest('//localhost:3000/transactions/'+this.transactions[i]._id+'/verified')
       .withCredentials(true)[method]().send().catch(_ => _) //empty catch because failed post requests alrady appear in console
     }
@@ -316,11 +320,15 @@ export class shipments {
   }
 }
 
+
+//
+// Value Converters
+//
+
 export class filterValueConverter {
   toView(transactions = [], filter = ''){
     filter = filter.toLowerCase()
     return transactions.filter(transaction => {
-      return ~ `${transaction.to.name} ${transaction.tracking} ${transaction.status}`.toLowerCase().indexOf(filter)
       return ~ `${transaction.account.to.name} ${transaction.tracking} ${transaction.status}`.toLowerCase().indexOf(filter)
     })
   }
@@ -330,5 +338,11 @@ export class valueValueConverter {
   toView(transactions = [], filter='') {
     console.log('trans', transactions)
     return transactions.reduce((a, b) => {console.log('a', a, 'b', b, (b.drug.retail || {price:0}).price); +(b.drug.retail || {}).price+a}, 0)
+  }
+}
+
+export class drugNameValueConverter {
+  toView(drug, regex){
+    return drug.generic.replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
   }
 }
