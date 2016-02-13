@@ -27,20 +27,31 @@ export class drugs {
 
   }
 
-  search($event) {
+  search() {
 
-    var term = $event.target.value.toLowerCase()
-
+    let drugs, term = this.term.replace(this.drug.form, '').toLowerCase()
+    console.log('searching for...', term)
     if (term.length < 3)
-      return this.drugs = []
+      return this.groups = []
 
     if (/^[\d-]+$/.test(term)) {
-      this.drugs = this.db.ndcSearch(term)
-      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+      this.regex  = RegExp('('+term+')', 'gi')
+      drugs  = this.db.search.ndc(term)
+
     } else {
-      this.drugs = this.db.genericSearch(term)
-      this.regex = RegExp('('+term+')', 'gi')
+      this.regex  = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+      drugs  = this.db.search.generic(term)
     }
+
+    let groups = {}
+    for (let drug of drugs) {
+      let name = drug.generic+' '+drug.form
+      groups[name]
+        ? groups[name].drugs.push(drug)
+        : groups[name] = {name, drugs:[drug]}
+    }
+
+    this.groups = Object.values(groups)
   }
 
   import() {

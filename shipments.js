@@ -250,11 +250,63 @@ export class shipments {
     this.diffs = []
   }
 
-  addTransaction(key) {
-    this.search = null //Reset search's auto-complete
-    return this.drugs.add(key.id, this.shipment)  //Add the drug to the database
+  search($event) {
+
+    //Save this so we can reset it in addTransaction
+    this.term = $event.target
+    let term = this.term.value.toLowerCase()
+
+    if (term.length < 3)
+      return this.drugs = []
+
+    if (/^[\d-]+$/.test(term)) {
+      this.drugs = this.db.ndcSearch(term)
+      this.regex = RegExp('('+term+')', 'gi')
+    } else {
+      this.drugs = this.db.genericSearch(term)
+      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+    }
+  }
+
+  saveTransaction(transaction, $event, form) {
+
+    var data = {
+      message: 'Button color changed.',
+      timeout: 2000
+    };
+
+    this.snackbar.show(data)
+
+    //Do not save if clicking around within the same drug.
+    if (form.contains($event.relatedTarget))
+      return
+
+    //TODO only save if change occured
+    console.log('saving', transaction)
+    return this.db.transactions.put(transaction)
+  }
+
+  addTransaction(drug) {
+    let transaction = {
+      drug:{
+        _id:drug._id,
+        generics:drug.generics,
+        form:drug.form,
+        retail:drug.retail,
+        wholesale:drug.wholesale,
+      },
+      shipment:{ //if undefined server will assume inventory and put account_id here.
+        _id:this.shipment._id
+      },
+      qty:{from:null, to:null},
+      lot:{from:null, to:null},
+      exp:{from:null, to:null}
+    }
+    console.log('addTransaction', drug, transaction)
+    return this.db.transactions.post(transaction)
     .then(transaction => {
       this.transactions.unshift(transaction)
+      this.term.value = '' //Reset search's auto-complete
     }) //Add the drug to the view
   }
 }
