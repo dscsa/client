@@ -31,8 +31,8 @@ export class shipments {
       //TODO to = $elemMatch:this.account._id
       //TODO from = $in:this.account.authorized
       this.db.accounts({state:'FL'}),
-      this.db.shipments({'from.account':this.account._id}),
-      this.db.shipments({'to.account':this.account._id})
+      this.db.shipments({'account.from._id':this.account._id}),
+      this.db.shipments({'account.to._id':this.account._id})
     ])
     .then(([accounts, from, to]) => {
       //TODO $ne didn't seem to work in version 0.7.0 of pouchdb-find
@@ -66,12 +66,12 @@ export class shipments {
     this.router.navigate(url, { trigger: false })
     this.reset()
 
-    this.db.transactions({shipment:shipment._id || this.account._id})
+    this.db.transactions({'shipment._id':shipment._id || this.account._id})
     .then(transactions => {
       this.transactions = transactions
       this.diffs  = [] //Check boxes of verified, and track the differences
-      this.checks = this.transactions
-        .map((o,i) => o.verified_at ? i : null)
+      this.checkmarks = this.transactions
+        .map((o,i) => o.verifiedAt ? i : null)
         .filter(_ => _ != null)
     })
     .catch(console.log)
@@ -105,7 +105,7 @@ export class shipments {
   //Status is the highest stati with a truthy date
   getStatus() {
     return this.stati.reduce((prev, curr) => {
-      return this.shipment[curr+'_at'] ? curr : prev
+      return this.shipment[curr+'At'] ? curr : prev
     })
   }
 
@@ -114,13 +114,15 @@ export class shipments {
     this.shipments.from.unshift({
       tracking:'New Tracking #',
       status:"pickup",
-      pickup_at:null,
-      shipped_at:null,
-      received_at:null,
-      from:{},
-      to:{
-        name:this.account.name,
-        account:this.account._id
+      pickupAt:null,
+      shippedAt:null,
+      receivedAt:null,
+      account:{
+        to: {
+          _id:this.account._id,
+          name:this.account.name
+        },
+        from:{}
       }
     })
   }
@@ -224,8 +226,8 @@ export class shipments {
       return
 
     //Store some account information in the shipment but not everything
-    this.shipment.to = {name:this.to.name, account:this.to._id}
-    this.shipment.from = {name:this.from.name, account:this.from._id}
+    this.shipment.account.to   = {_id:this.to._id, name:this.to.name}
+    this.shipment.account.from = { _id:this.from._id, name:this.from.name}
     delete this.shipment.tracking //get rid of New Tracking# to have one assigned
 
     //Create shipment then move inventory transactions to it

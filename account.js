@@ -39,7 +39,7 @@ export class account {
       name:'',
       phone:'',
       password:'',
-      account:this.session.account
+      account:{_id:this.session.account._id}
     })
     this.users = this.users.slice() //Aurelia hack to reactivate the filter
   }
