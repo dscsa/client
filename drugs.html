@@ -156,8 +156,40 @@
             <td class="mdl-data-table__cell--non-numeric">${ drug._id}</td>
             <td class="mdl-data-table__cell--non-numeric">${ drug.form}</td>
             <td class="mdl-data-table__cell--non-numeric">${ drug.labeler.split(' ').slice(0,2).join(' ')}</td>
+      <md-switch
+        class=""
+        style="position:absolute; right:20px; top:10px; z-index:3"
+        checked.bind="ordered">
+      </md-switch>
           </tr>
         </table>
+        <div show.bind="ordered" class="mdl-cell mdl-cell--3-col" style="border-left:1px solid #e0e0e0; margin:0; overflow:hidden; padding-left:8px;">
+          Ordered
+          <md-input
+            style="width:100%">
+            Min Qty
+          </md-input>
+          <md-input
+            disabled.bind="true"
+            style="width:100%">
+            Min Exp
+          </md-input>
+          <md-input
+            disabled.bind="true"
+            style="width:100%">
+            Max Price
+          </md-input>
+          <md-input
+            disabled.bind="true"
+            style="width:100%">
+            Reorder At
+          </md-input>
+          <md-input
+            disabled.bind="true"
+            style="width:100%">
+            Reorder To
+          </md-input>
+        </div>
       </div>
     </div>
   </section>
