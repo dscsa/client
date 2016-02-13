@@ -94,10 +94,13 @@ export class shipments {
   //we need to manually find the correct from based on selected shipment
   setAccounts() {
     this.to = this.accounts.filter(to => {
-      return to._id == this.tracking.to.account
+      console.log('to', to, 'track', this.tracking.account)
+      return to._id == this.tracking.account.to._id
     })[0]
+
     this.from = this.accounts.filter(from => {
-      return from._id == this.tracking.from.account
+      console.log('from', from, 'track', this.tracking.account)
+      return from._id == this.tracking.account.from._id
     })[0]
   }
 
@@ -232,6 +235,9 @@ export class shipments {
     //Create shipment then move inventory transactions to it
     console.log('adding', this.shipment)
     this.db.shipments.post(this.shipment).then(shipment => {
+      console.log('new shipment info', shipment, this.shipment, this.tracking, this.shipments)
+      this.shipments.from = this.shipments.from.slice()
+      this.shipments.to = this.shipments.to.slice()
       Object.assign(this.shipment, shipment)
       this.addShipment() //Add a new shipment button in case user wants to add another
       this.moveShipment()
