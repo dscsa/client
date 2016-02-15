@@ -21,21 +21,20 @@ export class shipments {
   }
 
   activate(params) {
-    //Keep url concise by using the last segment of the id
-    function filter(s) {
-      return s._id && s._id.split('.')[2] === params.id
-    }
+
+    let search = this.db.search.then(_ => this.searchReady = true)
+
     return Promise.all([
-      //Start all of our a sync tasks
-      //TODO to = $elemMatch:this.account._id
-      //TODO from = $in:this.account.authorized
-      this.db.accounts({state:'FL'}),
+      //Start all of our async tasks
+      this.db.accounts({state:this.account.state, _id:{$lt:this.account._id}}),   //TODO to = $elemMatch:this.account._id, from = $in:this.account.authorized
+      this.db.accounts({state:this.account.state, _id:{$gt:this.account._id}}),   //TODO to = $elemMatch:this.account._id, from = $in:this.account.authorize
       this.db.shipments({'account.from._id':this.account._id}),
       this.db.shipments({'account.to._id':this.account._id})
     ])
-    .then(([accounts, from, to]) => {
       //TODO $ne didn't seem to work in version 0.7.0 of pouchdb-find
-      this.accounts  = ['', ...accounts.filter(acc => acc._id != this.account._id)]
+    .then(([ltAccounts, gtAccounts, from, to]) => {
+      //Stupid hack because pouchdb find doesn't seem to support $ne or $or properly
+      this.accounts  = ['', ...ltAccounts, ...gtAccounts]
       this.shipments = {from, to}
       this.addShipment()
       console.log(this.shipments)
