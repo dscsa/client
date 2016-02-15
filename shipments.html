@@ -140,9 +140,10 @@
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col" style="height:calc(100vh - 96px);">
       <md-autocomplete
-        placeholder.bind="(db.genericSearch.ready && db.ndcSearch.ready) ? 'Add Drugs by Generic Name or NDC...' : 'Loading Drug Search...'"
-        disabled.bind="! db.genericSearch.ready || ! db.ndcSearch.ready"
-        input.delegate="search($event)"
+        placeholder.bind="searchReady ? 'Add Drugs by Generic Name or NDC...' : 'Loading Drug Search...'"
+        disabled.bind="! searchReady"
+        value.bind="term"
+        input.delegate="search()"
         style="margin:0px 16px">
         <table md-table>
           <tr

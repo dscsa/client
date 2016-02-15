@@ -259,21 +259,19 @@ export class shipments {
     this.diffs = []
   }
 
-  search($event) {
-
-    //Save this so we can reset it in addTransaction
-    this.term = $event.target
-    let term = this.term.value.toLowerCase()
-
+  search() {
+    let term = this.term.toLowerCase()
+    console.log('searching for...', term)
     if (term.length < 3)
       return this.drugs = []
 
     if (/^[\d-]+$/.test(term)) {
-      this.drugs = this.db.ndcSearch(term)
       this.regex = RegExp('('+term+')', 'gi')
+      this.drugs = this.db.search.ndc(term)
+
     } else {
-      this.drugs = this.db.genericSearch(term)
       this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+      this.drugs = this.db.search.generic(term)
     }
   }
 
@@ -314,9 +312,9 @@ export class shipments {
     console.log('addTransaction', drug, transaction)
     return this.db.transactions.post(transaction)
     .then(transaction => {
-      this.transactions.unshift(transaction)
-      this.term.value = '' //Reset search's auto-complete
-    }) //Add the drug to the view
+      this.transactions.unshift(transaction) //Add the drug to the view
+      this.term = '' //Reset search's auto-complete
+    })
   }
 }
 
