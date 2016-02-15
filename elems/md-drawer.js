@@ -14,6 +14,8 @@ export class MdDrawerCustomElement {
     element.classList.add("mdl-navigation")
     element.style['padding-top'] = '6px'
 
+    this.autofocus = element.hasAttribute('autofocus')
+
     //Empty the drawer
     if (drawer.firstChild)
       drawer.removeChild(drawer.firstChild);
@@ -24,6 +26,8 @@ export class MdDrawerCustomElement {
 
   attached() {
     componentHandler.upgradeAllRegistered()
-    header.firstChild.click()
+
+    if (this.autofocus)
+      header.firstChild.click()
   }
 }
