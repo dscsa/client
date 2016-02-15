@@ -304,8 +304,8 @@ export class shipments {
         retail:drug.retail,
         wholesale:drug.wholesale,
       },
-      shipment:{ //if undefined server will assume inventory and put account_id here.
-        _id:this.shipment._id
+      shipment:{
+        _id:this.shipment._id || this.account._id
       },
       qty:{from:null, to:null},
       lot:{from:null, to:null},
