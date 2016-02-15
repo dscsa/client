@@ -14,19 +14,19 @@ export class inventory {
   }
 
   activate(params) {
-    return this.db.transactions({shipment:this.session.account._id})
+    return this.db.transactions({'shipment._id':this.session.account._id})
     .then(transactions => {
       this.groups = {}
 
-      for (let o of transactions) {
-        if (this.groups[o.drug]) {
-          this.groups[o.drug].total += +o.qty.from || 0
-          this.groups[o.drug].sources.push(o)
+      for (let t of transactions) {
+        if (this.groups[t.drug._id]) {
+          this.groups[t.drug._id].total += +t.qty.from || 0
+          this.groups[t.drug._id].sources.push(t)
         }
         else {
-          this.groups[o.drug] = {total:+o.qty.from || 0, sources:[o]}
-          this.db.drugs({_id:o.drug})
-          .then(drugs => this.groups[o.drug].image = drugs[0].image)
+          this.groups[t.drug._id] = {total:+t.qty.from || 0, sources:[t]}
+          this.db.drugs({_id:t.drug._id})
+          .then(drugs => this.groups[t.drug._id].image = drugs[0].image)
         }
       }
       this.select(this.groups[params.id] || Object.values(this.groups)[0])
@@ -38,7 +38,7 @@ export class inventory {
     //Update URL with lifecycle methods so we can come back to this shipment
     if (group) {
       this.group = group
-      this.router.navigate('inventory/'+group.sources[0].drug , { trigger: false })
+      this.router.navigate('inventory/'+group.sources[0].drug._id , { trigger: false })
     }
     else {
       this.group = {sources:[]}
@@ -134,6 +134,7 @@ export class inventory {
 
 export class totalValueConverter {
   toView(arr){
+    console.log('total', arr)
     return arr.reduce((a,b) => (+a)+(+b))
   }
 }
@@ -145,5 +146,12 @@ export class filterValueConverter {
     return Object.values(transactions).filter(transaction => {
       return ~ `${transaction.sources[0].name} ${transaction.sources[0].strength} ${transaction.sources[0].form} ${transaction.sources[0].drug}`.toLowerCase().indexOf(filter)
     })
+  }
+}
+
+export class drugNameValueConverter {
+  toView(transaction){
+    console.log('transaction', transaction)
+    return transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+transaction.drug.form
   }
 }

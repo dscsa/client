@@ -10,24 +10,6 @@
     <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter ${ type ? 'Dispositioned' : 'Received' }</md-input>
     <md-switch click.delegate="toggleType()" style="margin:-45px 0 0 197px;"></md-switch>
     <div class="mdl-grid" style="margin:0;padding:0">
-      <md-select
-        value.bind="month"
-        options.bind="months"
-        class="mdl-cell mdl-cell--6-col">
-        Month
-      </md-select>
-      <md-select
-        value.bind="year"
-        options.bind="[2015,2014,2013,2012,2011,2010]"
-        class="mdl-cell mdl-cell--6-col">
-        Year
-      </md-select>
-      <md-select
-        value.bind="transaction_date"
-        options.bind="['pickup', 'shipped', 'received', 'verified']"
-        class="mdl-cell mdl-cell--6-col">
-        Transaction Date
-      </md-select>
     </div>
     <div style="margin:0 auto">
       <md-button raised>Export As CSV</md-button>
@@ -43,29 +25,48 @@
       <div innerHTML.bind="history" class="mdl-grid" style="font-size:12px; font-family:Monaco; margin:0 8px; white-space:pre-wrap; line-height:15px"></div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
-      <table md-table style="margin:0 16px; width:calc(100% - 32px)">
+      <div class="mdl-card__title" style="margin-bottom:-52px">
+        <div class="mdl-card__title-text">
+          Record for
+          <md-select
+            style="width:auto;padding:0 5px"
+            value.bind="transactionDate"
+            options.bind="['pickup', 'shipped', 'received', 'verified', 'destroyed']">
+          </md-select>
+          in
+          <md-select
+            style="width:auto; padding:0 5px"
+            value.bind="month"
+            options.bind="months">
+          </md-select>
+          <md-select
+            style="width:auto; padding:0"
+            value.bind="year"
+            options.bind="[2015,2014,2013,2012,2011,2010]">
+          </md-select>
+        </div>
+      </div>
+      <table md-table style="margin:16px; width:calc(100% - 32px)">
         <thead>
           <tr>
-            <th style="text-align:left; padding-left:0">${ type ? 'Disposition' : 'Received' } Record for ${month} ${year}</th>
-            <th>NDC</th>
-            <th style="text-align:left; width:5%">Lot</th>
-            <th style="text-align:left; width:5%; padding-left:0px">Exp</th>
-            <th style="text-align:left; width:5%">Qty</th>
+            <th style="text-align:left;">Drug</th>
+            <th style="text-align:left;">Ndc</th>
+            <th style="text-align:left; width:5%;">Exp</th>
+            <th style="width:5%">Qty</th>
           </tr>
         </thead>
         <tbody>
-          <tr style="padding-top:7px;" repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="select(transaction)">
+          <tr repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="select(transaction)">
             <td style="text-align:left;">
-              ${ transaction.names.join(', ') } ${ transaction.form }
+              ${ transaction | drugName }
             </td>
-            <td>${ transaction.drug }</td>
-            <td style="padding-top:8px">
-              ${ transaction.lot.to || transaction.lot.from }
+            <td style="text-align:left;">
+              ${ transaction.drug._id }
             </td>
-            <td style="padding:8px 0 0 0">
+            <td style="text-align:left;">
               ${ transaction.exp.to || transaction.exp.from }
             </td>
-            <td style="padding-top:8px">
+            <td>
               ${ transaction.qty.to || transaction.qty.from }
             </td>
           </tr>

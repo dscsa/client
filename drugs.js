@@ -51,7 +51,7 @@ export class drugs {
   search() {
 
     let drugs, term = this.term.replace(this.drug.form, '').toLowerCase()
-    console.log('searching for...', term)
+
     if (term.length < 3)
       return this.groups = []
 
@@ -147,17 +147,6 @@ export class drugs {
 
   delete() {
     console.log('TO BE IMPLEMENETED')
-  }
-}
-
-export class drugNameValueConverter {
-  toView(drug, regex){
-    //console.log('filter run', regex)
-    if ( ! drug.generics[0])
-      return
-
-    let generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')
-    return generic.replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
   }
 }
 

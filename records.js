@@ -27,7 +27,7 @@ export class shipments {
     return this.db.transactions()
     .then(transactions => {
       //TODO do not include inventory items in original search rather than doing filter here
-      this.transactions = transactions.filter(t => t.shipment && ~ t.shipment.indexOf('.'))
+      this.transactions = transactions.filter(t => t.shipment._id && ~ t.shipment._id.indexOf('.'))
       let selected = this.transactions.filter(t => t._id === params.id)[0]
       return this.select(selected || transactions[0])
 
@@ -47,22 +47,22 @@ export class shipments {
     .then(history => {
       //TODO move this to /history?text=true. Other formatting options?
       function id(k,o) {
-        console.log(o, typeof o)
+        //console.log(o, typeof o)
         if (Array.isArray(o))
           return o
         return o.shipment.from.name+' '+o._id
       }
-      console.log('history', JSON.stringify(history.content, id, "*"))
+      //console.log('history', JSON.stringify(history.content, id, "*"))
       function pad(word) {
         return (word+' '.repeat(25)).slice(0, 25)
       }
       this.history = JSON.stringify(
         history.content,
-        function(k,v) {
+        (k,v) => {
           if (Array.isArray(v))
             return v
-
-            let date = v.shipment[this.transaction_date + '_at'] || v.verified_at || ''
+            console.log('shipment', v.shipment, this.transactionDate)
+            let date = v.shipment[this.transactionDate + 'At'] || v.verifiedAt || ''
             let href = '/#/shipments/'+v.shipment._id.split('.')[2]
 
             return pad(v.shipment.from.name)+"<a href='"+href+"'>"+v.type+'</a><br>'+
@@ -75,7 +75,7 @@ export class shipments {
       .replace(/\n?\s*\],?/g, '</div>')
       .replace(/ *"/g, '')
       .replace(/\n/g, '<br><br>')
-      console.log('history', JSON.stringify(this.history))
+      //console.log('history', JSON.stringify(this.history))
     })
   }
 }
@@ -86,5 +86,12 @@ export class filterValueConverter {
     return transactions.filter(transaction => {
       return ~ `${transaction.to.name} ${transaction.tracking} ${transaction.status}`.toLowerCase().indexOf(filter)
     })
+  }
+}
+
+export class drugNameValueConverter {
+  toView(transaction){
+    console.log('transaction', transaction)
+    return transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+transaction.drug.form
   }
 }

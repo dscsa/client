@@ -31,18 +31,22 @@ export class shipments {
       this.db.shipments({'account.from._id':this.account._id}),
       this.db.shipments({'account.to._id':this.account._id})
     ])
-      //TODO $ne didn't seem to work in version 0.7.0 of pouchdb-find
     .then(([ltAccounts, gtAccounts, from, to]) => {
       //Stupid hack because pouchdb find doesn't seem to support $ne or $or properly
       this.accounts  = ['', ...ltAccounts, ...gtAccounts]
       this.shipments = {from, to}
-      this.addShipment()
-      console.log(this.shipments)
-      this.role = {account:'from', partner:'to'}
-      //default is start with "from" because it is guaranteed to have at least one shipment
-      //- a new shipment where as from might have nothing and cause a navigation error
-      let shipment, _default = from[0] || {}
+      this.role      = {account:'from', partner:'to'}
+
+      //Keep url concise by using the last segment of the id
+      let shipment, filter = function(s) {
+        return s._id && s._id.split('.')[2] === params.id
+      }
+
+      //create a "new shipment" for "from" and select it by default
+      //note that new accounts might have no actual shipments.
       //If shipment id exists then switch to the correct role
+      this.addShipment()
+
       if (params.id) {
         shipment = to.filter(filter)[0]
         if (shipment)
@@ -50,7 +54,7 @@ export class shipments {
         else
           shipment = from.filter(filter)[0]
       }
-      this.selectShipment(shipment || _default)
+      this.selectShipment(shipment || from[0])
     })
   }
 
@@ -72,8 +76,6 @@ export class shipments {
       this.checkmarks = this.transactions
         .map((o,i) => o.verifiedAt ? i : null)
         .filter(_ => _ != null)
-
-        console.log('done', this.shipments)
     })
 
     .catch(console.log)
@@ -97,12 +99,12 @@ export class shipments {
   //we need to manually find the correct from based on selected shipment
   setAccounts() {
     this.to = this.accounts.filter(to => {
-      console.log('to', to, 'track', this.tracking.account)
+      //console.log('to', to, 'track', this.tracking.account)
       return to._id == this.tracking.account.to._id
     })[0]
 
     this.from = this.accounts.filter(from => {
-      console.log('from', from, 'track', this.tracking.account)
+      //console.log('from', from, 'track', this.tracking.account)
       return from._id == this.tracking.account.from._id
     })[0]
   }
@@ -333,13 +335,13 @@ export class filterValueConverter {
 
 export class valueValueConverter {
   toView(transactions = [], filter='') {
-    console.log('trans', transactions)
-    return transactions.reduce((a, b) => {console.log('a', a, 'b', b, (b.drug.retail || {price:0}).price); +(b.drug.retail || {}).price+a}, 0)
+    return transactions.reduce((a, b) => { (b.drug.retail || {}).price+a}, 0)
   }
 }
 
 export class drugNameValueConverter {
   toView(drug, regex){
+    drug.generic = drug.generic || drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
     return drug.generic.replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
   }
 }
