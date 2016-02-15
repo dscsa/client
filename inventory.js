@@ -2,16 +2,14 @@
 //Autofocus on new drug
 import {inject} from 'aurelia-framework';
 import {Db}     from 'db/pouch'
-import {drugs}  from 'search'
 import {Router}     from 'aurelia-router';
 
-@inject(Db, drugs, Router)
+@inject(Db, Router)
 export class inventory {
 
-  constructor(db, drugs, router){
+  constructor(db, router){
     this.db      = db
     this.session = db.users(true).session()
-    this.drugs   = drugs
     this.router  = router
   }
 
@@ -60,6 +58,24 @@ export class inventory {
     this.group.total = this.group.sources.reduce((a,b) => {
       return a + (+b.qty.from || 0)
     }, 0)
+  }
+
+  saveTransaction(transaction, $event, form) {
+
+    // var data = {
+    //   message: 'Button color changed.',
+    //   timeout: 2000
+    // };
+    //
+    // this.snackbar.show(data)
+
+    //Do not save if clicking around within the same drug.
+    if (form.contains($event.relatedTarget))
+      return
+
+    //TODO only save if change occured
+    console.log('saving', transaction)
+    return this.db.transactions.put(transaction)
   }
 
 //TODO don't bind when repacking so that you can skip and change things to get to 30
