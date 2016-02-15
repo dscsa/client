@@ -17,7 +17,8 @@ export class MdButtonCustomElement {
   //so use delegate, but for some reason delegate stops bubbling even if we do
   //"return true" so we need to to refire the event.
   click($event) {
-    if ( ! this.button.disabled)
+    //console.log('click', this.button.disabled))
+    if ( ! this.disabled)
       this.element.dispatchEvent(new MouseEvent($event.type, $event))
   }
 
