@@ -16,6 +16,7 @@ export class shipments {
     this.account = db.users(true).session().account
     this.router  = router
     this.http    = http
+    //this.months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
     this.months  = ['January','February','March','April','May','June','July','August','September','October','November','December']
     this.year    = new Date().getYear()+1900
     this.month   = this.months[new Date().getMonth()]
@@ -61,12 +62,12 @@ export class shipments {
         (k,v) => {
           if (Array.isArray(v))
             return v
-            console.log('shipment', v.shipment, this.transactionDate)
+
             let date = v.shipment[this.transactionDate + 'At'] || v.verifiedAt || ''
             let href = '/#/shipments/'+v.shipment._id.split('.')[2]
 
             return pad(v.shipment.from.name)+"<a href='"+href+"'>"+v.type+'</a><br>'+
-                   pad(v.shipment.from.street)+'Date '+date.slice(2, 10)+'<br>'+
+                   pad(v.shipment.from.street)+this.transactionDate[0].toUpperCase()+this.transactionDate.slice(1)+' '+date.slice(2, 10)+'<br>'+
                    pad(v.shipment.from.city+', '+v.shipment.from.state+' '+v.shipment.from.zip)+'Quantity '+(v.qty.to || v.qty.from)
         },
         "   "
