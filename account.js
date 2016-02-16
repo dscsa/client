@@ -16,8 +16,12 @@ export class account {
     this.db.accounts({_id:this.session.account._id})
     .then(accounts => { console.log('accounts', accounts[0]); this.account = accounts[0]})
 
-    this.db.accounts({_id:{$ne:this.session.account._id}, state:this.session.account.state})
-    .then(accounts => this.accounts = accounts)
+    //this.db.accounts({_id:{$ne:this.session.account._id}, state:this.session.account.state})
+    //.then(accounts => this.accounts = accounts)
+    Promise.all([
+      this.db.accounts({state:this.session.account.state, _id:{$lt:this.session.account._id}}),
+      this.db.accounts({state:this.session.account.state, _id:{$gt:this.session.account._id}})
+    ]).then(all => this.accounts = [...all[0], ...all[1]])
 
     return this.db.users()
     .then(users => {

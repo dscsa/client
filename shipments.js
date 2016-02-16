@@ -27,7 +27,7 @@ export class shipments {
     return Promise.all([
       //Start all of our async tasks
       this.db.accounts({state:this.account.state, _id:{$lt:this.account._id}}),   //TODO to = $elemMatch:this.account._id, from = $in:this.account.authorized
-      this.db.accounts({state:this.account.state, _id:{$gt:this.account._id}}),   //TODO to = $elemMatch:this.account._id, from = $in:this.account.authorize
+      this.db.accounts({state:this.account.state, _id:{$gt:this.account._id}}),   //TODO to = $elemMatch:this.account._id, from = $in:this.account.authorized
       this.db.shipments({'account.from._id':this.account._id}),
       this.db.shipments({'account.to._id':this.account._id})
     ])
