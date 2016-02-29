@@ -11,6 +11,14 @@ export class drugs {
     this.router = router
     this.drugs  = []
     this.drug   = {generics:[''], pkgs:[{code:'', size:''}]}
+    // window.onbeforeunload = e => {
+    //   console.log('onunload')
+    //   console.log(this.save())
+    //   return 'Hi I am unload'
+    // }
+    onbeforeunload = e => {
+      this.save()
+    }
   }
 
   activate(params) {
@@ -118,12 +126,14 @@ export class drugs {
   }
 
   addGeneric() {
-    this.drug.generics.push('')
+    this.drug.generics.push({name:'', strength:''})
+    this.save() //button doesn't trigger focusout -> save
     return true
   }
 
   removeGeneric() {
     this.drug.generics.pop()
+    this.save() //button doesn't trigger focusout -> save
     return true
   }
 
@@ -139,8 +149,10 @@ export class drugs {
 
   save($event, form) {
     //Do not save if clicking around within the same/new drug.
-    if (this.drug._rev ? form.contains($event.relatedTarget) : $event)
+    if ($event && this.drug._rev ? form.contains($event.relatedTarget) : $event)
       return
+
+    delete this.drug.generic
     console.log('saving', this.drug)
     return this.db.drugs.put(this.drug)
   }

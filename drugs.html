@@ -53,15 +53,15 @@
           NDC9
         </md-input>
         <!-- click event fires after focusout (form was already saved).  mousedown fires before focusout -->
-        <div if.bind="drug.generics[0]" style="position:relative">
+        <div if.bind="drug.generics[0].name" style="position:relative">
           <md-button color fab="11"
-            if.bind="drug.generics[drug.generics.length-1]"
+            if.bind="drug.generics[drug.generics.length-1].name"
             mousedown.delegate="addGeneric()"
             style="position:absolute; left:153px; margin-top:-5px; z-index:1">
             +
           </md-button>
           <md-button color fab="11"
-            if.bind="! drug.generics[drug.generics.length-1]"
+            if.bind="! drug.generics[drug.generics.length-1].name"
             mousedown.delegate="removeGeneric()"
             style="position:absolute; left:153px; margin-top:-5px; z-index:1">
             -
