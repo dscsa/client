@@ -107,7 +107,7 @@
           style="width:49%">
           Wholesale Price
         </md-input>
-        <div if.bind="drug.pkgs[0].code && drug.pkgs[0].size" style="position:relative">
+        <!-- <div if.bind="drug.pkgs[0].code && drug.pkgs[0].size" style="position:relative">
           <md-button color fab="11"
             if.bind="drug.pkgs[drug.pkgs.length-1].code"
             mousedown.delegate="addPkgSize()"
@@ -120,8 +120,8 @@
             style="position:absolute; left:90px; margin-top:-5px; z-index:1">
             +
           </md-button>
-        </div>
-        <div repeat.for="_ of drug.pkgs">
+        </div> -->
+        <!-- <div repeat.for="_ of drug.pkgs">
           <md-input
             style="width:49%"
             value.bind="drug.pkgs[$index].code">
@@ -132,7 +132,7 @@
             value.bind="drug.pkgs[$index].size">
             ${ $index == 0 ? 'Container Size' : ''}
           </md-input>
-        </div>
+        </div> -->
       </div>
       <div class="mdl-card__actions">
         <md-button color="accent" raised
