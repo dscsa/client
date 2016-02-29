@@ -172,17 +172,17 @@
             <tr ref="form" style="padding-top:7px;" repeat.for="transaction of transactions">
               <td class="mdl-data-table__cell--non-numeric" style="max-width:300px;">
                 <md-checkbox
-                  style="position:absolute; left:10px"
                   disabled.bind="role.account == 'from' && shipment.shipped_at"
                   checked.one-way="checkmarks.indexOf($index) > -1"
                   click.delegate="check($index)">
                 </md-checkbox>
-                <a href="/#/records/${ transaction._id }" style="padding-left:16px; white-space:normal; display:block">
-                  ${ transaction.drug | drugName }
-                </a>
+                ${ transaction.drug | drugName }
               </td>
               <td>
                 ${ transaction.drug._id }
+                <a href="/#/records/${ transaction._id }">
+                   <i class="material-icons" style="font-size:15px; vertical-align:text-top">history</i>
+                </a>
                 <!-- <md-select
                   style="margin-left:-3px"
                   value.bind="package"
