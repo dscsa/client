@@ -22,7 +22,7 @@ export class shipments {
 
   activate(params) {
 
-    let search = this.db.search.then(_ => this.searchReady = true)
+    //let search = this.db.search.then(_ => this.searchReady = true)
 
     return Promise.all([
       //Start all of our async tasks
@@ -262,18 +262,45 @@ export class shipments {
 
   search() {
     let term = this.term.toLowerCase()
-    console.log('searching for...', term)
+
     if (term.length < 3)
       return this.drugs = []
 
+    console.log('searching for...', term)
+    let start = Date.now()
     if (/^[\d-]+$/.test(term)) {
       this.regex = RegExp('('+term+')', 'gi')
-      this.drugs = this.db.search.ndc(term)
-
-    } else {
-      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      this.drugs = this.db.search.generic(term)
+      return this.db.drugs({ndc:term}).then(drugs => {
+        console.log('drug ndc search', drugs.length, Date.now() - start, drugs)
+        this.drugs = drugs
+      })
     }
+
+    return this.db.drugs({generic:term}).then(drugs => {
+      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+      console.log('drugs', Date.now() - start, drugs)
+      this.drugs = drugs
+    })
+
+    // return this.db.drugs({generic:term}).then(drugs => {
+    //   this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+    //   console.log('drugs', Date.now() - start, drugs)
+    //   this.drugs = drugs
+    // })
+
+    // let start = Date.now()
+    // return this.db.drugs.query('drug/search', {startkey:term, endkey:term+'\uffff'}).then(_ => {
+    //   console.log(_.length, 'results for', term, 'in', Date.now()-start, _)
+    //   this.drugs = _.map(val => val.value)
+    // })
+    // if (/^[\d-]+$/.test(term)) {
+    //   this.regex = RegExp('('+term+')', 'gi')
+    //   this.drugs = this.db.search.ndc(term)
+    //
+    // } else {
+    //   this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+    //   this.drugs = this.db.search.generic(term)
+    // }
   }
 
   saveTransaction(transaction, $event, form) {

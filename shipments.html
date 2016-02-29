@@ -138,9 +138,9 @@
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col" style="height:calc(100vh - 96px);">
+  <!-- disabled.bind="! searchReady" -->
       <md-autocomplete
-        placeholder.bind="searchReady ? 'Add Drugs by Generic Name or NDC...' : 'Loading Drug Search...'"
-        disabled.bind="! searchReady"
+        placeholder.bind="'Add Drugs by Generic Name or NDC...'"
         value.bind="term"
         input.delegate="search()"
         style="margin:0px 16px">
