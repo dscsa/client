@@ -219,7 +219,7 @@ export class shipments {
     //Change all selected transactions to the new or existing shipment
     //If new, tracking._id is not set but shipment._id was just set
     for (let i of this.checkmarks) {
-      this.transactions[i].shipment = this.tracking._id || this.shipment._id
+      this.transactions[i].shipment = {_id:this.tracking._id || this.shipment._id}
       this.db.transactions.put(this.transactions[i])
     }
 
@@ -331,7 +331,7 @@ export class shipments {
         wholesale:drug.wholesale,
       },
       shipment:{
-        _id:this.shipment._id || this.account._id
+        _id:this.shipment._id
       },
       qty:{from:null, to:null},
       lot:{from:null, to:null},
