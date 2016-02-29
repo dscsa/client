@@ -22,21 +22,19 @@ export class drugs {
   }
 
   activate(params) {
-    let search = this.db.search.then(_ => this.searchReady = true)
 
     if ( ! params.id)
       return
 
-    let drug = this.db.drugs({_id:params.id})
-    .then(drugs => {
-      drugs[0].generic = drugs[0].generics.map(generic => generic.name+" "+generic.strength).join(', ')
-      this.selectDrug(drugs[0])
-    })
+    this.db.drugs({_id:params.id}).then(drugs => {
+      this.drug = drugs[0]
 
-    Promise.all([drug, search]).then(all => {
-      this.search()
-      let groups  = this.groups.filter(group => group.name == this.term)
-      this.selectGroup(groups[0])
+      //TODO this doesn't work for multiple drug names
+      this.term = this.drug.generics[0].name+' '+this.drug.generics[0].strength+' '+this.drug.form
+
+      this.search().then(_ => {
+        this.selectGroup(this.groups[0])
+      })
     })
   }
 
@@ -49,8 +47,8 @@ export class drugs {
   }
 
   selectDrug(drug) {
-    let url        = drug._id ? 'drugs/'+drug._id : 'drugs'
-    this.term = drug.generic+' '+drug.form
+    let url = drug._id ? 'drugs/'+drug._id : 'drugs'
+    this.term = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
     this.router.navigate(url, { trigger: false })
     this.drug      = drug
     this.drug.pkgs = [{code:'', size:''}]
@@ -65,22 +63,23 @@ export class drugs {
 
     if (/^[\d-]+$/.test(term)) {
       this.regex  = RegExp('('+term+')', 'gi')
-      drugs  = this.db.search.ndc(term)
+      drugs  = this.db.drugs({ndc:term})
 
     } else {
       this.regex  = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      drugs  = this.db.search.generic(term)
+      drugs  = this.db.drugs({generic:term})
     }
 
     let groups = {}
-    for (let drug of drugs) {
-      let name = drug.generic+' '+drug.form
-      groups[name]
-        ? groups[name].drugs.push(drug)
-        : groups[name] = {name, drugs:[drug]}
-    }
-
-    this.groups = Object.values(groups)
+    return drugs.then(drugs => {
+      for (let drug of drugs) {
+        drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')
+        let name = drug.generic+' '+drug.form
+        groups[name] = groups[name] || {name, drugs:[]}
+        groups[name].drugs.push(drug)
+      }
+      this.groups = Object.values(groups)
+    })
   }
 
   importCSV() {
@@ -161,18 +160,3 @@ export class drugs {
     console.log('TO BE IMPLEMENETED')
   }
 }
-
-// return this.db.drugs.query('drug/search', {startkey:[term[0]], endkey:[term[0]+'\ufff0']})
-// .then(drugs => {
-//   console.log('before filter', Date.now() - start)
-//
-//   if (term[1]) {
-//     term[1] = RegExp(term[1])
-//     this.drugs = drugs.filter(drug => term[1].test(drug.key[1]))
-//   }
-//   else
-//     this.drugs = drugs
-//
-//   console.log('after filter', Date.now() - start)
-//   this.select(this.drugs[0].id)
-// })
