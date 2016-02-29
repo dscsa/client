@@ -29,7 +29,7 @@
         class="mdl-card__supporting-text"
         focusout.delegate="save($event, form)"
         ref="form"
-        style="font-size:16px; overflow-y:scroll;width:92%">
+        style="font-size:16px; overflow-y:scroll; height:100%">
         <img
           style="width:100%;"
           if.bind="drug.image"
@@ -133,15 +133,17 @@
             ${ $index == 0 ? 'Container Size' : ''}
           </md-input>
         </div>
+      </div>
+      <div class="mdl-card__actions">
         <md-button color="accent" raised
           if.bind="drug._rev"
-          style="width:100%"
+          style="width:100%; margin-bottom:8px"
           click.delegate="delete()">
           Delete Drug
         </md-button>
         <md-button color raised
           if.bind=" ! drug._rev"
-          style="width:100%"
+          style="width:100%; margin-bottom:8px"
           click.delegate="save()"
           disabled.bind=" ! drug._id">
           Add Drug
@@ -155,8 +157,7 @@
         checked.bind="ordered">
       </md-switch>
       <md-autocomplete
-        placeholder.bind="searchReady ? 'Search Drugs by Generic Name...' : 'Loading Drug Search...'"
-        disabled.bind="! searchReady"
+        placeholder="Search Drugs by Generic Name or NDC..."
         value.bind="term"
         input.delegate="search()"
         style="margin:0px 16px">
