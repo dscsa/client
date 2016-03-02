@@ -25,13 +25,12 @@ export class shipments {
   activate(params) {
     //TODO only search for selected date {'captured_at':new Date(this.month+' 01 '+this.year)}
     //TODO search based on type, donation vs destruction
-    return this.db.transactions()
-    .then(transactions => {
-      //TODO do not include inventory items in original search rather than doing filter here
-      this.transactions = transactions.filter(t => t.shipment._id && ~ t.shipment._id.indexOf('.'))
+    //TODO this '.' is weird, only way I could get $gt to exclude the account._id. Maybe this is a bug in pouchdb-find.  Or maybe the . is not a good delimiter?
+    return Promise.all([this.db.transactions({'shipment._id':{$lt:this.account._id}}), this.db.transactions({'shipment._id':{$gt:this.account._id+'.'}})])
+    .then(all => {
+      this.transactions = [...all[0], ...all[1]]
       let selected = this.transactions.filter(t => t._id === params.id)[0]
-      return this.select(selected || transactions[0])
-
+      return this.select(selected || this.transactions[0])
     })
   }
 
