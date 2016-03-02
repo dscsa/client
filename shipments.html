@@ -217,7 +217,7 @@
                 ${ transaction.qty[role.partner] }
                 <md-input
                   focusout.delegate="saveTransaction(transaction, $event, form)"
-                  keyup.delegate="qtyShortcuts(transaction, $event, $index)"
+                  keyup.delegate="keyboardShortcuts(transaction, $event, $index)"
                   type="number"
                   value.bind="transaction.qty[role.account]"
                   style="width:40px;"

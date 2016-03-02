@@ -170,13 +170,22 @@ export class shipments {
     .catch(this.attachment.url = null)
   }
 
-  qtyShortcuts(transaction, $event, $index) {
+  keyboardShortcuts(transaction, $event, $index) {
+    //If this is a comma then we want to duplicate this transaction with a blank qty
+    //makes it easier to enter multiple of the same item in
     if ($event.which == 188) {
       let copy = Object.assign({}, transaction)
       transaction.qty = {from:null, to:null}
       this.db.transactions.post(copy)
       .then(transaction => this.transactions.splice($index+1, 0, transaction))
     }
+
+    //Enter should refocus on the search
+    if ($event.which == 13) {
+      document.querySelector('md-autocomplete input').focus()
+    }
+
+    //Delete an item in the qty is 0.  Instead of having a delete button
     if (
       (! transaction.qty.from && transaction.qty.to === "0") ||
       (transaction.qty.from === "0" && ! transaction.qty.to)
