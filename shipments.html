@@ -32,7 +32,7 @@
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col" style="">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col" style="height:calc(100vh - 96px);">
       <div class="mdl-card__title" style="display:block;">
         <div class="mdl-card__title-text">
           ${ shipment._id ? 'Shipment #0'+shipment.tracking : 'Shipment From You' }
@@ -43,7 +43,7 @@
         </div>
       </div>
       <!-- Put calculated height here not on the card because changing height made input shift up and down when select changed values -->
-      <div class="mdl-card__supporting-text" style="font-size:16px; height:calc(100vh - 200px); padding-top:0px; overflow-y:scroll">
+      <div class="mdl-card__supporting-text" style="font-size:16px; overflow-y:scroll; height:calc(100% - 160px)">
         <md-select
           style="width:100%"
           value.bind="tracking"
@@ -114,6 +114,8 @@
             type.bind="attachment.type"
             style="position:absolute; height:100%; width:100%; top:0; bottom:0">
         </div>
+      </div>
+      <div class="mdl-card__actions">
         <md-button color raised
           style="width:100%"
           if.bind="! shipment._id && ! tracking._id"
@@ -161,28 +163,27 @@
         <table md-table style="margin:0 16px; width:calc(100% - 32px)">
           <thead>
             <tr>
-              <th class="mdl-data-table__cell--non-numeric" style="padding-left:39px">Drug</th>
-              <th>Ndc</th>
+              <th></th>
+              <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
+              <th class="mdl-data-table__cell--non-numeric" style="width:90px;padding-left:0">Ndc</th>
               <!-- <th style="text-align:left; width:5%">Lot</th> -->
-              <th style="text-align:left; width:5%;">Exp</th>
-              <th style="text-align:left; width:5%">Qty</th>
+              <th style="text-align:left; width:40px; padding:initial 0">Exp</th>
+              <th style="text-align:left; width:40px">Qty</th>
+              <th style="text-align:left; width:10px; padding:initial 0"></th>
             </tr>
           </thead>
           <tbody>
             <tr ref="form" style="padding-top:7px;" repeat.for="transaction of transactions">
-              <td class="mdl-data-table__cell--non-numeric" style="max-width:300px;">
+              <td style="width:15px; padding:0 0 0 8px">
                 <md-checkbox
                   disabled.bind="role.account == 'from' && shipment.shipped_at"
                   checked.one-way="checkmarks.indexOf($index) > -1"
                   click.delegate="check($index)">
                 </md-checkbox>
+              </td>
                 ${ transaction.drug | drugName }
               </td>
-              <td>
                 ${ transaction.drug._id }
-                <a href="/#/records/${ transaction._id }">
-                   <i class="material-icons" style="font-size:15px; vertical-align:text-top">history</i>
-                </a>
                 <!-- <md-select
                   style="margin-left:-3px"
                   value.bind="package"
@@ -208,7 +209,7 @@
                   placeholder>
                 </md-input>
               </td>
-              <td>
+              <td style="padding:0">
                 ${ transaction.qty[role.partner] }
                 <md-input
                   focusout.delegate="saveTransaction(transaction, $event, form)"
@@ -218,6 +219,11 @@
                   style="width:40px;"
                   placeholder>
                 </md-input>
+              </td>
+              <td style="padding:0 16px">
+                <a if.bind="shipment._id" href="/#/records/${ transaction._id }" tabindex="-1">
+                   <i class="material-icons" style="font-size:15px; vertical-align:text-top">history</i>
+                </a>
               </td>
             </tr>
           </tbody>
