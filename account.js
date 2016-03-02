@@ -69,7 +69,9 @@ export class account {
   }
 
   authorize(_id) {
-    this.db.accounts({_id}).authorized.post()
+    let isAuthorized = ~ this.account.authorized.indexOf(_id)
+    this.db.accounts({_id}).authorized[isAuthorized ? 'remove' : 'post']()
+    .then(accounts => this.account.authorized = accounts[0].authorizedå)
   }
 
   logout() {
