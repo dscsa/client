@@ -176,7 +176,6 @@
             <tr ref="form" style="padding-top:7px;" repeat.for="transaction of transactions">
               <td style="width:15px; padding:0 0 0 8px">
                 <md-checkbox
-                  disabled.bind="role.account == 'from' && shipment.shipped_at"
                   checked.one-way="checkmarks.indexOf($index) > -1"
                   click.delegate="check($index)">
                 </md-checkbox>
