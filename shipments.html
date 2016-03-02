@@ -28,14 +28,14 @@
       <div class="mdl-typography--title">
         ${ shipment._id ? shipment.account[role.partner].name : 'Create'}
       </div>
-      ${ shipment._id ? '#0'+shipment.tracking+', '+shipment.status : 'Shipment From You' }
+      ${ shipment._id ? '#0'+shipment.tracking+', '+shipment.status : 'Shipment from Inventory' }
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col" style="height:calc(100vh - 96px);">
       <div class="mdl-card__title" style="display:block;">
         <div class="mdl-card__title-text">
-          ${ shipment._id ? 'Shipment #0'+shipment.tracking : 'Shipment From You' }
+          ${ shipment._id ? 'Shipment #0'+shipment.tracking : 'Shipment from Inventory' }
         </div>
         <div style="margin-bottom:-5px">
           <strong>${transactions.length}</strong> items worth
