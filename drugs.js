@@ -73,8 +73,7 @@ export class drugs {
     let groups = {}
     return drugs.then(drugs => {
       for (let drug of drugs) {
-        drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')
-        let name = drug.generic+' '+drug.form
+        let name = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
         groups[name] = groups[name] || {name, drugs:[]}
         groups[name].drugs.push(drug)
       }
@@ -151,7 +150,6 @@ export class drugs {
     if ($event && this.drug._rev ? form.contains($event.relatedTarget) : $event)
       return
 
-    delete this.drug.generic
     console.log('saving', this.drug)
     return this.db.drugs.put(this.drug)
   }
