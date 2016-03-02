@@ -170,16 +170,7 @@ export class shipments {
     .catch(this.attachment.url = null)
   }
 
-  keyboardShortcuts(transaction, $event, $index) {
-    //If this is a comma then we want to duplicate this transaction with a blank qty
-    //makes it easier to enter multiple of the same item in
-    if ($event.which == 188) {
-      let copy = Object.assign({}, transaction)
-      transaction.qty = {from:null, to:null}
-      this.db.transactions.post(copy)
-      .then(transaction => this.transactions.splice($index+1, 0, transaction))
-    }
-
+  qtyShortcuts(transaction, $event, $index) {
     //Enter should refocus on the search
     if ($event.which == 13) {
       document.querySelector('md-autocomplete input').focus()
