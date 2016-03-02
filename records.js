@@ -46,6 +46,7 @@ export class shipments {
     this.router.navigate('records/'+transaction._id, { trigger: false })
     this.http.get('//localhost:3000/transactions/'+transaction._id+'/history')
     .then(history => {
+      //console.log('history', history.content)
       //TODO move this to /history?text=true. Other formatting options?
       function id(k,o) {
         //console.log(o, typeof o)
@@ -63,12 +64,13 @@ export class shipments {
           if (Array.isArray(v))
             return v
 
-            let date = v.shipment[this.transactionDate + 'At'] || v.verifiedAt || ''
-            let href = '/#/shipments/'+v.shipment._id.split('.')[2]
+            let status = this.status || 'pickup' //Might not be initialized yet
+            let date   = v.shipment[status + 'At'] || v.verifiedAt || '0000-00-00'
+            let href   = '/#/shipments/'+v.shipment._id.split('.')[2]
 
-            return pad(v.shipment.from.name)+"<a href='"+href+"'>"+v.type+'</a><br>'+
-                   pad(v.shipment.from.street)+this.transactionDate[0].toUpperCase()+this.transactionDate.slice(1)+' '+date.slice(2, 10)+'<br>'+
-                   pad(v.shipment.from.city+', '+v.shipment.from.state+' '+v.shipment.from.zip)+'Quantity '+(v.qty.to || v.qty.from)
+            return pad('From: '+v.shipment.account.from.name)+pad('To: '+v.shipment.account.to.name)+"<a href='"+href+"'>"+v.type+" <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a><br>"+
+                   pad(v.shipment.account.from.street)+pad(v.shipment.account.to.street)+status[0].toUpperCase()+status.slice(1)+' '+date.slice(2, 10)+'<br>'+
+                   pad(v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip)+pad(v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip)+'Quantity '+(v.qty.to || v.qty.from)
         },
         "   "
       )
