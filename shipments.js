@@ -383,7 +383,7 @@ export class valueValueConverter {
 
 export class drugNameValueConverter {
   toView(drug, regex){
-    drug.generic = drug.generic || drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
-    return drug.generic.replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
+    let generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
+    return generic.replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
   }
 }
