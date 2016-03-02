@@ -262,7 +262,8 @@ export class shipments {
   }
 
   search() {
-    let term = this.term.toLowerCase()
+
+    let term = this.term.toLowerCase().trim()
 
     if (term.length < 3)
       return this.drugs = []
