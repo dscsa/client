@@ -22,18 +22,17 @@
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
       <div
         class="mdl-card__supporting-text"
-        style="font-size:13px;">
-        <img style="width:100%; padding-bottom:8px" show.bind="group.image" src.bind="group.image">
+        style="font-size:13px; padding-bottom:0">
+        <img style="width:100%; padding-bottom:8px" if.bind="group.image" src.bind="group.image">
         <div repeat.for="source of group.sources"   focusout.delegate="saveTransaction(source, $event, form)" ref="form">
-          <div style="display:inline-block; width:calc(100% - 155px)">
-            <a if.bind="source.history[0].transaction" href.bind="'/#/records/'+source.history[0].transaction">${source.history[0].transaction</a>
-            ${ source.history[0].transaction ? '' : session.account.name }
+          <div style="display:inline-block; width:calc(100% - 90px)">
+            <a if.bind="source.history[0].transaction._id" href.bind="'/#/records/'+source.history[0].transaction._id">${source.history[0].transaction._id}</a>
+            ${ source.history[0].transaction._id ? '' : session.account.name }
+            <a if.bind="!mode" style="float:right">
+              <i class="material-icons" style="font-size:18px; vertical-align:text-top; padding-right:5px">print</i>
+            </a>
           </div>
-          <span style="white-space:nowrap">
-            <!-- <md-input style="width:60px"
-              value.bind="source.lot.from"
-              placeholder="Lot">
-            </md-input> -->
+          <span style="white-space:nowrap;">
             <md-input
               pattern="(0?[1-9]|1[012])/\d{2}"
               style="width:40px"
@@ -56,16 +55,10 @@
               value.bind="repack[$index]"
               placeholder="Qty">
             </md-input>
-            <md-button
-              color
-              if.bind="!mode"
-              style="height:24px; line-height:24px">
-              <div style="font-size:10px; margin-top:-3px">Label</div>
-            </md-button>
           </span>
         </div>
       </div>
-      <div class="mdl-card__actions mdl-card--border mdl-grid">
+      <div class="mdl-card__actions mdl-grid" style="padding-top:0">
         <md-switch checked.bind="mode" click.delegate="toggleRepack()" class="mdl-cell" style="width:calc(100% - 24px - 140px)"></md-switch>
         <md-button
           color raised

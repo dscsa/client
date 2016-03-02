@@ -16,6 +16,7 @@ export class inventory {
   activate(params) {
     return this.db.transactions({'shipment._id':this.session.account._id})
     .then(transactions => {
+      console.log('transactions', transactions)
       this.groups = {}
 
       for (let t of transactions) {
