@@ -303,6 +303,10 @@ export class shipments {
     // }
   }
 
+  selectRow(input) {
+    input.querySelector('input').focus()
+  }
+
   saveTransaction(transaction, $event, form) {
 
     var data = {

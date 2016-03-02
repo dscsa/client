@@ -176,12 +176,16 @@
             <tr ref="form" style="padding-top:7px;" repeat.for="transaction of transactions">
               <td style="width:15px; padding:0 0 0 8px">
                 <md-checkbox
+                  disabled.bind="role.account == 'from' && shipment.shippedAt"
                   checked.one-way="checkmarks.indexOf($index) > -1"
-                  click.delegate="check($index)">
+                  click.delegate="check($index)"
+                  focusin.delegate="selectRow(input)">
                 </md-checkbox>
               </td>
+              <td click.delegate="selectRow(input)" class="mdl-data-table__cell--non-numeric" style="max-width:300px; white-space:normal; padding-left:0">
                 ${ transaction.drug | drugName }
               </td>
+              <td click.delegate="selectRow(input)" class="mdl-data-table__cell--non-numeric" style="padding:0">
                 ${ transaction.drug._id }
                 <!-- <md-select
                   style="margin-left:-3px"
@@ -201,6 +205,7 @@
               <td style="padding:0">
                 ${ transaction.exp[role.partner] }
                 <md-input
+                  ref="input"
                   focusout.delegate="saveTransaction(transaction, $event, form)"
                   pattern="([1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp[role.account]"
