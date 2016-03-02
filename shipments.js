@@ -202,6 +202,7 @@ export class shipments {
     //just had falsey values, which we had to check for
     //in the "Save Selected for Inventory" button, move(),
     //and create().  Better just to change length manually
+
     let i = this.checkmarks.indexOf($index)
     ~ i ? this.checkmarks.splice(i, 1)
       : this.checkmarks.push($index)
@@ -210,7 +211,7 @@ export class shipments {
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
 
-    return true //Continue to bubble event
+    return true //Continue to bubble event, so checkmark actually appears
   }
 
   //Move these items to a different "alternative" shipment then select it
@@ -343,13 +344,14 @@ export class shipments {
         retail:drug.retail,
         wholesale:drug.wholesale,
       },
-      shipment:{
-        _id:this.shipment._id
-      },
       qty:{from:null, to:null},
       lot:{from:null, to:null},
       exp:{from:null, to:null}
     }
+
+    if (this.shipment._id)
+      transaction.shipment = {_id:this.shipment._id}
+
     console.log('addTransaction', drug, transaction)
     return this.db.transactions.post(transaction)
     .then(transaction => {
