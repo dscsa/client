@@ -305,8 +305,13 @@ export class shipments {
     // }
   }
 
-  selectRow(input) {
-    input.querySelector('input').focus()
+  autocompleteShortcut($event) {
+    if ($event.which == 13)
+      this.addTransaction(this.drugs[0])
+  }
+
+  selectRow($index) {
+    document.querySelector('#exp_'+$index+' input').focus()
   }
 
   saveTransaction(transaction, $event, form) {
@@ -348,7 +353,8 @@ export class shipments {
     return this.db.transactions.post(transaction)
     .then(transaction => {
       this.transactions.unshift(transaction) //Add the drug to the view
-      this.term = '' //Reset search's auto-complete
+      this.term = ''    //Reset search's auto-complete
+      setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
     })
   }
 }
