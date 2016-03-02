@@ -72,7 +72,7 @@ export class shipments {
         },
         "   "
       )
-      .replace(/\[\n?\s*/g, "<div style='margin:-12px 0 0 8px;'>")
+      .replace(/\[\n?\s*/g, "<div style='margin-top:-12px'>")
       .replace(/\n?\s*\],?/g, '</div>')
       .replace(/ *"/g, '')
       .replace(/\n/g, '<br><br>')
