@@ -44,7 +44,7 @@ export class drugs {
 
   selectDrug(drug) {
     let url = drug._id ? 'drugs/'+drug._id : 'drugs'
-    this.term = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
+    this.term = drug.generic
     this.router.navigate(url, { trigger: false })
     this.drug      = drug
     this.drug.pkgs = [{code:'', size:''}]
@@ -52,26 +52,27 @@ export class drugs {
 
   search() {
 
-    let drugs, term = this.term.replace(this.drug.form, '').toLowerCase()
+    //Unfortunately our map function cannot search multiple generic names,
+    //so just find the first and filter for the other one during the group.
+    let drugs
 
-    if (term.length < 3)
+    if (this.term.length < 3)
       return this.groups = []
 
-    if (/^[\d-]+$/.test(term)) {
-      this.regex  = RegExp('('+term+')', 'gi')
-      drugs  = this.db.drugs({ndc:term})
+    if (/^[\d-]+$/.test(this.term)) {
+      this.regex = RegExp('('+this.term+')', 'gi')
+      drugs = this.db.drugs({ndc:this.term})
 
     } else {
-      this.regex  = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      drugs  = this.db.drugs({generic:term})
+      this.regex = RegExp('('+this.term.replace(/ /g, '|')+')', 'gi')
+      drugs = this.db.drugs({generic:this.term})
     }
 
     let groups = {}
     return drugs.then(drugs => {
       for (let drug of drugs) {
-        let name = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
-        groups[name] = groups[name] || {name, drugs:[]}
-        groups[name].drugs.push(drug)
+        groups[drug.generic] = groups[drug.generic] || {name:drug.generic, drugs:[]}
+        groups[drug.generic].drugs.push(drug)
       }
       this.groups = Object.values(groups)
     })
@@ -159,8 +160,11 @@ export class drugs {
     console.log('saving Order', this.account)
     return this.db.accounts.put(this.account)
   }
+
+  saveDrug($event, drugForm) {
     //Do not save if clicking around within the same/new drug.
-    if ($event && this.drug._rev ? form.contains($event.relatedTarget) : $event)
+    //$event check allows this method to be called within the class as well
+    if ($event && this.drug._rev ? drugForm.contains($event.relatedTarget) : $event)
       return
 
     console.log('saving Drug', this.drug)
