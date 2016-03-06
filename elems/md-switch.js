@@ -11,8 +11,10 @@ export class MdSwitchCustomElement {
   }
 
   checkedChanged($new) {
+    if(this.disabled || ! this.label)
+      return
     //Toggle doesn't work because value can change from one object to another
-    this.label && this.label.classList[ !$new ? 'remove' : 'add']('is-checked') //force to boolean
+    this.label.classList[ !$new ? 'remove' : 'add']('is-checked') //force to boolean
   }
 
   attached() {
