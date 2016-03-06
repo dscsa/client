@@ -9,6 +9,13 @@ export class MdCheckboxCustomElement {
     $event.stopPropagation(); return true
   }
 
+  checkedChanged($new) {
+    if(this.disabled || ! this.label)
+      return
+
+    this.label.classList[ !$new ? 'remove' : 'add']('is-checked')
+  }
+
   attached() {
     componentHandler.upgradeAllRegistered();
   }
