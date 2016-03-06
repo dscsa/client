@@ -52,20 +52,18 @@ export class drugs {
 
   search() {
 
-    //Unfortunately our map function cannot search multiple generic names,
-    //so just find the first and filter for the other one during the group.
-    let drugs
-
     if (this.term.length < 3)
       return this.groups = []
 
+    this.term = this.term.trim()
+
     if (/^[\d-]+$/.test(this.term)) {
       this.regex = RegExp('('+this.term+')', 'gi')
-      drugs = this.db.drugs({ndc:this.term})
+      var drugs = this.db.drugs({ndc:this.term})
 
     } else {
       this.regex = RegExp('('+this.term.replace(/ /g, '|')+')', 'gi')
-      drugs = this.db.drugs({generic:this.term})
+      var drugs = this.db.drugs({generic:this.term})
     }
 
     let groups = {}
