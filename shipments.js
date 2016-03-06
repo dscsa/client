@@ -13,7 +13,7 @@ export class shipments {
 
   constructor(db, router, http){
     this.db      = db
-    this.account = db.users(true).session().account
+    this.account = db.users().session().account
     this.drugs   = []
     this.router  = router
     this.http    = http
@@ -72,7 +72,8 @@ export class shipments {
     this.db.transactions({'shipment._id':shipment._id || this.account._id})
     .then(transactions => {
       this.transactions = transactions
-      this.diffs  = [] //Check boxes of verified, and track the differences
+      this.isChecked  = {} //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
+      this.diffs      = [] //Check boxes of verified, and track the differences
       this.checkmarks = this.transactions
         .map((o,i) => o.verifiedAt ? i : null)
         .filter(_ => _ != null)
@@ -193,7 +194,6 @@ export class shipments {
     //just had falsey values, which we had to check for
     //in the "Save Selected for Inventory" button, move(),
     //and create().  Better just to change length manually
-
     let i = this.checkmarks.indexOf($index)
     ~ i ? this.checkmarks.splice(i, 1)
       : this.checkmarks.push($index)
@@ -202,7 +202,7 @@ export class shipments {
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
 
-    return true //Continue to bubble event, so checkmark actually appears
+    this.isChecked[$index] = ! this.isChecked[$index]
   }
 
   //Move these items to a different "alternative" shipment then select it
@@ -314,21 +314,34 @@ export class shipments {
     document.querySelector('#exp_'+$index+' input').focus()
   }
 
-  saveTransaction(transaction, $event, form) {
+  saveTransaction($index, $event, form) {
 
-    var data = {
-      message: 'Button color changed.',
-      timeout: 2000
-    };
+    let transaction = this.transactions[$index]
 
-    this.snackbar.show(data)
+    let order = this.to.ordered[genericName(transaction.drug)]
+console.log('order', this.to.name, this.to.ordered, order)
+    if (order) {
+      let minQty = +transaction.qty[this.role.account] >= +order.minQty
+      let minExp = transaction.exp[this.role.account] ? (Date.parse(transaction.exp[this.role.account].replace('/', '/01/')) - Date.now()) >= order.minDays*24*60*60*1000 : true
+
+      if((minQty && minExp) != (this.isChecked[$index] || false)) { //apparently false != undefined
+        console.log('autocheck', minQty, minExp, this.isChecked[$index])
+        this.check($index)
+      }
+    }
 
     //Do not save if clicking around within the same drug.
     if (form.contains($event.relatedTarget))
       return
 
+    // var data = {
+    //   message: 'Button color changed.',
+    //   timeout: 2000
+    // };
+    //this.snackbar.show(data)
+
     //TODO only save if change occured
-    console.log('saving', transaction)
+    //console.log('saving', transaction)
     return this.db.transactions.put(transaction)
   }
 
@@ -381,7 +394,10 @@ export class valueValueConverter {
 
 export class drugNameValueConverter {
   toView(drug, regex){
-    let generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
-    return generic.replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
+    return genericName(drug).replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
   }
+}
+
+function genericName(drug) {
+  return drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
 }

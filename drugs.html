@@ -197,29 +197,33 @@
         <div show.bind="account.ordered[group.name]" ref="orderForm" focusout.delegate="saveOrder($event, orderForm)" style="overflow:hidden; width:200px; margin-top:8px; margin-right:16px">
           Ordered
           <md-input
+            type="number"
             value.bind="(account.ordered[group.name] || {}).minQty"
             style="width:100%">
             Min Qty
           </md-input>
           <md-input
-            value.bind="(account.ordered[group.name] || {}).minExp"
-            disabled.bind="true"
+            type="number"
+            value.bind="(account.ordered[group.name] || {}).minDays"
             style="width:100%">
-            Min Exp
+            Min Days
           </md-input>
           <md-input
+            type="number"
             value.bind="(account.ordered[group.name] || {}).maxPrice"
             disabled.bind="true"
             style="width:100%">
             Max Price
           </md-input>
           <md-input
+            type="number"
             value.bind="(account.ordered[group.name] || {}).reorderAt"
             disabled.bind="true"
             style="width:100%">
             Reorder At
           </md-input>
           <md-input
+            type="number"
             value.bind="(account.ordered[group.name] || {}).reorderTo"
             disabled.bind="true"
             style="width:100%">
