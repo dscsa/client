@@ -17,7 +17,7 @@
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
       <div class="mdl-card__title">
         <div class="mdl-card__title-text">
           User Information
@@ -38,8 +38,8 @@
         <md-button color="accent" raised style="width:100%" if.bind="user._id && user.name != session.name" click.delegate="delete()">Delete User</md-button>
       </div>
     </div>
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col">
       <table md-table style="width:calc(100% - 32px)">
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
         <thead>
           <tr>
             <th class="mdl-data-table__cell--non-numeric">Authorized</th>
