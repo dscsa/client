@@ -58,8 +58,12 @@
           </span>
         </div>
       </div>
-      <div class="mdl-card__actions mdl-grid" style="padding-top:0">
-        <md-switch checked.bind="mode" click.delegate="toggleRepack()" class="mdl-cell" style="width:calc(100% - 24px - 140px)"></md-switch>
+      <div class="mdl-card__actions mdl-grid">
+        <md-switch
+          checked.bind="mode"
+          click.delegate="toggleRepack()"
+          style="flex:1; align-self:center">
+        </md-switch>
         <md-button
           color raised
           if.bind="mode"
