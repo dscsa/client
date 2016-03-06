@@ -7,15 +7,12 @@ import {Db}     from 'db/pouch'
 export class drugs {
   //constructor(HttpClient = 'aurelia-http-client', Db = './pouch'){
   constructor(db, router){
-    this.db     = db
-    this.router = router
-    this.drugs  = []
-    this.drug   = {generics:[''], pkgs:[{code:'', size:''}]}
-    // window.onbeforeunload = e => {
-    //   console.log('onunload')
-    //   console.log(this.save())
-    //   return 'Hi I am unload'
-    // }
+    this.db      = db
+    this.router  = router
+    this.drugs   = []
+    this.drug    = {generics:[''], pkgs:[{code:'', size:''}]}
+    this.account = db.users().session().account
+
     onbeforeunload = e => {
       this.save()
     }
@@ -80,7 +77,15 @@ export class drugs {
     })
   }
 
+  //We might make a separate database and API out of this one day, but for now just save on account object.
+  //TODO: Warn on delete since we won't save save any of the preferences?
+  order() {
+    this.account.ordered[this.group.name] = this.account.ordered[this.group.name] ? undefined : {}
     console.log('after order', this.account.ordered)
+    this.saveOrder()
+    //return true
+  }
+
   importCSV() {
     let db    = this.db
     let data  = []
@@ -145,8 +150,15 @@ export class drugs {
     return true
   }
 
-  save($event, form) {
+  saveOrder($event, orderForm) {
+    //Do not save if clicking around within the same/new drug.
+    //$event check allows this method to be called within the class as well
+    if ($event && this.drug._rev ? orderForm.contains($event.relatedTarget) : $event)
+      return
+
     console.log('saving Order', this.account)
+    return this.db.accounts.put(this.account)
+  }
     //Do not save if clicking around within the same/new drug.
     if ($event && this.drug._rev ? form.contains($event.relatedTarget) : $event)
       return
