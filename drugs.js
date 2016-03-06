@@ -39,7 +39,6 @@ export class drugs {
   }
 
   selectGroup(group, autoselect) {
-    console.log('selectGroup', group.name)
     this.group = group
 
     if (autoselect)
@@ -81,6 +80,7 @@ export class drugs {
     })
   }
 
+    console.log('after order', this.account.ordered)
   importCSV() {
     let db    = this.db
     let data  = []
@@ -146,11 +146,12 @@ export class drugs {
   }
 
   save($event, form) {
+    console.log('saving Order', this.account)
     //Do not save if clicking around within the same/new drug.
     if ($event && this.drug._rev ? form.contains($event.relatedTarget) : $event)
       return
 
-    console.log('saving', this.drug)
+    console.log('saving Drug', this.drug)
     return this.db.drugs.put(this.drug)
   }
 
