@@ -10,11 +10,12 @@ export class MdSwitchCustomElement {
     $event.stopPropagation(); return true
   }
 
-  checkedChanged() {
-    this.label && this.label.classList.toggle('is-checked');
+  checkedChanged($new) {
+    //Toggle doesn't work because value can change from one object to another
+    this.label && this.label.classList[ !$new ? 'remove' : 'add']('is-checked') //force to boolean
   }
 
   attached() {
-    componentHandler.upgradeAllRegistered();
+    componentHandler.upgradeAllRegistered()
   }
 }
