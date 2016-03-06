@@ -10,7 +10,7 @@ export class login {
     this.router   = router
     this.name     = 'adam@sirum.org'
     this.password = 'password'
-    this.db.users(true).session.remove()
+    this.db.users().session.remove()
     .then(_ => this.enabled = true)
   }
 
