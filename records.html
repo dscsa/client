@@ -24,16 +24,15 @@
       </div>
       <div innerHTML.bind="history" class="mdl-grid" style="font-size:10px; font-family:Monaco; margin:0; padding:0 16px; white-space:pre; line-height:15px"></div>
     </div>
-      <div class="mdl-card__title" style="margin-bottom:-52px">
     <div md-shadow="2" class="mdl-card mdl-cell full-height" style="width:calc(100% - 424px - 32px)">
+      <div class="mdl-card__title" style="display:block; margin-bottom:-40px; box-sizing:content-box">
         <div class="mdl-card__title-text">
-          Record for
           <md-select
-            style="width:auto;padding:0 5px"
+            style="width:auto;padding:0 5px;text-transform:capitalize"
             value.bind="status"
             options.bind="['pickup', 'shipped', 'received', 'verified', 'destroyed']">
           </md-select>
-          in
+          record for
           <md-select
             style="width:auto; padding:0 5px"
             value.bind="month"
@@ -46,33 +45,33 @@
           </md-select>
         </div>
       </div>
-        <thead>
-          <tr>
-            <th style="text-align:left;">Drug</th>
-            <th style="text-align:left;">Ndc</th>
-            <th style="text-align:left; width:5%;">Exp</th>
-            <th style="width:5%">Qty</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="select(transaction)">
-            <td style="text-align:left;">
-              ${ transaction | drugName }
-            </td>
-            <td style="text-align:left;">
-              ${ transaction.drug._id }
-            </td>
-            <td style="text-align:left;">
-              ${ transaction.exp.to || transaction.exp.from }
-            </td>
-            <td>
-              ${ transaction.qty.to || transaction.qty.from }
-            </td>
-          </tr>
-        </tbody>
-      </table>
       <div style="overflow-y:scroll; margin:8px 0px 8px 16px;">
         <table md-table style="width:calc(100% - 16px);">
+          <thead>
+            <tr>
+              <th style="text-align:left;">Drug</th>
+              <th style="text-align:left;">Ndc</th>
+              <th style="text-align:left; width:5%;">Exp</th>
+              <th style="width:5%">Qty</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="select(transaction)">
+              <td style="text-align:left;">
+                ${ transaction | drugName }
+              </td>
+              <td style="text-align:left;">
+                ${ transaction.drug._id }
+              </td>
+              <td style="text-align:left;">
+                ${ transaction.exp.to || transaction.exp.from }
+              </td>
+              <td>
+                ${ transaction.qty.to || transaction.qty.from }
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
