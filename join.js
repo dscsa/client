@@ -18,7 +18,8 @@ export class join {
       street:'4744 Charles Samuel Dr',
       city:'Tallahassee',
       state:'FL',
-      zip:'32309'
+      zip:'32309',
+      ordered:{}
     }
 
     this.user = {
