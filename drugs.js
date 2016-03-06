@@ -27,17 +27,17 @@ export class drugs {
       this.drug = drugs[0]
 
       //TODO this doesn't work for multiple drug names
-      this.term = this.drug.generics[0].name+' '+this.drug.generics[0].strength+' '+this.drug.form
+      this.term = this.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+this.drug.form
 
       this.search().then(_ => {
-        this.selectGroup(this.groups[0])
+        //Groups could contain this.term and other active ingredients, so filter for the exact match
+        this.selectGroup(this.groups.filter(group => group.name == this.term)[0])
       })
     })
   }
 
   selectGroup(group, autoselect) {
     this.group = group
-
     if (autoselect)
       this.selectDrug(group.drugs[0])
   }
