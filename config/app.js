@@ -31,7 +31,7 @@ export class AuthorizeStep {
   }
 
   run(routing, next) {
-    let session = this.db.users(true).session()
+    let session = this.db.users().session()
     for (let row of routing.router.navigation) {
       if ( ! session) {
         row.isVisible = ! row.config.roles; continue
