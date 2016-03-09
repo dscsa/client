@@ -6,6 +6,7 @@
   <require from="./elems/md-select"></require>
   <require from="./elems/md-button"></require>
   <require from="./elems/md-switch"></require>
+  <require from="./elems/md-snackbar"></require>
   <md-drawer>
     <md-input value.bind="filter" style="padding:0 8px;">Filter Inventory</md-input>
     <md-select
@@ -62,7 +63,7 @@
         <md-switch
           checked.bind="mode"
           click.delegate="toggleRepack()"
-          style="flex:1; align-self:center">
+          style="flex:1; align-self:flex-end">
         </md-switch>
         <md-button
           color raised
@@ -96,5 +97,6 @@
         </tr>
       </table>
     </div>
+    <md-snackbar ref="snackbar"></md-snackbar>
   </section>
 </template>

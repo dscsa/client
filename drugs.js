@@ -12,10 +12,6 @@ export class drugs {
     this.drugs   = []
     this.drug    = {generics:[''], pkgs:[{code:'', size:''}]}
     this.account = db.users().session().account
-
-    onbeforeunload = e => {
-      this.save()
-    }
   }
 
   activate(params) {
@@ -51,19 +47,17 @@ export class drugs {
   }
 
   search() {
+    let term = this.term.trim()
 
-    if (this.term.length < 3)
+    if (term.length < 3)
       return this.groups = []
 
-    this.term = this.term.trim()
-
-    if (/^[\d-]+$/.test(this.term)) {
-      this.regex = RegExp('('+this.term+')', 'gi')
-      var drugs = this.db.drugs({ndc:this.term})
-
+    if (/^[\d-]+$/.test(term)) {
+      this.regex = RegExp('('+term+')', 'gi')
+      var drugs = this.db.drugs({ndc:term})
     } else {
-      this.regex = RegExp('('+this.term.replace(/ /g, '|')+')', 'gi')
-      var drugs = this.db.drugs({generic:this.term})
+      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+      var drugs = this.db.drugs({generic:term})
     }
 
     let groups = {}
@@ -80,9 +74,7 @@ export class drugs {
   //TODO: Warn on delete since we won't save save any of the preferences?
   order() {
     this.account.ordered[this.group.name] = this.account.ordered[this.group.name] ? undefined : {}
-    console.log('after order', this.account.ordered)
     this.saveOrder()
-    //return true
   }
 
   importCSV() {

@@ -72,11 +72,16 @@ export class shipments {
     this.db.transactions({'shipment._id':shipment._id || this.account._id})
     .then(transactions => {
       this.transactions = transactions
-      this.isChecked  = {} //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
-      this.diffs      = [] //Check boxes of verified, and track the differences
-      this.checkmarks = this.transactions
-        .map((o,i) => o.verifiedAt ? i : null)
-        .filter(_ => _ != null)
+      this.diffs     = [] //Check boxes of verified, and track the differences
+      this.isChecked = {} //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
+      this.numChecks = 0
+      for (let i in this.transactions) {
+        let verified = this.transactions[i].verifiedAt
+        if (verified) {
+          this.isChecked[i] = verified
+          this.numChecks++
+        }
+      }
     })
 
     .catch(console.log)
@@ -98,6 +103,7 @@ export class shipments {
 
   //Selected to != shipment.to because they are not references
   //we need to manually find the correct from based on selected shipment
+  //TODO when there is a new this.to we need this to recalculate autochecks
   setAccounts() {
     this.to = this.accounts.filter(to => {
       //console.log('to', to, 'track', this.tracking.account)
@@ -171,11 +177,13 @@ export class shipments {
     .catch(this.attachment.url = null)
   }
 
-  qtyShortcuts(transaction, $event, $index) {
+  qtyShortcuts($event, $index) {
+
     //Enter should refocus on the search
-    if ($event.which == 13) {
-      document.querySelector('md-autocomplete input').focus()
-    }
+    if ($event.which == 13)
+      return document.querySelector('md-autocomplete input').focus()
+
+    let transaction = this.transactions[$index]
 
     //Delete an item in the qty is 0.  Instead of having a delete button
     if (
@@ -187,23 +195,40 @@ export class shipments {
       .then(_ => this.transactions.splice($index, 1))
     }
 
+    this.autoCheck($index)
+
+    return true
   }
 
-    //with binding check array stayed same length and
-    //just had falsey values, which we had to check for
-    //in the "Save Selected for Inventory" button, move(),
-    //and create().  Better just to change length manually
-    let i = this.checkmarks.indexOf($index)
-    ~ i ? this.checkmarks.splice(i, 1)
-      : this.checkmarks.push($index)
   autoCheck($index) {
+    let transaction = this.transactions[$index]
+
+    //this.to may not have been selected yet
+    let order = this.to && this.to.ordered[genericName(transaction.drug)]
+
+    if ( ! order) return
+
+    let minQty = +transaction.qty[this.role.account] >= +order.minQty
+    let minExp = transaction.exp[this.role.account] ? (Date.parse(transaction.exp[this.role.account].replace('/', '/01/')) - Date.now()) >= order.minDays*24*60*60*1000 : true
+
+    console.log('autocheck', minQty, minExp, this.isChecked[$index], +transaction.qty[this.role.account], +order.minQty)
+    if((minQty && minExp) != (this.isChecked[$index] || false)) { //apparently false != undefined
+      this.manualCheck($index)
+    }
+  }
 
   manualCheck($index) {
     let j = this.diffs.indexOf($index)
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
 
-    this.isChecked[$index] = ! this.isChecked[$index]
+    if (this.isChecked[$index]) {
+      this.isChecked[$index] = false
+      this.numChecks--
+    } else {
+      this.isChecked[$index] = true
+      this.numChecks++
+    }
   }
 
   //Move these items to a different "alternative" shipment then select it
@@ -231,7 +256,7 @@ export class shipments {
 
   createShipment() {
 
-    if ( ! this.checkmarks.length && ! confirm('You have not selected any items.  Are you sure you want to create an empty shipment?'))
+    if ( ! this.numChecks && ! confirm('You have not selected any items.  Are you sure you want to create an empty shipment?'))
       return
 
     //Store some account information in the shipment but not everything
@@ -263,49 +288,28 @@ export class shipments {
   }
 
   search() {
-
-    let term = this.term.toLowerCase().trim()
+    let start = Date.now()
+    let term = this.term.trim()
 
     if (term.length < 3)
       return this.drugs = []
 
-    console.log('searching for...', term)
-    let start = Date.now()
     if (/^[\d-]+$/.test(term)) {
       this.regex = RegExp('('+term+')', 'gi')
-      return this.db.drugs({ndc:term}).then(drugs => {
-        console.log('drug ndc search', drugs.length, Date.now() - start, drugs)
-        this.drugs = drugs
-      })
+      var drugs = this.db.drugs({ndc:term})
+    } else {
+      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+      var drugs = this.db.drugs({generic:term})
     }
 
-    return this.db.drugs({generic:term}).then(drugs => {
-      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      console.log('drugs', Date.now() - start, drugs)
+    drugs.then(drugs => {
+      console.log('drug search', drugs.length, Date.now() - start)
       this.drugs = drugs
     })
-
-    // return this.db.drugs({generic:term}).then(drugs => {
-    //   this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-    //   console.log('drugs', Date.now() - start, drugs)
-    //   this.drugs = drugs
-    // })
-
-    // let start = Date.now()
-    // return this.db.drugs.query('drug/search', {startkey:term, endkey:term+'\uffff'}).then(_ => {
-    //   console.log(_.length, 'results for', term, 'in', Date.now()-start, _)
-    //   this.drugs = _.map(val => val.value)
-    // })
-    // if (/^[\d-]+$/.test(term)) {
-    //   this.regex = RegExp('('+term+')', 'gi')
-    //   this.drugs = this.db.search.ndc(term)
-    //
-    // } else {
-    //   this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-    //   this.drugs = this.db.search.generic(term)
-    // }
   }
 
+  //Enter in the autocomplete adds the first transaction
+  //TODO support up/down arrow keys to pick different transaction?
   autocompleteShortcut($event) {
     if ($event.which == 13)
       this.addTransaction(this.drugs[0])

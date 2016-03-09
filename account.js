@@ -68,10 +68,14 @@ export class account {
     this.db.users.post(this.user)
   }
 
+  //Simple debounce doesn't work here to prevent double click
+  //because account is not authorized until the db returns
+  //which means isAuthorized isn't updated yet for the since click
   authorize(_id) {
     let isAuthorized = ~ this.account.authorized.indexOf(_id)
+    console.log(isAuthorized ? 'remove' : 'post')
     this.db.accounts({_id}).authorized[isAuthorized ? 'remove' : 'post']()
-    .then(accounts => this.account.authorized = accounts[0].authorizedå)
+    //TODO reset checkbox and show snackbar if change not made
   }
 
   logout() {
