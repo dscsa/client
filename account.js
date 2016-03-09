@@ -48,19 +48,16 @@ export class account {
     this.users = this.users.slice() //Aurelia hack to reactivate the filter
   }
 
-    //Do not save if clicking around within the same transaction.
-    //TODO only save if change occured
-    if (form.contains($event.relatedTarget))
-      return
   saveUser() {
+    if ( ! this.user._id) return
 
     console.log('saving', this.user)
 
+    //TODO this seems counter-intuitve...  What's this for?
     if ( ! this.user.password)
       delete this.user.password
 
-    if (this.user._id)
-      this.db.users.put(this.user)
+    this.db.users.put(this.user)
   }
 
   addUser() {
