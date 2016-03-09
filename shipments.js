@@ -189,7 +189,6 @@ export class shipments {
 
   }
 
-  check($index) {
     //with binding check array stayed same length and
     //just had falsey values, which we had to check for
     //in the "Save Selected for Inventory" button, move(),
@@ -197,7 +196,9 @@ export class shipments {
     let i = this.checkmarks.indexOf($index)
     ~ i ? this.checkmarks.splice(i, 1)
       : this.checkmarks.push($index)
+  autoCheck($index) {
 
+  manualCheck($index) {
     let j = this.diffs.indexOf($index)
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
@@ -314,35 +315,12 @@ export class shipments {
     document.querySelector('#exp_'+$index+' input').focus()
   }
 
-  saveTransaction($index, $event, form) {
-
-    let transaction = this.transactions[$index]
-
-    let order = this.to.ordered[genericName(transaction.drug)]
-console.log('order', this.to.name, this.to.ordered, order)
-    if (order) {
-      let minQty = +transaction.qty[this.role.account] >= +order.minQty
-      let minExp = transaction.exp[this.role.account] ? (Date.parse(transaction.exp[this.role.account].replace('/', '/01/')) - Date.now()) >= order.minDays*24*60*60*1000 : true
-
-      if((minQty && minExp) != (this.isChecked[$index] || false)) { //apparently false != undefined
-        console.log('autocheck', minQty, minExp, this.isChecked[$index])
-        this.check($index)
-      }
-    }
-
-    //Do not save if clicking around within the same drug.
-    if (form.contains($event.relatedTarget))
-      return
-
-    // var data = {
-    //   message: 'Button color changed.',
-    //   timeout: 2000
-    // };
-    //this.snackbar.show(data)
-
-    //TODO only save if change occured
-    //console.log('saving', transaction)
-    return this.db.transactions.put(transaction)
+  saveTransaction(transaction) {
+    console.log('saving', transaction)
+    this.db.transactions.put(transaction)
+    .catch(e => this.snackbar.show({
+       message: `Transaction with exp ${transaction.exp[this.role.account]} and qty ${transaction.qty[this.role.account]} could not be saved`
+     }))
   }
 
   addTransaction(drug) {

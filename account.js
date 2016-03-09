@@ -48,11 +48,11 @@ export class account {
     this.users = this.users.slice() //Aurelia hack to reactivate the filter
   }
 
-  save($event, form) {
     //Do not save if clicking around within the same transaction.
     //TODO only save if change occured
     if (form.contains($event.relatedTarget))
       return
+  saveUser() {
 
     console.log('saving', this.user)
 
@@ -63,7 +63,7 @@ export class account {
       this.db.users.put(this.user)
   }
 
-  create($event) {
+  addUser() {
     this.add()
     this.db.users.post(this.user)
   }

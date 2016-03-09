@@ -24,7 +24,7 @@
         class="mdl-card__supporting-text"
         style="font-size:13px;">
         <img style="width:100%; padding-bottom:8px" if.bind="group.image" src.bind="group.image">
-        <div repeat.for="source of group.sources"   focusout.delegate="saveTransaction(source, $event, form)" ref="form">
+        <div repeat.for="source of group.sources"   input.delegate="saveTransaction(source) & debounce:1000">
           <div style="display:inline-block; width:calc(100% - 90px)">
             <a if.bind="source.history[0].transaction._id" href.bind="'/#/records/'+source.history[0].transaction._id">${source.history[0].transaction._id}</a>
             ${ source.history[0].transaction._id ? '' : session.account.name }
@@ -44,7 +44,7 @@
               type="number"
               style="width:40px"
               value.bind="source.qty.from"
-              input.delegate="input()"
+              input.trigger="input()"
               placeholder="Qty">
             </md-input>
             <md-input

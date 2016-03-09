@@ -129,42 +129,32 @@ export class drugs {
 
   addGeneric() {
     this.drug.generics.push({name:'', strength:''})
-    this.save() //button doesn't trigger focusout -> save
+    this.saveDrug() //button doesn't trigger focusout -> save
     return true
   }
 
   removeGeneric() {
     this.drug.generics.pop()
-    this.save() //button doesn't trigger focusout -> save
+    this.saveDrug() //button doesn't trigger focusout -> save
     return true
   }
 
-  addPkgSize() {
-    this.drug.pkgs.push({code:'', size:''})
-    return true
-  }
+  // addPkgSize() {
+  //   this.drug.pkgs.push({code:'', size:''})
+  //   return true
+  // }
+  //
+  // removePkgSize() {
+  //   this.drug.pkgs.pop()
+  //   return true
+  // }
 
-  removePkgSize() {
-    this.drug.pkgs.pop()
-    return true
-  }
-
-  saveOrder($event, orderForm) {
-    //Do not save if clicking around within the same/new drug.
-    //$event check allows this method to be called within the class as well
-    if ($event && this.drug._rev ? orderForm.contains($event.relatedTarget) : $event)
-      return
-
+  saveOrder() {
     console.log('saving Order', this.account)
     return this.db.accounts.put(this.account)
   }
 
-  saveDrug($event, drugForm) {
-    //Do not save if clicking around within the same/new drug.
-    //$event check allows this method to be called within the class as well
-    if ($event && this.drug._rev ? drugForm.contains($event.relatedTarget) : $event)
-      return
-
+  saveDrug() {
     console.log('saving Drug', this.drug)
     return this.db.drugs.put(this.drug)
   }

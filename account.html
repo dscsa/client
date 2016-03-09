@@ -25,8 +25,7 @@
       </div>
       <div
         class="mdl-card__supporting-text"
-        focusout.delegate="save($event, form)"
-        ref="form"
+        input.delegate="saveUser() & debounce:1000"
         style="font-size:16px;">
         <md-input style="width:49%" value.bind="user.first">First Name</md-input>
         <md-input style="width:49%" value.bind="user.last">Last Name</md-input>
@@ -35,7 +34,7 @@
         <md-input style="width:100%" value.bind="user.password">${ user._id ? 'Change password' : 'Password'}</md-input>
       </div>
       <div class="mdl-card__actions">
-        <md-button color raised style="width:100%" if.bind="! user._id" disabled.bind="! user.name || ! user.password" focusin.delegate="create($event)">Create User</md-button>
+        <md-button color raised style="width:100%" if.bind="! user._id" disabled.bind="! user.name || ! user.password" click.delegate="addUser()">Create User</md-button>
         <md-button color raised style="width:100%" if.bind="user._id && user.name == session.name" click.delegate="logout()">Logout</md-button>
         <md-button color="accent" raised style="width:100%" if.bind="user._id && user.name != session.name" click.delegate="delete()">Delete User</md-button>
       </div>

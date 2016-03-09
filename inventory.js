@@ -61,22 +61,12 @@ export class inventory {
     }, 0)
   }
 
-  saveTransaction(transaction, $event, form) {
-
-    // var data = {
-    //   message: 'Button color changed.',
-    //   timeout: 2000
-    // };
-    //
-    // this.snackbar.show(data)
-
-    //Do not save if clicking around within the same drug.
-    if (form.contains($event.relatedTarget))
-      return
-
-    //TODO only save if change occured
+  saveTransaction(transaction) {
     console.log('saving', transaction)
-    return this.db.transactions.put(transaction)
+    this.db.transactions.put(transaction)
+    .catch(e => this.snackbar.show({
+       message: `Transaction with exp ${transaction.exp[this.role.account]} and qty ${transaction.qty[this.role.account]} could not be saved`,
+     }))
   }
 
 //TODO don't bind when repacking so that you can skip and change things to get to 30
