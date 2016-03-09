@@ -31,17 +31,21 @@ export class AuthorizeStep {
   }
 
   run(routing, next) {
-    let session = this.db.users().session()
-    for (let row of routing.router.navigation) {
-      if ( ! session) {
-        row.isVisible = ! row.config.roles; continue
+    setTimeout(_ => {
+      let session = this.db.users().session()
+      for (let row of routing.router.navigation) {
+        if ( ! session) {
+          row.isVisible = ! row.config.roles; continue
+        }
+        var role = session.account._id.length == 7 ? 'user' : session.account
+        row.isVisible = row.config.roles && ~row.config.roles.indexOf(role)
       }
-      var role = session.account._id.length == 7 ? 'user' : session.account
-      row.isVisible = row.config.roles && ~row.config.roles.indexOf(role)
-    }
-    if (routing.getAllInstructions().some(i => i.config.navModel.isVisible))
-        return next()
-    console.log('Authorization Failed')
-    return next.cancel(new Redirect('login'))
+      if (routing.getAllInstructions().some(i => i.config.navModel.isVisible))
+        next()
+      else {
+        console.log('Authorization Failed')
+        next.cancel(new Redirect('login'))
+      }
+    }, 0)
   }
 }
