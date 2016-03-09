@@ -93,7 +93,6 @@ export class filterValueConverter {
 
 export class drugNameValueConverter {
   toView(transaction){
-    console.log('transaction', transaction)
     return transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+transaction.drug.form
   }
 }
