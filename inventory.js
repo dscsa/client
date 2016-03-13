@@ -123,10 +123,14 @@ export class inventory {
   }
 }
 
-export class totalValueConverter {
-  toView(arr){
-    console.log('total', arr)
-    return arr.reduce((a,b) => (+a)+(+b))
+export class dateValueConverter {
+  toView(date = ''){
+    if (typeof date != 'string' || date.length != 24)
+      return date
+
+    let result = date.slice(5, 7)+'/'+date.slice(2,4)
+    console.log('toView', date, result)
+    return result
   }
 }
 
