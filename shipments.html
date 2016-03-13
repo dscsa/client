@@ -209,9 +209,10 @@
               </td>
               <td style="padding:0">
                 ${ transaction.qty[role.partner] }
+                  <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->
                   <md-input
                     input.delegate="saveTransaction(transaction) & debounce:1000"
-                    input.trigger="qtyShortcuts($event, $index)"
+                    keyup.delegate="qtyShortcuts($event, $index)"
                     type="number"
                     value.bind="transaction.qty[role.account]"
                     style="width:40px;"

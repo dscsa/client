@@ -178,7 +178,7 @@ export class shipments {
   }
 
   qtyShortcuts($event, $index) {
-
+    console.log('qty', $event.which)
     //Enter should refocus on the search
     if ($event.which == 13)
       return document.querySelector('md-autocomplete input').focus()
@@ -205,7 +205,7 @@ export class shipments {
 
     //this.to may not have been selected yet
     let order = this.to && this.to.ordered[genericName(transaction.drug)]
-
+console.log(genericName(transaction.drug), order, this.to.ordered)
     if ( ! order) return
 
     let minQty = +transaction.qty[this.role.account] >= +order.minQty
@@ -245,7 +245,8 @@ export class shipments {
 
     //Change all selected transactions to the new or existing shipment
     //If new, tracking._id is not set but shipment._id was just set
-    for (let i of this.checkmarks) {
+    for (let i in this.isChecked) {
+      if ( ! this.isChecked[i]) continue
       this.transactions[i].shipment = {_id:this.tracking._id || this.shipment._id}
       this.db.transactions.put(this.transactions[i])
     }
@@ -370,7 +371,7 @@ export class filterValueConverter {
 
 export class valueValueConverter {
   toView(transactions = [], filter='') {
-    return transactions.reduce((a, b) => { (b.drug.retail || {}).price+a}, 0)
+    return transactions.reduce((a, b) => b.drug.retail ? b.drug.retail.price*(b.qty.to || b.qty.from) : 0 + a, 0).toFixed(2)
   }
 }
 
