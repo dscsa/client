@@ -1,6 +1,8 @@
-<template style="display:inline-block; box-sizing:border-box;">
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ${ value ? 'is-dirty' : ''}" css="width:100%; font-size:inherit; ${label.innerText ? '' : 'padding-top:1px'}">
-    <input ref="myInput" class="mdl-textfield__input" value.bind="value" disabled.bind="disabled" max.bind="max" pattern.bind="pattern || '.*'" type.bind="type" step.bind="step" placeholder.bind="placeholder || ''" css="font-size:inherit; ${ type == 'date' ? 'height:18px;' : ''}"/>
-    <label class="mdl-textfield__label" ref="label"><content></content></label>
+<!-- firefox needs max-height otherwise is oversizes the parent element -->
+<template style="display:inline-block; box-sizing:border-box; max-height:auto">
+  <div ref="div" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ${ required != null && ! value && 'is-invalid'}" style="width:100%; font-size:inherit; display:block">
+    <!-- Chrome's input[type=date] has a minimum height of 24px because of its internal buttons, to align heights we need to make all have min-height. -->
+    <input class="mdl-textfield__input" value.bind="value" disabled.bind="disabled" max.bind="max" pattern.bind="pattern || '.*'" type.bind="type" step.bind="step" placeholder.bind="placeholder || ''" style="padding:0; min-height:24px; font-size:inherit; font-weight:inherit; text-transform:inherit;"/>
+    <label class="mdl-textfield__label"><content></content></label>
   </div>
 </template>

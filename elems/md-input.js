@@ -8,17 +8,15 @@ import {inject, bindable, bindingMode} from 'aurelia-framework';
 @bindable('placeholder')
 @bindable('input')
 @bindable('max')
-@inject(Element)
 export class MdInputCustomElement {
 
-  constructor(element) {
-    this.autoselect = element.attributes.autoselect
+  valueChanged() {
+    setTimeout(_=> this.div && this.div.MaterialTextfield.checkDirty())
   }
 
   attached() {
-    //console.log('autoselect', this.autoselect)
-    componentHandler.upgradeAllRegistered();
+    componentHandler.upgradeElement(this.div)
     if (this.autoselect)
-      this.myInput.focus()
+      this.div.MaterialTextfield.input_.focus()
   }
 }

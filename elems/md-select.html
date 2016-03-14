@@ -1,10 +1,19 @@
-<template style="display:inline-block; box-sizing:border-box;">
-  <div ref="div" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ${ (value || options[0]) ? 'is-dirty' : ''} ${ required != null && ! disabled && ! value && 'is-invalid'}" style="width:100%; font-size:inherit; ${label.innerText ? '' : 'padding-top:1px'}">
-    <select class="mdl-textfield__input" value.bind="value" disabled.bind="disabled" style="border-radius:0;  font-size:inherit; font-weight:inherit; text-transform:inherit; -webkit-appearance:none; padding-top:0" />
+<!-- vertical-align top is necessary for firefox -->
+<template style="display:inline-block; box-sizing:border-box; vertical-align:top">
+  <style>
+  @-moz-document url-prefix() {
+    select {
+       text-indent:-2px;
+    }
+  }
+  </style>
+  <div ref="div" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ${ required != null && ! value && 'is-invalid'}" style="width:100%; font-size:inherit;">
+    <!-- Chrome's input[type=date] has a minimum height of 24px because of its internal buttons, to align heights we need to make all have min-height.  Not sure why extra pixel is necessary in chrome and firefox -->
+    <select class="mdl-textfield__input" value.bind="value" disabled.bind="disabled" style="padding:0; min-height:25px; border-radius:0; font-size:inherit; font-weight:inherit; text-transform:inherit; -webkit-appearance:none; -moz-appearance:none;" />
       <option model.bind="option" repeat.for="option of options">
         ${ property ? option[property] : option }
       </option>
     </select>
-    <label class="mdl-textfield__label" ref="label"><content></content></label>
+    <label class="mdl-textfield__label"><content></content></label>
   </div>
 </template>
