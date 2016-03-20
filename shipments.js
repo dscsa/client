@@ -45,7 +45,17 @@ export class shipments {
       //create a "new shipment" for "from" and select it by default
       //note that new accounts might have no actual shipments.
       //If shipment id exists then switch to the correct role
-      this.addShipment()
+      this.shipments.from.unshift({
+        tracking:'New Tracking #',
+        status:"pickup",
+        pickupAt:null,
+        shippedAt:null,
+        receivedAt:null,
+        account:{
+          from:{},
+          to: {_id:this.account._id,name:this.account.name}
+        }
+      })
 
       if (params.id) {
         shipment = to.filter(filter)[0]
@@ -60,14 +70,16 @@ export class shipments {
 
   //Activated from constructor and each time a shipment is selected
   selectShipment(shipment) {
-    this.shipment   = shipment
+    //Don't let the user modify the actual shipment, just in classes
+    //they are "moving to a new shipment" rather than creating it.
+    this.shipment   = Object.assign({}, shipment)
     this.attachment = null
 
     let url = 'shipments'
     if (shipment._id)
       url += '/'+shipment._id.split('.')[2]
     this.router.navigate(url, { trigger: false })
-    this.resetShipment()
+    this.setSelects()
 
     this.db.transactions({'shipment._id':shipment._id || this.account._id})
     .then(transactions => {
@@ -91,20 +103,21 @@ export class shipments {
     var temp          = this.role.partner
     this.role.partner = this.role.account
     this.role.account = temp
-    this.selectShipment(this.shipments[this.role.account][0])
+    let shipment = this.shipments[this.role.account][0]
+    shipment && this.selectShipment(shipment)
   }
 
-  //Tracking and Shipment start off the same but can diverge
-  //this allows methods to reset them back to the same value
-  resetShipment() {
-    this.tracking = this.shipment
-    this.setAccounts()
-  }
-
-  //Selected to != shipment.to because they are not references
+  //Selected to != shipment.account.to because they are not references
   //we need to manually find the correct from based on selected shipment
   //TODO when there is a new this.to we need this to recalculate autochecks
-  setAccounts() {
+  setSelects(accountsOnly = false) {
+    if ( ! accountsOnly)
+      this.tracking = this.shipments[this.role.account]
+      .filter(shipment => {
+        //console.log('shipment', shipment, 'tracking', this.tracking)
+        return shipment._id == this.shipment._id
+      })[0]
+
     this.to = this.accounts.filter(to => {
       //console.log('to', to, 'track', this.tracking.account)
       return to._id == this.tracking.account.to._id
@@ -123,29 +136,10 @@ export class shipments {
     })
   }
 
-  //Called on constructor() and create() to ensure user can always add a new label.
-  addShipment() {
-    this.shipments.from.unshift({
-      tracking:'New Tracking #',
-      status:"pickup",
-      pickupAt:null,
-      shippedAt:null,
-      receivedAt:null,
-      account:{
-        to: {
-          _id:this.account._id,
-          name:this.account.name
-        },
-        from:{}
-      }
-    })
-  }
-
   //Save the donation if someone changes the status/date
   saveShipment() {
     //If dates were set, status may have changed
     this.shipment.status = this.getStatus()
-    //Save an existing shipment
     console.log('saving', this.shipment)
     return this.db.shipments.put(this.shipment)
     //TODO reschedule pickup if a date was changed
@@ -205,7 +199,7 @@ export class shipments {
 
     //this.to may not have been selected yet
     let order = this.to && this.to.ordered[genericName(transaction.drug)]
-console.log(genericName(transaction.drug), order, this.to.ordered)
+    console.log(genericName(transaction.drug), order, this.to && this.to.ordered)
     if ( ! order) return
 
     let minQty = +transaction.qty[this.role.account] >= +order.minQty
@@ -234,20 +228,14 @@ console.log(genericName(transaction.drug), order, this.to.ordered)
   //Move these items to a different "alternative" shipment then select it
   //TODO need to select the new shipment once user confirms the move
   moveShipment() {
-    //Confirm with user if we are moving items between existing shipments.
-    //if user cancels then revert the tracking# back to the original value
-    //do not confirm if moving items from inventory into a specific donation
-    if(
-        this.shipment._id && this.shipment._id != this.tracking._id &&
-        ! confirm(`Move selected items from #${this.shipment.tracking} to #${this.tracking.tracking}? This operation cannot be undone!`)
-      )
-      return this.resetShipment()
 
     //Change all selected transactions to the new or existing shipment
     //If new, tracking._id is not set but shipment._id was just set
     for (let i in this.isChecked) {
+      console.log(i, this.isChecked[i], this.tracking._id, this.shipment._id)
       if ( ! this.isChecked[i]) continue
       this.transactions[i].shipment = {_id:this.tracking._id || this.shipment._id}
+      console.log('moving', this.transactions[i])
       this.db.transactions.put(this.transactions[i])
     }
 
@@ -261,18 +249,18 @@ console.log(genericName(transaction.drug), order, this.to.ordered)
       return
 
     //Store some account information in the shipment but not everything
-    this.shipment.account.to   = {_id:this.to._id, name:this.to.name}
-    this.shipment.account.from = { _id:this.from._id, name:this.from.name}
+    this.shipment.account[this.role.partner] = {_id:this[this.role.partner]._id, name:this[this.role.partner].name}
     delete this.shipment.tracking //get rid of New Tracking# to have one assigned
+    delete this.shipment._id
 
     //Create shipment then move inventory transactions to it
     console.log('adding', this.shipment)
     this.db.shipments.post(this.shipment).then(shipment => {
-      console.log('new shipment info', shipment, this.shipment, this.tracking, this.shipments)
-      this.shipments.from = this.shipments.from.slice()
-      this.shipments.to = this.shipments.to.slice()
-      Object.assign(this.shipment, shipment)
-      this.addShipment() //Add a new shipment button in case user wants to add another
+      this.shipment._id  = shipment._id
+      this.shipment._rev = shipment._rev
+      this.shipment.tracking = shipment.tracking
+      let role = this.role.account == this.shipment.account.to._id ? 'to' : 'from'
+      this.shipments[role].splice(1, 0, this.shipment)
       this.moveShipment()
     })
   }

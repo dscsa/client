@@ -48,7 +48,7 @@
           style="width:100%"
           value.bind="tracking"
           options.bind="shipments[role.account]"
-          change.delegate="setAccounts()"
+          change.delegate="setSelects(true)"
           property="tracking">
           Tracking #
         </md-select>
@@ -132,8 +132,8 @@
         <md-button color raised
           style="width:100%"
           if.bind="shipment._id != tracking._id"
-          click.delegate="moveShipment()">
           disabled.one-way="! numChecks || ! to.name"
+          click.delegate="tracking._id ? moveShipment() : createShipment()">
           Move Selected to Shipment
         </md-button>
       </div>
