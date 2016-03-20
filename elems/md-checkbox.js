@@ -4,9 +4,12 @@ import {bindable, bindingMode} from 'aurelia-framework';
 @bindable('disabled')
 export class MdCheckboxCustomElement {
 
-  //This is causing double events to be fired on parents
+  //A click on input causes a UI change and then if aurelia is also listening for a
+  //click that causes a state change, then the two state changes cancel and it looks
+  //like the switch is locked.  Prevent this from happening.
   stopPropogation($event) {
-    $event.stopPropagation(); return true
+    //console.log('$event', $event)
+    $event.preventDefault();
   }
 
   checkedChanged($new) {
