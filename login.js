@@ -55,9 +55,7 @@ export class login {
     //         console.log("onerror2", event) ;
     //     };
     // }
-
     let session = this.db.users({_id:this.name}).session
-
     this.enabled = false
     this.loading = session.loading
 

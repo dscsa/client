@@ -19,7 +19,7 @@
     <md-switch
       checked.one-way="role.account == 'to'"
       click.delegate="swapRole()"
-      style="margin:-45px 0 0 197px;">
+      style="margin:-33px 0 0 197px;">
     </md-switch>
     <a
       repeat.for="shipment of shipments[role.account] | filter:filter"
@@ -73,7 +73,7 @@
           To
         </md-select>
         <md-select
-          style="width:32%"
+          style="width:32%;"
           value.bind="shipment.status"
           options.bind="stati"
           disabled.bind="! shipment._id">
@@ -81,7 +81,7 @@
         </md-select>
         <md-input
           type="date"
-          style="width:64%"
+          style="width:64%; margin-top:20px"
           value.bind="shipment[shipment.status+'At']"
           disabled.bind="! shipment._id"
           input.delegate="saveShipment() & debounce:1000">
@@ -132,8 +132,8 @@
         <md-button color raised
           style="width:100%"
           if.bind="shipment._id != tracking._id"
-          disabled.one-way="! numChecks"
           click.delegate="moveShipment()">
+          disabled.one-way="! numChecks || ! to.name"
           Move Selected to Shipment
         </md-button>
       </div>
