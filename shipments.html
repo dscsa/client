@@ -86,7 +86,7 @@
           disabled.bind="! shipment._id"
           input.delegate="saveShipment() & debounce:1000">
         </md-input>
-        <md-select
+        <!-- <md-select
           style="width:100%"
           value.bind="attachment.name"
           change.delegate="getAttachment()"
@@ -106,13 +106,13 @@
           ref="upload"
           change.delegate="setAttachment(upload.files[0])"
           style="display:none">
-        <!-- The below padding / positioning keeps a constant aspect ratio for the embeded pdf  -->
         <div if.bind="attachment.url" style="width: 100%; padding-top:56px; padding-bottom:129%; position:relative;">
           <embed
             src.bind="attachment.url"
             type.bind="attachment.type"
             style="position:absolute; height:100%; width:100%; top:0; bottom:0">
-        </div>
+        </div> -->
+        <!-- The above padding / positioning keeps a constant aspect ratio for the embeded pdf  -->
       </div>
       <div class="mdl-card__actions">
         <md-button color raised
@@ -139,7 +139,7 @@
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
-  <!-- disabled.bind="! searchReady" -->
+      <!-- disabled.bind="! searchReady" -->
       <md-autocomplete
         placeholder.bind="'Add Drugs by Generic Name or NDC...'"
         value.bind="term"
@@ -155,10 +155,32 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-button color
-        style="position:absolute; z-index:2; right:16px; top:10px; height:24px; line-height:24px">
-        Import CSV
-      </md-button>
+      <button id="import-export"
+        style="position:absolute; z-index:2; text-align:right; top:10px; right:5px;"
+        class="mdl-button mdl-js-button mdl-button--icon">
+        <i class="material-icons">more_vert</i>
+      </button>
+      <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="import-export">
+        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
+        <li
+          show.bind="transactions.length"
+          click.delegate="exportCSV()"
+          class="mdl-menu__item">
+          Export CSV
+        </li>
+        <li
+          show.bind="!transactions.length"
+          disabled
+          class="mdl-menu__item">
+          Export CSV
+        </li>
+        <li
+          disabled
+          click.delegate="importCSV()"
+          class="mdl-menu__item">
+          Import CSV
+        </li>
+      </ul>
       <div style="overflow-y:scroll; margin:8px 0px 8px 16px;">
         <table md-table style="width:calc(100% - 16px)">
           <thead>
@@ -166,7 +188,6 @@
               <th></th>
               <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
               <th class="mdl-data-table__cell--non-numeric" style="width:90px;padding-left:0">Ndc</th>
-              <!-- <th style="text-align:left; width:5%">Lot</th> -->
               <th style="text-align:left; width:40px; padding:initial 0">Exp</th>
               <th style="text-align:left; width:40px">Qty</th>
               <th style="text-align:left; width:10px; padding:initial 0"></th>

@@ -338,6 +338,39 @@ export class shipments {
       setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
     })
   }
+
+  exportCSV() {
+    let csv = Papa.unparse(this.transactions.map(t => {
+      return {
+        '_id':t._id,
+        'createdAt':t.createdAt,
+        'verifiedAt':t.verifiedAt,
+        'drug._id':t.drug._id,
+        'drug.generic':genericName(t.drug),
+        'drug.form':t.drug.form,
+        //TODO make server default to adding an empty object to obviate this check
+        'drug.retail.price':t.drug.retail && t.drug.retail.price,
+        'drug.wholesale.price':t.drug.retail && t.drug.wholesale.price,
+        'qty.from':t.qty.from,
+        'qty.to':t.qty.to,
+        'exp.from':t.exp.from,
+        'exp.to':t.exp.to,
+        'shipment._id':this.shipment._id,
+        'shipment.tracking':this.shipment.tracking,
+        'shipment.status':this.shipment.status,
+        'shipment.account.to._id':this.shipment.account.to._id,
+        'shipment.account.to.name':this.shipment.account.to.name,
+        'shipment.account.from._id':this.shipment.account.from._id,
+        'shipment.account.from.name':this.shipment.account.from.name,
+      }
+    }))
+
+    csv = new Blob([csv], {type: 'text/csv;charset=utf-8;'})
+    let link = document.createElement('a')
+    link.href = window.URL.createObjectURL(csv)
+    link.setAttribute('download', 'Shipment '+this.shipment._id+'.csv')
+    link.click()
+  }
 }
 
 
