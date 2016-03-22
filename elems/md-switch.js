@@ -13,7 +13,6 @@ export class MdSwitchCustomElement {
   }
 
   checkedChanged($new) {
-    console.log($new, this.label)
     setTimeout(_=> this.label && this.label.MaterialSwitch[$new ? 'on' : 'off']())
   }
 
