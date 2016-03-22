@@ -368,7 +368,7 @@ export class shipments {
     csv = new Blob([csv], {type: 'text/csv;charset=utf-8;'})
     let link = document.createElement('a')
     link.href = window.URL.createObjectURL(csv)
-    link.setAttribute('download', 'Shipment '+this.shipment._id+'.csv')
+    link.setAttribute('download', this.shipment._id ? 'Shipment '+this.shipment._id+'.csv' : 'Inventory.csv')
     link.click()
   }
 }
