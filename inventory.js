@@ -48,8 +48,8 @@ export class inventory {
   }
 
   toggleRepack() {
+    this.mode = ! this.mode
     this.repack = this.group.sources.map(s => s.qty.from)
-    return true
   }
 
   //ValueConverter wasn't picking up on changes so trigger manually
@@ -148,5 +148,11 @@ export class drugNameValueConverter {
   toView(transaction){
     console.log('transaction', transaction)
     return transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+transaction.drug.form
+  }
+}
+
+export class totalValueConverter {
+  toView(transactions) {
+    return transactions.reduce((a,b) => (+a)+(+b), 0)
   }
 }
