@@ -197,19 +197,20 @@ export class shipments {
 
   autoCheck($index) {
     let transaction = this.transactions[$index]
-
-    //this.to may not have been selected yet
-    let order = this.to && this.to.ordered[genericName(transaction.drug)]
+    let order = this.to && this.to.ordered[genericName(transaction.drug)]   //this.to may not have been selected yet
 
     if ( ! order) return
 
-    let minQty = +transaction.qty[this.role.account] >= +order.minQty
-    let minExp = transaction.exp[this.role.account] ? (Date.parse(transaction.exp[this.role.account].replace('/', '/01/')) - Date.now()) >= order.minDays*24*60*60*1000 : true
+    let qty = +transaction.qty[this.role.account]
+    let exp = transaction.exp[this.role.account]
 
-    console.log('autocheck', minQty, minExp, this.isChecked[$index], +transaction.qty[this.role.account], +order.minQty)
-    if((minQty && minExp) != (this.isChecked[$index] || false)) { //apparently false != undefined
+    let minQty    = qty >= +order.minQty
+    let minExp    = exp ? exp - Date.now() >= order.minDays*24*60*60*1000 : true
+    let isChecked = this.isChecked[$index] || false //apparently false != undefined
+
+    console.log('autocheck', minQty, minExp, isChecked, qty, +order.minQty)
+    if((minQty && minExp) != isChecked)
       this.manualCheck($index)
-    }
   }
 
   manualCheck($index) {
@@ -438,6 +439,25 @@ export class valueValueConverter {
 export class drugNameValueConverter {
   toView(drug, regex){
     return genericName(drug).replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
+  }
+}
+
+export class dateValueConverter {
+
+  toView(date) {
+    if ( ! date ) return ''
+    return date != this.model ? date.slice(5,7)+'/'+date.slice(2,4) : this.view
+  }
+
+  fromView(date){
+    this.view  = date
+
+    let [month, year] = date.split('/')
+    date = new Date('20'+year,month, 1)
+    date.setDate(0)
+
+    console.log(date.toJSON())
+    return this.model = date.toJSON()
   }
 }
 

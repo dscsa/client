@@ -216,14 +216,14 @@
                 </md-select> -->
               </td>
               <td style="padding:0">
-                ${ transaction.exp[role.partner] }
+                ${ transaction.exp[role.partner] | date}
                 <md-input
                   id.bind="'exp_'+$index"
                   ref="input"
                   input.delegate="saveTransaction(transaction) & debounce:1000"
                   input.trigger="autoCheck($index)"
-                  pattern="([1-9]|1[012])/\d{2}"
-                  value.bind="transaction.exp[role.account]"
+                  pattern="(0?[1-9]|1[012])/\d{2}"
+                  value.bind="transaction.exp[role.account] | date"
                   style="width:40px;"
                   placeholder>
                 </md-input>
