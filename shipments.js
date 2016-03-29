@@ -12,8 +12,10 @@ import {HttpClient} from 'aurelia-http-client';
 export class shipments {
 
   constructor(db, router, http){
+    let session  = db.users().session()
     this.db      = db
-    this.account = db.users().session().account
+    this.account = session.account
+    this.loading = session.loading
     this.drugs   = []
     this.router  = router
     this.http    = http

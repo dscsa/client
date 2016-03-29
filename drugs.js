@@ -7,11 +7,13 @@ import {Db}     from 'db/pouch'
 export class drugs {
   //constructor(HttpClient = 'aurelia-http-client', Db = './pouch'){
   constructor(db, router){
+    let session = db.users().session()
     this.db      = db
     this.router  = router
     this.drugs   = []
     this.drug    = {generics:[''], pkgs:[{code:'', size:''}]}
-    this.account = db.users().session().account
+    this.account = session.account
+    this.loading = session.loading
   }
 
   activate(params) {
