@@ -91,28 +91,66 @@ export class drugs {
     Papa.parse(this.$file.files[0], {
       header:true,
       //worker:true,
+      // step: function(results, parser) {
+      //   let row = results.data[0]
+      //
+      //   if ( ! row.rxstring || ! row.spl_strength || ! row.product_code)
+      //     return
+      //
+      //   let brand = row.rxstring.split(' [')
+      // 	data.push({
+      //     _id:row.product_code,
+      //     generics:capitalize(row.spl_strength.slice(0, -1)).split(';').map(v => {
+      //       v = v.split(' ')
+      //       return {name:v.slice(0, -2).join(' '), strength:v.slice(-2).join(' ')}
+      //     }),
+      //     brand: brand.length > 1 ? capitalize(row.medicine_name) : '',
+      //     form:brand[0].split(' ').slice(-2).join(' '),
+      //     ndc9:row.ndc9,
+      //     upc:row.product_code.replace('-', ''),
+      //     image:row.splimage ? "http://pillbox.nlm.nih.gov/assets/large/"+row.splimage+".jpg" : null,
+      //     labeler:capitalize(row.author.split(/,|\.| LLC| Inc| \(| USA| -|limit/)[0]),
+      //     pkgs:[]
+      //   })
+      // },
       step: function(results, parser) {
         let row = results.data[0]
 
-        if ( ! row.rxstring || ! row.spl_strength || ! row.product_code)
-          return
+        if ( ! row._id) {
+          console.error('_id field is required', results); return
+        }
 
-        let brand = row.rxstring.split(' [')
-      	data.push({
-          _id:row.product_code,
-          generics:capitalize(row.spl_strength.slice(0, -1)).split(';').map(v => {
-            v = v.split(' ')
-            return {name:v.slice(0, -2).join(' '), strength:v.slice(-2).join(' ')}
-          }),
-          brand: brand.length > 1 ? capitalize(row.medicine_name) : '',
-          form:brand[0].split(' ').slice(-2).join(' '),
-          ndc9:row.ndc9,
-          upc:row.product_code.replace('-', ''),
-          image:row.splimage ? "http://pillbox.nlm.nih.gov/assets/large/"+row.splimage+".jpg" : null,
-          labeler:capitalize(row.author.split(/,|\.| LLC| Inc| \(| USA| -|limit/)[0]),
-          pkgs:[]
+        if ( ! row['generics.name']) {
+          console.error('generics.name field is required', results); return
+        }
+
+        if ( ! row['generics.strength']) {
+          console.error('generics.strength field is required', results); return
+        }
+
+        let drug = {
+          names:row['generics.name'].split(';'),
+          strengths:row['generics.strength'].split(';'),
+          generics:[]
+        }
+
+        if (drug.names.length != drug.strengths.length) {
+          console.error('generics.name/strength must contain the same number of semicolons', drug); return
+        }
+
+        for (let i in drug.names) //Collate the two fields into one
+          drug.generics.push({name:drug.names[i].trim(), strength:drug.strengths[i].trim()})
+
+        data.push({
+          _id:row._id,
+          generics:drug.generics,
+          brand:row.brand,
+          form:row.form,
+          image:row.image,
+          labeler:row.labeler
         })
       },
+
       complete: function(results, file) {
         console.log("Upload of ", data.length, "rows completed in ", Date.now() - start)
       	db.drugs.bulkDocs(data)
