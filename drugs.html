@@ -9,7 +9,7 @@
   <require from="./elems/md-autocomplete"></require>
   <md-drawer>
     <md-select
-      options.bind="['', 'Missing Retail Price', 'Missing Wholesale Price', 'Missing Image', 'Ordered']"
+      options.bind="['', 'Missing Retail Price', 'Missing Wholesale Price', 'Missing Image', 'Ordered', 'Inventory < ReorderAt', 'Inventory > ReorderTo', 'Inventory Expiring before Min Days']"
       style="padding:0 8px;">
       Quick Search
     </md-select>
@@ -157,7 +157,8 @@
         click.delegate="order()">
       </md-switch>
       <md-autocomplete
-        placeholder="Search Drugs by Generic Name or NDC..."
+        placeholder.bind="loading.length ? (loading[0] == 'drugs' ? 'Loading Drug Database. This may take a few minutes...' :  loading[0]) : 'Search Drugs by Generic Name or NDC...'"
+        disabled.bind="loading.length"
         value.bind="term"
         input.delegate="search()"
         style="margin:0px 16px">
