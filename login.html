@@ -10,7 +10,7 @@
       <md-input value.bind="name">Email</md-input>
       <md-input value.bind="password">Password</md-input>
       <md-button raised color click.delegate="login()" disabled.bind="!enabled" style="padding-top:16px">${ enabled === true ? 'Login' : (enabled === false ? 'Logging In...' : 'Logging Out...')}</md-button>
-      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ resources ? 'Syncing ' : '' }${ loading }</p>
+      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading ? 'Loading ' : '' }${ loading }</p>
     </div>
   </section>
 </template>

@@ -56,8 +56,6 @@ export class login {
     //     };
     // }
     let session = this.db.users({_id:this.name}).session
-    this.enabled = false
-    this.loading = session.loading
 
     session.post({password:this.password})
     .then(user => {
@@ -69,5 +67,8 @@ export class login {
       this.loading = null
       console.log('login failed because', err.message, err.stack)
     })
+
+    this.enabled = false
+    this.loading = session().loading
   }
 }
