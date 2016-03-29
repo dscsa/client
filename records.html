@@ -7,13 +7,16 @@
   <require from="./elems/md-switch"></require>
   <require from="./elems/md-button"></require>
   <md-drawer>
-    <md-input value.bind="filter" style="padding:0 8px; width:auto">Filter ${ type ? 'Dispositioned' : 'Received' }</md-input>
-    <md-switch click.delegate="toggleType()" style="margin:-45px 0 0 197px;"></md-switch>
-    <div class="mdl-grid" style="margin:0;padding:0">
-    </div>
-    <div style="margin:0 auto">
-      <md-button raised>Export As CSV</md-button>
-    </div>
+    <md-input
+      value.bind="filter"
+      autoselect
+      style="padding:0 8px; width:auto">
+      Filter ${ type ? 'Dispositioned' : 'Received' }
+    </md-input>
+    <md-switch
+      click.delegate="toggleType()"
+      style="margin:-33px 0 0 197px;">
+    </md-switch>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell full-height" style="width:424px">
@@ -35,16 +38,48 @@
           record for
           <md-select
             style="width:auto; padding:0 5px"
-            value.bind="month"
+            value.bind="fromMonth"
             options.bind="months">
           </md-select>
           <md-select
             style="width:auto; padding:0"
-            value.bind="year"
+            value.bind="fromYear"
+            options.bind="[2015,2014,2013,2012,2011,2010]">
+          </md-select>
+          &nbsp;–
+          <md-select
+            style="width:auto; padding:0 5px"
+            value.bind="toMonth"
+            options.bind="months">
+          </md-select>
+          <md-select
+            style="width:auto; padding:0"
+            value.bind="toYear"
             options.bind="[2015,2014,2013,2012,2011,2010]">
           </md-select>
         </div>
       </div>
+      <button id="import-export"
+        style="position:absolute; z-index:2; text-align:right; top:10px; right:5px;"
+        class="mdl-button mdl-js-button mdl-button--icon">
+        <i class="material-icons">more_vert</i>
+      </button>
+      <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="import-export">
+        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
+        <li
+          show.bind="transactions.length"
+          click.delegate="exportCSV()"
+          class="mdl-menu__item">
+          Export CSV
+        </li>
+        <li
+          show.bind="!transactions.length"
+          disabled
+          class="mdl-menu__item">
+          Export CSV
+        </li>
+      </ul>
+      <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div style="overflow-y:scroll; margin:8px 0px 8px 16px;">
         <table md-table style="width:calc(100% - 16px);">
           <thead>
