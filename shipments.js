@@ -87,7 +87,7 @@ export class shipments {
     .then(transactions => {
       this.transactions = transactions
       this.diffs     = [] //Check boxes of verified, and track the differences
-      this.isChecked = {} //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
+      this.isChecked = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
       this.numChecks = 0
       for (let i in this.transactions) {
         let verified = this.transactions[i].verifiedAt
@@ -315,18 +315,18 @@ export class shipments {
      }))
   }
 
-  addTransaction(drug) {
-    let transaction = {
-      drug:{
-        _id:drug._id,
-        generics:drug.generics,
-        form:drug.form,
-        retail:drug.retail,
-        wholesale:drug.wholesale,
-      },
+  addTransaction(drug, transaction) {
+    transaction = transaction || {
       qty:{from:null, to:null},
-      lot:{from:null, to:null},
       exp:{from:null, to:null}
+    }
+
+    transaction.drug = {
+      _id:drug._id,
+      generics:drug.generics,
+      form:drug.form,
+      retail:drug.retail,
+      wholesale:drug.wholesale
     }
 
     if (this.shipment._id)
@@ -336,6 +336,10 @@ export class shipments {
     return this.db.transactions.post(transaction)
     .then(transaction => {
       this.transactions.unshift(transaction) //Add the drug to the view
+      this.isChecked.unshift(transaction.verifiedAt)
+      if (transaction.verifiedAt)
+        this.numChecks++
+
       this.term = ''    //Reset search's auto-complete
       setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
     })
@@ -372,6 +376,42 @@ export class shipments {
     link.href = window.URL.createObjectURL(csv)
     link.setAttribute('download', this.shipment._id ? 'Shipment '+this.shipment._id+'.csv' : 'Inventory.csv')
     link.click()
+  }
+
+  importCSV() {
+    let $this = this
+    let all   = []
+    Papa.parse($this.$file.files[0], {
+      header:true,
+      step: function(results, parser) {
+        console.log(results)
+        let row = results.data[0]
+
+        if ( ! row['drug._id']) {
+          console.error('drug._id field is required', results); return
+        }
+
+        all.push($this.db.drugs({_id:row['drug._id']})
+        .then(drugs => {
+          $this.addTransaction(drugs[0], {
+            verifiedAt:row.verifiedAt,
+            qty:{
+              to:row['qty.to'],
+              from:row['qty.from'],
+            },
+            exp:{
+              to:row['exp.to'],
+              from:row['exp.from'],
+            }
+          })
+        })
+        .then(_ => console.log('uploaded', _)))
+      },
+
+      complete: function(results, file) {
+        Promise.all(all).then(_ => console.log('All Transactions Imported'))
+      }
+    })
   }
 }
 
