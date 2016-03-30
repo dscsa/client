@@ -130,7 +130,10 @@ export class shipments {
       return from._id == this.tracking.account.from._id
     })[0]
 
-    this.disabled = this.role.account == 'from' && this.shipment._id == this.tracking._id
+    //if it's from, then we can either create a shipment or move to a new shipment.
+    //want to activate the checkboxes if new shipment as a "to" chosen or if tracking number changes
+    //the later change can happen dynamically so the logic must be in the view rather than here
+    this.disableCheckboxes = this.role.account == 'from' && this.shipment._id && this.shipment._id == this.tracking._id
   }
 
   //Status is the highest stati with a truthy date
@@ -216,7 +219,7 @@ export class shipments {
   }
 
   manualCheck($index) {
-    if (this.disabled)
+    if (this.disableCheckboxes)
       return
 
     let j = this.diffs.indexOf($index)

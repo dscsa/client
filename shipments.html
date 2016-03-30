@@ -118,7 +118,7 @@
         <md-button color raised
           style="width:100%"
           if.bind="! shipment._id && ! tracking._id"
-          disabled.bind="! from.name || ! to.name"
+          disabled.bind="! to.name"
           click.delegate="createShipment()">
           Create Shipment With ${ numChecks ? 'Selected' : 'No Items'}
         </md-button>
@@ -198,7 +198,7 @@
             <tr style="padding-top:7px;" repeat.for="transaction of transactions">
               <td style="width:15px; padding:0 0 0 8px">
                 <md-checkbox
-                  disabled.bind="disabled"
+                  disabled.bind="disableCheckboxes || (!shipment._id && !to)"
                   checked.one-way="isChecked[$index]"
                   click.delegate="manualCheck($index)"
                   focusin.delegate="selectRow($index)">
