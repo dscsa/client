@@ -198,7 +198,7 @@
             <tr style="padding-top:7px;" repeat.for="transaction of transactions">
               <td style="width:15px; padding:0 0 0 8px">
                 <md-checkbox
-                  disabled.bind="role.account == 'from' && shipment.shippedAt"
+                  disabled.bind="disabled"
                   checked.one-way="isChecked[$index]"
                   click.delegate="manualCheck($index)"
                   focusin.delegate="selectRow($index)">

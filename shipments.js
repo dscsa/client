@@ -129,6 +129,8 @@ export class shipments {
       //console.log('from', from, 'track', this.tracking.account)
       return from._id == this.tracking.account.from._id
     })[0]
+
+    this.disabled = this.role.account == 'from' && this.shipment._id == this.tracking._id
   }
 
   //Status is the highest stati with a truthy date
@@ -214,6 +216,9 @@ export class shipments {
   }
 
   manualCheck($index) {
+    if (this.disabled)
+      return
+
     let j = this.diffs.indexOf($index)
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
@@ -305,6 +310,7 @@ export class shipments {
   }
 
   selectRow($index) {
+    console.log('select row')
     document.querySelector('#exp_'+$index+' input').focus()
   }
 
