@@ -50,15 +50,18 @@ export class inventory {
   toggleRepack() {
     this.mode = ! this.mode
     this.repack = this.group.sources.map(s => s.qty.from)
+    this.sumRepack()
   }
 
   //ValueConverter wasn't picking up on changes so trigger manually
   //For some reason input[type=number] doesn't save as a number
   //not sure if this is an html of aurelia bug
-  input() {
-    this.group.total = this.group.sources.reduce((a,b) => {
-      return a + (+b.qty.from || 0)
-    }, 0)
+  sumGroup() {
+    this.group.total = this.group.sources.reduce((a,b) => a + (+b.qty.from || 0), 0)
+  }
+
+  sumRepack() {
+    this.repack.total = this.repack.reduce((a,b) => (+a)+(+b), 0)
   }
 
   saveTransaction(transaction) {
@@ -72,7 +75,7 @@ export class inventory {
 //TODO don't bind when repacking so that you can skip and change things to get to 30
 //Skip over and dont delete items that have a repack quantity of 0
   repackage() {
-
+    let all   = []
     let exp   = null
     let trans = {
       qty:{from:0, to:0},
@@ -97,40 +100,48 @@ export class inventory {
 
       if (src.qty.from == qty) {
         trans.history.push(...src.history)
-        this.db.transactions.remove(src)
-        .then(_ => this.group.sources.splice(i, 1))
-      } else { //history must have length <= 1
+        this.group.sources.splice(i, 1) //assume delete is successful
+        all.push(this.db.transactions.remove(src))
+      } else { //cannot take partial quantity from repackaged drug, so history must have length <= 1
         if (src.history.length == 1) {
           let [{transaction}] = src.history
           trans.history.push({transaction, qty})
         }
         src.qty.from -= qty
-        this.db.transactions.put(src)
+        all.push(this.db.transactions.put(src))
       }
 
-      if ( ! src.exp.from) continue //We are done unless we have an expiration date
-
-      let [m,y] = src.exp.from.split('/')
-      trans.exp.from = new Date(Math.min(trans.exp.from, new Date('20'+y, m-1))) //month is indexed to 0
+      if (src.exp.from)
+        trans.exp.from = Math.min(trans.exp.from, new Date(src.exp.from))
     }
-    console.log(trans.exp.from, typeof trans.exp.from)
-    //trans.exp.from = trans.exp.from && new Date(trans.exp.from).toJSON()
-    return this.db.transactions.post(trans)
-    .then(trans => {
-      this.mode = false
-      this.group.sources.push(trans)
-    })
+
+    trans.exp.from = new Date(trans.exp.from).toJSON()
+
+    //assume add is successful.  TODO fallback code on failure
+    this.group.sources.unshift(trans)
+    this.mode = false
+
+    return this.db.transactions.post(trans).then(_ => Promise.all(all))
   }
 }
 
+//TODO combine with the shipment filter with the same code
 export class dateValueConverter {
-  toView(date = ''){
-    if (typeof date != 'string' || date.length != 24)
-      return date
 
-    let result = date.slice(5, 7)+'/'+date.slice(2,4)
-    console.log('toView', date, result)
-    return result
+  toView(date) {
+    if ( ! date ) return ''
+    return date != this.model ? date.slice(5,7)+'/'+date.slice(2,4) : this.view
+  }
+
+  fromView(date){
+    this.view  = date
+
+    let [month, year] = date.split('/')
+    date = new Date('20'+year,month, 1)
+    date.setDate(0)
+
+    console.log(date.toJSON())
+    return this.model = date.toJSON()
   }
 }
 
@@ -148,11 +159,5 @@ export class drugNameValueConverter {
   toView(transaction){
     console.log('transaction', transaction)
     return transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+transaction.drug.form
-  }
-}
-
-export class totalValueConverter {
-  toView(transactions) {
-    return transactions.reduce((a,b) => (+a)+(+b), 0)
   }
 }

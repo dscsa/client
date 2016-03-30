@@ -35,6 +35,7 @@
           </div>
           <span style="white-space:nowrap;">
             <md-input
+              disabled.bind="mode"
               pattern="(0?[1-9]|1[012])/\d{2}"
               style="width:40px"
               value.bind="source.exp.from | date"
@@ -45,16 +46,17 @@
               type="number"
               style="width:40px"
               value.bind="source.qty.from"
-              input.trigger="input()"
+              input.trigger="sumGroup()"
               placeholder="Qty">
             </md-input>
             <md-input
               if.bind="mode"
               type="number"
-              max.bind="source.qty.from"
               style="width:40px"
               value.bind="repack[$index]"
-              placeholder="Qty">
+              input.delegate="sumRepack()"
+              placeholder="Qty"
+              max.bind="source.qty.from">
             </md-input>
           </span>
         </div>
@@ -71,7 +73,7 @@
           disabled.bind="group.sources.length < 2"
           click.delegate="repackage()"
           style="width:140px">
-          Repackage ${ repack | total }
+          Repackage ${ repack.total }
         </md-button>
       </div>
     </div>

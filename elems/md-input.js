@@ -13,7 +13,7 @@ export class MdInputCustomElement {
   valueChanged() {
     setTimeout(_=> this.div && this.div.MaterialTextfield.checkDirty())
   }
-
+  
   attached() {
     componentHandler.upgradeElement(this.div)
     if (this.autoselect)
