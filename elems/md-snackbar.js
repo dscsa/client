@@ -9,6 +9,11 @@ export class MdSnackbarCustomElement {
   }
 
   attached() {
-    this.element.show = this.element.MaterialSnackbar.showSnackbar.bind(this.element.MaterialSnackbar)
+    this.element.show = opts => {
+      if (typeof opts == 'string')
+        opts = {message:opts, timeout:8000}
+
+      this.element.MaterialSnackbar.showSnackbar(opts)
+    }
   }
 }
