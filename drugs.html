@@ -145,13 +145,6 @@
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
-      <md-switch
-        class=""
-        show.bind="group"
-        style="position:absolute; right:20px; top:10px; z-index:3"
-        checked.one-way="account.ordered[group.name]"
-        click.delegate="order()">
-      </md-switch>
       <md-autocomplete
         placeholder.bind="loading.length ? (loading[0] == 'drugs' ? 'Loading Drug Database. This may take a few minutes...' :  loading[0]) : 'Search Drugs by Generic Name or NDC...'"
         disabled.bind="loading.length"
@@ -189,6 +182,13 @@
         </li>
       </ul>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
+      <md-switch
+        class=""
+        show.bind="group"
+        style="position:absolute; right:25px; top:45px; z-index:3"
+        checked.one-way="account.ordered[group.name]"
+        click.delegate="order()">
+      </md-switch>
       <div style="width:100%; height:100%; display:flex">
         <div style="overflow-y:scroll; margin:8px 0px 8px 16px; flex:1;">
           <table md-table style="width:calc(100% - 16px);">
@@ -197,14 +197,14 @@
                 <th class="mdl-data-table__cell--non-numeric">Ndc</th>
                 <th class="mdl-data-table__cell--non-numeric">Labeler</th>
                 <th class="mdl-data-table__cell--non-numeric">Brand</th>
-                <th>Price</th>
+                <th class="mdl-data-table__cell--non-numeric">Price</th>
               </tr>
             </thead>
             <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
               <td class="mdl-data-table__cell--non-numeric">${ drug._id }</td>
               <td class="mdl-data-table__cell--non-numeric">${ drug.labeler.split(' ').slice(0,2).join(' ')}</td>
               <td class="mdl-data-table__cell--non-numeric">${ drug.brand }</td>
-              <td>${ drug.wholesale.price }</td>
+              <td class="mdl-data-table__cell--non-numeric">${ drug.wholesale.price }</td>
             </tr>
           </table>
         </div>
