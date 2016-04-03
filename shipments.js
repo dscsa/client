@@ -341,17 +341,20 @@ export class shipments {
 
     if (this.shipment._id)
       transaction.shipment = {_id:this.shipment._id}
+    //Assume db query works.
+    this.transactions.unshift(transaction) //Add the drug to the view
+    this.isChecked.unshift(transaction.verifiedAt)
+    transaction.verifiedAt && this.numChecks++
 
+    this.term = ''    //Reset search's auto-complete
+    setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
     console.log('addTransaction', drug, transaction)
     return this.db.transactions.post(transaction)
-    .then(transaction => {
-      this.transactions.unshift(transaction) //Add the drug to the view
-      this.isChecked.unshift(transaction.verifiedAt)
-      if (transaction.verifiedAt)
-        this.numChecks++
-
-      this.term = ''    //Reset search's auto-complete
-      setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
+    .catch(e => {
+      this.snackbar.show(`${ e.message }: transaction could not be added`)
+      this.transactions.shift()
+      this.isChecked.shift()
+      transaction.verifiedAt && this.numChecks--
     })
   }
 
@@ -465,7 +468,6 @@ export class dateValueConverter {
     date = new Date('20'+year,month, 1)
     date.setDate(0)
 
-    console.log(date.toJSON())
     return this.model = date.toJSON()
   }
 }
