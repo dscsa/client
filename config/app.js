@@ -22,12 +22,17 @@ export class App {
 
 import {inject}   from 'aurelia-framework'
 import {Db}       from '../db/pouch'
-import {Redirect} from 'aurelia-router'
+import {Router, Redirect} from 'aurelia-router'
 
-@inject(Db)
+@inject(Router, Db)
 export class AuthorizeStep {
-  constructor(db){
-    this.db = db;
+  constructor(router, db){
+    this.db = db
+
+    //Unfortunately on browser reload run method is not called
+    //so if session has expired we need to check here as well
+    if ( ! db.users().session())
+      router.navigate('login')
   }
 
   run(routing, next) {
@@ -40,10 +45,10 @@ export class AuthorizeStep {
         var role = session.account._id.length == 7 ? 'user' : session.account
         row.isVisible = row.config.roles && ~row.config.roles.indexOf(role)
       }
+
       if (routing.getAllInstructions().some(i => i.config.navModel.isVisible))
         next()
       else {
-        console.log('Authorization Failed')
         next.cancel(new Redirect('login'))
       }
     }, 0)
