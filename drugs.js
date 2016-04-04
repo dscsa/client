@@ -77,6 +77,7 @@ export class drugs {
   order() {
     this.account.ordered[this.group.name] = this.account.ordered[this.group.name] ? undefined : {}
     this.saveOrder()
+    //return true
   }
 
   importCSV() {

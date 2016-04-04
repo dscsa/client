@@ -72,6 +72,7 @@ export class shipments {
 
   //Activated from constructor and each time a shipment is selected
   selectShipment(shipment) {
+    if ( ! shipment) return
     //Don't let the user modify the actual shipment, just in classes
     //they are "moving to a new shipment" rather than creating it.
     this.shipment   = Object.assign({}, shipment)
@@ -102,11 +103,9 @@ export class shipments {
   }
 
   swapRole() { //Swap donor-donee roles
-    var temp          = this.role.partner
-    this.role.partner = this.role.account
-    this.role.account = temp
-    let shipment = this.shipments[this.role.account][0]
-    shipment && this.selectShipment(shipment)
+    [this.role.account, this.role.partner] = [this.role.partner, this.role.account]  
+    this.selectShipment(this.shipments[this.role.account][0])
+    return true
   }
 
   //Selected to != shipment.account.to because they are not references
@@ -219,20 +218,18 @@ export class shipments {
   }
 
   manualCheck($index) {
-    if (this.disableCheckboxes)
+    this.selectRow($index)
+
+    if (this.disableCheckboxes || (!this.shipment._id && !this.to))
       return
 
     let j = this.diffs.indexOf($index)
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
 
-    if (this.isChecked[$index]) {
-      this.isChecked[$index] = false
-      this.numChecks--
-    } else {
-      this.isChecked[$index] = true
-      this.numChecks++
-    }
+    this.isChecked[$index] ? this.numChecks-- : this.numChecks++
+
+    return true
   }
 
   //Move these items to a different "alternative" shipment then select it
@@ -312,6 +309,7 @@ export class shipments {
       this.addTransaction(this.drugs[0])
   }
 
+  //Since this is triggered by a focusin and then does a focus, it activates itself a 2nd time
   selectRow($index) {
     console.log('select row')
     document.querySelector('#exp_'+$index+' input').focus()

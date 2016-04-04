@@ -51,6 +51,7 @@ export class inventory {
     this.mode = ! this.mode
     this.repack = this.group.sources.map(s => s.qty.from)
     this.sumRepack()
+    return true
   }
 
   //ValueConverter wasn't picking up on changes so trigger manually

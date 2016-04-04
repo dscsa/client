@@ -17,7 +17,7 @@
       Filter shipments ${ role.account } you
     </md-input>
     <md-switch
-      checked.one-way="role.account == 'to'"
+      checked.one-time="role.account == 'to'"
       click.delegate="swapRole()"
       style="margin:-33px 0 0 197px;">
     </md-switch>
@@ -199,9 +199,8 @@
               <td style="width:15px; padding:0 0 0 8px">
                 <md-checkbox
                   disabled.bind="disableCheckboxes || (!shipment._id && !to)"
-                  checked.one-way="isChecked[$index]"
                   click.delegate="manualCheck($index)"
-                  focusin.delegate="selectRow($index)">
+                  checked.bind="isChecked[$index]">
                 </md-checkbox>
               </td>
               <td click.delegate="selectRow($index)" class="mdl-data-table__cell--non-numeric" style="max-width:300px; white-space:normal; padding-left:0">

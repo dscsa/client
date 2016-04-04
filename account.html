@@ -61,7 +61,8 @@
         </tr> -->
         <tr repeat.for="account of accounts" if.bind="account != $parent.account">
           <td class="mdl-data-table__cell--non-numeric">
-            <md-checkbox if.bind="$parent.type != 'To'" checked.one-way="$parent.account.authorized.indexOf(account._id) != -1" change.delegate="authorize(account._id)"></md-checkbox>
+            <!-- checked.one-way="$parent.account.authorized.indexOf(account._id) != -1"  -->
+            <md-checkbox if.bind="$parent.type != 'To'" click.delegate="authorize(account._id)"></md-checkbox>
             <md-checkbox if.bind="$parent.type == 'To'" checked.one-way="account.authorized.indexOf($parent.account._id) != -1" disabled="true"></md-checkbox>
           </td>
           <td class="mdl-data-table__cell--non-numeric">${ account.name }</td>

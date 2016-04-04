@@ -69,9 +69,14 @@ export class account {
   //because account is not authorized until the db returns
   //which means isAuthorized isn't updated yet for the since click
   authorize(_id) {
-    let isAuthorized = ~ this.account.authorized.indexOf(_id)
-    console.log(isAuthorized ? 'remove' : 'post')
-    this.db.accounts({_id}).authorized[isAuthorized ? 'remove' : 'post']()
+    console.log('account.authorize')
+    let index = this.account.authorized.indexOf(_id)
+    let auth  = this.db.accounts({_id}).authorized
+    ~ index
+      ? auth.remove().then(_ => this.account.authorized.splice(index, 1))
+      : auth.post().then(_ => this.account.authorized.push(_id))
+
+      return true
     //TODO reset checkbox and show snackbar if change not made
   }
 
