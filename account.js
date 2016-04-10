@@ -69,7 +69,7 @@ export class account {
   //because account is not authorized until the db returns
   //which means isAuthorized isn't updated yet for the since click
   authorize(_id) {
-    console.log('account.authorize')
+    console.log('account.authorize', _id, this.account.authorized)
     let index = this.account.authorized.indexOf(_id)
     let auth  = this.db.accounts({_id}).authorized
     ~ index
