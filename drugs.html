@@ -9,10 +9,17 @@
   <require from="./elems/md-autocomplete"></require>
   <md-drawer>
     <md-select
-      options.bind="['', 'Missing Retail Price', 'Missing Wholesale Price', 'Missing Image', 'Ordered', 'Inventory < ReorderAt', 'Inventory > ReorderTo', 'Inventory Expiring before Min Days']"
-      style="padding:0 8px;">
+      options.bind="['Ordered', 'Inventory < ReorderAt', 'Inventory > ReorderTo', 'Inventory Expiring before Min Days', 'Missing Retail Price', 'Missing Wholesale Price', 'Missing Image']"
+      style="padding:0 8px;"
+      disabled.bind="true">
       Quick Search
     </md-select>
+    <a
+      repeat.for="ordered of quickSearch.ordered"
+      class="mdl-navigation__link ${ ordered.name == group.name ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectGroup(ordered, true)">
+      ${ ordered.name }
+    </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
@@ -150,7 +157,7 @@
         disabled.bind="loading.length"
         value.bind="term"
         input.delegate="search()"
-        style="margin:0px 16px">
+        style="margin:0px 16px; padding-right:15px">
         <table md-table>
           <tr
             repeat.for="group of groups"

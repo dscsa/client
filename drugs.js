@@ -18,13 +18,34 @@ export class drugs {
 
   activate(params) {
 
-    if ( ! params.id)
+    let all      = []
+    this.quickSearch = {ordered:[]}
+
+    for (let generic in this.account.ordered)
+      all.push(this.db.drugs({generic}))
+
+    all = Promise.all(all).then(drugs => {
+      for (let generic in this.account.ordered) {
+        console.log('drugs[0]', generic, drugs[0].generic)
+        this.quickSearch.ordered.push({
+          name:generic,
+          drugs:drugs.shift().filter(drug => drug.generic == generic)
+        })
+      }
+    })
+
+    if ( ! params.id) {
+      all.then(_ => {
+        this.term = this.quickSearch.ordered[0].name
+        this.selectGroup(this.quickSearch.ordered[0], true)
+      })
+
       return
+    }
 
     this.db.drugs({_id:params.id}).then(drugs => {
       this.drug = drugs[0]
 
-      //TODO this doesn't work for multiple drug names
       this.term = this.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+this.drug.form
 
       this.search().then(_ => {
@@ -75,7 +96,18 @@ export class drugs {
   //We might make a separate database and API out of this one day, but for now just save on account object.
   //TODO: Warn on delete since we won't save save any of the preferences?
   order() {
-    this.account.ordered[this.group.name] = this.account.ordered[this.group.name] ? undefined : {}
+    if (this.account.ordered[this.group.name]) {
+      this.quickSearch.ordered = this.quickSearch.ordered.filter(group => {
+        return group.name != this.group.name
+      })
+
+      this.account.ordered[this.group.name] = undefined
+    } else {
+      console.log('order')
+      this.quickSearch.ordered.unshift(this.group)
+      this.account.ordered[this.group.name] = {}
+    }
+
     this.saveOrder()
     //return true
   }
