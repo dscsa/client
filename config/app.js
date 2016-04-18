@@ -10,10 +10,10 @@ export class App {
       { route: ['join', ''],                   moduleId: '../join',      title:'Join',      nav:true},
       { route: ['inventory', 'inventory/:id'], moduleId: '../inventory', title:'Inventory', nav:true, roles:["user"]},
       { route: ['shipments', 'shipments/:id'], moduleId: '../shipments', title:'Shipments', nav:true, roles:["user"]},
-      { route: 'account',                      moduleId: '../account',   title:'Account',   nav:true, roles:["user"]},
       { route: ['drugs', 'drugs/:id'],         moduleId: '../drugs',     title:'Drugs',     nav:true, roles:["user"]},
       { route: ['records', 'records/:id'],     moduleId: '../records',   title:'Records',   nav:true, roles:["user"]},
-      { route: 'accounts',                     moduleId: '../accounts',  title:'Accounts',  nav:true, roles:["admin"]}
+      { route: 'accounts',                     moduleId: '../accounts',  title:'Accounts',  nav:true, roles:["admin"]},
+      { route: 'account',                      moduleId: '../account',   title:'Account',   nav:true, roles:["user"]}
     ]);
 
     this.router = router
