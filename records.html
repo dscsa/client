@@ -31,13 +31,13 @@
       <div class="mdl-card__title" style="display:block; margin-bottom:-40px; box-sizing:content-box">
         <div class="mdl-card__title-text">
           <md-select
-            style="width:auto;padding:0 5px;text-transform:capitalize"
+            style="width:auto;padding:0 5px;text-transform:capitalize; text-align-last:center;"
             value.bind="status"
             options.bind="['pickup', 'shipped', 'received', 'verified', 'destroyed']">
           </md-select>
           record
           <md-select
-            style="width:auto; padding:0 5px"
+            style="width:auto; padding:0 5px; text-align-last:center;"
             value.bind="fromMonth"
             options.bind="months">
           </md-select>
@@ -48,7 +48,7 @@
           </md-select>
           &nbsp;–
           <md-select
-            style="width:auto; padding:0 5px"
+            style="width:auto; padding:0 5px; text-align-last:center;"
             value.bind="toMonth"
             options.bind="months">
           </md-select>
