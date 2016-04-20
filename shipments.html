@@ -120,7 +120,7 @@
           if.bind="! shipment._id && ! tracking._id"
           disabled.bind="! to.name"
           click.delegate="createShipment()">
-          Create Shipment With ${ numChecks ? 'Selected' : 'No Items'}
+          Create Shipment With ${ numChecks || 'No' } Items
         </md-button>
         <md-button color raised
           style="width:100%"
