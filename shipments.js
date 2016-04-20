@@ -54,8 +54,8 @@ export class shipments {
         shippedAt:null,
         receivedAt:null,
         account:{
-          from:{},
-          to: {_id:this.account._id,name:this.account.name}
+          to:{},
+          from: {_id:this.account._id,name:this.account.name}
         }
       })
 
@@ -98,12 +98,11 @@ export class shipments {
         }
       }
     })
-
     .catch(console.log)
   }
 
   swapRole() { //Swap donor-donee roles
-    [this.role.account, this.role.partner] = [this.role.partner, this.role.account]  
+    [this.role.account, this.role.partner] = [this.role.partner, this.role.account]
     this.selectShipment(this.shipments[this.role.account][0])
     return true
   }
@@ -114,20 +113,16 @@ export class shipments {
   setSelects(accountsOnly = false) {
     if ( ! accountsOnly)
       this.tracking = this.shipments[this.role.account]
-      .filter(shipment => {
-        //console.log('shipment', shipment, 'tracking', this.tracking)
-        return shipment._id == this.shipment._id
-      })[0]
+      .filter(shipment => shipment._id == this.shipment._id)[0]
 
+    //this.accounts excludes current account so need to include current account here as default
     this.to = this.accounts.filter(to => {
-      //console.log('to', to, 'track', this.tracking.account)
       return to._id == this.tracking.account.to._id
-    })[0]
+    })[0] || this.account
 
     this.from = this.accounts.filter(from => {
-      //console.log('from', from, 'track', this.tracking.account)
       return from._id == this.tracking.account.from._id
-    })[0]
+    })[0] || this.account
 
     //if it's from, then we can either create a shipment or move to a new shipment.
     //want to activate the checkboxes if new shipment as a "to" chosen or if tracking number changes
@@ -189,7 +184,6 @@ export class shipments {
       (! transaction.qty.from && transaction.qty.to === "0") ||
       (transaction.qty.from === "0" && ! transaction.qty.to)
     ) {
-      console.log('before remove', transaction)
       this.db.transactions.remove(transaction)
       .then(_ => this.transactions.splice($index, 1))
     }
@@ -254,15 +248,15 @@ export class shipments {
       return
 
     //Store some account information in the shipment but not everything
+    this.shipment.account[this.role.account] = {_id:this[this.role.account]._id, name:this[this.role.account].name}
     this.shipment.account[this.role.partner] = {_id:this[this.role.partner]._id, name:this[this.role.partner].name}
     delete this.shipment.tracking //get rid of New Tracking# to have one assigned
     delete this.shipment._id
 
     //Create shipment then move inventory transactions to it
-    console.log('adding', this.shipment)
+    //console.log('adding', this.shipment)
     this.db.shipments.post(this.shipment).then(shipment => {
-      this.shipment._id  = shipment._id
-      this.shipment._rev = shipment._rev
+      console.log('added shipment', this.shipment, shipment)
       this.shipment.tracking = shipment.tracking
       let role = this.role.account == this.shipment.account.to._id ? 'to' : 'from'
       this.shipments[role].splice(1, 0, this.shipment)
@@ -318,9 +312,13 @@ export class shipments {
   saveTransaction(transaction) {
     console.log('saving', transaction)
     this.db.transactions.put(transaction)
-    .catch(e => this.snackbar.show({
+    //.catch(e => console.log('error', e))
+    .catch(e => {
+      console.log('error', e)
+      this.snackbar.show({
        message: `Transaction with exp ${transaction.exp[this.role.account]} and qty ${transaction.qty[this.role.account]} could not be saved`
-     }))
+      })
+    })
   }
 
   addTransaction(drug, transaction) {
