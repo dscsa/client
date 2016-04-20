@@ -99,7 +99,7 @@
                 ${ transaction.drug._id }
               </td>
               <td style="text-align:left;">
-                ${ transaction.exp.to || transaction.exp.from }
+                ${ (transaction.exp.to || transaction.exp.from).slice(0, 10) }
               </td>
               <td>
                 ${ transaction.qty.to || transaction.qty.from }
