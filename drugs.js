@@ -26,7 +26,6 @@ export class drugs {
 
     all = Promise.all(all).then(drugs => {
       for (let generic in this.account.ordered) {
-        console.log('drugs[0]', generic, drugs[0].generic)
         this.quickSearch.ordered.push({
           name:generic,
           drugs:drugs.shift().filter(drug => drug.generic == generic)
