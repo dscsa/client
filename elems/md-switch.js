@@ -20,10 +20,13 @@ export class MdSwitchCustomElement {
   //If we are relying on parent returning true then this isn't needed, but
   //if we are binding to check to change it programmatically we need this
   checkedChanged($new) {
-    this.label && this.label.MaterialSwitch[$new ? 'on' : 'off']()
+    this.label //When initially called the view is not attached yet
+      ? this.label.MaterialSwitch[$new ? 'on' : 'off']()
+      : this.$new = $new
   }
 
   attached() {
     componentHandler.upgradeElement(this.label)
+    this.checkedChanged(this.$new)
   }
 }
