@@ -43,34 +43,30 @@
           <strong>$${ transactions | value }</strong>
         </div>
       </div>
-      <!-- Put calculated height here not on the card because changing height made input shift up and down when select changed values -->
       <div class="mdl-card__supporting-text" style="font-size:16px;">
         <md-select
           style="width:100%"
-          value.bind="tracking"
+          value.bind="shipment"
           options.bind="shipments[role.account]"
-          change.delegate="setSelects(true)"
           property="tracking">
           Tracking #
         </md-select>
-        <!-- css="${ role.partner == 'from' && 'font-weight:bold;' }" -->
         <md-select
           style="width:100%;"
-          value.bind="from"
+          value.bind="shipment.account.from"
           options.bind="role.partner == 'from' ? accounts : [account]"
           property="name"
           required
-          disabled.bind="tracking._id || role.account == 'from'">
+          disabled.bind="shipment._id || role.account == 'from'">
           From
         </md-select>
-        <!-- css = "${ role.partner == 'to' && 'font-weight:bold;' }" -->
         <md-select
           style="width:100%;"
-          value.bind="to"
+          value.bind="shipment.account.to"
           options.bind="role.partner == 'to' ? accounts : [account]"
           property="name"
           required
-          disabled.bind="tracking._id || role.account == 'to'">
+          disabled.bind="shipment._id || role.account == 'to'">
           To
         </md-select>
         <md-select
@@ -118,24 +114,24 @@
       <div class="mdl-card__actions">
         <md-button color raised
           style="width:100%"
-          if.bind="! shipment._id && ! tracking._id"
-          disabled.bind="! to.name"
+          if.bind="! shipment._id"
+          disabled.bind="! shipment.account.to._id"
           click.delegate="createShipment()">
           Create Shipment With ${ numChecks || 'No' } Items
         </md-button>
         <md-button color raised
           style="width:100%"
-          if.bind="shipment._id && shipment._id == tracking._id && role.account == 'to'"
+          if.bind="transactions.length && shipment._id == transactions[0].shipment._id && role.account == 'to'"
           disabled.bind="! diffs.length"
           click.delegate="saveInventory()">
           Save Selected to Inventory
         </md-button>
         <md-button color raised
           style="width:100%"
-          if.bind="shipment._id != tracking._id"
-          disabled.one-way="! numChecks || ! to.name"
-          click.delegate="tracking._id ? moveShipment() : createShipment()">
-          Move Selected to Shipment
+          if.bind="transactions.length && shipment._id && shipment._id != transactions[0].shipment._id"
+          disabled.one-way="! numChecks || ! shipment.to._id"
+          click.delegate="shipment._id ? moveShipment() : createShipment()">
+          Move Selected to This Shipment
         </md-button>
       </div>
     </div>
@@ -191,7 +187,7 @@
             <tr style="padding-top:7px;" repeat.for="transaction of transactions">
               <td style="width:15px; padding:0 0 0 8px">
                 <md-checkbox
-                  disabled.bind="disableCheckboxes || (!shipment._id && !to)"
+                  disabled.bind="! shipment._id && ! (shipment.account.to._id && shipment.account.from._id)"
                   click.delegate="manualCheck($index)"
                   checked.bind="isChecked[$index]">
                 </md-checkbox>
@@ -219,7 +215,6 @@
                   style="width:40px;"
                   placeholder>
                 </md-input>
-
               </td>
               <td style="padding:0">
                 ${ transaction.qty[role.partner] }
