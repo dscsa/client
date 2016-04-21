@@ -1,6 +1,6 @@
 <template style="display:inline-block">
   <label ref="label" class="${ disabled && 'is-disabled' } mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" style="width:100%; margin-right:8px">
-    <input disabled.bind="disabled" checked.bind="checked" type="checkbox" class="mdl-checkbox__input" click.delegate="stopPropogation($event)"/>
+    <input disabled.bind="disabled" checked.bind="checked" type="checkbox" class="mdl-checkbox__input" click.delegate="stopPropogation()"/>
     <content></content>
   </label>
 </template>

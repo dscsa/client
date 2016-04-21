@@ -13,7 +13,8 @@ export class MdSwitchCustomElement {
   //A click on input causes a UI change and then if aurelia is also listening for a
   //click that causes a state change, then the two state changes cancel and it looks
   //like the switch is locked.  Prevent this from happening.
-  stopPropogation($event) {
+  //https://www.kirupa.com/html5/event_capturing_bubbling_javascript.htm
+  stopPropogation() {
     return true
   }
 
