@@ -173,12 +173,13 @@ export class shipments {
     let shipment = Object.assign({}, this.shipment)
     delete shipment.account.to.ordered
     delete shipment.account.from.ordered
-    this.db.shipments.post(shipment).then(_ => {
+    this.db.shipments.post(shipment).then(res => {
 
       //but we do need the old shipment.account info to keep references intact
       console.log('added shipment', shipment)
-      shipment.account = this.shipment.account
-      this.shipment = shipment
+      shipment.tracking = res.tracking
+      shipment.account  = this.shipment.account
+      this.shipment     = shipment
 
       this.shipments[this.role.account].splice(1, 0, shipment) //Add it at the top right under the new shipment
       this.moveShipment()
