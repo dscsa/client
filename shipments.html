@@ -7,6 +7,7 @@
   <require from="./elems/md-switch"></require>
   <require from="./elems/md-checkbox"></require>
   <require from="./elems/md-button"></require>
+  <require from="./elems/md-menu"></require>
   <require from="./elems/md-autocomplete"></require>
   <require from="./elems/md-snackbar"></require>
   <md-drawer autofocus>
@@ -156,31 +157,23 @@
           </tr>
         </table>
       </md-autocomplete>
-      <button id="import-export"
-        style="position:absolute; z-index:2; text-align:right; top:10px; right:5px;"
-        class="mdl-button mdl-js-button mdl-button--icon">
-        <i class="material-icons">more_vert</i>
-      </button>
-      <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="import-export">
+      <md-menu style="position:absolute; z-index:2; top:10px; right:5px;" id.bind="a1">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
           show.bind="transactions.length"
-          click.delegate="exportCSV()"
-          class="mdl-menu__item">
+          click.delegate="exportCSV()">
           Export CSV
         </li>
         <li
           show.bind="!transactions.length"
-          disabled
-          class="mdl-menu__item">
+          disabled>
           Export CSV
         </li>
         <li
-          click.delegate="$file.click()"
-          class="mdl-menu__item">
+          click.delegate="$file.click()">
           Import CSV
         </li>
-      </ul>
+      </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div style="overflow-y:scroll; margin:8px 0px 8px 16px;">
         <table md-table style="width:calc(100% - 16px)">
