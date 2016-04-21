@@ -129,7 +129,7 @@
         <md-button color raised
           style="width:100%"
           if.bind="transactions.length && shipment._id && shipment._id != transactions[0].shipment._id"
-          disabled.one-way="! numChecks || ! shipment.to._id"
+          disabled.bind="! numChecks || ! shipment.account.to._id"
           click.delegate="shipment._id ? moveShipment() : createShipment()">
           Move Selected to This Shipment
         </md-button>
