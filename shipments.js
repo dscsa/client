@@ -307,8 +307,6 @@ export class shipments {
       _id:drug._id,
       generics:drug.generics,
       form:drug.form,
-      retail:drug.retail,
-      wholesale:drug.wholesale
     }
 
     transaction.shipment = {
@@ -429,7 +427,7 @@ export class filterValueConverter {
 export class valueValueConverter {
   toView(transactions = [], filter='') {
     return transactions.reduce((a, b) => {
-      return b.drug.retail ? b.drug.retail.price*(b.qty.to || b.qty.from) : 0 + a
+      return b.drug.price ? b.drug.price.goodrx*(b.qty.to || b.qty.from) : 0 + a
     }, 0).toFixed(2)
   }
 }
