@@ -11,12 +11,8 @@
       value.bind="filter"
       autoselect
       style="padding:0 8px; width:auto">
-      Filter ${ type ? 'Dispositioned' : 'Received' }
+      Filter
     </md-input>
-    <md-switch
-      click.delegate="toggleType()"
-      style="margin:-33px 0 0 197px;">
-    </md-switch>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell full-height" style="width:424px">
@@ -33,29 +29,33 @@
           <md-select
             style="width:auto;padding:0 5px;text-transform:capitalize; text-align-last:center;"
             value.bind="status"
-            options.bind="['pickup', 'shipped', 'received', 'verified', 'destroyed']">
+            options.bind="stati">
           </md-select>
           record
           <md-select
             style="width:auto; padding:0 5px; text-align-last:center;"
+            change.delegate="searchRange()"
             value.bind="fromMonth"
             options.bind="months">
           </md-select>
           <md-select
             style="width:auto; padding:0"
+            change.delegate="searchRange()"
             value.bind="fromYear"
-            options.bind="[2015,2014,2013,2012,2011,2010]">
+            options.bind="years">
           </md-select>
           &nbsp;–
           <md-select
             style="width:auto; padding:0 5px; text-align-last:center;"
+            change.delegate="searchRange()"
             value.bind="toMonth"
             options.bind="months">
           </md-select>
           <md-select
             style="width:auto; padding:0"
+            change.delegate="searchRange()"
             value.bind="toYear"
-            options.bind="[2015,2014,2013,2012,2011,2010]">
+            options.bind="years">
           </md-select>
         </div>
       </div>

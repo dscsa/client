@@ -18,25 +18,42 @@ export class shipments {
     this.http    = http
     //this.months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
     this.months  = ['January','February','March','April','May','June','July','August','September','October','November','December']
+    this.years   = [2016,2015,2014,2013,2012,2011,2010]
     this.year    = new Date().getYear()+1900
     this.month   = this.months[new Date().getMonth()]
+    this.stati   = ['created', 'verified', 'destroyed']
   }
 
   activate(params) {
     //TODO only search for selected date {'captured_at':new Date(this.month+' 01 '+this.year)}
     //TODO search based on type, donation vs destruction
     //TODO this '.' is weird, only way I could get $gt to exclude the account._id. Maybe this is a bug in pouchdb-find.  Or maybe the . is not a good delimiter?
-    return Promise.all([this.db.transactions({'shipment._id':{$lt:this.account._id}}), this.db.transactions({'shipment._id':{$gt:this.account._id+'.'}})])
-    .then(all => {
+    return Promise.all([
+      this.db.transactions({'shipment._id':{$lt:this.account._id}}),
+      this.db.transactions({'shipment._id':{$gt:this.account._id+'.'}})
+    ]).then(all => {
       this.transactions = [...all[0], ...all[1]]
       let selected = this.transactions.filter(t => t._id === params.id)[0]
       return this.select(selected || this.transactions[0])
     })
   }
 
-  toggleType() {
-    this.type = !this.type
-    return true
+  searchRange() {
+    let fromMonth = this.months.indexOf(this.fromMonth)
+    let toMonth   = this.months.indexOf(this.toMonth)+1
+
+    let fromDate = new Date(this.fromYear,fromMonth, 1)
+    let toDate   = new Date(this.toYear,toMonth, 1)
+    toDate.setDate(0) //reduce it by a day to get end of previous month
+
+    //Just in case the user inverts the to & from dates.
+    let from = fromDate < toDate ? fromDate : toDate
+    let to   = fromDate > toDate ? fromDate : toDate
+//[this.status+'At']:{$gte:from, $lte:to},
+    this.db.transactions({'shipment._id':{$gt:this.account._id}})
+    .then(transactions => {
+      console.log('searchRange2', transactions.length, transactions)
+    })
   }
 
   //Activated from constructor and each time a shipment is selected
