@@ -228,3 +228,9 @@ export class drugs {
     console.log('TO BE IMPLEMENETED')
   }
 }
+
+export class jsonValueConverter {
+  toView(object = null){
+    return JSON.stringify(object, null, " ")
+  }
+}
