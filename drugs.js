@@ -35,6 +35,7 @@ export class drugs {
 
     if ( ! params.id) {
       all.then(_ => {
+        if ( ! this.quickSearch.ordered[0]) return
         this.term = this.quickSearch.ordered[0].name
         this.selectGroup(this.quickSearch.ordered[0], true)
       })
