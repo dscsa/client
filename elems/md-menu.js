@@ -8,9 +8,8 @@ export class MdMenuCustomElement {
     //which add the button's click handler to the previous page rather than the
     //next page since the two ids are the same.  Prevent this by randomly generating
     //the id.  Also 'for.bind' doesn't seem to work so using synomym data-md-for
-    this.id = 'id'+Math.floor(Math.random()*1000)
+    this.id = 'id'+Date.now()
     this.element = element
-
   }
 
   attached() {
