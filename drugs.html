@@ -97,18 +97,18 @@
           Labeler
         </md-input>
         <md-input
-          value.bind="drug.retail.price"
+          value.bind="drug.price.nadac"
           type="number"
           step=".01"
           style="width:49%">
-          Retail Price
+          Nadac Price
         </md-input>
         <md-input
-          value.bind="drug.wholesale.price"
+          value.bind="drug.price.goodrx"
           type="number"
           step=".01"
           style="width:49%">
-          Wholesale Price
+          GoodRx Price
         </md-input>
         <!-- <div if.bind="drug.pkgs[0].code && drug.pkgs[0].size" style="position:relative">
           <md-button color fab="11"
