@@ -77,8 +77,9 @@ export class shipments {
   //Activated by activate() and each time a shipment is selected from drawer
   selectShipment(shipment) {
 
-    this.shipment   = shipment
-    this.attachment = null
+    this.shipment     = shipment
+    this.attachment   = null
+    this.transactions = [] //prevents flash of "move button"
 
     //Keep url concise by using the last segment of the id
     let url = shipment._id ? '/'+shipment._id.split('.')[2] : ''
@@ -86,7 +87,6 @@ export class shipments {
 
     this.db.transactions({'shipment._id':shipment._id || this.account._id})
     .then(transactions => {
-      console.log(transactions.length, transactions)
       this.transactions = transactions
       this.diffs     = [] //Check boxes of verified, and track the differences
       this.isChecked = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working

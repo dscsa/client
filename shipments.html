@@ -175,7 +175,7 @@
         <table md-table style="width:calc(100% - 16px)">
           <thead>
             <tr>
-              <th></th>
+              <th style="width:15px"></th>
               <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
               <th class="mdl-data-table__cell--non-numeric" style="width:90px;padding-left:0">Ndc</th>
               <th style="text-align:left; width:40px; padding:initial 0">Exp</th>
@@ -185,7 +185,7 @@
           </thead>
           <tbody>
             <tr style="padding-top:7px;" repeat.for="transaction of transactions">
-              <td style="width:15px; padding:0 0 0 8px">
+              <td style="padding:0 0 0 8px">
                 <md-checkbox
                   disabled.bind="! shipment._id && ! (shipment.account.to._id && shipment.account.from._id)"
                   click.delegate="manualCheck($index)"
