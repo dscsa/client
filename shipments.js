@@ -427,7 +427,7 @@ export class filterValueConverter {
 export class valueValueConverter {
   toView(transactions = [], filter='') {
     return transactions.reduce((a, b) => {
-      return b.drug.price ? b.drug.price.goodrx*(b.qty.to || b.qty.from) : 0 + a
+      return b.drug.price.goodrx ? b.drug.price.goodrx*(b.qty.to || b.qty.from) : 0 + a
     }, 0).toFixed(2)
   }
 }
