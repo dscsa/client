@@ -33,6 +33,7 @@ export class shipments {
       this.db.transactions({'shipment._id':{$gt:this.account._id+'.'}})
     ]).then(all => {
       this.transactions = [...all[0], ...all[1]]
+      if ( ! this.transactions[0]) return
       let selected = this.transactions.filter(t => t._id === params.id)[0]
       return this.select(selected || this.transactions[0])
     })
