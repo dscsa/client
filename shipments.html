@@ -114,7 +114,7 @@
       <div class="mdl-card__actions">
         <md-button color raised
           style="width:100%"
-          if.bind="! shipment._id"
+          if.bind="! shipment._rev && shipment._id == transactions[0].shipment._id"
           disabled.bind="! shipment.account.to._id"
           click.delegate="createShipment()">
           Create Shipment With ${ diffs.length || 'No' } Items
@@ -128,7 +128,7 @@
         </md-button>
         <md-button color raised
           style="width:100%"
-          if.bind="transactions.length && shipment._id && shipment._id != transactions[0].shipment._id"
+          if.bind="transactions.length && shipment._id != transactions[0].shipment._id"
           disabled.bind="! diffs.length || ! shipment.account.to._id"
           click.delegate="shipment._rev ? moveShipment() : createShipment()">
           Move Selected to This Shipment
@@ -187,7 +187,7 @@
             <tr style="padding-top:7px;" repeat.for="transaction of transactions">
               <td style="padding:0 0 0 8px">
                 <md-checkbox
-                  disabled.bind="! shipment._id && ! (shipment.account.to._id && shipment.account.from._id)"
+                  disabled.bind="shipment._rev && shipment._id != transactions[0].shipment._id"
                   click.delegate="manualCheck($index)"
                   checked.bind="isChecked[$index]">
                 </md-checkbox>
