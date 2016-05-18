@@ -11,7 +11,7 @@ export class drugs {
     this.db      = db
     this.router  = router
     this.drugs   = []
-    this.drug    = {generics:[''], pkgs:[{code:'', size:''}]}
+    this.drug    = {generics:[{name:'', strength:''}], pkgs:[{code:'', size:''}]}
     this.account = session.account
     this.loading = session.loading
   }
