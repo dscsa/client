@@ -49,7 +49,7 @@ export class shipments {
     to.setMonth(to.getMonth()+1) //to get last day of month, increase by one month then reduce it by a day to get end of previous month.  Got this from stackoverflow
     to.setDate(0)
 
-    let query = {createdAt:{$gte:from, $lte:to}}
+    let query = { 'shipment._id':{$ne:this.account._id}, createdAt:{$gte:from, $lte:to}}
 
     if (this.status == 'verified')
       query.verifiedAt = {$type:'string'}
