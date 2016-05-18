@@ -56,14 +56,15 @@ export class shipments {
 
       from.forEach(makeReference)
 
-      from.unshift({
+      from.unshift({ //this is inventory
+        _id:this.account._id,
         tracking:'New Tracking #',
         status:"pickup",
         pickupAt:null,
         shippedAt:null,
         receivedAt:null,
         account:{
-          [this.role.account]:this.account
+          from:this.account
         }
       })
 
@@ -82,10 +83,10 @@ export class shipments {
     this.transactions = [] //prevents flash of "move button"
 
     //Keep url concise by using the last segment of the id
-    let url = shipment._id ? '/'+shipment._id.split('.')[2] : ''
+    let url = shipment._rev ? '/'+shipment._id.split('.')[2] : ''
     this.router.navigate('shipments'+url, { trigger: false })
 
-    this.db.transactions({'shipment._id':shipment._id || this.account._id})
+    this.db.transactions({'shipment._id':shipment._id})
     .then(transactions => {
       this.transactions = transactions
       this.diffs     = [] //Check boxes of verified, and track the differences

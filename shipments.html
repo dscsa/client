@@ -27,16 +27,16 @@
       class="mdl-navigation__link ${ shipment._id == $parent.shipment._id ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(shipment)">
       <div class="mdl-typography--title">
-        ${ shipment._id ? shipment.account[role.partner].name : 'Create'}
+        ${ shipment._rev ? shipment.account[role.partner].name : 'Create'}
       </div>
-      ${ shipment._id ? '#0'+shipment.tracking+', '+shipment.status : 'Shipment from Inventory' }
+      ${ shipment._rev ? '#0'+shipment.tracking+', '+shipment.status : 'Shipment from Inventory' }
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
       <div class="mdl-card__title" style="display:block;">
         <div class="mdl-card__title-text">
-          ${ shipment._id ? 'Shipment #0'+shipment.tracking : 'Shipment from Inventory' }
+          ${ shipment._rev ? 'Shipment #0'+shipment.tracking : 'Shipment from Inventory' }
         </div>
         <div style="margin-bottom:-5px">
           <strong>${transactions.length}</strong> items worth
@@ -57,7 +57,7 @@
           options.bind="role.partner == 'from' ? accounts : [account]"
           property="name"
           required
-          disabled.bind="shipment._id || role.account == 'from'">
+          disabled.bind="shipment._rev || role.account == 'from'">
           From
         </md-select>
         <md-select
@@ -66,21 +66,21 @@
           options.bind="role.partner == 'to' ? accounts : [account]"
           property="name"
           required
-          disabled.bind="shipment._id || role.account == 'to'">
+          disabled.bind="shipment._rev || role.account == 'to'">
           To
         </md-select>
         <md-select
           style="width:32%;"
           value.bind="shipment.status"
           options.bind="stati"
-          disabled.bind="! shipment._id">
+          disabled.bind="! shipment._rev">
           Status
         </md-select>
         <md-input
           type="date"
           style="width:64%; margin-top:20px"
           value.bind="shipment[shipment.status+'At']"
-          disabled.bind="! shipment._id"
+          disabled.bind="! shipment._rev"
           input.delegate="saveShipment() & debounce:1000">
         </md-input>
         <!-- <md-select
@@ -130,7 +130,7 @@
           style="width:100%"
           if.bind="transactions.length && shipment._id && shipment._id != transactions[0].shipment._id"
           disabled.bind="! numChecks || ! shipment.account.to._id"
-          click.delegate="shipment._id ? moveShipment() : createShipment()">
+          click.delegate="shipment._rev ? moveShipment() : createShipment()">
           Move Selected to This Shipment
         </md-button>
       </div>
@@ -229,7 +229,7 @@
                   </md-input>
               </td>
               <td style="padding:0 16px">
-                <a if.bind="shipment._id" href="/#/records/${ transaction._id }" tabindex="-1">
+                <a if.bind="shipment._rev" href="/#/records/${ transaction._id }" tabindex="-1">
                    <i class="material-icons" style="font-size:15px; vertical-align:text-top">history</i>
                 </a>
               </td>
