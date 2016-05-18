@@ -117,19 +117,19 @@
           if.bind="! shipment._id"
           disabled.bind="! shipment.account.to._id"
           click.delegate="createShipment()">
-          Create Shipment With ${ numChecks || 'No' } Items
+          Create Shipment With ${ diffs.length || 'No' } Items
         </md-button>
         <md-button color raised
           style="width:100%"
           if.bind="transactions.length && shipment._id == transactions[0].shipment._id && role.account == 'to'"
           disabled.bind="! diffs.length"
           click.delegate="saveInventory()">
-          Save Selected to Inventory
+          Save ${ diffs.length } Items to Inventory
         </md-button>
         <md-button color raised
           style="width:100%"
           if.bind="transactions.length && shipment._id && shipment._id != transactions[0].shipment._id"
-          disabled.bind="! numChecks || ! shipment.account.to._id"
+          disabled.bind="! diffs.length || ! shipment.account.to._id"
           click.delegate="shipment._rev ? moveShipment() : createShipment()">
           Move Selected to This Shipment
         </md-button>

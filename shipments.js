@@ -91,12 +91,8 @@ export class shipments {
       this.transactions = transactions
       this.diffs     = [] //Check boxes of verified, and track the differences
       this.isChecked = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
-      this.numChecks = 0
       for (let i in this.transactions) {
         this.isChecked.push(this.transactions[i].verifiedAt)
-        if (this.transactions[i].verifiedAt) {
-          this.numChecks++
-        }
       }
     })
     .catch(console.log)
@@ -232,7 +228,6 @@ export class shipments {
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
 
-    this.isChecked[$index] ? this.numChecks-- : this.numChecks++
     this.isChecked[$index] = ! this.isChecked[$index] //for autoCheck
     return true
   }
@@ -317,7 +312,6 @@ export class shipments {
     //Assume db query works.
     this.transactions.unshift(transaction) //Add the drug to the view
     this.isChecked.unshift(transaction.verifiedAt)
-    transaction.verifiedAt && this.numChecks++
 
     this.term = ''    //Reset search's auto-complete
     setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
@@ -327,7 +321,6 @@ export class shipments {
       this.snackbar.show(`${ e.message }: transaction could not be added`)
       this.transactions.shift()
       this.isChecked.shift()
-      transaction.verifiedAt && this.numChecks--
     })
   }
 
