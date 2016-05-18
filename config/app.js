@@ -39,7 +39,7 @@ export class AuthorizeStep {
     setTimeout(_ => {
       let session = this.db.users().session()
       for (let row of routing.router.navigation) {
-        if ( ! session) {
+        if ( ! session || ! session.account) {
           row.isVisible = ! row.config.roles; continue
         }
         var role = session.account._id.length == 7 ? 'user' : session.account
