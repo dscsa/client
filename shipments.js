@@ -27,7 +27,7 @@ export class shipments {
     return Promise.all([
       //Start all of our async tasks
       this.db.accounts({state:this.account.state}),   //TODO to = $elemMatch:this.account._id, from = $in:this.account.authorized
-      this.db.shipments({'account.from._id':this.account._id}),
+      this.db.shipments({'account.from._id':this.account._id}), //TODO this should be duplicative with _security doc.  We should be able to do _all_docs or no selector
       this.db.shipments({'account.to._id':this.account._id})
     ])
     .then(([accounts, from, to]) => {
@@ -92,7 +92,7 @@ export class shipments {
       this.diffs     = [] //Check boxes of verified, and track the differences
       this.isChecked = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
       for (let i in this.transactions) {
-        this.isChecked.push(this.transactions[i].verifiedAt)
+        this.isChecked.push(!!this.transactions[i].verifiedAt) //force boolean since aurelia forces checkboxes to be boolean to using date causes checkboxes to stick on first click as aurelia converts date to boolean
       }
     })
     .catch(console.log)
@@ -219,8 +219,12 @@ export class shipments {
     let isChecked = this.isChecked[$index] || false //apparently false != undefined
 
     console.log('autocheck', 'minQty', minQty, 'minExp', minExp, 'isChecked', isChecked)
-    if((minQty && minExp) != isChecked)
+    if((minQty && minExp) != isChecked) {
       this.manualCheck($index)
+      console.log('1', this.isChecked[$index])
+      this.isChecked[$index] = ! isChecked
+      console.log('2', this.isChecked[$index])
+    }
   }
 
   manualCheck($index) {
@@ -228,7 +232,7 @@ export class shipments {
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
 
-    this.isChecked[$index] = ! this.isChecked[$index] //for autoCheck
+
     return true
   }
 
