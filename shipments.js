@@ -404,6 +404,11 @@ export class shipments {
 //
 // Value Converters
 //
+export class numberValueConverter {
+  fromView(str){
+    return +str
+  }
+}
 
 export class jsonValueConverter {
   toView(object = null){

@@ -223,7 +223,7 @@
                     input.delegate="saveTransaction(transaction) & debounce:1000"
                     keyup.delegate="qtyShortcuts($event, $index)"
                     type="number"
-                    value.bind="transaction.qty[role.account]"
+                    value.bind="transaction.qty[role.account] | number"
                     style="width:40px;"
                     placeholder>
                   </md-input>

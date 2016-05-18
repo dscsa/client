@@ -146,6 +146,12 @@ export class dateValueConverter {
   }
 }
 
+export class numberValueConverter {
+  fromView(str){
+    return +str
+  }
+}
+
 //ADDED step of converting object to array
 export class filterValueConverter {
   toView(transactions = {}, filter = ''){
