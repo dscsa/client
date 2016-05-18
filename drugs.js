@@ -219,7 +219,17 @@ export class drugs {
 
   saveDrug() {
     console.log('saving Drug', this.drug)
-    return this.db.drugs.put(this.drug)
+    if (this.drug._rev)
+      this.db.drugs.put(this.drug)
+    else {
+      this.db.drugs.post(this.drug)
+      .then(drug => { //TODO: move this to pouch.js?
+        this.drug.ndc9      = drug.ndc9
+        this.drug.upc       = drug.upc
+        this.drug.price     = drug.price
+        this.drug.createdAt = drug.createdAt
+      })
+    }
   }
 
   delete() {
