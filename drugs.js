@@ -18,11 +18,9 @@ export class drugs {
 
   activate(params) {
 
-    let all      = []
     this.quickSearch = {ordered:[]}
 
-    for (let generic in this.account.ordered)
-      all.push(this.db.drugs({generic}))
+    let all = Object.keys(this.account.ordered).map(generic => this.db.drugs({generics}))
 
     all = Promise.all(all).then(drugs => {
       for (let generic in this.account.ordered) {
