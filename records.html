@@ -28,6 +28,7 @@
         <div class="mdl-card__title-text">
           <md-select
             style="width:auto;padding:0 5px;text-transform:capitalize; text-align-last:center;"
+            change.delegate="searchRange()"
             value.bind="status"
             options.bind="stati">
           </md-select>

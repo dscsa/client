@@ -16,49 +16,56 @@ export class shipments {
     this.account = db.users(true).session().account
     this.router  = router
     this.http    = http
-    //this.months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-    this.months  = ['January','February','March','April','May','June','July','August','September','October','November','December']
+    this.months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    //this.months  = ['January','February','March','April','May','June','July','August','September','October','November','December']
     this.years   = [2016,2015,2014,2013,2012,2011,2010]
-    this.year    = new Date().getYear()+1900
-    this.month   = this.months[new Date().getMonth()]
-    this.stati   = ['created', 'verified', 'destroyed']
+    this.fromYear  = this.toYear  = new Date().getYear()+1900
+    this.fromMonth = this.toMonth = this.months[new Date().getMonth()]
+    this.stati   = ['complete', 'verified', 'destroyed']
+    this.status  = this.stati[0]
+
+
   }
 
   activate(params) {
-    //TODO only search for selected date {'captured_at':new Date(this.month+' 01 '+this.year)}
     //TODO search based on type, donation vs destruction
-    //TODO this '.' is weird, only way I could get $gt to exclude the account._id. Maybe this is a bug in pouchdb-find.  Or maybe the . is not a good delimiter?
-    return Promise.all([
-      this.db.transactions({'shipment._id':{$lt:this.account._id}}),
-      this.db.transactions({'shipment._id':{$gt:this.account._id+'.'}})
-    ]).then(all => {
-      this.transactions = [...all[0], ...all[1]]
-      if ( ! this.transactions[0]) return
-      let selected = this.transactions.filter(t => t._id === params.id)[0]
-      return this.select(selected || this.transactions[0])
+    this.searchRange().then(transactions => {
+      this.select(transactions.filter(t => t._id === params.id)[0])
     })
+
   }
 
   searchRange() {
     let fromMonth = this.months.indexOf(this.fromMonth)
-    let toMonth   = this.months.indexOf(this.toMonth)+1
+    let toMonth   = this.months.indexOf(this.toMonth)
 
     let fromDate = new Date(this.fromYear,fromMonth, 1)
     let toDate   = new Date(this.toYear,toMonth, 1)
-    toDate.setDate(0) //reduce it by a day to get end of previous month
 
     //Just in case the user inverts the to & from dates.
-    let from = fromDate < toDate ? fromDate : toDate
+    let from = fromDate <= toDate ? fromDate : toDate
     let to   = fromDate > toDate ? fromDate : toDate
-//[this.status+'At']:{$gte:from, $lte:to},
-    this.db.transactions({'shipment._id':{$gt:this.account._id}})
-    .then(transactions => {
-      console.log('searchRange2', transactions.length, transactions)
+
+    to.setMonth(to.getMonth()+1) //to get last day of month, increase by one month then reduce it by a day to get end of previous month.  Got this from stackoverflow
+    to.setDate(0)
+
+    let query = {createdAt:{$gte:from, $lte:to}}
+
+    if (this.status == 'verified')
+      query.verifiedAt = {$type:'string'}
+
+    if (this.status == 'destroyed') //verifiedAt:null and {$eq:null} didn't seem to work.  Not sure if this is bug
+      query.verifiedAt = {$type:'null'}
+
+    return this.db.transactions(query).then(transactions => {
+      this.select(transactions[0])
+      return this.transactions = transactions
     })
   }
 
   //Activated from constructor and each time a shipment is selected
   select(transaction) {
+    if ( ! transaction) return
     this.transaction = transaction
     this.router.navigate('records/'+transaction._id, { trigger: false })
     this.http.get('//localhost:3000/transactions/'+transaction._id+'/history')
