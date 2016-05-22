@@ -7,48 +7,50 @@ import {Db}     from 'db/pouch'
 export class drugs {
   //constructor(HttpClient = 'aurelia-http-client', Db = './pouch'){
   constructor(db, router){
-    let session = db.users().session()
     this.db      = db
     this.router  = router
     this.drugs   = []
-    this.drug    = {generics:[{name:'', strength:''}], pkgs:[{code:'', size:''}]}
-    this.account = session.account
-    this.loading = session.loading
   }
 
   activate(params) {
-
-    this.quickSearch = {ordered:[]}
-
-    let all = Object.keys(this.account.ordered).map(generic => this.db.drugs({generics}))
-
-    all = Promise.all(all).then(drugs => {
-      for (let generic in this.account.ordered) {
-        this.quickSearch.ordered.push({
-          name:generic,
-          drugs:drugs.shift().filter(drug => drug.generic == generic)
-        })
-      }
+    return this.db.user.session.get()
+    .then(session => {
+      console.log(session)
+      return this.db.account.get({_id:session.account._id})
     })
+    .then(accounts => {
 
-    if ( ! params.id) {
-      all.then(_ => {
-        if ( ! this.quickSearch.ordered[0]) return
-        this.term = this.quickSearch.ordered[0].name
-        this.selectGroup(this.quickSearch.ordered[0], true)
+      this.account     = accounts[0]
+      this.quickSearch = {}
+
+      let all = Object.keys(this.account.ordered).map(generic => this.db.drug.get({generic}).then(drugs => {
+        return {
+          name:generic,
+          drugs:drugs.filter(drug => drug.generic == generic)
+        }
+      }))
+
+      all = Promise.all(all).then(ordered => {
+        ordered.unshift({
+          name:'Add a New Drug',
+          drugs:[{generics:[{name:'', strength:''}], form:''}]
+        })
+        this.quickSearch.ordered = ordered
       })
 
-      return
-    }
+      if ( ! params.id) {
+        return all.then(_ => {
+          this.term = this.quickSearch.ordered[0].name
+          this.selectGroup(this.quickSearch.ordered[0], true)
+        })
+      }
 
-    this.db.drugs({_id:params.id}).then(drugs => {
-      this.drug = drugs[0]
-
-      this.term = this.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+this.drug.form
-
-      this.search().then(_ => {
-        //Groups could contain this.term and other active ingredients, so filter for the exact match
-        this.selectGroup(this.groups.filter(group => group.name == this.term)[0])
+      return this.db.drug.get({_id:params.id}).then(drugs => {
+        this.selectDrug(drugs[0])
+        return this.search().then(_ => {
+          //Groups could contain this.term and other active ingredients, so filter for the exact match
+          this.selectGroup(this.groups.filter(group => group.name == this.term)[0])
+        })
       })
     })
   }
@@ -61,10 +63,9 @@ export class drugs {
 
   selectDrug(drug) {
     let url = drug._id ? 'drugs/'+drug._id : 'drugs'
-    this.term = drug.generic
+    this.term = drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
     this.router.navigate(url, { trigger: false })
     this.drug      = drug
-    this.drug.pkgs = [{code:'', size:''}]
   }
 
   search() {
@@ -75,10 +76,10 @@ export class drugs {
 
     if (/^[\d-]+$/.test(term)) {
       this.regex = RegExp('('+term+')', 'gi')
-      var drugs = this.db.drugs({ndc:term})
+      var drugs = this.db.drug.get({ndc:term})
     } else {
       this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      var drugs = this.db.drugs({generic:term})
+      var drugs = this.db.drug.get({generic:term})
     }
 
     let groups = {}
@@ -102,7 +103,8 @@ export class drugs {
       this.account.ordered[this.group.name] = undefined
     } else {
       console.log('order')
-      this.quickSearch.ordered.unshift(this.group)
+      //Add New Order but Keep Add New Item on Top
+      this.quickSearch.ordered.splice(1, 0, this.group)
       this.account.ordered[this.group.name] = {}
     }
 
@@ -184,7 +186,7 @@ export class drugs {
 
       complete: function(results, file) {
         console.log("Upload of ", data.length, "rows completed in ", Date.now() - start)
-      	db.drugs.bulkDocs(data)
+      	this.db.drug.bulkDocs(data)
         .then(_ => console.log(Date.now() - start, _))
       }
     })
@@ -214,21 +216,24 @@ export class drugs {
 
   saveOrder() {
     console.log('saving Order', this.account)
-    return this.db.accounts.put(this.account)
+    return this.db.account.put(this.account)
   }
 
   saveDrug() {
+    delete this.drug.generic
     console.log('saving Drug', this.drug)
     if (this.drug._rev)
-      this.db.drugs.put(this.drug)
+      this.db.drug.put(this.drug)
     else {
-      this.db.drugs.post(this.drug)
+      this.db.drug.post(this.drug)
       .then(drug => { //TODO: move this to pouch.js?
         this.drug.ndc9      = drug.ndc9
         this.drug.upc       = drug.upc
         this.drug.price     = drug.price
         this.drug.createdAt = drug.createdAt
+        this.selectDrug(this.drug)
       })
+      .catch(err => this.snackbar.show(`Drug could not be added: ${err.reason.msg}`))
     }
   }
 

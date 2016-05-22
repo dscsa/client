@@ -8,6 +8,7 @@
   <require from="./elems/md-menu"></require>
   <require from="./elems/md-switch"></require>
   <require from="./elems/md-autocomplete"></require>
+  <require from="./elems/md-snackbar"></require>
   <md-drawer>
     <md-select
       options.bind="['Ordered', 'Inventory < ReorderAt', 'Inventory > ReorderTo', 'Inventory Expiring before Min Days', 'Missing Retail Price', 'Missing Wholesale Price', 'Missing Image']"
@@ -58,15 +59,15 @@
         </md-input>
         <div if.bind="drug.generics[0].name" style="position:relative">
           <md-button color fab="11"
-            if.bind="drug.generics[drug.generics.length-1].name"
+            show.bind="drug.generics[drug.generics.length-1].name"
             click.delegate="addGeneric()"
             style="position:absolute; left:153px; margin-top:-5px; z-index:1">
             +
           </md-button>
           <md-button color fab="11"
-            if.bind="! drug.generics[drug.generics.length-1].name"
+            show.bind="! drug.generics[drug.generics.length-1].name"
             mousedown.delegate="removeGeneric()"
-            style="position:absolute; left:153px; margin-top:-5px; z-index:1">
+            style="position:absolute; right:153px; margin-top:-5px; z-index:1">
             -
           </md-button>
         </div>
@@ -199,7 +200,7 @@
                 <th class="mdl-data-table__cell--non-numeric">Price</th>
               </tr>
             </thead>
-            <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
+            <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id && drug._id == $parent.drug._id ? 'is-selected' : ''}">
               <td class="mdl-data-table__cell--non-numeric">${ drug._id }</td>
               <td class="mdl-data-table__cell--non-numeric">${ drug.labeler.split(' ').slice(0,2).join(' ')}</td>
               <td class="mdl-data-table__cell--non-numeric">${ drug.brand }</td>
@@ -245,5 +246,6 @@
         </div>
       </div>
     </div>
+    <md-snackbar ref="snackbar"></md-snackbar>
   </section>
 </template>

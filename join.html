@@ -21,15 +21,16 @@
         <md-input value.bind="account.zip" class="mdl-cell mdl-cell--3-col">Zip</md-input>
       </div>
       <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-grid" style="padding:16px">
-        <md-input value.bind="user.first" class="mdl-cell mdl-cell--6-col">First Name</md-input>
-        <md-input value.bind="user.last" class="mdl-cell mdl-cell--6-col">Last Name</md-input>
-        <md-input value.bind="user.name" class="mdl-cell mdl-cell--12-col" type="email">Email</md-input>
+        <md-input value.bind="user.name.first" class="mdl-cell mdl-cell--6-col">First Name</md-input>
+        <md-input value.bind="user.name.last" class="mdl-cell mdl-cell--6-col">Last Name</md-input>
+        <md-input value.bind="user.email" class="mdl-cell mdl-cell--12-col" type="email">Email</md-input>
         <md-input value.bind="user.phone" class="mdl-cell mdl-cell--12-col" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$">Phone</md-input>
         <md-input value.bind="user.password" class="mdl-cell mdl-cell--12-col">Password</md-input>
         <div class="mdl-cell mdl-cell--9-col mdl-grid" style="padding:18px 0">
           <md-checkbox checked.bind="accept" style="margin-left:10px">I accept the terms of use</md-checkbox>
         </div>
         <md-button raised color click.delegate="join()" disabled.bind="!accept" class="mdl-cell mdl-cell--3-col">Submit</md-button>
+        <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading }</p>
       </div>
     </div>
   </section>

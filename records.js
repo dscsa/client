@@ -13,7 +13,6 @@ export class shipments {
 
   constructor(db, router, http){
     this.db      = db
-    this.account = db.users(true).session().account
     this.router  = router
     this.http    = http
     this.months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
@@ -23,19 +22,16 @@ export class shipments {
     this.fromMonth = this.toMonth = this.months[new Date().getMonth()]
     this.stati   = ['complete', 'verified', 'destroyed']
     this.status  = this.stati[0]
-
-
   }
 
   activate(params) {
-    //TODO search based on type, donation vs destruction
-    this.searchRange().then(transactions => {
-      this.select(transactions.filter(t => t._id === params.id)[0])
+    this.db.user.session.get().then(session => {
+      this.account = session.account
+      this.searchRange(params._id)
     })
-
   }
 
-  searchRange() {
+  searchRange(transId) {
     let fromMonth = this.months.indexOf(this.fromMonth)
     let toMonth   = this.months.indexOf(this.toMonth)
 
@@ -57,20 +53,20 @@ export class shipments {
     if (this.status == 'destroyed') //verifiedAt:null and {$eq:null} didn't seem to work.  Not sure if this is bug
       query.verifiedAt = {$type:'null'}
 
-    return this.db.transactions(query).then(transactions => {
-      this.select(transactions[0])
+    return this.db.transaction.get(query).then(transactions => {
+      this.select(transId ? transactions.filter(t => t._id === transId)[0] : transactions[0])
       return this.transactions = transactions
     })
   }
-
-  //Activated from constructor and each time a shipment is selected
+//this.http.get('//localhost:3000/transactions/'+transaction._id+'/history')
+  //Activated from constructor and each time a transaction is selected
   select(transaction) {
     if ( ! transaction) return
     this.transaction = transaction
     this.router.navigate('records/'+transaction._id, { trigger: false })
-    this.http.get('//localhost:3000/transactions/'+transaction._id+'/history')
+    this.db.transaction.get({_id:transaction._id}, {history:true})
     .then(history => {
-      //console.log('history', history.content)
+      console.log('history', history)
       //TODO move this to /history?text=true. Other formatting options?
       function id(k,o) {
         //console.log(o, typeof o)
@@ -83,17 +79,16 @@ export class shipments {
         return (word+' '.repeat(25)).slice(0, 25)
       }
       this.history = JSON.stringify(
-        history.content,
+        history,
         (k,v) => {
           if (Array.isArray(v))
             return v
 
             let status = this.status || 'pickup' //Might not be initialized yet
-            let date   = v.shipment[status + 'At'] || v.verifiedAt || '0000-00-00'
             let href   = '/#/shipments/'+v.shipment._id.split('.')[2]
 
             return pad('From: '+v.shipment.account.from.name)+pad('To: '+v.shipment.account.to.name)+"<a href='"+href+"'>"+v.type+" <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a><br>"+
-                   pad(v.shipment.account.from.street)+pad(v.shipment.account.to.street)+status[0].toUpperCase()+status.slice(1)+' '+date.slice(2, 10)+'<br>'+
+                   pad(v.shipment.account.from.street)+pad(v.shipment.account.to.street)+'Date '+v.createdAt.slice(2, 10)+'<br>'+
                    pad(v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip)+pad(v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip)+'Quantity '+(v.qty.to || v.qty.from)
         },
         "   "

@@ -1,20 +1,20 @@
-//TODO
-//Autofocus on new drug
 import {inject} from 'aurelia-framework';
 import {Db}     from 'db/pouch'
-import {Router}     from 'aurelia-router';
+import {Router} from 'aurelia-router';
 
 @inject(Db, Router)
 export class inventory {
 
   constructor(db, router){
     this.db      = db
-    this.session = db.users(true).session()
+    this.session =
     this.router  = router
   }
 
   activate(params) {
-    return this.db.transactions({'shipment._id':this.session.account._id})
+    return this.db.user.session.get().then(session => {
+      return this.db.transaction.get({'shipment._id':session.account._id})
+    })
     .then(transactions => {
       console.log('transactions', transactions)
       this.groups = {}
@@ -26,7 +26,7 @@ export class inventory {
         }
         else {
           this.groups[t.drug._id] = {total:+t.qty.from || 0, sources:[t]}
-          this.db.drugs({_id:t.drug._id})
+          this.db.drug.get({_id:t.drug._id})
           .then(drugs => this.groups[t.drug._id].image = drugs[0].image)
         }
       }
@@ -67,7 +67,7 @@ export class inventory {
 
   saveTransaction(transaction) {
     console.log('saving', transaction)
-    this.db.transactions.put(transaction)
+    this.db.transaction.put(transaction)
     .catch(e => this.snackbar.show({
        message: `Transaction with exp ${transaction.exp[this.role.account]} and qty ${transaction.qty[this.role.account]} could not be saved`,
      }))
@@ -79,6 +79,8 @@ export class inventory {
     let all   = []
     let exp   = null
     let trans = {
+      _id:undefined,
+      _rev:undefined,
       qty:{from:0, to:0},
       lot:{from:null, to:null},
       exp:{from:Infinity, to:Infinity}, //JSON.stringify will convert these to null if neccessary
@@ -102,14 +104,14 @@ export class inventory {
       if (src.qty.from == qty) {
         trans.history.push(...src.history)
         this.group.sources.splice(i, 1) //assume delete is successful
-        all.push(this.db.transactions.remove(src))
+        all.push(this.db.transaction.delete(src))
       } else { //cannot take partial quantity from repackaged drug, so history must have length <= 1
         if (src.history.length == 1) {
           let [{transaction}] = src.history
           trans.history.push({transaction, qty})
         }
         src.qty.from -= qty
-        all.push(this.db.transactions.put(src))
+        all.push(this.db.transaction.put(src))
       }
 
       if (src.exp.from)
@@ -122,7 +124,7 @@ export class inventory {
     this.group.sources.unshift(trans)
     this.mode = false
 
-    return this.db.transactions.post(trans).then(_ => Promise.all(all))
+    return this.db.transaction.post(trans).then(_ => Promise.all(all))
   }
 }
 

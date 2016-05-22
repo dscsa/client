@@ -7,10 +7,10 @@
 
   <section class="mdl-grid" style="height:70vh">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="margin:0 auto; padding:48px 96px 28px 96px; max-width:450px">
-      <md-input value.bind="name">Email</md-input>
+      <md-input value.bind="email">Email</md-input>
       <md-input value.bind="password">Password</md-input>
-      <md-button raised color click.delegate="login()" disabled.bind="!enabled" style="padding-top:16px">${ enabled === true ? 'Login' : (enabled === false ? 'Logging In...' : 'Logging Out...')}</md-button>
-      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading ? 'Loading ' : '' }${ loading }</p>
+      <md-button raised color click.delegate="login()" disabled.bind="disabled" style="padding-top:16px">Login</md-button>
+      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading }</p>
     </div>
   </section>
 </template>

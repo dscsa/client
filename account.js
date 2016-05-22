@@ -9,60 +9,64 @@ export class account {
   constructor(db, router){
     this.db = db
     this.router = router
-    this.session = db.users(true).session()
   }
 
   activate(params) {
-    this.db.accounts({_id:this.session.account._id})
-    .then(accounts => { console.log('accounts', accounts[0]); this.account = accounts[0]})
 
-    //this.db.accounts({_id:{$ne:this.session.account._id}, state:this.session.account.state})
-    //.then(accounts => this.accounts = accounts)
-    Promise.all([
-      this.db.accounts({state:this.session.account.state, _id:{$lt:this.session.account._id}}),
-      this.db.accounts({state:this.session.account.state, _id:{$gt:this.session.account._id}})
-    ]).then(all => this.accounts = [...all[0], ...all[1]])
+    this.db.user.session.get().then(session => {
 
-    return this.db.users()
-    .then(users => {
-      this.users = users
-      this.user  = users.filter(user => user.name == this.session.name)[0]
-      this.add() //Make the user list have a "New User" button at the top
+      this.session = session
+
+      //TODO allow a valueConverter for each state or do a new search
+      this.db.account.get().then(accounts => {
+        this.accounts = accounts.filter(account => {
+          if (account._id != session.account._id)
+            return true
+          this.account = account
+        })
+      })
+
+      return this.db.user.get().then(users => {
+        this.users = users
+        this.selectUser()
+        this.newUser() //Make the user list have a "New User" button at the top
+      })
     })
   }
 
-  select(user) {
-    user.password = ''
-    this.user = user
+  selectUser(user) {
+    this.user = user || this.users.filter(user => user._id == this.session._id)[0]
   }
 
-  add() {
+  newUser() {
     this.users.unshift({
-      first:'',
-      last:'',
-      name:'',
+      name:{first:'', last:''},
+      email:'',
       phone:'',
       password:'',
       account:{_id:this.session.account._id}
     })
-    this.users = this.users.slice() //Aurelia hack to reactivate the filter
   }
 
   saveUser() {
     if ( ! this.user._id) return
-
     console.log('saving', this.user)
-
-    //TODO this seems counter-intuitve...  What's this for?
-    if ( ! this.user.password)
-      delete this.user.password
-
-    this.db.users.put(this.user)
+    this.db.user.put(this.user)
   }
 
   addUser() {
-    this.add()
-    this.db.users.post(this.user)
+    this.newUser()
+    this.db.user.post(this.user)
+  }
+
+  deleteUser() {
+    let index = this.users.indexOf(this.user)
+    console.log('deleting', this.user, this.users, index)
+    this.db.user.delete(this.user).then(_ => {
+      this.users.splice(index, 1)
+      this.selectUser()
+    })
+    .catch(err => console.log(err.stack))
   }
 
   //Simple debounce doesn't work here to prevent double click
@@ -71,17 +75,21 @@ export class account {
   authorize(_id) {
     console.log('account.authorize', _id, this.account.authorized)
     let index = this.account.authorized.indexOf(_id)
-    let auth  = this.db.accounts({_id}).authorized
+    let auth  = this.db.account.authorized
     ~ index
-      ? auth.remove().then(_ => this.account.authorized.splice(index, 1))
-      : auth.post().then(_ => this.account.authorized.push(_id))
+      ? auth.delete({_id}).then(_ => this.account.authorized.splice(index, 1))
+      : auth.post({_id}).then(_ => this.account.authorized.push(_id))
 
       return true
     //TODO reset checkbox and show snackbar if change not made
   }
 
   logout() {
-    this.router.navigate('login')
+    this.db.user.session.delete().then(_ => {
+      console.log('delete successful going to login')
+      this.router.navigate('login', {trigger:true})
+    })
+    .catch(e => console.log('delete not successful', e))
   }
 }
 

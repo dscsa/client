@@ -12,10 +12,7 @@ import {HttpClient} from 'aurelia-http-client';
 export class shipments {
 
   constructor(db, router, http){
-    let session  = db.users().session()
     this.db      = db
-    this.account = session.account
-    this.loading = session.loading
     this.drugs   = []
     this.router  = router
     this.http    = http
@@ -23,13 +20,22 @@ export class shipments {
   }
 
   activate(params) {
+    return this.db.user.session.get()
+    .then(session => {
+      console.log(session)
+      return this.db.account.get({_id:session.account._id})
+    })
+    .then(accounts => {
+      console.log(accounts)
+      this.account = accounts[0]
 
-    return Promise.all([
-      //Start all of our async tasks
-      this.db.accounts({state:this.account.state}),   //TODO to = $elemMatch:this.account._id, from = $in:this.account.authorized
-      this.db.shipments({'account.from._id':this.account._id}), //TODO this should be duplicative with _security doc.  We should be able to do _all_docs or no selector
-      this.db.shipments({'account.to._id':this.account._id})
-    ])
+      return Promise.all([
+        //Start all of our async tasks
+        this.db.account.get({state:this.account.state}),   //TODO to = $elemMatch:this.account._id, from = $in:this.account.authorized
+        this.db.shipment.get({'account.from._id':this.account._id}), //TODO this should be duplicative with _security doc.  We should be able to do _all_docs or no selector
+        this.db.shipment.get({'account.to._id':this.account._id})
+      ])
+    })
     .then(([accounts, from, to]) => {
 
       //This abbreviated denormalized account information will be assigned to account.to/from
@@ -86,7 +92,7 @@ export class shipments {
     let url = shipment._rev ? '/'+shipment._id.split('.')[2] : ''
     this.router.navigate('shipments'+url, { trigger: false })
 
-    this.db.transactions({'shipment._id':shipment._id})
+    this.db.transaction.get({'shipment._id':shipment._id})
     .then(transactions => {
       this.transactions = transactions
       this.diffs     = [] //Check boxes of verified, and track the differences
@@ -121,15 +127,14 @@ export class shipments {
     //If dates were set, status may have changed
     this.shipment.status = this.getStatus()
     console.log('saving', this.shipment)
-    return this.db.shipments.put(this.shipment)
+    return this.db.shipment.put(this.shipment)
     //TODO reschedule pickup if a date was changed
   }
 
   setAttachment(attachment) {
     attachment._id  = this.attachment.name
     attachment._rev = this.shipment._rev
-    this.db.shipments({_id:this.shipment._id})
-    .attachment(attachment)
+    this.db.shipment.attachment.put({_id:this.shipment._id, attachment:attachment})
     .then(res => {
       this.shipment._rev   = res.rev
       this.attachment.type = attachment.type
@@ -141,8 +146,7 @@ export class shipments {
   }
 
   getAttachment() {
-    this.db.shipments({_id:this.shipment._id})
-    .attachment(this.attachment.name)
+    this.db.shipment.attachment.get({_id:this.shipment._id, name:this.attachment.name})
     .then(attachment => {
       this.attachment.type = attachment.type
       this.attachment.url  = URL.createObjectURL(attachment)
@@ -158,7 +162,7 @@ export class shipments {
     for (let i in this.isChecked) { //Change all selected transactions to the new or existing shipment
       if ( ! this.isChecked[i]) continue
       this.transactions[i].shipment = {_id:this.shipment._id}
-      this.db.transactions.put(this.transactions[i])
+      this.db.transaction.put(this.transactions[i])
     }
 
     this.selectShipment(this.shipment) //Display existing shipment or the newly created shipment
@@ -170,7 +174,7 @@ export class shipments {
     let shipment = Object.assign({}, this.shipment)
     delete shipment.account.to.ordered
     delete shipment.account.from.ordered
-    this.db.shipments.post(shipment).then(res => {
+    this.db.shipment.post(shipment).then(res => {
 
       //but we do need the old shipment.account info to keep references intact
       console.log('added shipment', shipment)
@@ -194,7 +198,7 @@ export class shipments {
     let donorDelete = transaction.qty.from === "0" && ! transaction.qty.to
 
     if (donorDelete || doneeDelete) {
-      this.db.transactions.remove(transaction)
+      this.db.transaction.delete(transaction)
       .then(_ => this.transactions.splice($index, 1))
     }
 
@@ -237,14 +241,11 @@ export class shipments {
   }
 
   saveInventory() {
-    //__array_observer__ is an enumerable key in this.transactions here
-    //for some reason. Current code catches this bug but be careful.
-    let all = []
-    for (let i of this.diffs) {
-      let method = this.transactions[i].verifiedAt ? 'asDelete' : 'asPost'
-      let url  = '//localhost:3000/transactions/'+this.transactions[i]._id+'/verified'
-      all.push(this.http.createRequest(url).withCredentials(true)[method]().send())
-    }
+    let all = this.diffs.map(i => {
+      let method = this.transactions[i].verifiedAt ? 'delete' : 'post'
+      return this.db.transaction.verified[method]({_id:this.transactions[i]._id})
+    })
+
     Promise.all(all)
     .then(_ => {
       this.diffs = []
@@ -262,10 +263,10 @@ export class shipments {
 
     if (/^[\d-]+$/.test(term)) {
       this.regex = RegExp('('+term+')', 'gi')
-      var drugs = this.db.drugs({ndc:term})
+      var drugs = this.db.drug.get({ndc:term})
     } else {
       this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      var drugs = this.db.drugs({generic:term})
+      var drugs = this.db.drug.get({generic:term})
     }
 
     drugs.then(drugs => {
@@ -289,7 +290,7 @@ export class shipments {
 
   saveTransaction(transaction) {
     console.log('saving', transaction)
-    this.db.transactions.put(transaction)
+    this.db.transaction.put(transaction)
     //.catch(e => console.log('error', e))
     .catch(e => {
       console.log('error', e)
@@ -320,7 +321,7 @@ export class shipments {
     this.term = ''    //Reset search's auto-complete
     setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
     console.log('addTransaction', drug, transaction)
-    return this.db.transactions.post(transaction)
+    return this.db.transaction.post(transaction)
     .catch(e => {
       this.snackbar.show(`${ e.message }: transaction could not be added`)
       this.transactions.shift()
@@ -374,7 +375,7 @@ export class shipments {
           console.error('drug._id field is required', results); return
         }
 
-        all.push($this.db.drugs({_id:row['drug._id']})
+        all.push($this.db.drug.get({_id:row['drug._id']})
         .then(drugs => {
           $this.addTransaction(drugs[0], {
             verifiedAt:row.verifiedAt,

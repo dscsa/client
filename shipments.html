@@ -138,8 +138,7 @@
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
       <!-- disabled.bind="! searchReady" -->
       <md-autocomplete
-        placeholder.bind="loading.length ? (loading[0] == 'drugs' ? 'Loading Drug Database. This may take a few minutes...' :  loading[0]) : 'Add Drugs by Generic Name or NDC...'"
-        disabled.bind="loading.length"
+        placeholder="Add Drugs by Generic Name or NDC..."
         value.bind="term"
         input.delegate="search()"
         keyup.delegate="autocompleteShortcut($event)"
