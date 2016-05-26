@@ -8,10 +8,14 @@ import {inject, bindable, bindingMode} from 'aurelia-framework';
 @bindable('placeholder')
 @bindable('input')
 @bindable('max')
+@bindable('required')
 export class MdInputCustomElement {
 
   valueChanged() {
-    setTimeout(_=> this.div && this.div.MaterialTextfield.checkDirty())
+    setTimeout(_=> {
+      this.div && this.div.MaterialTextfield && this.div.MaterialTextfield.checkDirty()
+      this.div && this.div.MaterialTextfield && this.div.MaterialTextfield.checkValidity()
+    })
   }
 
   attached() {
