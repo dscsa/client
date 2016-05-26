@@ -227,6 +227,11 @@
             Min Days
           </md-input>
           <md-input
+            value.bind="(account.ordered[group.name] || {}).message"
+            style="width:100%; font-size:12px">
+            Message
+          </md-input>
+          <md-input
             type="number"
             value.bind="(account.ordered[group.name] || {}).maxPrice"
             disabled.bind="true"

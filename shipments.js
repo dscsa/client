@@ -34,7 +34,7 @@ export class shipments {
     })
     .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
       //This abbreviated denormalized account information will be assigned to account.to/from
-      let selected, fromMap = {}, toMap = {}, account = {_id:this.account._id, name:this.account.name}
+      let selected, fromMap = {}, toMap = {}, account = {_id:this.account._id, name:this.account.name, ordered:this.account.ordered}
       function makeMap(account) {
         this[account._id] = {_id:account._id, name:account.name, ordered:account.ordered}
       }
@@ -179,14 +179,14 @@ export class shipments {
   }
 
   qtyShortcuts($event, $index) {
-    //Enter should refocus on the search
-    if ($event.which == 13)
+    if ($event.which == 37 || $event.which == 39 || $event.which == 9)
+      return //ignore left and right arrows and tabs https://css-tricks.com/snippets/javascript/javascript-keycodes/
+
+    if ($event.which == 13) //Enter should refocus on the search
       return document.querySelector('md-autocomplete input').focus()
+
     //Delete an item in the qty is 0.  Instead of having a delete button
-
     let transaction = this.transactions[$index]
-    console.log('QTY', transaction.qty.to, transaction.qty.from, transaction)
-
     let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
     let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
 
@@ -205,7 +205,7 @@ export class shipments {
     let transaction = this.transactions[$index]
 
     let order = this.shipment.account.to && this.shipment.account.to.ordered[genericName(transaction.drug)]   //this.shipment.account.to may not have been selected yet
-    console.log('autocheck', genericName(transaction.drug), order)
+
     if ( ! order) return
 
     let qty = +transaction.qty[this.role.account]
@@ -215,12 +215,12 @@ export class shipments {
     let minExp    = exp ? new Date(exp) - Date.now() >= order.minDays*24*60*60*1000 : true
     let isChecked = this.isChecked[$index] || false //apparently false != undefined
 
-    console.log('autocheck', 'minQty', minQty, 'minExp', minExp, 'isChecked', isChecked)
+    console.log('autocheck', genericName(transaction.drug), order, 'minQty', minQty, 'minExp', minExp, 'isChecked', isChecked)
     if((minQty && minExp) != isChecked) {
       this.manualCheck($index)
-      console.log('1', this.isChecked[$index])
       this.isChecked[$index] = ! isChecked
-      console.log('2', this.isChecked[$index])
+      if (this.isChecked[$index] && order.message)
+        this.snackbar.show(order.message)
     }
   }
 
