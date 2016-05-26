@@ -27,14 +27,14 @@
         class="mdl-card__supporting-text"
         input.delegate="saveUser() & debounce:1000"
         style="font-size:16px;">
-        <md-input style="width:49%" value.bind="user.name.first">First Name</md-input>
-        <md-input style="width:49%" value.bind="user.name.last">Last Name</md-input>
-        <md-input style="width:100%" value.bind="user.email" type="email">Email</md-input>
-        <md-input style="width:100%" value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$">Phone</md-input>
+        <md-input style="width:49%" value.bind="user.name.first" required>First Name</md-input>
+        <md-input style="width:49%" value.bind="user.name.last" required>Last Name</md-input>
+        <md-input style="width:100%" value.bind="user.email" type="email" required>Email</md-input>
+        <md-input style="width:100%" value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
         <md-input style="width:100%" value.bind="user.password" if.bind=" ! user._id" required>Password</md-input>
       </div>
       <div class="mdl-card__actions">
-        <md-button color raised style="width:100%" if.bind="! user._id" disabled.bind="! user.email || ! user.password" click.delegate="addUser()">Create User</md-button>
+        <md-button color raised style="width:100%" if.bind="! user._id" disabled.bind="! user.name.first || ! user.name.last || ! user.phone || ! user.email || ! user.password" click.delegate="addUser()">Create User</md-button>
         <md-button color raised style="width:100%" if.bind="user._id == session._id" click.delegate="logout()">Logout</md-button>
         <md-button color="accent" raised style="width:100%" if.bind="user._id && user._id != session._id" click.delegate="deleteUser()">Delete User</md-button>
       </div>
