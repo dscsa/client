@@ -20,14 +20,17 @@ export class MdSwitchCustomElement {
 
   //If we are relying on parent returning true then this isn't needed, but
   //if we are binding to check to change it programmatically we need this
-  checkedChanged($new) {
-    this.label //When initially called the view is not attached yet
-      ? this.label.MaterialSwitch[$new ? 'on' : 'off']()
-      : this.$new = $new
+  checkedChanged($new, $old) {
+    this.label && setTimeout(_ => this.label.MaterialSwitch.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
+  }
+
+  disabledChanged() {
+    this.label && setTimeout(_ => this.label.MaterialSwitch.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
   }
 
   attached() {
     componentHandler.upgradeElement(this.label)
-    this.checkedChanged(this.$new)
+    this.checkedChanged()
+    this.disabledChanged()
   }
 }

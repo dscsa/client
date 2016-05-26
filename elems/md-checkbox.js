@@ -19,14 +19,18 @@ export class MdCheckboxCustomElement {
 
   //If we are relying on parent method returning true then this isn't needed,
   //but if we are binding to check to change it programmatically we need this
-  checkedChanged($new) {
-    this.label //When initially called the view is not attached yet
-      ? this.label.MaterialCheckbox[$new ? 'check' : 'uncheck']()
-      : this.$new = $new
+
+  checkedChanged($new, $old) {
+    this.label && setTimeout(_ => this.label.MaterialCheckbox.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
+  }
+
+  disabledChanged() {
+    this.label && setTimeout(_ => this.label.MaterialCheckbox.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
   }
 
   attached() {
     componentHandler.upgradeElement(this.label)
-    this.checkedChanged(this.$new)
+    this.checkedChanged()
+    this.disabledChanged()
   }
 }
