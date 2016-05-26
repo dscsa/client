@@ -154,12 +154,16 @@ export class shipments {
     this.selectShipment(shipment) //Display existing shipment or the newly created shipment
   }
 
+  //Create shipment then move inventory transactions to it
   createShipment() {
-    //Create shipment then move inventory transactions to it
-    //Use new shipment so we don't copy changes to the old shipment
-    let shipment = Object.assign({}, this.shipment)
+
+    //Use new shipment so we don't copy changes to the old shipment since
+    //.ordered is deeply nested need this rather than Object.assign shallow
+    let shipment = JSON.parse(JSON.stringify(this.shipment))
+
     delete shipment.account.to.ordered
     delete shipment.account.from.ordered
+    
     this.db.shipment.post(shipment).then(res => {
       //but we do need the old shipment.account info to keep references intact
       shipment.tracking = res.tracking
@@ -167,6 +171,10 @@ export class shipments {
       //keep the shipent <-> account references intact
       shipment.account.from = this.shipment.account.from
       shipment.account.to   = this.shipment.account.to
+
+      //Restore ordered in case we want to add transactions right away
+      shipment.account.to.ordered   = this.shipment.account.to.ordered
+      shipment.account.from.ordered = this.shipment.account.from.ordered
 
       //keep the create new shipment fields clean
       delete this.shipment.tracking
