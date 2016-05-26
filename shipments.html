@@ -125,7 +125,7 @@
         <md-button color raised
           style="width:100%"
           if.bind="! shipment._rev && shipment._id == transactions[0].shipment._id"
-          disabled.bind="! shipment.account.to._id"
+          disabled.bind="! shipment.account.to._id || ! shipment.account.from._id"
           click.delegate="createShipment()">
           Create Shipment With ${ diffs.length || 'No' } Items
         </md-button>
