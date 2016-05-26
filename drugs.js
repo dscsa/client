@@ -15,7 +15,6 @@ export class drugs {
   activate(params) {
     return this.db.user.session.get()
     .then(session => {
-      console.log(session)
       return this.db.account.get({_id:session.account._id})
     })
     .then(accounts => {
@@ -23,7 +22,8 @@ export class drugs {
       this.account     = accounts[0]
       this.quickSearch = {}
 
-      let all = Object.keys(this.account.ordered).map(generic => this.db.drug.get({generic}).then(drugs => {
+      let all = Object.keys(this.account.ordered).map(generic => this.db.drug.get({generic})
+      .then(drugs => {
         return {
           name:generic,
           drugs:drugs.filter(drug => drug.generic == generic)
@@ -33,14 +33,13 @@ export class drugs {
       all = Promise.all(all).then(ordered => {
         ordered.unshift({
           name:'Add a New Drug',
-          drugs:[{generics:[{name:'', strength:''}], form:''}]
+          drugs:[{generics:[{}]}]
         })
         this.quickSearch.ordered = ordered
       })
 
       if ( ! params.id) {
         return all.then(_ => {
-          this.term = this.quickSearch.ordered[0].name
           this.selectGroup(this.quickSearch.ordered[0], true)
         })
       }
@@ -57,15 +56,15 @@ export class drugs {
 
   selectGroup(group, autoselect) {
     this.group = group
-    if (autoselect)
+    if (autoselect && group.drugs[0])
       this.selectDrug(group.drugs[0])
   }
 
   selectDrug(drug) {
     let url = drug._id ? 'drugs/'+drug._id : 'drugs'
-    this.term = drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
+    this.term = drug.generic = drug.form ? drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form : ''
     this.router.navigate(url, { trigger: false })
-    this.drug      = drug
+    this.drug = drug
   }
 
   search() {

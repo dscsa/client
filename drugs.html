@@ -158,8 +158,7 @@
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
       <md-autocomplete
-        placeholder.bind="loading.length ? (loading[0] == 'drugs' ? 'Loading Drug Database. This may take a few minutes...' :  loading[0]) : 'Search Drugs by Generic Name or NDC...'"
-        disabled.bind="loading.length"
+        placeholder="Search Drugs by Generic Name or NDC..."
         value.bind="term"
         input.delegate="search()"
         style="margin:0px 16px; padding-right:15px">
