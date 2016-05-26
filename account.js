@@ -40,7 +40,7 @@ export class account {
 
   newUser() {
     this.users.unshift({
-      name:{first:'', last:''},
+      name:{},
       email:'',
       phone:'',
       password:'',
@@ -85,11 +85,7 @@ export class account {
   }
 
   logout() {
-    this.db.user.session.delete().then(_ => {
-      console.log('delete successful going to login')
-      this.router.navigate('login', {trigger:true})
-    })
-    .catch(e => console.log('delete not successful', e))
+    this.router.navigate('login', {trigger:true})
   }
 }
 
