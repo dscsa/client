@@ -21,11 +21,11 @@ export class MdCheckboxCustomElement {
   //but if we are binding to check to change it programmatically we need this
 
   checkedChanged($new, $old) {
-    this.label && setTimeout(_ => this.label.MaterialCheckbox.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
+    setTimeout(_ => this.label && this.label.MaterialCheckbox.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
   }
 
   disabledChanged() {
-    this.label && setTimeout(_ => this.label.MaterialCheckbox.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
+    setTimeout(_ => this.label && this.label.MaterialCheckbox.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
   }
 
   attached() {
