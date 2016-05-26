@@ -26,25 +26,10 @@
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
-      <div class="mdl-card__title" show.bind=" ! drug._rev">
-        <div class="mdl-card__title-text">
-          Add a New Drug
-        </div>
-      </div>
       <div
         class="mdl-card__supporting-text"
         input.delegate="drug._rev && saveDrug() & debounce:1000"
         style="font-size:16px;">
-        <img
-          style="width:100%;"
-          if.bind="drug.image"
-          src.bind="drug.image">
-        <md-input
-          type="url"
-          value.bind="drug.image"
-          placeholder="Image"
-          style="width:100%; font-size:9px;">
-        </md-input>
         <md-input
           required
           style="width:49%"
@@ -117,6 +102,16 @@
           style="width:49%">
           GoodRx Price
         </md-input>
+        <md-input
+          type="url"
+          value.bind="drug.image"
+          style="width:100%; font-size:9px;">
+          ${ drug.image ? 'Image' : 'Image URL'}
+        </md-input>
+        <img
+          style="width:100%;"
+          if.bind="drug.image"
+          src.bind="drug.image">
         <!-- <div if.bind="drug.pkgs[0].code && drug.pkgs[0].size" style="position:relative">
           <md-button color fab="11"
             if.bind="drug.pkgs[drug.pkgs.length-1].code"
