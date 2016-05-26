@@ -247,3 +247,15 @@ export class jsonValueConverter {
     return JSON.stringify(object, null, " ")
   }
 }
+
+export class numberValueConverter {
+  fromView(str, decimals){
+    //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
+    return str != null && str !== '' ? +str : null
+  }
+
+  toView(str, decimals){
+    //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
+    return str != null && decimals ? (+str).toFixed(decimals) : str
+  }
+}

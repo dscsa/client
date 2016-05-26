@@ -46,6 +46,7 @@
           style="width:100%; font-size:9px;">
         </md-input>
         <md-input
+          required
           style="width:49%"
           value.bind="drug._id"
           disabled.bind="drug._rev"
@@ -73,11 +74,13 @@
         </div>
         <div repeat.for="generic of drug.generics">
           <md-input
+            required
             style="width:82%"
             value.bind="generic.name">
             ${ $index == 0 ? 'Generic Names & Strengths' : ''}
           </md-input>
           <md-input
+            required
             style="width:16%"
             value.bind="generic.strength">
           </md-input>
@@ -88,6 +91,7 @@
           Brand Name
         </md-input>
         <md-input
+          required
           style="width:49%"
           value.bind="drug.form">
           Form
@@ -99,15 +103,17 @@
         </md-input>
         <md-input
           value.bind="drug.price.nadac"
+          disabled.bind="! drug._rev"
           type="number"
-          step=".01"
+          step=".001"
           style="width:49%">
           Nadac Price
         </md-input>
         <md-input
-          value.bind="drug.price.goodrx"
+          value.bind="drug.price.goodrx | number:3"
+          disabled.bind="! drug._rev"
           type="number"
-          step=".01"
+          step=".001"
           style="width:49%">
           GoodRx Price
         </md-input>
@@ -149,7 +155,7 @@
           if.bind=" ! drug._rev"
           style="width:100%;"
           click.delegate="saveDrug()"
-          disabled.bind=" ! drug._id">
+          disabled.bind=" ! drug._id || ! drug.generics[0].name || ! drug.generics[0].strength || ! drug.form">
           Add Drug
         </md-button>
       </div>
@@ -197,14 +203,16 @@
                 <th class="mdl-data-table__cell--non-numeric">Ndc</th>
                 <th class="mdl-data-table__cell--non-numeric">Labeler</th>
                 <th class="mdl-data-table__cell--non-numeric">Brand</th>
-                <th class="mdl-data-table__cell--non-numeric">Price</th>
+                <th style="text-align:left; width:40px; padding-left:0;">Nadac</th>
+                <th style="text-align:left; width:40px; padding-left:0;">GoodRx</th>
               </tr>
             </thead>
             <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id && drug._id == $parent.drug._id ? 'is-selected' : ''}">
               <td class="mdl-data-table__cell--non-numeric">${ drug._id }</td>
               <td class="mdl-data-table__cell--non-numeric">${ drug.labeler.split(' ').slice(0,2).join(' ')}</td>
               <td class="mdl-data-table__cell--non-numeric">${ drug.brand }</td>
-              <td class="mdl-data-table__cell--non-numeric">${ drug.wholesale.price }</td>
+              <td style="padding:0; text-align:left">${ drug.price.nadac | number:3 }</td>
+              <td style="padding:0; text-align:left">${ drug.price.goodrx | number:3 }</td>
             </tr>
           </table>
         </div>
