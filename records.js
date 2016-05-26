@@ -66,7 +66,6 @@ export class shipments {
     this.router.navigate('records/'+transaction._id, { trigger: false })
     this.db.transaction.get({_id:transaction._id}, {history:true})
     .then(history => {
-      console.log('history', history)
       //TODO move this to /history?text=true. Other formatting options?
       function id(k,o) {
         //console.log(o, typeof o)

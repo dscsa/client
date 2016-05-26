@@ -29,7 +29,7 @@
       <div class="mdl-typography--title">
         ${ shipment._rev ? shipment.account[role.partner].name : 'Create'}
       </div>
-      ${ shipment._rev ? '#0'+shipment.tracking+', '+shipment.status : 'Shipment from Inventory' }
+      ${ shipment._rev ? '#0'+shipment.tracking+', '+shipment.status : 'new shipment '+role.account+' you' }
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
@@ -45,28 +45,38 @@
       </div>
       <div class="mdl-card__supporting-text" style="font-size:16px;">
         <md-select
+          if.bind="role.account == 'from' || shipment._rev"
           style="width:100%"
           value.bind="shipment"
           options.bind="shipments[role.account]"
+          default.bind="'New Tracking #'"
           property="tracking">
           Tracking #
         </md-select>
+        <md-input
+          if.bind="role.account == 'to' && ! shipment._rev"
+          style="width:100%"
+          value.bind="shipment.tracking">
+          Tracking #
+        </md-input>
         <md-select
           style="width:100%;"
           value.bind="shipment.account.from"
-          options.bind="role.partner == 'from' ? accounts : [account]"
+          options.bind="(shipment.account.from.disabled || role.account == 'from' || shipment._rev) ? [shipment.account.from] : accounts[role.account]"
           property="name"
           required
-          disabled.bind="shipment._rev || role.account == 'from'">
+          disabled.bind="role.account == 'from'">
+          <!-- disabled is for highlighting the current role -->
           From
         </md-select>
         <md-select
           style="width:100%;"
           value.bind="shipment.account.to"
-          options.bind="role.partner == 'to' ? accounts : [account]"
+          options.bind="(shipment.account.to.disabled || role.account == 'to' || shipment._rev) ? [shipment.account.to] : accounts[role.account]"
           property="name"
           required
-          disabled.bind="shipment._rev || role.account == 'to'">
+          disabled.bind="role.account == 'to'">
+          <!-- disabled is for highlighting the current role -->
           To
         </md-select>
         <md-select
@@ -130,8 +140,8 @@
           style="width:100%"
           if.bind="transactions.length && shipment._id != transactions[0].shipment._id"
           disabled.bind="! diffs.length || ! shipment.account.to._id"
-          click.delegate="shipment._rev ? moveShipment() : createShipment()">
-          Move Selected to This Shipment
+          click.delegate="shipment._rev ? moveTransactionsToShipment(shipment) : createShipment()">
+          Move ${ diffs.length } Items to This Shipment
         </md-button>
       </div>
     </div>
@@ -142,6 +152,7 @@
         value.bind="term"
         input.delegate="search()"
         keyup.delegate="autocompleteShortcut($event)"
+        disabled.bind="role.account == 'to' && ! shipment._rev"
         style="margin:0px 16px">
         <table md-table>
           <tr
@@ -177,9 +188,9 @@
               <th style="width:15px"></th>
               <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
               <th class="mdl-data-table__cell--non-numeric" style="width:90px;padding-left:0">Ndc</th>
-              <th style="text-align:left; width:40px; padding:initial 0">Exp</th>
+              <th style="text-align:left; width:40px; padding-left:0">Exp</th>
               <th style="text-align:left; width:40px">Qty</th>
-              <th style="text-align:left; width:10px; padding:initial 0"></th>
+              <th style="text-align:left; width:10px; padding-left:0"></th>
             </tr>
           </thead>
           <tbody>
@@ -211,7 +222,7 @@
                   input.trigger="autoCheck($index)"
                   pattern="(0?[1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp[role.account] | date"
-                  style="width:40px;"
+                  style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>
               </td>
@@ -223,7 +234,7 @@
                     keyup.delegate="qtyShortcuts($event, $index)"
                     type="number"
                     value.bind="transaction.qty[role.account] | number"
-                    style="width:40px;"
+                    style="width:40px; margin-bottom:-8px"
                     placeholder>
                   </md-input>
               </td>

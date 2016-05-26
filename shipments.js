@@ -21,69 +21,59 @@ export class shipments {
 
   activate(params) {
     return this.db.user.session.get()
-    .then(session => {
-      console.log(session)
-      return this.db.account.get({_id:session.account._id})
-    })
+    .then(session  => this.db.account.get({_id:session.account._id}))
     .then(accounts => {
-      console.log(accounts)
       this.account = accounts[0]
-
       return Promise.all([
         //Start all of our async tasks
-        this.db.account.get({state:this.account.state}),   //TODO to = $elemMatch:this.account._id, from = $in:this.account.authorized
+        this.db.account.get({authorized:this.account._id}),
+        this.db.account.get({_id:{$gt:null, $in:this.account.authorized}}),
         this.db.shipment.get({'account.from._id':this.account._id}), //TODO this should be duplicative with _security doc.  We should be able to do _all_docs or no selector
         this.db.shipment.get({'account.to._id':this.account._id})
       ])
     })
-    .then(([accounts, from, to]) => {
-
+    .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
       //This abbreviated denormalized account information will be assigned to account.to/from
-      let selected, accountMap = {}
-      for (let account of accounts) {
-        let data = {_id:account._id, name:account.name, ordered:account.ordered}
-        account._id == this.account._id
-          ? this.account = data
-          : accountMap[account._id] = data
+      let selected, fromMap = {}, toMap = {}, account = {_id:this.account._id, name:this.account.name}
+      function makeMap(account) {
+        this[account._id] = {_id:account._id, name:account.name, ordered:account.ordered}
       }
+      fromAccounts.forEach(makeMap.bind(fromMap))
+      toAccounts.forEach(makeMap.bind(toMap))
+
       //Selected account != shipment.account.to because they are not references
-      function makeReference(shipment) {
-        shipment.account.from = accountMap[shipment.account.from._id]
-        shipment.account.to   = accountMap[shipment.account.to._id]
+      let makeReference = shipment => {
+        shipment.status       = this.getStatus(shipment)
+        shipment.account.from = fromMap[shipment.account.from._id] || {...account}
+        shipment.account.to   = toMap[shipment.account.to._id] || {...account}
         if (params.id === shipment._id.split('.')[2])
           selected = shipment  //Sneak this in since we are already making the loop
       }
 
-      to.forEach(makeReference)
+      fromShipments.forEach(makeReference)
 
       this.role = selected //switch default role depending on shipment selection
-        ? {account:'to', partner:'from'}
-        : {account:'from', partner:'to'}
+        ? {account:'from', partner:'to'}
+        : {account:'to', partner:'from'}
 
-      from.forEach(makeReference)
+      toShipments.forEach(makeReference)
 
-      from.unshift({ //this is inventory
-        _id:this.account._id,
-        tracking:'New Tracking #',
-        status:"pickup",
-        pickupAt:null,
-        shippedAt:null,
-        receivedAt:null,
-        account:{
-          from:this.account
-        }
-      })
+      fromShipments.unshift({_id:this.account._id,account:{from:account}}) //this is inventory
+      toShipments.unshift({account:{to:account}})
 
-      //Select new shipment by default if not shipments exist yet.
-      this.selectShipment(selected || from[0])
-      this.accounts  = ['', ...Object.values(accountMap)]
-      this.shipments = {from, to}
+      this.accounts  = {
+        from:['', ...Object.values(fromMap)],
+        to:['', ...Object.values(toMap)]
+      }
+
+      //console.log('this.accounts', this.accounts)
+      this.shipments = {from:fromShipments, to:toShipments}
+      this.selectShipment(selected || toShipments[0])
     })
   }
 
   //Activated by activate() and each time a shipment is selected from drawer
   selectShipment(shipment) {
-
     this.shipment     = shipment
     this.attachment   = null
     this.transactions = [] //prevents flash of "move button"
@@ -92,16 +82,21 @@ export class shipments {
     let url = shipment._rev ? '/'+shipment._id.split('.')[2] : ''
     this.router.navigate('shipments'+url, { trigger: false })
 
-    this.db.transaction.get({'shipment._id':shipment._id})
-    .then(transactions => {
-      this.transactions = transactions
-      this.diffs     = [] //Check boxes of verified, and track the differences
-      this.isChecked = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
-      for (let i in this.transactions) {
-        this.isChecked.push(!!this.transactions[i].verifiedAt) //force boolean since aurelia forces checkboxes to be boolean to using date causes checkboxes to stick on first click as aurelia converts date to boolean
-      }
-    })
-    .catch(console.log)
+    if (shipment._id) //toShipment[0] has no _id
+      this.db.transaction.get({'shipment._id':shipment._id})
+      .then(transactions => {
+        this.transactions = transactions
+        this.diffs     = [] //Check boxes of verified, and track the differences
+        this.isChecked = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
+        for (let i in this.transactions) {
+          this.isChecked.push(!!this.transactions[i].verifiedAt) //force boolean since aurelia forces checkboxes to be boolean to using date causes checkboxes to stick on first click as aurelia converts date to boolean
+        }
+      })
+      .catch(console.log)
+  }
+
+  getStatus(shipment) {
+    return this.stati.reduce((prev, curr) => shipment[curr+'At'] ? curr : prev)
   }
 
   swapRole() { //Swap donor-donee roles
@@ -110,24 +105,15 @@ export class shipments {
     return true
   }
 
-  //if it's from, then we can either create a shipment or move to a new shipment.
-  //want to activate the checkboxes if new shipment has a "to" chosen or if tracking number changes
-  //the later change can happen dynamically so the logic must be in the view rather than here
-  //this.disableCheckboxes = this.role.account == 'from' && this.shipment._id
-  //Status is the highest stati with a truthy date
-
-  getStatus() {
-    return this.stati.reduce((prev, curr) => {
-      return this.shipment[curr+'At'] ? curr : prev
-    })
-  }
-
   //Save the donation if someone changes the status/date
   saveShipment() {
-    //If dates were set, status may have changed
-    this.shipment.status = this.getStatus()
-    console.log('saving', this.shipment)
-    return this.db.shipment.put(this.shipment)
+    //don't want to save status, but deleting causes weird behavior
+    //so instead copy the shipment and delete from copy then assign new rev
+    let shipment = Object.assign({}, this.shipment)
+    delete shipment.status
+    return this.db.shipment.put(shipment).then(res => {
+      this.shipment._rev = res.rev
+    })
     //TODO reschedule pickup if a date was changed
   }
 
@@ -157,15 +143,15 @@ export class shipments {
 
   //Move these items to a different "alternative" shipment then select it
   //TODO need to select the new shipment once user confirms the move
-  moveShipment() {
+  moveTransactionsToShipment(shipment) {
 
     for (let i in this.isChecked) { //Change all selected transactions to the new or existing shipment
       if ( ! this.isChecked[i]) continue
-      this.transactions[i].shipment = {_id:this.shipment._id}
+      this.transactions[i].shipment = {_id:shipment._id}
       this.db.transaction.put(this.transactions[i])
     }
 
-    this.selectShipment(this.shipment) //Display existing shipment or the newly created shipment
+    this.selectShipment(shipment) //Display existing shipment or the newly created shipment
   }
 
   createShipment() {
@@ -175,15 +161,20 @@ export class shipments {
     delete shipment.account.to.ordered
     delete shipment.account.from.ordered
     this.db.shipment.post(shipment).then(res => {
-
       //but we do need the old shipment.account info to keep references intact
-      console.log('added shipment', shipment)
       shipment.tracking = res.tracking
-      shipment.account  = this.shipment.account
-      this.shipment     = shipment
 
-      this.shipments[this.role.account].splice(1, 0, shipment) //Add it at the top right under the new shipment
-      this.moveShipment()
+      //keep the shipent <-> account references intact
+      shipment.account.from = this.shipment.account.from
+      shipment.account.to   = this.shipment.account.to
+
+      //keep the create new shipment fields clean
+      delete this.shipment.tracking
+      delete this.shipment.account[this.role.partner]
+
+      //Add it at the top right under the new shipment
+      this.shipments[this.role.account].splice(1, 0, shipment)
+      this.moveTransactionsToShipment(shipment)
     })
   }
 
@@ -191,11 +182,13 @@ export class shipments {
     //Enter should refocus on the search
     if ($event.which == 13)
       return document.querySelector('md-autocomplete input').focus()
-
     //Delete an item in the qty is 0.  Instead of having a delete button
+
     let transaction = this.transactions[$index]
-    let doneeDelete = ! transaction.qty.from && transaction.qty.to === "0"
-    let donorDelete = transaction.qty.from === "0" && ! transaction.qty.to
+    console.log('QTY', transaction.qty.to, transaction.qty.from, transaction)
+
+    let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
+    let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
 
     if (donorDelete || doneeDelete) {
       this.db.transaction.delete(transaction)
@@ -212,7 +205,7 @@ export class shipments {
     let transaction = this.transactions[$index]
 
     let order = this.shipment.account.to && this.shipment.account.to.ordered[genericName(transaction.drug)]   //this.shipment.account.to may not have been selected yet
-  console.log('autocheck', genericName(transaction.drug), order)
+    console.log('autocheck', genericName(transaction.drug), order)
     if ( ! order) return
 
     let qty = +transaction.qty[this.role.account]
@@ -235,7 +228,6 @@ export class shipments {
     let j = this.diffs.indexOf($index)
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
-
 
     return true
   }
@@ -405,12 +397,14 @@ export class shipments {
 //
 export class numberValueConverter {
   fromView(str){
-    return +str
+    //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
+    return str != null && str !== '' ? +str : null
   }
 }
 
 export class jsonValueConverter {
   toView(object = null){
+    //console.log(Object.keys(object), JSON.stringify(object, null, " "))
     return JSON.stringify(object, null, " ")
   }
 }
@@ -419,11 +413,10 @@ export class filterValueConverter {
   toView(shipments = [], filter = ''){
     filter = filter.toLowerCase()
     return shipments.filter(shipment => {
+      if ( ! shipment.account.to || ! shipment.account.from)
+        return !filter //create new shipment
 
-      if ( ! shipment.account.to)
-        return true
-
-      return ~ `${shipment.account.to.name} ${shipment.tracking} ${shipment.status}`.toLowerCase().indexOf(filter)
+      return ~ `${shipment.account.from.name} ${shipment.account.to.name} ${shipment.tracking} ${shipment.status}`.toLowerCase().indexOf(filter)
     })
   }
 }
