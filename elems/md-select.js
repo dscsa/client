@@ -4,9 +4,15 @@ import {bindable, bindingMode, inject} from 'aurelia-framework';
 @bindable('style')
 @bindable('options')
 @bindable('disabled')
+@bindable('default')
 @bindable('required')
 @bindable('property')
 export class MdSelectCustomElement {
+
+  //need when toggling back and forth on shipments page to make sure from/to account disables where updated
+  disabledChanged() {
+    setTimeout(_=> this.div && this.div.MaterialTextfield.checkDisabled())
+  }
 
   valueChanged() {
     setTimeout(_=> this.div && this.div.MaterialTextfield.checkDirty())
