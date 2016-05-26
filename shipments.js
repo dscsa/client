@@ -117,29 +117,29 @@ export class shipments {
     //TODO reschedule pickup if a date was changed
   }
 
-  setAttachment(attachment) {
-    attachment._id  = this.attachment.name
-    attachment._rev = this.shipment._rev
-    this.db.shipment.attachment.put({_id:this.shipment._id, attachment:attachment})
-    .then(res => {
-      this.shipment._rev   = res.rev
-      this.attachment.type = attachment.type
-      //TODO use service worker to rename this URL so title bar isn't nasty
-      //http://stackoverflow.com/questions/283956/is-there-any-way-to-specify-a-suggested-filename-when-using-data-uri
-      this.attachment.url  = URL.createObjectURL(attachment)
-      console.log('setAttachment', attachment, _)
-    })
-  }
-
-  getAttachment() {
-    this.db.shipment.attachment.get({_id:this.shipment._id, name:this.attachment.name})
-    .then(attachment => {
-      this.attachment.type = attachment.type
-      this.attachment.url  = URL.createObjectURL(attachment)
-      console.log('getAttachment', attachment, this.attachment.url)
-    })
-    .catch(this.attachment.url = null)
-  }
+  // setAttachment(attachment) {
+  //   attachment._id  = this.attachment.name
+  //   attachment._rev = this.shipment._rev
+  //   this.db.shipment.attachment.put({_id:this.shipment._id, attachment:attachment})
+  //   .then(res => {
+  //     this.shipment._rev   = res.rev
+  //     this.attachment.type = attachment.type
+  //     //TODO use service worker to rename this URL so title bar isn't nasty
+  //     //http://stackoverflow.com/questions/283956/is-there-any-way-to-specify-a-suggested-filename-when-using-data-uri
+  //     this.attachment.url  = URL.createObjectURL(attachment)
+  //     console.log('setAttachment', attachment, _)
+  //   })
+  // }
+  //
+  // getAttachment() {
+  //   this.db.shipment.attachment.get({_id:this.shipment._id, name:this.attachment.name})
+  //   .then(attachment => {
+  //     this.attachment.type = attachment.type
+  //     this.attachment.url  = URL.createObjectURL(attachment)
+  //     console.log('getAttachment', attachment, this.attachment.url)
+  //   })
+  //   .catch(this.attachment.url = null)
+  // }
 
   //Move these items to a different "alternative" shipment then select it
   //TODO need to select the new shipment once user confirms the move
