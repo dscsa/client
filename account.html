@@ -31,7 +31,7 @@
         <md-input style="width:49%" value.bind="user.name.last">Last Name</md-input>
         <md-input style="width:100%" value.bind="user.email" type="email">Email</md-input>
         <md-input style="width:100%" value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$">Phone</md-input>
-        <md-input style="width:100%" value.bind="user.password">${ user._id ? 'Change password' : 'Password'}</md-input>
+        <md-input style="width:100%" value.bind="user.password" if.bind=" ! user._id" required>Password</md-input>
       </div>
       <div class="mdl-card__actions">
         <md-button color raised style="width:100%" if.bind="! user._id" disabled.bind="! user.email || ! user.password" click.delegate="addUser()">Create User</md-button>
