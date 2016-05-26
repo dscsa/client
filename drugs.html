@@ -145,12 +145,13 @@
         </div> -->
       </div>
       <div class="mdl-card__actions">
-        <md-button color="accent" raised
+        <!-- <md-button color="accent" raised
           if.bind="drug._rev"
           style="width:100%;"
-          click.delegate="delete()">
+          disabled
+          click.delegate="deleteDrug()">
           Delete Drug
-        </md-button>
+        </md-button> -->
         <md-button color raised
           if.bind=" ! drug._rev"
           style="width:100%;"

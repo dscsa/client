@@ -237,7 +237,7 @@ export class drugs {
     }
   }
 
-  delete() {
+  deleteDrug() {
     console.log('TO BE IMPLEMENETED')
   }
 }
