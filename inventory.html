@@ -24,11 +24,10 @@
       <div
         class="mdl-card__supporting-text"
         style="font-size:13px;">
-        <img style="width:100%; padding-bottom:8px" if.bind="group.image" src.bind="group.image">
         <div repeat.for="source of group.sources"   input.delegate="saveTransaction(source) & debounce:1000">
           <div style="display:inline-block; width:calc(100% - 90px)">
             <a if.bind="source.history[0].transaction._id" href.bind="'/#/records/'+source.history[0].transaction._id">${source.history[0].transaction._id}</a>
-            ${ source.history[0].transaction._id ? '' : session.account.name }
+            ${ source.history[0].transaction._id ? '' : 'inventory' }
             <a if.bind="!mode" style="float:right">
               <i class="material-icons" style="font-size:18px; vertical-align:text-top; padding-right:5px">print</i>
             </a>
@@ -60,6 +59,7 @@
             </md-input>
           </span>
         </div>
+        <img style="width:100%" if.bind="group.image" src.bind="group.image">
       </div>
       <div class="mdl-card__actions mdl-grid">
         <md-switch

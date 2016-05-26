@@ -16,7 +16,6 @@ export class inventory {
       return this.db.transaction.get({'shipment._id':session.account._id})
     })
     .then(transactions => {
-      console.log('transactions', transactions)
       this.groups = {}
 
       for (let t of transactions) {
@@ -143,7 +142,6 @@ export class dateValueConverter {
     date = new Date('20'+year,month, 1)
     date.setDate(0)
 
-    console.log(date.toJSON())
     return this.model = date.toJSON()
   }
 }
@@ -166,7 +164,6 @@ export class filterValueConverter {
 
 export class drugNameValueConverter {
   toView(transaction){
-    console.log('transaction', transaction)
     return transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+transaction.drug.form
   }
 }
