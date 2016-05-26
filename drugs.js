@@ -56,7 +56,7 @@ export class drugs {
 
   selectGroup(group, autoselect) {
     this.group = group
-    if (autoselect && group.drugs[0])
+    if (autoselect)
       this.selectDrug(group.drugs[0])
   }
 
