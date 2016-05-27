@@ -20,7 +20,8 @@ export class MdSwitchCustomElement {
 
   //If we are relying on parent returning true then this isn't needed, but
   //if we are binding to check to change it programmatically we need this
-  checkedChanged($new, $old) {
+  checkedChanged() {
+    this.checked = !! this.checked
     setTimeout(_ => this.label && this.label.MaterialSwitch.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
   }
 
