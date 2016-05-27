@@ -45,26 +45,35 @@ export class drugs {
       }
 
       return this.db.drug.get({_id:params.id}).then(drugs => {
-        this.selectDrug(drugs[0])
-        return this.search().then(_ => {
-          //Groups could contain this.term and other active ingredients, so filter for the exact match
-          this.selectGroup(this.groups.filter(group => group.name == this.term)[0])
-        })
+        this.selectDrug(drugs[0], true)
       })
     })
   }
 
-  selectGroup(group, autoselect) {
-    this.group = group
-    if (autoselect)
-      this.selectDrug(group.drugs[0])
+  selectGroup(group, autoselectDrug) {
+
+    group = group || this.search().then(_ => this.groups[0])
+
+    Promise.resolve(group).then(group => {
+      this.group = group
+      if (autoselectDrug)
+        this.selectDrug(group.drugs[0])
+    })
   }
 
-  selectDrug(drug) {
-    let url = drug._id ? 'drugs/'+drug._id : 'drugs'
-    this.term = drug.generic = drug.form ? drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form : ''
-    this.router.navigate(url, { trigger: false })
+  selectDrug(drug, autoselectGroup) {
+
+    if ( ! drug.generic && drug.form) //new drug won't have drug.form yet
+      drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
+
     this.drug = drug
+    this.term = drug.generic
+
+    let url = drug._id ? 'drugs/'+drug._id : 'drugs'
+    this.router.navigate(url, { trigger: false })
+
+    if (autoselectGroup)
+      this.selectGroup()
   }
 
   search() {
@@ -219,20 +228,23 @@ export class drugs {
   }
 
   saveDrug() {
-    delete this.drug.generic
-    console.log('saving Drug', this.drug)
-    if (this.drug._rev)
-      this.db.drug.put(this.drug)
+
+    let drug = JSON.parse(JSON.stringify(this.drug))
+    delete drug.generic
+
+    console.log('saving Drug', drug)
+    if (drug._rev)
+      this.db.drug.put(drug)
     else {
-      this.db.drug.post(this.drug)
-      .then(drug => { //TODO: move this to pouch.js?
-        this.drug.ndc9      = drug.ndc9
-        this.drug.upc       = drug.upc
-        this.drug.price     = drug.price
-        this.drug.createdAt = drug.createdAt
-        this.selectDrug(this.drug)
+      this.db.drug.post(drug)
+      .then(res => { //TODO: move this to pouch.js?
+        drug.ndc9      = res.ndc9
+        drug.upc       = res.upc
+        drug.price     = res.price
+        drug.createdAt = res.createdAt
+        this.selectDrug(drug, true)
       })
-      .catch(err => this.snackbar.show(`Drug could not be added: ${err.reason.msg}`))
+      .catch(err => this.snackbar.show(`Drug could not be added: ${err.reason.msg || err.reason}`))
     }
   }
 
