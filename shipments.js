@@ -117,30 +117,6 @@ export class shipments {
     //TODO reschedule pickup if a date was changed
   }
 
-  // setAttachment(attachment) {
-  //   attachment._id  = this.attachment.name
-  //   attachment._rev = this.shipment._rev
-  //   this.db.shipment.attachment.put({_id:this.shipment._id, attachment:attachment})
-  //   .then(res => {
-  //     this.shipment._rev   = res.rev
-  //     this.attachment.type = attachment.type
-  //     //TODO use service worker to rename this URL so title bar isn't nasty
-  //     //http://stackoverflow.com/questions/283956/is-there-any-way-to-specify-a-suggested-filename-when-using-data-uri
-  //     this.attachment.url  = URL.createObjectURL(attachment)
-  //     console.log('setAttachment', attachment, _)
-  //   })
-  // }
-  //
-  // getAttachment() {
-  //   this.db.shipment.attachment.get({_id:this.shipment._id, name:this.attachment.name})
-  //   .then(attachment => {
-  //     this.attachment.type = attachment.type
-  //     this.attachment.url  = URL.createObjectURL(attachment)
-  //     console.log('getAttachment', attachment, this.attachment.url)
-  //   })
-  //   .catch(this.attachment.url = null)
-  // }
-
   //Move these items to a different "alternative" shipment then select it
   //TODO need to select the new shipment once user confirms the move
   moveTransactionsToShipment(shipment) {
@@ -163,7 +139,7 @@ export class shipments {
 
     delete shipment.account.to.ordered
     delete shipment.account.from.ordered
-    
+
     this.db.shipment.post(shipment).then(res => {
       //but we do need the old shipment.account info to keep references intact
       shipment.tracking = res.tracking
@@ -199,8 +175,11 @@ export class shipments {
     let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
 
     if (donorDelete || doneeDelete) {
-      this.db.transaction.delete(transaction)
-      .then(_ => this.transactions.splice($index, 1))
+      this.db.transaction.delete(transaction).then(_ =>  {
+        this.transactions.splice($index, 1)
+        this.isChecked.splice($index, 1)
+        this.diffs = this.diffs.filter(i => i != $index).map(i => i > $index ? i-1 : i)
+      })
     }
 
     //See if this transaction qualifies for autoCheck
@@ -241,17 +220,31 @@ export class shipments {
   }
 
   saveInventory() {
-    let all = this.diffs.map(i => {
-      let method = this.transactions[i].verifiedAt ? 'delete' : 'post'
-      return this.db.transaction.verified[method]({_id:this.transactions[i]._id})
-    })
+    let method   = 'post'
+    let verified = true
+    let phrase   = 'saved to'
+    if (this.transactions[this.diffs[0]].verifiedAt) {
+      method   = 'delete'
+      verified = false
+      phrase   = 'removed from'
+    }
 
-    Promise.all(all)
-    .then(_ => {
+    Promise.all(this.diffs.map(i => {
+      return this.db.transaction.verified[method]({_id:this.transactions[i]._id})
+      .then(_ => {
+        this.transactions[i].verifiedAt = verified
+        return true
+      })
+      .catch(err => {
+        this.isChecked[i] = this.transactions[i].verifiedAt = ! verified
+        this.manualCheck(i)
+        this.snackbar.show(`${genericName(this.transactions[i].drug)} with qty ${this.transactions[i].qty.to} could not be ${phrase} inventory`)
+      })
+    })).then(all => {
       this.diffs = []
-      this.snackbar.show(`Selected Items Were Saved To Inventory`)
+      if (all.every(i => i))
+        this.snackbar.show(`Selected items were ${phrase} inventory`)
     })
-    .catch(e => this.snackbar.show(`Selected Items Could Not Be Saved To Inventory`))
   }
 
   search() {
@@ -317,6 +310,7 @@ export class shipments {
     //Assume db query works.
     this.transactions.unshift(transaction) //Add the drug to the view
     this.isChecked.unshift(transaction.verifiedAt)
+    this.diffs = this.diffs.map(val => val+1)
 
     this.term = ''    //Reset search's auto-complete
     setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
@@ -397,6 +391,30 @@ export class shipments {
       }
     })
   }
+
+  // setAttachment(attachment) {
+  //   attachment._id  = this.attachment.name
+  //   attachment._rev = this.shipment._rev
+  //   this.db.shipment.attachment.put({_id:this.shipment._id, attachment:attachment})
+  //   .then(res => {
+  //     this.shipment._rev   = res.rev
+  //     this.attachment.type = attachment.type
+  //     //TODO use service worker to rename this URL so title bar isn't nasty
+  //     //http://stackoverflow.com/questions/283956/is-there-any-way-to-specify-a-suggested-filename-when-using-data-uri
+  //     this.attachment.url  = URL.createObjectURL(attachment)
+  //     console.log('setAttachment', attachment, _)
+  //   })
+  // }
+  //
+  // getAttachment() {
+  //   this.db.shipment.attachment.get({_id:this.shipment._id, name:this.attachment.name})
+  //   .then(attachment => {
+  //     this.attachment.type = attachment.type
+  //     this.attachment.url  = URL.createObjectURL(attachment)
+  //     console.log('getAttachment', attachment, this.attachment.url)
+  //   })
+  //   .catch(this.attachment.url = null)
+  // }
 }
 
 

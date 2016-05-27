@@ -134,7 +134,7 @@
           if.bind="transactions.length && shipment._id == transactions[0].shipment._id && role.account == 'to'"
           disabled.bind="! diffs.length"
           click.delegate="saveInventory()">
-          Save ${ diffs.length } Items to Inventory
+          ${ transactions[diffs[0]].verifiedAt ? 'Remove' : 'Save'} ${ diffs.length } Items to Inventory
         </md-button>
         <md-button color raised
           style="width:100%"
@@ -196,8 +196,11 @@
           <tbody>
             <tr style="padding-top:7px;" repeat.for="transaction of transactions">
               <td style="padding:0 0 0 8px">
+                <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->
+                <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->
+                <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use verifiedAt directly rather than isChecked because autocheck coerces isChecked to be out of sync -->
                 <md-checkbox
-                  disabled.bind="shipment._rev && role.account == 'from' && shipment._id == transactions[0].shipment._id"
+                  disabled.bind="(role.account == 'to' && diffs.length && ! transactions[diffs[0]].verifiedAt != ! transaction.verifiedAt) || (role.account == 'from' && transaction.verifiedAt)"
                   click.delegate="manualCheck($index)"
                   checked.bind="isChecked[$index]">
                 </md-checkbox>
