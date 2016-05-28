@@ -44,8 +44,8 @@ export class shipments {
       //Selected account != shipment.account.to because they are not references
       let makeReference = shipment => {
         shipment.status       = this.getStatus(shipment)
-        shipment.account.from = fromMap[shipment.account.from._id] || {...account}
-        shipment.account.to   = toMap[shipment.account.to._id] || {...account}
+        shipment.account.from = toMap[shipment.account.from._id] || {...account}
+        shipment.account.to   = fromMap[shipment.account.to._id] || {...account}
         if (params.id === shipment._id.split('.')[2])
           selected = shipment  //Sneak this in since we are already making the loop
       }
