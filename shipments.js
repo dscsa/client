@@ -77,6 +77,8 @@ export class shipments {
     this.shipment     = shipment
     this.attachment   = null
     this.transactions = [] //prevents flash of "move button"
+    this.diffs        = [] //Check boxes of verified, and track the differences
+    this.isChecked    = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
 
     //Keep url concise by using the last segment of the id
     let url = shipment._rev ? '/'+shipment._id.split('.')[2] : ''
@@ -86,8 +88,6 @@ export class shipments {
       this.db.transaction.get({'shipment._id':shipment._id})
       .then(transactions => {
         this.transactions = transactions
-        this.diffs     = [] //Check boxes of verified, and track the differences
-        this.isChecked = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
         for (let i in this.transactions) {
           this.isChecked.push(!!this.transactions[i].verifiedAt) //force boolean since aurelia forces checkboxes to be boolean to using date causes checkboxes to stick on first click as aurelia converts date to boolean
         }
