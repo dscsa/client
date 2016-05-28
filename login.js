@@ -34,7 +34,7 @@ export class login {
     })
     .then(resources => {
       console.log('login successful')
-      this.router.navigate('account')
+      this.router.navigate('shipments')
     })
     .catch(err => {
       this.disabled = false

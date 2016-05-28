@@ -186,7 +186,7 @@
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <md-switch
         show.bind="group"
-        style="position:absolute; right:25px; top:45px; z-index:3"
+        style="position:absolute; right:25px; top:47px; z-index:1"
         checked.one-way="account.ordered[group.name]"
         disabled.bind=" ! drug._rev"
         click.delegate="order()">
@@ -200,7 +200,7 @@
                 <th class="mdl-data-table__cell--non-numeric">Labeler</th>
                 <th class="mdl-data-table__cell--non-numeric">Brand</th>
                 <th style="text-align:left; width:40px; padding-left:0;">Nadac</th>
-                <th style="text-align:left; width:40px; padding-left:0;">GoodRx</th>
+                <th style="text-align:left; width:${ account.ordered[group.name] ? '40px' : '85px'}; padding-left:0;">GoodRx</th>
               </tr>
             </thead>
             <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id && drug._id == $parent.drug._id ? 'is-selected' : ''}">
@@ -212,7 +212,7 @@
             </tr>
           </table>
         </div>
-        <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="overflow:hidden; width:200px; margin-top:8px; margin-right:16px">
+        <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="overflow:hidden; width:200px; margin-top:10px; margin-right:16px">
           Ordered
           <md-input
             type="number"

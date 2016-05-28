@@ -35,10 +35,10 @@
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
       <div class="mdl-card__title" style="display:block;">
-        <div class="mdl-card__title-text">
-          ${ shipment._rev ? 'Shipment #0'+shipment.tracking : 'Shipment from Inventory' }
+        <div class="mdl-card__title-text" style="text-transform:capitalize">
+          ${ shipment._rev ? 'Shipment #0'+shipment.tracking : 'New Shipment '+role.account+' You' }
         </div>
-        <div style="margin-bottom:-5px">
+        <div style="margin-top:3px; margin-bottom:-25px">
           <strong>${transactions.length}</strong> items worth
           <strong>$${ transactions | value }</strong>
         </div>
@@ -134,7 +134,7 @@
           if.bind="transactions.length && shipment._id == transactions[0].shipment._id && role.account == 'to'"
           disabled.bind="! diffs.length"
           click.delegate="saveInventory()">
-          ${ transactions[diffs[0]].verifiedAt ? 'Remove' : 'Save'} ${ diffs.length } Items to Inventory
+          ${ transactions[diffs[0]].verifiedAt ? 'Remove '+diffs.length+' Items from Inventory' : 'Save '+diffs.length+' Items to Inventory'}
         </md-button>
         <md-button color raised
           style="width:100%"
