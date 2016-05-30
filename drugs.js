@@ -238,13 +238,15 @@ export class drugs {
     else {
       this.db.drug.post(drug)
       .then(res => { //TODO: move this to pouch.js?
+        console.log(drug, res)
         drug.ndc9      = res.ndc9
         drug.upc       = res.upc
         drug.price     = res.price
         drug.createdAt = res.createdAt
-        this.selectDrug(drug, true)
+        console.log(drug, res)
+        setTimeout(_ => this.selectDrug(drug, true), 100)
       })
-      .catch(err => this.snackbar.show(`Drug could not be added: ${err.reason.msg || err.reason}`))
+      .catch(err => this.snackbar.show(`Drug not added: ${err.name}`))
     }
   }
 

@@ -37,7 +37,9 @@ export class AuthorizeStep {
   }
 
   run(routing, next) {
+    
     this.db.user.session.get().then(session => {
+
       for (let row of routing.router.navigation) {
         if ( ! session || ! session.account) {
           row.isVisible = ! row.config.roles; continue
@@ -51,5 +53,6 @@ export class AuthorizeStep {
       else
         next.cancel(new Redirect('login'))
     })
+    .catch(err => console.log('router error', err))
   }
 }
