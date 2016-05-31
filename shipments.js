@@ -23,18 +23,18 @@ export class shipments {
     return this.db.user.session.get()
     .then(session  => this.db.account.get({_id:session.account._id}))
     .then(accounts => {
-      this.account = accounts[0]
+      this.account = {_id:accounts[0]._id, name:accounts[0].name, ordered:accounts[0].ordered}
       return Promise.all([
         //Start all of our async tasks
-        this.db.account.get({authorized:this.account._id}),
-        this.db.account.get({_id:{$gt:null, $in:this.account.authorized}}),
-        this.db.shipment.get({'account.from._id':this.account._id}), //TODO this should be duplicative with _security doc.  We should be able to do _all_docs or no selector
-        this.db.shipment.get({'account.to._id':this.account._id})
+        this.db.account.get({authorized:accounts[0]._id}),
+        this.db.account.get({_id:{$gt:null, $in:accounts[0].authorized}}),
+        this.db.shipment.get({'account.from._id':accounts[0]._id}), //TODO this should be duplicative with _security doc.  We should be able to do _all_docs or no selector
+        this.db.shipment.get({'account.to._id':accounts[0]._id})
       ])
     })
     .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
       //This abbreviated denormalized account information will be assigned to account.to/from
-      let selected, fromMap = {}, toMap = {}, account = {_id:this.account._id, name:this.account.name, ordered:this.account.ordered}
+      let selected, fromMap = {}, toMap = {}
       function makeMap(account) {
         this[account._id] = {_id:account._id, name:account.name, ordered:account.ordered}
       }
@@ -44,8 +44,8 @@ export class shipments {
       //Selected account != shipment.account.to because they are not references
       let makeReference = shipment => {
         shipment.status       = this.getStatus(shipment)
-        shipment.account.from = toMap[shipment.account.from._id] || {...account}
-        shipment.account.to   = fromMap[shipment.account.to._id] || {...account}
+        shipment.account.from = toMap[shipment.account.from._id] || {...this.account}
+        shipment.account.to   = fromMap[shipment.account.to._id] || {...this.account}
         if (params.id === shipment._id.split('.')[2])
           selected = shipment  //Sneak this in since we are already making the loop
       }
@@ -58,9 +58,6 @@ export class shipments {
 
       toShipments.forEach(makeReference)
 
-      fromShipments.unshift({_id:this.account._id,account:{from:account}}) //this is inventory
-      toShipments.unshift({account:{to:account}})
-
       this.accounts  = {
         from:['', ...Object.values(fromMap)],
         to:['', ...Object.values(toMap)]
@@ -68,6 +65,9 @@ export class shipments {
 
       //console.log('this.accounts', this.accounts)
       this.shipments = {from:fromShipments, to:toShipments}
+
+      this.addEmptyShipment('from')
+      this.addEmptyShipment('to')
       this.selectShipment(selected || toShipments[0])
     })
   }
@@ -95,6 +95,10 @@ export class shipments {
       .catch(console.log)
   }
 
+  addEmptyShipment(role) {
+    this.shipments[role].unshift({account:{[role]:this.account}})
+  }
+
   getStatus(shipment) {
     return this.stati.reduce((prev, curr) => shipment[curr+'At'] ? curr : prev)
   }
@@ -109,10 +113,10 @@ export class shipments {
   saveShipment() {
     //don't want to save status, but deleting causes weird behavior
     //so instead copy the shipment and delete from copy then assign new rev
-    let shipment = Object.assign({}, this.shipment)
-    delete shipment.status
+    let status = this.shipment.status
+    delete this.shipment.status
     return this.db.shipment.put(shipment).then(res => {
-      this.shipment._rev = res.rev
+      shipment.status = status
     })
     //TODO reschedule pickup if a date was changed
   }
@@ -135,31 +139,19 @@ export class shipments {
 
     //Use new shipment so we don't copy changes to the old shipment since
     //.ordered is deeply nested need this rather than Object.assign shallow
-    let shipment = JSON.parse(JSON.stringify(this.shipment))
+    let toOrdered   = this.shipment.account.to.ordered
+    let fromOrdered = this.shipment.account.from.ordered
+    delete this.shipment.account.to.ordered
+    delete this.shipment.account.from.ordered
 
-    delete shipment.account.to.ordered
-    delete shipment.account.from.ordered
-
-    this.db.shipment.post(shipment).then(res => {
-      //but we do need the old shipment.account info to keep references intact
-      shipment.tracking = res.tracking
-
-      //keep the shipent <-> account references intact
-      shipment.account.from = this.shipment.account.from
-      shipment.account.to   = this.shipment.account.to
-
-      //Restore ordered in case we want to add transactions right away
-      shipment.account.to.ordered   = this.shipment.account.to.ordered
-      shipment.account.from.ordered = this.shipment.account.from.ordered
-
-      //keep the create new shipment fields clean
-      delete this.shipment.tracking
-      delete this.shipment.account[this.role.partner]
-
-      //Add it at the top right under the new shipment
-      this.shipments[this.role.account].splice(1, 0, shipment)
-      this.moveTransactionsToShipment(shipment)
+    this.db.shipment.post(this.shipment).then(res => {
+      this.moveTransactionsToShipment(this.shipment)
+      this.addEmptyShipment(this.role.account)
     })
+
+    //Restore ordered in case we autocheck needs this right away
+    this.shipment.account.to.ordered   = this.shipment.account.to.ordered
+    this.shipment.account.from.ordered = this.shipment.account.from.ordered
   }
 
   qtyShortcuts($event, $index) {
@@ -198,8 +190,8 @@ export class shipments {
     let qty = +transaction.qty[this.role.account]
     let exp = transaction.exp[this.role.account]
 
-    let minQty    = qty >= +order.minQty
-    let minExp    = exp ? new Date(exp) - Date.now() >= order.minDays*24*60*60*1000 : true
+    let minQty    = qty >= (+order.minQty || 1)
+    let minExp    = exp ? new Date(exp) - Date.now() >= (order.minDays || 60)*24*60*60*1000 : !order.minDays
     let isChecked = this.isChecked[$index] || false //apparently false != undefined
 
     console.log('autocheck', genericName(transaction.drug), order, 'minQty', minQty, 'minExp', minExp, 'isChecked', isChecked)

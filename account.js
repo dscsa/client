@@ -29,7 +29,7 @@ export class account {
       return this.db.user.get().then(users => {
         this.users = users
         this.selectUser()
-        this.newUser() //Make the user list have a "New User" button at the top
+        this.addEmptyUser() //Make the user list have a "New User" button at the top
       })
     })
   }
@@ -38,7 +38,7 @@ export class account {
     this.user = user || this.users.filter(user => user._id == this.session._id)[0]
   }
 
-  newUser() {
+  addEmptyUser() {
     this.users.unshift({
       name:{},
       email:'',

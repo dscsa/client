@@ -7,6 +7,7 @@ import {Db}     from 'db/pouch'
 export class drugs {
   //constructor(HttpClient = 'aurelia-http-client', Db = './pouch'){
   constructor(db, router){
+
     this.db      = db
     this.router  = router
     this.drugs   = []
@@ -31,11 +32,8 @@ export class drugs {
       }))
 
       all = Promise.all(all).then(ordered => {
-        ordered.unshift({
-          name:'Add a New Drug',
-          drugs:[{generics:[{}]}]
-        })
         this.quickSearch.ordered = ordered
+        this.addEmptyDrug()
       })
 
       if ( ! params.id) {
@@ -47,6 +45,13 @@ export class drugs {
       return this.db.drug.get({_id:params.id}).then(drugs => {
         this.selectDrug(drugs[0], true)
       })
+    })
+  }
+
+  addEmptyDrug() {
+    this.quickSearch.ordered.unshift({
+      name:'Add a New Drug',
+      drugs:[{generics:[{}]}]
     })
   }
 
@@ -227,27 +232,23 @@ export class drugs {
     return this.db.account.put(this.account)
   }
 
+  addDrug() {
+    delete this.drug.generic
+    this.db.drug.post(this.drug)
+    .then(res => {
+      //Even though new drug is listed as "ordered" it is not by default, so don't show it in the list
+      this.quickSearch.ordered.splice(0, 1)
+      this.addEmptyDrug()
+      //Wait for the server POST to replicate back to client
+      setTimeout(_ => this.selectDrug(this.drug, true), 100)
+    })
+    .catch(err => this.snackbar.show(`Drug not added: ${err.name}`))
+  }
+
   saveDrug() {
-
-    let drug = JSON.parse(JSON.stringify(this.drug))
-    delete drug.generic
-
-    console.log('saving Drug', drug)
-    if (drug._rev)
-      this.db.drug.put(drug)
-    else {
-      this.db.drug.post(drug)
-      .then(res => { //TODO: move this to pouch.js?
-        console.log(drug, res)
-        drug.ndc9      = res.ndc9
-        drug.upc       = res.upc
-        drug.price     = res.price
-        drug.createdAt = res.createdAt
-        console.log(drug, res)
-        setTimeout(_ => this.selectDrug(drug, true), 100)
-      })
-      .catch(err => this.snackbar.show(`Drug not added: ${err.name}`))
-    }
+    delete this.drug.generic
+    this.db.drug.put(this.drug)
+    .catch(err => this.snackbar.show(`Drug not saved: ${err.name}`))
   }
 
   deleteDrug() {

@@ -150,7 +150,7 @@
         <md-button color raised
           if.bind=" ! drug._rev"
           style="width:100%;"
-          click.delegate="saveDrug()"
+          click.delegate="addDrug()"
           disabled.bind=" ! drug._id || ! drug.generics[0].name || ! drug.generics[0].strength || ! drug.form">
           Add Drug
         </md-button>
