@@ -217,7 +217,7 @@ export class shipments {
     let phrase   = 'saved to'
     if (this.transactions[this.diffs[0]].verifiedAt) {
       method   = 'delete'
-      verified = false
+      verified = null
       phrase   = 'removed from'
     }
 
@@ -228,7 +228,7 @@ export class shipments {
         return true
       })
       .catch(err => {
-        this.isChecked[i] = this.transactions[i].verifiedAt = ! verified
+        this.isChecked[i] = !!this.transactions[i].verifiedAt
         this.manualCheck(i)
         this.snackbar.show(`${genericName(this.transactions[i].drug)} with qty ${this.transactions[i].qty.to} could not be ${phrase} inventory`)
       })
