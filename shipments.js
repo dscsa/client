@@ -84,15 +84,17 @@ export class shipments {
     let url = shipment._rev ? '/'+shipment._id.split('.')[2] : ''
     this.router.navigate('shipments'+url, { trigger: false })
 
-    if (shipment._id) //toShipment[0] has no _id
-      this.db.transaction.get({'shipment._id':shipment._id})
-      .then(transactions => {
-        this.transactions = transactions
-        for (let i in this.transactions) {
-          this.isChecked.push(!!this.transactions[i].verifiedAt) //force boolean since aurelia forces checkboxes to be boolean to using date causes checkboxes to stick on first click as aurelia converts date to boolean
-        }
-      })
-      .catch(console.log)
+    if ( ! shipment._id && ! shipment.account.from) //anything but toShipment[0]
+      return
+
+    this.db.transaction.get({'shipment._id':shipment._id || this.account._id})
+    .then(transactions => {
+      this.transactions = transactions
+      for (let i in this.transactions) {
+        this.isChecked.push(!!this.transactions[i].verifiedAt) //force boolean since aurelia forces checkboxes to be boolean to using date causes checkboxes to stick on first click as aurelia converts date to boolean
+      }
+    })
+    .catch(console.log)
   }
 
   addEmptyShipment(role) {
