@@ -129,6 +129,7 @@ export class shipments {
 
     for (let i in this.isChecked) { //Change all selected transactions to the new or existing shipment
       if ( ! this.isChecked[i]) continue
+      if (this.transactions[i].verifiedAt) continue //do not allow movement of verified transactions
       this.transactions[i].shipment = {_id:shipment._id}
       this.db.transaction.put(this.transactions[i])
     }

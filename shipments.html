@@ -200,7 +200,7 @@
                 <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->
                 <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use verifiedAt directly rather than isChecked because autocheck coerces isChecked to be out of sync -->
                 <md-checkbox
-                  disabled.bind="(role.account == 'to' && diffs.length && ! transactions[diffs[0]].verifiedAt != ! transaction.verifiedAt) || (role.account == 'from' && transaction.verifiedAt)"
+                  disabled.bind="(role.account == 'to' && diffs.length && ! transactions[diffs[0]].verifiedAt != ! transaction.verifiedAt) || (role.account == 'to' && transaction.verifiedAt && transaction.shipment._id != shipment._id) || (role.account == 'from' && transaction.verifiedAt)"
                   click.delegate="manualCheck($index)"
                   checked.bind="isChecked[$index]">
                 </md-checkbox>
