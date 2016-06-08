@@ -26,7 +26,7 @@
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
-      <div
+      <form
         class="mdl-card__supporting-text"
         input.delegate="drug._rev && saveDrug() & debounce:1000"
         style="font-size:16px;">
@@ -138,7 +138,7 @@
             ${ $index == 0 ? 'Container Size' : ''}
           </md-input>
         </div> -->
-      </div>
+      </form>
       <div class="mdl-card__actions">
         <!-- <md-button color="accent" raised
           if.bind="drug._rev"
@@ -151,7 +151,7 @@
           if.bind=" ! drug._rev"
           style="width:100%;"
           click.delegate="addDrug()"
-          disabled.bind=" ! drug._id || ! drug.generics[0].name || ! drug.generics[0].strength || ! drug.form">
+          form>
           Add Drug
         </md-button>
       </div>

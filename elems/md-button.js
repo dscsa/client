@@ -1,5 +1,6 @@
 import {bindable, inject} from 'aurelia-framework';
 
+@bindable('form')
 @bindable('class')
 @bindable('raised')
 @bindable('fab')
@@ -23,6 +24,16 @@ export class MdButtonCustomElement {
   }
 
   attached() {
+    let change = input => {
+      console.log('validating form')
+      this.disabled = ! document.forms[0].checkValidity()
+    }
+    if (this.form === '') { //TODO allow attribute value to specify which form
+      this.disabled = ! document.forms[0].checkValidity()
+      document.forms[0].addEventListener('change', change)
+      document.forms[0].addEventListener('input', change)
+    }
+
     this.class && this.button.classList.add(...this.class.split(' '))
     //attributes are made an empty string by default, so we can't just test for truthiness
     //primary and accent are dynamic/reactive based on disable so need to be in the template.

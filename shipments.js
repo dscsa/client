@@ -279,10 +279,8 @@ export class shipments {
   saveTransaction(transaction) {
     console.log('saving', transaction)
     this.db.transaction.put(transaction)
-    //.catch(e => console.log('error', e))
-    .catch(e => {
-      console.log('error', e)
-      this.snackbar.show(`Transaction with exp ${transaction.exp[this.role.account]} and qty ${transaction.qty[this.role.account]} could not be saved`)
+    .catch(err => {
+      this.snackbar.show(`Error saving transaction: ${err.reason}`)
     })
   }
 
@@ -311,8 +309,8 @@ export class shipments {
     setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
     console.log('addTransaction', drug, transaction)
     return this.db.transaction.post(transaction)
-    .catch(e => {
-      this.snackbar.show(`${ e.message }: transaction could not be added`)
+    .catch(err => {
+      this.snackbar.show(`Transaction could not be added: ${err.name}`)
       this.transactions.shift()
       this.isChecked.shift()
     })

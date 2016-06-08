@@ -37,7 +37,7 @@ export class AuthorizeStep {
   }
 
   run(routing, next) {
-    
+
     this.db.user.session.get().then(session => {
 
       for (let row of routing.router.navigation) {

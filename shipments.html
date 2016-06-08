@@ -43,7 +43,7 @@
           <strong>$${ transactions | value }</strong>
         </div>
       </div>
-      <div class="mdl-card__supporting-text" style="font-size:16px;">
+      <form class="mdl-card__supporting-text" style="font-size:16px;">
         <md-select
           if.bind="role.account == 'from' || shipment._rev"
           style="width:100%"
@@ -120,12 +120,12 @@
             style="position:absolute; height:100%; width:100%; top:0; bottom:0">
         </div> -->
         <!-- The above padding / positioning keeps a constant aspect ratio for the embeded pdf  -->
-      </div>
+      </form>
       <div class="mdl-card__actions">
         <md-button color raised
           style="width:100%"
           if.bind="! shipment._rev && shipment._id == transactions[0].shipment._id"
-          disabled.bind="! shipment.account.to._id || ! shipment.account.from._id"
+          form
           click.delegate="createShipment()">
           Create Shipment With ${ diffs.length || 'No' } Items
         </md-button>

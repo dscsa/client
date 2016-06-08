@@ -49,14 +49,19 @@ export class account {
   }
 
   saveUser() {
-    if ( ! this.user._id) return
-    console.log('saving', this.user)
-    this.db.user.put(this.user)
+    if (this.user._id) {
+      console.log('saving', this.user)
+      this.db.user.put(this.user)
+    }
+    return true
   }
 
   addUser() {
-    this.newUser()
-    this.db.user.post(this.user)
+    this.addEmptyUser()
+    this.db.user.post(this.user).catch(err => {
+      console.log(err)
+      this.snackbar.show(err.reason)
+    })
   }
 
   deleteUser() {
@@ -66,7 +71,10 @@ export class account {
       this.users.splice(index, 1)
       this.selectUser()
     })
-    .catch(err => console.log(err.stack))
+    .catch(err => {
+      console.log(err)
+      this.snackbar.show(err.reason)
+    })
   }
 
   //Simple debounce doesn't work here to prevent double click

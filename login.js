@@ -14,11 +14,8 @@ export class login {
   }
 
   activate() {
-    this.db.user.session.delete().then(_ => {
-      this.disabled = false
-      console.log('delete successful going to login')
-    })
-    .catch(e => console.log('delete not successful', e))
+    this.db.user.session.delete().then(_ => this.disabled = false)
+    .catch(err => this.snackbar.show('Logout failed: '+err.reason))
   }
 
   login() {
@@ -33,12 +30,12 @@ export class login {
       return Promise.all(loading.syncing)
     })
     .then(resources => {
-      console.log('login successful')
       this.router.navigate('shipments')
     })
     .catch(err => {
       this.disabled = false
-      console.log('login failed because', err.message, err.stack)
+      console.log(err, this.snackbar.show)
+      this.snackbar.show('Login failed: '+err.reason)
     })
   }
 }
