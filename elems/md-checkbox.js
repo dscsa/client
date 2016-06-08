@@ -2,6 +2,7 @@ import {bindable, bindingMode, inject} from 'aurelia-framework';
 
 @bindable({name:'checked', defaultBindingMode: bindingMode.twoWay})
 @bindable('disabled')
+@bindable('required')
 @inject(Element)
 export class MdCheckboxCustomElement {
 
