@@ -27,7 +27,7 @@
       <form class="mdl-card__supporting-text" style="font-size:16px;">
         <md-input style="width:49%" value.bind="user.name.first" required>First Name</md-input>
         <md-input style="width:49%" value.bind="user.name.last" required>Last Name</md-input>
-        <md-input style="width:100%" value.bind="user.email" type="email" pattern="\w{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>
+        <md-input style="width:100%" value.bind="user.email" type="email" pattern="[\w._]{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>
         <md-input style="width:100%" value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
         <md-input style="width:100%" value.bind="user.password" if.bind=" ! user._id" required>Password</md-input>
       </form>
