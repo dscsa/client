@@ -40,18 +40,17 @@ export class AuthorizeStep {
 
     this.db.user.session.get().then(session => {
 
+      let route = routing.getAllInstructions()[0].config
+
       for (let row of routing.router.navigation) {
-        if ( ! session || ! session.account) {
+        if ( ! session || ! session.account || ! route.roles) {
           row.isVisible = ! row.config.roles; continue
         }
         var role = session.account._id.length == 7 ? 'user' : 'admin'
         row.isVisible = row.config.roles && ~row.config.roles.indexOf(role)
       }
 
-      if (routing.getAllInstructions().some(i => i.config.navModel.isVisible || i.config.route == 'login'))
-        next()
-      else
-        next.cancel(new Redirect('login'))
+      route.navModel.isVisible ? next() : next.cancel(new Redirect('login'))
     })
     .catch(err => console.log('router error', err))
   }
