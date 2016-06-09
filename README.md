@@ -13,10 +13,13 @@ Application that uses the RESTful API written with the Aurelia framework
 |Users can be deleted|[]|
 |Proper errors on invalid account data (from account and join views?)|[]|
 |Proper saving on valid account data (from account and join views?)|[]|
-|Accounts can be authorized and unauthorized.
+|Accounts can be authorized and unauthorized|[]|
 |Accounts that have authorized current account can be viewed|[]|
 |Proper errors on invalid drug data|[]|
-|Proper saving on valid drug data (multiple generics? updates transaction info? goodrx/nadac updated?)|[]|
+|Proper saving on valid drug data
+- multiple generics?
+- updates transaction info?
+- goodrx/nadac updated?)|[]|
 |Drugs can be imported as CSV|[]|
 |Proper errors on invalid shipment data|[]|
 |Proper saving on valid shipment data|[]|
