@@ -233,7 +233,7 @@ export class shipments {
       .catch(err => {
         this.isChecked[i] = !!this.transactions[i].verifiedAt
         this.manualCheck(i)
-        this.snackbar.show(`${genericName(this.transactions[i].drug)} with qty ${this.transactions[i].qty.to} could not be ${phrase} inventory`)
+        this.snackbar.show(err.reason)
       })
     })).then(all => {
       this.diffs = []
