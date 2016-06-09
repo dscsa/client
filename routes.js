@@ -36,21 +36,21 @@ export class AuthorizeStep {
     }
   }
 
-  run(routing, next) {
+  run(routing, callback) {
 
     this.db.user.session.get().then(session => {
 
-      let route = routing.getAllInstructions()[0].config
+      let next = routing.getAllInstructions()[0].config
 
-      for (let row of routing.router.navigation) {
-        if ( ! session || ! session.account || ! route.roles) {
-          row.isVisible = ! row.config.roles; continue
+      for (let route of routing.router.navigation) {
+        if ( ! session || ! session.account || ! next.roles) {
+          route.isVisible = ! route.config.roles; continue
         }
         var role = session.account._id.length == 7 ? 'user' : 'admin'
-        row.isVisible = row.config.roles && ~row.config.roles.indexOf(role)
+        route.isVisible = route.config.roles && ~route.config.roles.indexOf(role)
       }
 
-      route.navModel.isVisible ? next() : next.cancel(new Redirect('login'))
+      next.navModel.isVisible ? callback() : callback.cancel(new Redirect('login'))
     })
     .catch(err => console.log('router error', err))
   }
