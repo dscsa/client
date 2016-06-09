@@ -1,5 +1,5 @@
 import {inject} from 'aurelia-framework';
-import {Db}     from 'db/pouch'
+import {Db}     from 'libs/pouch'
 import {Router} from 'aurelia-router';
 
 @inject(Db, Router)

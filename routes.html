@@ -1,0 +1,23 @@
+<template>
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+      <div class="mdl-layout__header-row">
+        <img src="src/styles/SIRUM.logo.notag.png" style="width:100px; margin-left:-16px">
+        <span class="mdl-layout-title"></span>
+        <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <nav class="mdl-navigation">
+          <!-- show.bind="row.isVisible"  -->
+          <a repeat.for="row of router.navigation" show.bind="row.isVisible" class="mdl-navigation__link ${row.isActive ? 'mdl-navigation__link--current' : ''}" href.bind="row.href" style="">
+            ${row.title}
+          </a>
+        </nav>
+      </div>
+    </header>
+    <main class="mdl-layout__content">
+      <div class="page-content">
+        <router-view></router-view>
+      </div>
+    </main>
+  </div>
+</template>

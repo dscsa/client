@@ -6,13 +6,13 @@ export class App {
     config.addPipelineStep('authorize', AuthorizeStep);
 
     config.map([
-      { route: 'login',                        moduleId: '../login',     title:'Login',     nav:true},
-      { route: ['join', ''],                   moduleId: '../join',      title:'Join',      nav:true},
-      { route: ['inventory', 'inventory/:id'], moduleId: '../inventory', title:'Inventory', nav:true, roles:["user"]},
-      { route: ['shipments', 'shipments/:id'], moduleId: '../shipments', title:'Shipments', nav:true, roles:["user"]},
-      { route: ['drugs', 'drugs/:id'],         moduleId: '../drugs',     title:'Drugs',     nav:true, roles:["user"]},
-      { route: ['records', 'records/:id'],     moduleId: '../records',   title:'Records',   nav:true, roles:["user"]},
-      { route: 'account',                      moduleId: '../account',   title:'Account',   nav:true, roles:["user"]}
+      { route: 'login',                        moduleId: 'views/login',     title:'Login',     nav:true},
+      { route: ['join', ''],                   moduleId: 'views/join',      title:'Join',      nav:true},
+      { route: ['inventory', 'inventory/:id'], moduleId: 'views/inventory', title:'Inventory', nav:true, roles:["user"]},
+      { route: ['shipments', 'shipments/:id'], moduleId: 'views/shipments', title:'Shipments', nav:true, roles:["user"]},
+      { route: ['drugs', 'drugs/:id'],         moduleId: 'views/drugs',     title:'Drugs',     nav:true, roles:["user"]},
+      { route: ['records', 'records/:id'],     moduleId: 'views/records',   title:'Records',   nav:true, roles:["user"]},
+      { route: 'account',                      moduleId: 'views/account',   title:'Account',   nav:true, roles:["user"]}
     ]);
 
     this.router = router
@@ -20,7 +20,7 @@ export class App {
 }
 
 import {inject}   from 'aurelia-framework'
-import {Db}       from '../db/pouch'
+import {Db}       from 'libs/pouch'
 import {Router, Redirect} from 'aurelia-router'
 
 @inject(Router, Db)

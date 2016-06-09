@@ -7,5 +7,5 @@ export function configure(aurelia) {
     .standardConfiguration()
     .plugin('aurelia-animator-css')
 
-  aurelia.start().then(a => a.setRoot('config/app'));
+  aurelia.start().then(a => a.setRoot('routes'));
 }
