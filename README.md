@@ -5,10 +5,10 @@ Application that uses the RESTful API written with the Aurelia framework
 |Test|2016-06-XX|
 |----|----------|
 |Log in/out works multiple times in a row| -[ ] |
-|During db sync "canceled" requests by browser|<li>[ ]</li>|
-|Only current account's shipments, transactions, and users can be seen|<li>[x]</li>|
-|Proper errors on invalid user data (from account and join views?)|-[x]|
-|Proper saving on valid user data (from account and join views?)|[ ]|
+|During db sync "canceled" requests by browser|<ul><li>[ ]</li></ul>|
+|Only current account's shipments, transactions, and users can be seen|<ul><li>[x]</li></ul>|
+|Proper errors on invalid user data (from account and join views?)|<ul>[ ]</ul>|
+|Proper saving on valid user data (from account and join views?)|<ul>[x]</ul>|
 |Users filter works|[ ]|
 |Users can be deleted|[ ]|
 |Proper errors on invalid account data (from account and join views?)|[ ]|
