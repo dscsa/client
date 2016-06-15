@@ -18,25 +18,25 @@
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
+    <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
       <div class="mdl-card__title">
         <div class="mdl-card__title-text">
           User Information
         </div>
       </div>
-      <form class="mdl-card__supporting-text" style="font-size:16px;">
+      <div class="mdl-card__supporting-text" style="font-size:16px;">
         <md-input style="width:49%" value.bind="user.name.first" required>First Name</md-input>
         <md-input style="width:49%" value.bind="user.name.last" required>Last Name</md-input>
         <md-input style="width:100%" value.bind="user.email" type="email" pattern="[\w._]{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>
         <md-input style="width:100%" value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
         <md-input style="width:100%" value.bind="user.password" if.bind=" ! user._id" required>Password</md-input>
-      </form>
+      </div>
       <div class="mdl-card__actions">
         <md-button color raised style="width:100%" if.bind="! user._id" form click.delegate="addUser()">Create User</md-button>
         <md-button color raised style="width:100%" if.bind="user._id == session._id" click.delegate="logout()">Logout</md-button>
         <md-button color="accent" raised style="width:100%" if.bind="user._id && user._id != session._id" click.delegate="deleteUser()">Delete User</md-button>
       </div>
-    </div>
+    </form>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
       <table md-table style="margin:8px 16px; width:calc(100% - 32px)">
         <thead>

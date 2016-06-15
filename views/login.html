@@ -4,12 +4,18 @@
   <require from="elems/md-button"></require>
   <require from="elems/md-snackbar"></require>
   <section class="mdl-grid" style="margin-top:30vh;">
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
-      <md-input value.bind="email">Email</md-input>
-      <md-input value.bind="password">Password</md-input>
-      <md-button raised color click.delegate="login()" disabled.bind="disabled" style="padding-top:16px">Login</md-button>
+    <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
+      <md-input value.bind="email" type="email" pattern="[\w._]{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>
+      <md-input value.bind="password" type="password" required>Password</md-input>
+      <md-button
+        raised color form
+        click.delegate="login()"
+        disabled.bind="disabled"
+        style="padding-top:16px">
+        Login
+      </md-button>
       <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading }</p>
-    </div>
+    </form>
   </section>
   <md-snackbar ref="snackbar"></md-snackbar>
 </template>

@@ -126,9 +126,10 @@ export class drugs {
   }
 
   importCSV() {
-    let db    = this.db
+    let $this = this
     let data  = []
     let start = Date.now()
+    this.snackbar.show(`Parsing CSV File`)
 
     function capitalize(txt) {
       return txt ? txt.replace(/\w+/g, txt => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()) : ''
@@ -159,37 +160,29 @@ export class drugs {
       //     pkgs:[]
       //   })
       // },
-      step: function(results, parser) {
+      step(results, parser) {
         let row = results.data[0]
 
         if ( ! row._id) {
           console.error('_id field is required', results); return
         }
 
-        if ( ! row['generics.name']) {
-          console.error('generics.name field is required', results); return
+        if ( ! row['generics']) {
+          console.error('generics field is required', results); return
         }
 
-        if ( ! row['generics.strength']) {
-          console.error('generics.strength field is required', results); return
-        }
-
-        let drug = {
-          names:row['generics.name'].split(';'),
-          strengths:row['generics.strength'].split(';'),
-          generics:[]
-        }
-
-        if (drug.names.length != drug.strengths.length) {
-          console.error('generics.name/strength must contain the same number of semicolons', drug); return
-        }
-
-        for (let i in drug.names) //Collate the two fields into one
-          drug.generics.push({name:drug.names[i].trim(), strength:drug.strengths[i].trim()})
+        let generics = row['generics'].split(";").filter(v => v).map(generic => {
+          let [name, strength] = generic.split(/(?= [\d.]+)/)
+          console.log(generic, generic.split(/(?= [\d.]+)/), arguments)
+          return {
+            name:name.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()),
+            strength:strength.trim().toLowerCase()
+          }
+        })
 
         data.push({
           _id:row._id,
-          generics:drug.generics,
+          generics:generics,
           brand:row.brand,
           form:row.form,
           image:row.image,
@@ -197,10 +190,9 @@ export class drugs {
         })
       },
 
-      complete: function(results, file) {
-        console.log("Upload of ", data.length, "rows completed in ", Date.now() - start)
-      	this.db.drug.bulkDocs(data)
-        .then(_ => console.log(Date.now() - start, _))
+      complete(results, file) {
+        $this.snackbar.show(`Parsed ${data.length} rows. Uploading to server`)
+      	$this.db.drug.post(data).then(_ => $this.snackbar.show(`CSV import completed in ${Date.now() - start}ms`))
       }
     })
   }

@@ -25,8 +25,8 @@
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
-      <form
+    <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
+      <div
         class="mdl-card__supporting-text"
         input.delegate="drug._rev && saveDrug() & debounce:1000"
         style="font-size:16px;">
@@ -138,7 +138,7 @@
             ${ $index == 0 ? 'Container Size' : ''}
           </md-input>
         </div> -->
-      </form>
+      </div>
       <div class="mdl-card__actions">
         <!-- <md-button color="accent" raised
           if.bind="drug._rev"
@@ -155,7 +155,7 @@
           Add Drug
         </md-button>
       </div>
-    </div>
+    </form>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
       <md-autocomplete
         placeholder="Search Drugs by Generic Name or NDC..."
