@@ -11,6 +11,9 @@ export class MdButtonCustomElement {
 
   constructor(element) {
     this.element = element
+    this.change  = this.change.bind(this)
+
+
   }
 
   //click.trigger won't trigger when button is disabled, but delegate will
@@ -19,20 +22,30 @@ export class MdButtonCustomElement {
   //"return true" so we need to to refire the event.
   click($event) {
     //console.log('click', this.button.disabled))
-    if ( ! this.disabled)
+    if ( ! this.disabledOrInvalid)
       this.element.dispatchEvent(new MouseEvent($event.type, $event))
   }
 
+  disabledChanged() {
+    this.button && this.change()
+  }
+
+  change(input) {
+    this.disabledOrInvalid = this.disabled || this.disabled === '' || (this.formElement && ! this.formElement.checkValidity())
+  }
+
   attached() {
-    let change = input => {
-      console.log('validating form')
-      this.disabled = ! document.forms[0].checkValidity()
+    //TODO allow attribute value to specify the form by name.
+    //TODO a detached method.  Are these event listeners leaking?
+    if (this.form === '') {
+      this.formElement = this.element.closest('form')
+      this.formElement.addEventListener('change', this.change)
+      this.formElement.addEventListener('input', this.change)
     }
-    if (this.form === '') { //TODO allow attribute value to specify which form
-      this.disabled = ! document.forms[0].checkValidity()
-      document.forms[0].addEventListener('change', change)
-      document.forms[0].addEventListener('input', change)
-    }
+
+    //When going "back" to "Create New Shipment" form.checkValidity() would return true
+    //initially and then turn to false. setTimeout seems to eliminate this problem
+    setTimeout(this.change)
 
     this.class && this.button.classList.add(...this.class.split(' '))
     //attributes are made an empty string by default, so we can't just test for truthiness

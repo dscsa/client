@@ -1,7 +1,7 @@
 <template style="display:inline-block; height:36px; line-height:36px">
   <button
     ref="button"
-    disabled.bind="disabled || disabled === ''"
+    disabled.bind="disabledOrInvalid"
     click.delegate="click($event)"
     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
     style="width:100%; height:inherit; line-height:inherit">
