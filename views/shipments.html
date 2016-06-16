@@ -18,7 +18,7 @@
       Filter shipments ${ role.account } you
     </md-input>
     <md-switch
-      checked.one-time="role.account == 'to'"
+      checked.one-way="role.account == 'to'"
       click.delegate="swapRole()"
       style="margin:-33px 0 0 185px;">
     </md-switch>
