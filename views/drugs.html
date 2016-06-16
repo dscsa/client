@@ -90,7 +90,7 @@
           value.bind="drug.price.nadac"
           disabled.bind="! drug._rev"
           type="number"
-          step=".001"
+          step=".0001"
           style="width:49%">
           Nadac Price
         </md-input>
@@ -98,12 +98,12 @@
           value.bind="drug.price.goodrx | number:3"
           disabled.bind="! drug._rev"
           type="number"
-          step=".001"
+          step=".0001"
           style="width:49%">
           GoodRx Price
         </md-input>
         <md-input
-          type="url"
+          pattern="//[a-zA-Z0-9/.\-_%]+"
           value.bind="drug.image"
           style="width:100%; font-size:9px;">
           ${ drug.image ? 'Image' : 'Image URL'}
@@ -205,7 +205,7 @@
             </thead>
             <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id && drug._id == $parent.drug._id ? 'is-selected' : ''}">
               <td class="mdl-data-table__cell--non-numeric">${ drug._id }</td>
-              <td class="mdl-data-table__cell--non-numeric">${ drug.labeler.split(' ').slice(0,2).join(' ')}</td>
+              <td class="mdl-data-table__cell--non-numeric">${ drug.labeler }</td>
               <td class="mdl-data-table__cell--non-numeric">${ drug.brand }</td>
               <td style="padding:0; text-align:left">${ drug.price.nadac | number:3 }</td>
               <td style="padding:0; text-align:left">${ drug.price.goodrx | number:3 }</td>

@@ -7,6 +7,7 @@ import {bindable, bindingMode, inject} from 'aurelia-framework';
 export class MdSwitchCustomElement {
 
   constructor(elem) {
+    //Do not propogate click if element is disabled
     //Can't do this with <template click.delegate> since that overwrites authors delegate fn
     elem.addEventListener('click', e => this.disabled && e.stopPropagation())
   }
