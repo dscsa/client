@@ -183,10 +183,10 @@ export class drugs {
         data.push({
           _id:row._id,
           generics:generics,
-          brand:row.brand,
-          form:row.form,
-          image:row.image,
-          labeler:row.labeler
+          brand:row.brand.trim(),
+          form:row.form.trim(),
+          image:row.image.trim(),
+          labeler:row.labeler.trim()
         })
       },
 
