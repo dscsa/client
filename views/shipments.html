@@ -219,6 +219,7 @@
                 ${ transaction.exp[role.partner] | date}
                 <md-input
                   id.bind="'exp_'+$index"
+                  tabindex="-1"
                   ref="input"
                   input.delegate="saveTransaction(transaction) & debounce:1000"
                   input.trigger="autoCheck($index)"

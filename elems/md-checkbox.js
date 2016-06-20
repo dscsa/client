@@ -6,9 +6,10 @@ import {bindable, bindingMode, inject} from 'aurelia-framework';
 @inject(Element)
 export class MdCheckboxCustomElement {
 
-  constructor(elem) {
+  constructor(element) {
+    this.tabindex = element.tabIndex
     //Can't do this with <template click.delegate> since that overwrites authors delegate fn
-    elem.addEventListener('click', e => this.disabled && e.stopPropagation())
+    element.addEventListener('click', e => this.disabled && e.stopPropagation())
   }
 
   //A click on input causes a UI change and then if aurelia is also listening for a
@@ -31,6 +32,7 @@ export class MdCheckboxCustomElement {
   }
 
   attached() {
+
     componentHandler.upgradeElement(this.label)
     this.checkedChanged()
     this.disabledChanged()
