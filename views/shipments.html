@@ -29,7 +29,7 @@
       <div class="mdl-typography--title">
         ${ shipment._rev ? shipment.account[role.partner].name : 'Create'}
       </div>
-      ${ shipment._rev ? '#0'+shipment.tracking+', '+shipment.status : 'new shipment '+role.account+' you' }
+      ${ shipment._rev ? shipment.status+(', #0'+shipment.tracking).split(filter || null)[0] : 'new shipment '+role.account+' you' }<strong>${ filter }</strong>${ shipment._rev ? (''+shipment.tracking).split(filter)[1] : '' }
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
