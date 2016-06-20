@@ -15,7 +15,7 @@ export class login {
 
   activate() {
     this.db.user.session.delete().then(_ => this.disabled = false)
-    .catch(err => this.snackbar.show('Logout failed: '+err.reason))
+    .catch(err => console.log('Logout failed: '+err))
   }
 
   login() {
