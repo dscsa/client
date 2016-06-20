@@ -221,7 +221,7 @@
                   id.bind="'exp_'+$index"
                   tabindex="-1"
                   ref="input"
-                  input.delegate="saveTransaction(transaction) & debounce:1000"
+                  input.delegate="saveTransaction($index) & debounce:1000"
                   input.trigger="autoCheck($index)"
                   pattern="(0?[1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp[role.account] | date"
@@ -233,7 +233,7 @@
                 ${ transaction.qty[role.partner] }
                   <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->
                   <md-input
-                    input.delegate="saveTransaction(transaction) & debounce:1000"
+                    input.delegate="saveTransaction($index) & debounce:1000"
                     keyup.delegate="qtyShortcuts($event, $index)"
                     type="number"
                     value.bind="transaction.qty[role.account] | number"

@@ -276,9 +276,12 @@ export class shipments {
     document.querySelector('#exp_'+$index+' input').focus()
   }
 
-  saveTransaction(transaction) {
-    console.log('saving', transaction)
-    this.db.transaction.put(transaction)
+  saveTransaction($index) {
+    if ( ! document.querySelector('#exp_'+$index+' input').validity.valid)
+      return
+
+    console.log('saving', this.transactions[$index])
+    this.db.transaction.put(this.transactions[$index])
     .catch(err => {
       this.snackbar.show(`Error saving transaction: ${err.reason}`)
     })
