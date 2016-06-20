@@ -24,7 +24,7 @@
           User Information
         </div>
       </div>
-      <div class="mdl-card__supporting-text" style="font-size:16px;">
+      <div class="mdl-card__supporting-text" style="font-size:16px;" input.delegate="saveUser() & debounce:1000">
         <md-input style="width:49%" value.bind="user.name.first" required>First Name</md-input>
         <md-input style="width:49%" value.bind="user.name.last" required>Last Name</md-input>
         <md-input style="width:100%" value.bind="user.email" type="email" pattern="[\w._]{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>

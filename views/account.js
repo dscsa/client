@@ -97,6 +97,13 @@ export class account {
   }
 }
 
+export class jsonValueConverter {
+  toView(object = null){
+    //console.log(Object.keys(object), JSON.stringify(object, null, " "))
+    return JSON.stringify(object, null, " ")
+  }
+}
+
 export class dateValueConverter {
   toView(date = ''){
     return date.slice(0, 10)
