@@ -46,7 +46,7 @@ export class shipments {
         shipment.status       = this.getStatus(shipment)
         shipment.account.from = toMap[shipment.account.from._id] || {...this.account}
         shipment.account.to   = fromMap[shipment.account.to._id] || {...this.account}
-        if (params.id === shipment._id.split('.')[2])
+        if (params.id === shipment._id)
           selected = shipment  //Sneak this in since we are already making the loop
       }
 
@@ -74,6 +74,7 @@ export class shipments {
 
   //Activated by activate() and each time a shipment is selected from drawer
   selectShipment(shipment) {
+    this.shipmentId   = shipment._id  //freeze this if user started playing with "move shipment" select
     this.shipment     = shipment
     this.attachment   = null
     this.transactions = [] //prevents flash of "move button"
@@ -81,8 +82,8 @@ export class shipments {
     this.isChecked    = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
 
     //Keep url concise by using the last segment of the id
-    let url = shipment._rev ? '/'+shipment._id.split('.')[2] : ''
-    this.router.navigate('shipments'+url, { trigger: false })
+    let url = shipment._rev ? '/'+shipment._id : ''
+    this.router.navigate('shipments'+url, { trigger: false})
 
     if ( ! shipment._id && ! shipment.account.from) //anything but toShipment[0]
       return
@@ -454,6 +455,12 @@ export class valueValueConverter {
 export class drugNameValueConverter {
   toView(drug, regex){
     return genericName(drug).replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
+  }
+}
+
+export class boldValueConverter {
+  toView(text, bold){
+    return bold ? text.replace(RegExp(bold, 'i'), '<strong>'+bold+'</strong>') : text
   }
 }
 
