@@ -460,7 +460,7 @@ export class drugNameValueConverter {
 
 export class boldValueConverter {
   toView(text, bold){
-    return bold ? text.replace(RegExp(bold, 'i'), '<strong>'+bold+'</strong>') : text
+    return bold ? text.replace(RegExp('('+bold+')', 'i'), '<strong>$1</strong>') : text
   }
 }
 
