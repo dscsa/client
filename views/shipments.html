@@ -23,17 +23,18 @@
       style="margin:-33px 0 0 185px;">
     </md-switch>
     <a
+      if.bind=" ! filter"
+      class="mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectShipment()">
+      <div class="mdl-typography--title">Create</div>
+      new shipment ${role.account} you
+    </a>
+    <a
       repeat.for="shipment of shipments[role.account] | filter:filter"
       class="mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(shipment)">
-      <div if.bind="shipment._rev">
-        <div class="mdl-typography--title" innerHtml.bind="shipment.account[role.partner].name | bold:filter"></div>
-        <div innerHtml.bind="shipment.status+', #0'+shipment.tracking | bold:filter"></div>
-      </div>
-      <div if.bind="! shipment._rev">
-        <div class="mdl-typography--title">Create</div>
-        new shipment ${role.account} you
-      </div>
+      <div class="mdl-typography--title" innerHtml.bind="shipment.account[role.partner].name | bold:filter"></div>
+      <div innerHtml.bind="shipment.status+', #0'+shipment.tracking | bold:filter"></div>
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
@@ -52,14 +53,14 @@
           if.bind="role.account == 'from' || shipment._rev"
           style="width:100%"
           value.bind="shipment"
+          default.bind="{tracking:'New Tracking #', account:{from:account, to:account}}"
           options.bind="shipments[role.account]"
-          default.bind="'New Tracking #'"
-          disabled.bind=" ! transactions.length"
           property="tracking">
           Tracking #
         </md-select>
         <md-input
           if.bind="role.account == 'to' && ! shipment._rev"
+          required
           style="width:100%"
           value.bind="shipment.tracking">
           Tracking #

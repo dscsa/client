@@ -41,9 +41,14 @@ export class shipments {
       fromAccounts.forEach(makeMap.bind(fromMap))
       toAccounts.forEach(makeMap.bind(toMap))
 
+      this.accounts  = {
+        from:['', ...Object.values(fromMap)],
+        to:['', ...Object.values(toMap)]
+      }
+
       //Selected account != shipment.account.to because they are not references
       let makeReference = shipment => {
-        shipment.status       = this.getStatus(shipment)
+        this.setStatus(shipment)
         shipment.account.from = toMap[shipment.account.from._id] || {...this.account}
         shipment.account.to   = fromMap[shipment.account.to._id] || {...this.account}
         if (params.id === shipment._id)
@@ -58,57 +63,64 @@ export class shipments {
 
       toShipments.forEach(makeReference)
 
-      this.accounts  = {
-        from:['', ...Object.values(fromMap)],
-        to:['', ...Object.values(toMap)]
-      }
-
       //console.log('this.accounts', this.accounts)
       this.shipments = {from:fromShipments, to:toShipments}
 
-      this.addEmptyShipment('from')
-      this.addEmptyShipment('to')
-      this.selectShipment(selected || toShipments[0])
+      this.selectShipment(selected)
     })
   }
 
   //Activated by activate() and each time a shipment is selected from drawer
   selectShipment(shipment) {
-    this.shipmentId   = shipment._id  //freeze this if user started playing with "move shipment" select
+    if ( ! shipment) return this.emptyShipment()
+    this.setUrl('/'+shipment._id)
+    this.setShipment(shipment)
+    this.setTransactions(shipment._id)
+  }
+
+  emptyShipment() {
+    this.setUrl('')
+    if (this.role.account == 'from') {
+      this.setShipment({account:{from:this.account}})
+      this.setTransactions(this.account._id)
+    } else {
+      this.setShipment({account:{to:this.account}})
+      this.setTransactions()
+    }
+  }
+
+  setShipment(shipment) {
     this.shipment     = shipment
+    this.shipmentId   = shipment._id  //freeze this if user started playing with "move shipment" select
     this.attachment   = null
-    this.transactions = [] //prevents flash of "move button"
-    this.diffs        = [] //Check boxes of verified, and track the differences
+  }
+
+  setUrl(url) {
+    this.router.navigate('shipments'+url, { trigger: false})
+  }
+
+  setTransactions(shipmentId) {
+    this.transactions = []
+    this.diffs        = [] //Newly checked or unchecked checkboxes. Used to disable buttons if user has not done anything yet
     this.isChecked    = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
 
-    //Keep url concise by using the last segment of the id
-    let url = shipment._rev ? '/'+shipment._id : ''
-    this.router.navigate('shipments'+url, { trigger: false})
+    if ( ! shipmentId) return
 
-    if ( ! shipment._id && ! shipment.account.from) //anything but toShipment[0]
-      return
-
-    this.db.transaction.get({'shipment._id':shipment._id || this.account._id})
-    .then(transactions => {
+    this.db.transaction.get({'shipment._id':shipmentId}).then(transactions => {
       this.transactions = transactions
-      for (let i in this.transactions) {
+      for (let i in this.transactions)
         this.isChecked.push(!!this.transactions[i].verifiedAt) //force boolean since aurelia forces checkboxes to be boolean to using date causes checkboxes to stick on first click as aurelia converts date to boolean
-      }
     })
     .catch(console.log)
   }
 
-  addEmptyShipment(role) {
-    this.shipments[role].unshift({account:{[role]:this.account}})
-  }
-
-  getStatus(shipment) {
-    return this.stati.reduce((prev, curr) => shipment[curr+'At'] ? curr : prev)
+  setStatus(shipment) {
+    shipment.status = this.stati.reduce((prev, curr) => shipment[curr+'At'] ? curr : prev)
   }
 
   swapRole() { //Swap donor-donee roles
     [this.role.account, this.role.partner] = [this.role.partner, this.role.account]
-    this.selectShipment(this.shipments[this.role.account][0])
+    this.selectShipment()
     return true
   }
 
@@ -128,14 +140,15 @@ export class shipments {
   //TODO need to select the new shipment once user confirms the move
   moveTransactionsToShipment(shipment) {
 
-    for (let i in this.isChecked) { //Change all selected transactions to the new or existing shipment
-      if ( ! this.isChecked[i]) continue
-      if (this.transactions[i].verifiedAt) continue //do not allow movement of verified transactions
-      this.transactions[i].shipment = {_id:shipment._id}
-      this.db.transaction.put(this.transactions[i])
-    }
+    //Change all selected transactions to the new or existing shipment
+    Promise.all(this.transactions.map((transaction, i) => {
+      //do not allow movement of verified transactions
+      if ( ! this.isChecked[i] || transaction.verifiedAt) return
 
-    this.selectShipment(shipment) //Display existing shipment or the newly created shipment
+      transaction.shipment = {_id:shipment._id}
+      return this.db.transaction.put(transaction)
+    }))
+    .then(_ => this.selectShipment(shipment)) //Display existing shipment or the newly created shipment
   }
 
   //Create shipment then move inventory transactions to it
@@ -148,9 +161,13 @@ export class shipments {
     delete this.shipment.account.to.ordered
     delete this.shipment.account.from.ordered
 
+    if (this.shipment.tracking == 'New Tracking #')
+      delete this.shipment.tracking
+
     this.db.shipment.post(this.shipment).then(res => {
+      this.setStatus(this.shipment)
+      this.shipments[this.role.account].unshift(this.shipment)
       this.moveTransactionsToShipment(this.shipment)
-      this.addEmptyShipment(this.role.account)
     })
 
     //Restore ordered in case we autocheck needs this right away
@@ -199,12 +216,12 @@ export class shipments {
     let isChecked = this.isChecked[$index] || false //apparently false != undefined
 
     console.log('autocheck', genericName(transaction.drug), order, 'minQty', minQty, 'minExp', minExp, 'isChecked', isChecked)
-    if((minQty && minExp) != isChecked) {
-      this.manualCheck($index)
-      this.isChecked[$index] = ! isChecked
-      if (this.isChecked[$index] && order.message)
-        this.snackbar.show(order.message)
-    }
+    if((minQty && minExp) == isChecked) return
+
+    this.manualCheck($index)
+    this.isChecked[$index] = ! isChecked
+    if (this.isChecked[$index] && order.message)
+      this.snackbar.show(order.message)
   }
 
   manualCheck($index) {
@@ -239,7 +256,7 @@ export class shipments {
     })).then(all => {
       this.diffs = []
       if (all.every(i => i))
-        this.snackbar.show(`Selected items were ${phrase} inventory`)
+        this.snackbar.show(`${all.length} items were ${phrase} inventory`)
     })
   }
 
