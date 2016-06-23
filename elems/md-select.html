@@ -15,8 +15,11 @@
       disabled.bind="disabled || disabled === ''"
       required.bind="required || required === ''"
       style="padding:0; min-height:26px; line-height:26px; border-radius:0; font-size:inherit; font-weight:inherit; text-transform:inherit; -webkit-appearance:none; -moz-appearance:none;">
+      <option if.bind="default" model.bind="default">
+        ${ property ? default[property] : default }
+      </option>
       <option model.bind="option" repeat.for="option of options">
-        ${ (property ? option[property] : option) || default }
+        ${ property ? option[property] : option }
       </option>
     </select>
     <label ref="label" class="mdl-textfield__label" style="text-align:inherit;">
