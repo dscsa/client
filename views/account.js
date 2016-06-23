@@ -29,23 +29,12 @@ export class account {
       return this.db.user.get().then(users => {
         this.users = users
         this.selectUser()
-        this.addEmptyUser() //Make the user list have a "New User" button at the top
       })
     })
   }
 
   selectUser(user) {
     this.user = user || this.users.filter(user => user._id == this.session._id)[0]
-  }
-
-  addEmptyUser() {
-    this.users.unshift({
-      name:{},
-      email:'',
-      phone:'',
-      password:'',
-      account:{_id:this.session.account._id}
-    })
   }
 
   saveUser() {
@@ -57,9 +46,9 @@ export class account {
   }
 
   addUser() {
-    this.addEmptyUser()
-    this.db.user.post(this.user).catch(err => {
-      console.log(err)
+    this.db.user.post(this.user).then(user => {
+      this.users.unshift(user)
+    }).catch(err => {
       this.snackbar.show(err.reason)
     })
   }

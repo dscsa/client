@@ -11,10 +11,16 @@
   <md-drawer>
     <md-input value.bind="filter" style="padding:0 8px">Filter Users</md-input>
     <a
+      if.bind=" ! filter"
+      class="mdl-navigation__link ${ ! user.email ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectUser({name:{}, account:{_id:session.account._id}})">
+      <div class="mdl-typography--title">New User</div>
+    </a>
+    <a
       repeat.for="user of users | filter:filter"
       class="mdl-navigation__link ${ user.email == $parent.user.email ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectUser(user)">
-      <div class="mdl-typography--title">${ user.name.first ? user.name.first+' '+user.name.last : 'New User'}</div>
+      <div class="mdl-typography--title">${ user.name.first+' '+user.name.last}</div>
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
