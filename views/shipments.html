@@ -68,7 +68,7 @@
         <md-select
           style="width:100%;"
           value.bind="shipment.account.from"
-          options.bind="(shipment.account.from.disabled || role.account == 'from' || shipment._rev) ? [shipment.account.from] : accounts[role.account]"
+          options.bind="(role.account == 'from' || shipment._rev) ? [shipment.account.from] : accounts[role.account]"
           property="name"
           required
           disabled.bind="role.account == 'from'">
@@ -78,7 +78,7 @@
         <md-select
           style="width:100%;"
           value.bind="shipment.account.to"
-          options.bind="(shipment.account.to.disabled || role.account == 'to' || shipment._rev) ? [shipment.account.to] : accounts[role.account]"
+          options.bind="(role.account == 'to' || shipment._rev) ? [shipment.account.to] : accounts[role.account]"
           property="name"
           required
           disabled.bind="role.account == 'to'">
@@ -205,7 +205,7 @@
                 <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->
                 <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use verifiedAt directly rather than isChecked because autocheck coerces isChecked to be out of sync -->
                 <md-checkbox
-                  disabled.bind="(role.account == 'to' && diffs.length && ! transactions[diffs[0]].verifiedAt != ! transaction.verifiedAt) || (role.account == 'to' && transaction.verifiedAt && shipment._id != router.currentInstruction.params.id) || (role.account == 'from' && transaction.verifiedAt)"
+                  disabled.bind="(role.account == 'to' && diffs.length && ! transactions[diffs[0]].verifiedAt != ! transaction.verifiedAt) || (role.account == 'to' && transaction.verifiedAt && shipment._id != shipmentId) || (role.account == 'from' && transaction.verifiedAt)"
                   click.delegate="manualCheck($index)"
                   checked.bind="isChecked[$index]">
                 </md-checkbox>

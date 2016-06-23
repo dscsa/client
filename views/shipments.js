@@ -128,10 +128,9 @@ export class shipments {
   saveShipment() {
     //don't want to save status, but deleting causes weird behavior
     //so instead copy the shipment and delete from copy then assign new rev
-    let status = this.shipment.status
     delete this.shipment.status
-    return this.db.shipment.put(shipment).then(res => {
-      shipment.status = status
+    return this.db.shipment.put(this.shipment).then(res => {
+      this.setStatus(this.shipment)
     })
     //TODO reschedule pickup if a date was changed
   }
