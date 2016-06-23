@@ -154,8 +154,8 @@ export class shipments {
     })
 
     //Restore ordered in case we autocheck needs this right away
-    this.shipment.account.to.ordered   = this.shipment.account.to.ordered
-    this.shipment.account.from.ordered = this.shipment.account.from.ordered
+    this.shipment.account.to.ordered   = toOrdered
+    this.shipment.account.from.ordered = fromOrdered
   }
 
   qtyShortcuts($event, $index) {
