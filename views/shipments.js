@@ -43,8 +43,8 @@ export class shipments {
         this.ordered[account._id] = account.ordered
       }
 
-      for (let account of fromAccounts) makeMap(fromMap, account)
       for (let account of fromAccounts) makeMap(toMap, account)
+      for (let account of toAccounts) makeMap(fromMap, account)
 
       this.accounts  = {
         from:['', ...Object.values(fromMap)],
