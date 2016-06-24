@@ -60,10 +60,9 @@ export class shipments {
         if (toMap[shipment.account.from._id])
           shipment.account.from = toMap[shipment.account.from._id]
 
-        if (fromMap[shipment.account.to._id]) {
-          console.log('fromMap', shipment.account.to)
+        if (fromMap[shipment.account.to._id])
           shipment.account.to = fromMap[shipment.account.to._id]
-        }
+
         if (params.id === shipment._id)
           selected = shipment  //Sneak this in since we are already making the loop
       }
@@ -89,7 +88,6 @@ export class shipments {
     this.setUrl('/'+shipment._id)
     this.setShipment(shipment)
     this.setTransactions(shipment._id)
-    console.log('ordered', shipment._id, shipment.account.to.ordered)
   }
 
   emptyShipment() {
