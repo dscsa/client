@@ -17,13 +17,15 @@ export class shipments {
     this.router  = router
     this.http    = http
     this.stati   = ['pickup', 'shipped', 'received']
+    this.shipments = {}
   }
 
   activate(params) {
     return this.db.user.session.get()
     .then(session  => this.db.account.get({_id:session.account._id}))
     .then(accounts => {
-      this.account = {_id:accounts[0]._id, name:accounts[0].name, ordered:accounts[0].ordered}
+      this.account = {_id:accounts[0]._id, name:accounts[0].name}
+      this.ordered = {[accounts[0]._id]:accounts[0].ordered}
       return Promise.all([
         //Start all of our async tasks
         this.db.account.get({authorized:accounts[0]._id}),
@@ -33,13 +35,16 @@ export class shipments {
       ])
     })
     .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
+
       //This abbreviated denormalized account information will be assigned to account.to/from
       let selected, fromMap = {}, toMap = {}
-      function makeMap(account) {
-        this[account._id] = {_id:account._id, name:account.name, ordered:account.ordered}
+      let makeMap = (map, account) => {
+        map[account._id] = {_id:account._id, name:account.name}
+        this.ordered[account._id] = account.ordered
       }
-      fromAccounts.forEach(makeMap.bind(fromMap))
-      toAccounts.forEach(makeMap.bind(toMap))
+
+      for (let account of fromAccounts) makeMap(fromMap, account)
+      for (let account of fromAccounts) makeMap(toMap, account)
 
       this.accounts  = {
         from:['', ...Object.values(fromMap)],
@@ -49,8 +54,16 @@ export class shipments {
       //Selected account != shipment.account.to because they are not references
       let makeReference = shipment => {
         this.setStatus(shipment)
-        shipment.account.from = toMap[shipment.account.from._id] || {...this.account}
-        shipment.account.to   = fromMap[shipment.account.to._id] || {...this.account}
+
+        //3 scenarios - from an approved partner, the current facility, from a previous approved partner
+        //TODO this code seems bulks is there a more elegant way to handle these three scenarios
+        if (toMap[shipment.account.from._id])
+          shipment.account.from = toMap[shipment.account.from._id]
+
+        if (fromMap[shipment.account.to._id]) {
+          console.log('fromMap', shipment.account.to)
+          shipment.account.to = fromMap[shipment.account.to._id]
+        }
         if (params.id === shipment._id)
           selected = shipment  //Sneak this in since we are already making the loop
       }
@@ -76,15 +89,16 @@ export class shipments {
     this.setUrl('/'+shipment._id)
     this.setShipment(shipment)
     this.setTransactions(shipment._id)
+    console.log('ordered', shipment._id, shipment.account.to.ordered)
   }
 
   emptyShipment() {
     this.setUrl('')
     if (this.role.account == 'from') {
-      this.setShipment({account:{from:this.account}})
+      this.setShipment({account:{from:this.account, to:{}}})
       this.setTransactions(this.account._id)
     } else {
-      this.setShipment({account:{to:this.account}})
+      this.setShipment({account:{to:this.account, from:{}}})
       this.setTransactions()
     }
   }
@@ -153,13 +167,6 @@ export class shipments {
   //Create shipment then move inventory transactions to it
   createShipment() {
 
-    //Use new shipment so we don't copy changes to the old shipment since
-    //.ordered is deeply nested need this rather than Object.assign shallow
-    let toOrdered   = this.shipment.account.to.ordered
-    let fromOrdered = this.shipment.account.from.ordered
-    delete this.shipment.account.to.ordered
-    delete this.shipment.account.from.ordered
-
     if (this.shipment.tracking == 'New Tracking #')
       delete this.shipment.tracking
 
@@ -168,10 +175,6 @@ export class shipments {
       this.shipments[this.role.account].unshift(this.shipment)
       this.moveTransactionsToShipment(this.shipment)
     })
-
-    //Restore ordered in case we autocheck needs this right away
-    this.shipment.account.to.ordered   = toOrdered
-    this.shipment.account.from.ordered = fromOrdered
   }
 
   qtyShortcuts($event, $index) {
@@ -200,27 +203,27 @@ export class shipments {
     return true
   }
 
+  //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
   autoCheck($index) {
     let transaction = this.transactions[$index]
 
-    let order = this.shipment.account.to && this.shipment.account.to.ordered[genericName(transaction.drug)]   //this.shipment.account.to may not have been selected yet
+    let ordered = this.ordered[this.shipment.account.to._id][genericName(transaction.drug)]
 
-    if ( ! order) return
+    if ( ! ordered) return
 
     let qty = +transaction.qty[this.role.account]
     let exp = transaction.exp[this.role.account]
 
-    let minQty    = qty >= (+order.minQty || 1)
-    let minExp    = exp ? new Date(exp) - Date.now() >= (order.minDays || 60)*24*60*60*1000 : !order.minDays
+    let minQty    = qty >= (+ordered.minQty || 1)
+    let minExp    = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 60)*24*60*60*1000 : !ordered.minDays
     let isChecked = this.isChecked[$index] || false //apparently false != undefined
 
-    console.log('autocheck', genericName(transaction.drug), order, 'minQty', minQty, 'minExp', minExp, 'isChecked', isChecked)
     if((minQty && minExp) == isChecked) return
 
     this.manualCheck($index)
     this.isChecked[$index] = ! isChecked
-    if (this.isChecked[$index] && order.message)
-      this.snackbar.show(order.message)
+    if (this.isChecked[$index] && ordered.message)
+      this.snackbar.show(ordered.message)
   }
 
   manualCheck($index) {
