@@ -27,7 +27,7 @@ export class shipments {
   activate(params) {
     this.db.user.session.get().then(session => {
       this.account = session.account //this is not a full account, just an _id
-      this.searchRange(params._id)
+      this.searchRange(params.id)
     })
   }
 
@@ -55,6 +55,7 @@ export class shipments {
       query.verifiedAt = {$type:'null'}
 
     return this.db.transaction.get(query).then(transactions => {
+      console.log(transactions, transId)
       this.select(transId ? transactions.filter(t => t._id === transId)[0] : transactions[0])
       return this.transactions = transactions
     })
