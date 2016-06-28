@@ -11,7 +11,7 @@ export class account {
     this.router = router
   }
 
-  activate(params) {
+  activate() {
 
     this.db.user.session.get().then(session => {
 
@@ -104,7 +104,7 @@ export class filterValueConverter {
   toView(users = [], filter = ''){
     filter = filter.toLowerCase()
     return users.filter(user => {
-      return ~ `${user.first} ${user.last}`.toLowerCase().indexOf(filter)
+      return ~ `${user.name.first} ${user.name.last}`.toLowerCase().indexOf(filter)
     })
   }
 }
