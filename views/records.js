@@ -26,7 +26,7 @@ export class shipments {
 
   activate(params) {
     this.db.user.session.get().then(session => {
-      this.account = session.account
+      this.account = session.account //this is not a full account, just an _id
       this.searchRange(params._id)
     })
   }
@@ -45,6 +45,7 @@ export class shipments {
     to.setMonth(to.getMonth()+1) //to get last day of month, increase by one month then reduce it by a day to get end of previous month.  Got this from stackoverflow
     to.setDate(0)
 
+    //Do not show inventory $eq, $lt, $gt,
     let query = { 'shipment._id':{$ne:this.account._id}, createdAt:{$gte:from, $lte:to}}
 
     if (this.status == 'verified')

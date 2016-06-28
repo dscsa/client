@@ -109,6 +109,7 @@ export class drugs {
   //TODO: Warn on delete since we won't save save any of the preferences?
   order() {
     if (this.account.ordered[this.group.name]) {
+      //Delete this group from the quickSearch drawer
       this.quickSearch.ordered = this.quickSearch.ordered.filter(group => {
         return group.name != this.group.name
       })

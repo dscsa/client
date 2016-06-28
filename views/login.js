@@ -8,8 +8,8 @@ export class login {
   constructor(db, router){
     this.db       = db
     this.router   = router
-    //this.email    = 'adam@sirum.org'
-    //this.password = 'password'
+    this.email    = '@sirum.org'
+    this.password = 'password'
     this.disabled = true
   }
 
@@ -34,7 +34,6 @@ export class login {
     })
     .catch(err => {
       this.disabled = false
-      console.log(err, this.snackbar.show)
       this.snackbar.show('Login failed: '+err.reason)
     })
   }

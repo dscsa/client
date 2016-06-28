@@ -34,7 +34,7 @@
       class="mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(shipment)">
       <div class="mdl-typography--title" innerHtml.bind="shipment.account[role.partner].name | bold:filter"></div>
-      <div innerHtml.bind="shipment.status+', #0'+shipment.tracking | bold:filter"></div>
+      <div innerHtml.bind="shipment.status+', #'+shipment.tracking | bold:filter"></div>
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
