@@ -9,6 +9,7 @@ import {inject, bindable, bindingMode} from 'aurelia-framework';
 @bindable('input')
 @bindable('max')
 @bindable('required')
+@bindable('minlength')
 export class MdInputCustomElement {
 
   valueChanged() {
