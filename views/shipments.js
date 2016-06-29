@@ -323,7 +323,7 @@ export class shipments {
 
     //Assume db query works.
     this.transactions.unshift(transaction) //Add the drug to the view
-    this.isChecked.unshift(transaction.verifiedAt)
+    this.isChecked.unshift(!!transaction.verifiedAt)
     this.diffs = this.diffs.map(val => val+1)
 
     this.term = ''    //Reset search's auto-complete
@@ -334,6 +334,7 @@ export class shipments {
       this.snackbar.show(`Transaction could not be added: ${err.name}`)
       this.transactions.shift()
       this.isChecked.shift()
+      this.diffs = this.diffs.map(val => val-1)
     })
   }
 
