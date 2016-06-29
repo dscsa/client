@@ -33,7 +33,6 @@ export class drugs {
 
       all = Promise.all(all).then(ordered => {
         this.quickSearch.ordered = ordered
-        this.addEmptyDrug()
       })
 
       if ( ! params.id) {
@@ -48,16 +47,12 @@ export class drugs {
     })
   }
 
-  addEmptyDrug() {
-    this.quickSearch.ordered.unshift({
-      name:'Add a New Drug',
-      drugs:[{generics:[{}]}]
-    })
-  }
-
   selectGroup(group, autoselectDrug) {
 
-    group = group || this.search().then(_ => this.groups[0])
+    group = group || this.search().then(_ => {
+      console.log('selectgroup', this.groups)
+      return this.groups[0]
+    })
 
     Promise.resolve(group).then(group => {
       this.group = group
@@ -72,7 +67,7 @@ export class drugs {
       drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
 
     this.drug = drug
-    this.term = drug.generic
+    this.term = drug.generic || ''
 
     let url = drug._id ? 'drugs/'+drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
@@ -85,7 +80,7 @@ export class drugs {
     let term = this.term.trim()
 
     if (term.length < 3)
-      return this.groups = []
+      return Promise.resolve(this.groups = [])
 
     if (/^[\d-]+$/.test(term)) {
       this.regex = RegExp('('+term+')', 'gi')
@@ -229,11 +224,8 @@ export class drugs {
     delete this.drug.generic
     this.db.drug.post(this.drug)
     .then(res => {
-      //Even though new drug is listed as "ordered" it is not by default, so don't show it in the list
-      this.quickSearch.ordered.splice(0, 1)
-      this.addEmptyDrug()
       //Wait for the server POST to replicate back to client
-      setTimeout(_ => this.selectDrug(this.drug, true), 100)
+      setTimeout(_ => this.selectDrug(this.drug, true), 200)
     })
     .catch(err => this.snackbar.show(`Drug not added: ${err.name}`))
   }

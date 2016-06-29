@@ -17,6 +17,12 @@
       Quick Search
     </md-select>
     <a
+      style="font-size:12px; line-height:18px; padding:16px 8px"
+      class="mdl-navigation__link ${ ! group.name ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectDrug({generics:[{}]}, true)">
+      Add New Drug
+    </a>
+    <a
       repeat.for="ordered of quickSearch.ordered"
       style="font-size:12px; line-height:18px; padding:16px 8px"
       class="mdl-navigation__link ${ ordered.name == group.name ? 'mdl-navigation__link--current' : ''}"
