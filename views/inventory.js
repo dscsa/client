@@ -18,17 +18,12 @@ export class inventory {
     .then(transactions => {
       this.groups = {}
 
-      for (let t of transactions) {
-        if (this.groups[t.drug._id]) {
-          this.groups[t.drug._id].total += +t.qty.from || 0
-          this.groups[t.drug._id].sources.push(t)
-        }
-        else {
-          this.groups[t.drug._id] = {total:+t.qty.from || 0, sources:[t]}
-          this.db.drug.get({_id:t.drug._id})
-          .then(drugs => this.groups[t.drug._id].image = drugs[0].image)
-        }
+      for (let transaction of transactions) {
+        this.groups[transaction.drug._id] = this.groups[transaction.drug._id] || {total:0, transactions:[]}
+        this.groups[transaction.drug._id].total += +transaction.qty.from || 0
+        this.groups[transaction.drug._id].transactions.push(transaction)
       }
+
       this.select(this.groups[params.id] || Object.values(this.groups)[0])
     })
     .catch(console.log)
@@ -38,17 +33,19 @@ export class inventory {
     //Update URL with lifecycle methods so we can come back to this shipment
     if (group) {
       this.group = group
-      this.router.navigate('inventory/'+group.sources[0].drug._id , { trigger: false })
+      let drugId = group.transactions[0].drug._id
+      this.router.navigate('inventory/'+drugId, { trigger: false })
+      this.db.drug.get({_id:drugId}).then(drugs => this.image = drugs[0].image)
     }
-    else {
-      this.group = {sources:[]}
-    }
+    else
+      this.group = {transactions:[]}
+
     this.mode = false
   }
 
   toggleRepack() {
     this.mode = ! this.mode
-    this.repack = this.group.sources.map(s => s.qty.from)
+    this.repack = this.group.transactions.map(s => s.qty.from)
     this.sumRepack()
     return true
   }
@@ -57,7 +54,7 @@ export class inventory {
   //For some reason input[type=number] doesn't save as a number
   //not sure if this is an html of aurelia bug
   sumGroup() {
-    this.group.total = this.group.sources.reduce((a,b) => a + (+b.qty.from || 0), 0)
+    this.group.total = this.group.transactions.reduce((a,b) => a + (+b.qty.from || 0), 0)
   }
 
   sumRepack() {
@@ -86,11 +83,11 @@ export class inventory {
       history:[]
     }
 
-    trans = Object.assign({}, this.group.sources[0], trans)
+    trans = Object.assign({}, this.group.transactions[0], trans)
     //Go backwards since we are deleting array vals as we go
     for (let i=this.repack.length-1; i>=0; i--) {
       let qty = +this.repack[i]
-      let src = this.group.sources[i]
+      let src = this.group.transactions[i]
 
       //Falsey quantity such as null, "", or 0 should mean skip this source
       //Do not allow items to be repackaged a 2nd time with a partial quantity
@@ -102,7 +99,7 @@ export class inventory {
 
       if (src.qty.from == qty) {
         trans.history.push(...src.history)
-        this.group.sources.splice(i, 1) //assume delete is successful
+        this.group.transactions.splice(i, 1) //assume delete is successful
         all.push(this.db.transaction.delete(src))
       } else { //cannot take partial quantity from repackaged drug, so history must have length <= 1
         if (src.history.length == 1) {
@@ -120,7 +117,7 @@ export class inventory {
     trans.exp.from = new Date(trans.exp.from).toJSON()
 
     //assume add is successful.  TODO fallback code on failure
-    this.group.sources.unshift(trans)
+    this.group.transactions.unshift(trans)
     this.mode = false
 
     return this.db.transaction.post(trans).then(_ => Promise.all(all))
@@ -154,10 +151,10 @@ export class numberValueConverter {
 
 //ADDED step of converting object to array
 export class filterValueConverter {
-  toView(transactions = {}, filter = ''){
+  toView(groups = {}, filter = ''){
     filter = filter.toLowerCase()
-    return Object.values(transactions).filter(transaction => {
-      return ~ `${transaction.sources[0].name} ${transaction.sources[0].strength} ${transaction.sources[0].form} ${transaction.sources[0].drug}`.toLowerCase().indexOf(filter)
+    return Object.values(groups).filter(group => {
+      return ~ `${group.transactions[0].name} ${group.transactions[0].strength} ${group.transactions[0].form} ${group.transactions[0].drug}`.toLowerCase().indexOf(filter)
     })
   }
 }

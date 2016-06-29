@@ -24,10 +24,10 @@
       <div
         class="mdl-card__supporting-text"
         style="font-size:13px;">
-        <div repeat.for="source of group.sources"   input.delegate="saveTransaction(source) & debounce:1000">
+        <div repeat.for="transaction of group.transactions"   input.delegate="saveTransaction(transaction) & debounce:1000">
           <div style="display:inline-block; width:calc(100% - 90px)">
-            <a if.bind="source.history[0].transaction._id" href.bind="'/#/records/'+source.history[0].transaction._id">${source.history[0].transaction._id}</a>
-            ${ source.history[0].transaction._id ? '' : 'inventory' }
+            <a if.bind="transaction.history[0].transaction._id" href.bind="'/#/records/'+transaction.history[0].transaction._id">${transaction.history[0].transaction._id}</a>
+            ${ transaction.history[0].transaction._id ? '' : 'inventory' }
             <a if.bind="!mode" style="float:right">
               <i class="material-icons" style="font-size:18px; vertical-align:text-top; padding-right:5px">print</i>
             </a>
@@ -37,14 +37,14 @@
               disabled.bind="mode"
               pattern="(0?[1-9]|1[012])/\d{2}"
               style="width:40px"
-              value.bind="source.exp.from | date"
+              value.bind="transaction.exp.from | date"
               placeholder="Exp">
             </md-input>
             <md-input
               if.bind=" ! mode"
               type="number"
               style="width:40px"
-              value.bind="source.qty.from | number"
+              value.bind="transaction.qty.from | number"
               input.trigger="sumGroup()"
               placeholder="Qty">
             </md-input>
@@ -55,11 +55,11 @@
               value.bind="repack[$index]"
               input.delegate="sumRepack()"
               placeholder="Qty"
-              max.bind="source.qty.from">
+              max.bind="transaction.qty.from">
             </md-input>
           </span>
         </div>
-        <img style="width:100%" if.bind="group.image" src.bind="group.image">
+        <img style="width:100%" if.bind="image" src.bind="image">
       </div>
       <div class="mdl-card__actions mdl-grid">
         <md-switch
@@ -70,7 +70,7 @@
         <md-button
           color raised
           if.bind="mode"
-          disabled.bind="group.sources.length < 2"
+          disabled.bind="group.transactions.length < 2"
           click.delegate="repackage()"
           style="width:140px">
           Repackage ${ repack.total }
@@ -89,12 +89,12 @@
         </thead>
         <tr repeat.for="group of groups | filter:filter" click.delegate="select(group)" class="${ $parent.group != group || 'is-selected'}">
           <td style="text-align:left; white-space: normal;">
-            ${ group.sources[0] | drugName }
+            ${ group.transactions[0] | drugName }
           </td>
           <td class="mdl-data-table__cell--non-numeric">
-            ${ group.sources[0].drug._id }
+            ${ group.transactions[0].drug._id }
           </td>
-          <td>${ group.sources.length }</td>
+          <td>${ group.transactions.length }</td>
           <td>${ group.total}</td>
         </tr>
       </table>
