@@ -19,6 +19,10 @@ export class MdInputCustomElement {
     })
   }
 
+  disabledChanged() {
+    setTimeout(_ => this.div && this.div.MaterialTextfield && this.div.MaterialTextfield.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
+  }
+
   attached() {
     componentHandler.upgradeElement(this.div)
     if (this.autoselect)
