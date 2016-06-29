@@ -50,12 +50,14 @@ export class drugs {
   selectGroup(group, autoselectDrug) {
 
     group = group || this.search().then(_ => {
-      console.log('selectgroup', this.groups)
       return this.groups[0]
     })
 
     Promise.resolve(group).then(group => {
       this.group = group
+      //TODO if this was called by selectDrug then we should establish establish a reference
+      //between the approriate this.group.drugs and this.drug so that changes to the drug
+      //appear in realtime on the right hand side.  This works if selectGroup
       if (autoselectDrug)
         this.selectDrug(group.drugs[0])
     })
