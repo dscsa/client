@@ -2,21 +2,23 @@
 //Autofocus on new drug
 //Disable From/To based on Filter's switch
 
-import {inject}     from 'aurelia-framework';
-import {Router}     from 'aurelia-router';
+import {inject}     from 'aurelia-framework'
+import {Router}     from 'aurelia-router'
 import {Db}         from 'libs/pouch'
-import {HttpClient} from 'aurelia-http-client';
+import {HttpClient} from 'aurelia-http-client'
+import {Csv}        from 'libs/csv'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
 export class shipments {
 
   constructor(db, router, http){
-    this.db      = db
-    this.drugs   = []
-    this.router  = router
-    this.http    = http
-    this.stati   = ['pickup', 'shipped', 'received']
+    this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'verifiedAt'])
+    this.db     = db
+    this.drugs  = []
+    this.router = router
+    this.http   = http
+    this.stati  = ['pickup', 'shipped', 'received']
     this.shipments = {}
   }
 
@@ -339,72 +341,36 @@ export class shipments {
   }
 
   exportCSV() {
-    let csv = Papa.unparse(this.transactions.map(t => {
+    let name = this.shipment._id ? 'Shipment '+this.shipment._id+'.csv' : 'Inventory.csv'
+    this.csv.unparse(name, this.transactions.map(transaction => {
       return {
-        '_id':t._id,
-        'createdAt':t.createdAt,
-        'verifiedAt':t.verifiedAt,
-        'drug._id':t.drug._id,
-        'drug.generic':genericName(t.drug),
-        'drug.form':t.drug.form,
-        //TODO make server default to adding an empty object to obviate this check
-        'drug.retail.price':t.drug.retail && t.drug.retail.price,
-        'drug.wholesale.price':t.drug.retail && t.drug.wholesale.price,
-        'qty.from':t.qty.from,
-        'qty.to':t.qty.to,
-        'exp.from':t.exp.from,
-        'exp.to':t.exp.to,
-        'shipment._id':this.shipment._id,
-        'shipment.tracking':this.shipment.tracking,
-        'shipment.status':this.shipment.status,
-        'shipment.account.to._id':this.shipment.account.to._id,
-        'shipment.account.to.name':this.shipment.account.to.name,
-        'shipment.account.from._id':this.shipment.account.from._id,
-        'shipment.account.from.name':this.shipment.account.from.name,
+        '':transaction,
+        'drug.generic' :genericName(transaction.drug),
+        'drug.generics':transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
+        shipment:this.shipment
       }
     }))
-
-    csv = new Blob([csv], {type: 'text/csv;charset=utf-8;'})
-    let link = document.createElement('a')
-    link.href = window.URL.createObjectURL(csv)
-    link.setAttribute('download', this.shipment._id ? 'Shipment '+this.shipment._id+'.csv' : 'Inventory.csv')
-    link.click()
   }
 
   importCSV() {
-    let $this = this
-    let all   = []
-    Papa.parse($this.$file.files[0], {
-      header:true,
-      step: function(results, parser) {
-        console.log(results)
-        let row = results.data[0]
-
-        if ( ! row['drug._id']) {
-          console.error('drug._id field is required', results); return
-        }
-
-        all.push($this.db.drug.get({_id:row['drug._id']})
-        .then(drugs => {
-          $this.addTransaction(drugs[0], {
-            verifiedAt:row.verifiedAt,
-            qty:{
-              to:row['qty.to'],
-              from:row['qty.from'],
-            },
-            exp:{
-              to:row['exp.to'],
-              from:row['exp.from'],
-            }
-          })
+    this.csv.parse(this.$file.files[0]).then(parsed => {
+      return Promise.all(parsed.map(transaction => {
+        transaction.exp.to     = convertDate(transaction.exp.to)
+        transaction.exp.from   = convertDate(transaction.exp.from)
+        transaction.verifiedAt = convertDate(transaction.verifiedAt)
+        return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
+          //This will add drugs upto the point where a drug cannot be found rather than rejecting all
+          if (drugs[0]) return {drug:drugs[0], transaction}
+          throw 'Cannot find drug with _id '+transaction.drug._id
         })
-        .then(_ => console.log('uploaded', _)))
-      },
-
-      complete: function(results, file) {
-        Promise.all(all).then(_ => console.log('All Transactions Imported'))
-      }
+      }))
     })
+    .then(rows => {
+      console.log('rows', rows)
+      return Promise.all(rows.map(row => this.addTransaction(row.drug, row.transaction)))
+    })
+    .then(_ => this.snackbar.show('All Transactions Imported'))
+    .catch(err => this.snackbar.show('Transactions not imported: '+err))
   }
 
   // setAttachment(attachment) {
@@ -491,13 +457,18 @@ export class dateValueConverter {
 
   fromView(date){
     this.view  = date
-
-    let [month, year] = date.split('/')
-    date = new Date('20'+year,month, 1)
-    date.setDate(0)
-
-    return this.model = date.toJSON()
+    return this.model = convertDate(date)
   }
+}
+
+function convertDate(date) {
+  if ( ! date) return date
+  console.log('date', date)
+  date = date.split('/')
+  //whether mm/yy or mm/dd/yy, month is always first and year is always last
+  date = new Date('20'+date.pop(),date.shift(), 1)
+  date.setDate(0)
+  return date.toJSON()
 }
 
 function genericName(drug) {

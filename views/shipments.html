@@ -181,7 +181,13 @@
           Export CSV
         </li>
         <li
+          show.bind="role.account != 'to' || shipment._rev"
           click.delegate="$file.click()">
+          Import CSV
+        </li>
+        <li
+          show.bind="role.account == 'to' && ! shipment._rev"
+          disabled>
           Import CSV
         </li>
       </md-menu>

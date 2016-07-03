@@ -68,13 +68,13 @@
       <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="import-export">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
-          show.bind="transactions.length"
+          show.bind="false"
           click.delegate="exportCSV()"
           class="mdl-menu__item">
           Export CSV
         </li>
         <li
-          show.bind="!transactions.length"
+          show.bind="true"
           disabled
           class="mdl-menu__item">
           Export CSV

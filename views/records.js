@@ -101,6 +101,10 @@ export class shipments {
       //console.log('history', JSON.stringify(this.history))
     })
   }
+
+  exportCSV() {
+    
+  }
 }
 
 export class filterValueConverter {

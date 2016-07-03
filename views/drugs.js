@@ -1,16 +1,17 @@
 import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
 import {Db}     from 'libs/pouch'
+import {Csv}    from 'libs/csv'
 
 //@pageState()
 @inject(Db, Router)
 export class drugs {
   //constructor(HttpClient = 'aurelia-http-client', Db = './pouch'){
   constructor(db, router){
-
-    this.db      = db
-    this.router  = router
-    this.drugs   = []
+    this.csv    = new Csv(['_id', 'generics', 'form'], ['brand', 'labeler', 'image'])
+    this.db     = db
+    this.router = router
+    this.drugs  = []
   }
 
   activate(params) {
@@ -124,75 +125,32 @@ export class drugs {
   }
 
   importCSV() {
-    let $this = this
-    let data  = []
-    let start = Date.now()
     this.snackbar.show(`Parsing CSV File`)
-
-    function capitalize(txt) {
-      return txt ? txt.replace(/\w+/g, txt => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()) : ''
-    }
-
-    Papa.parse(this.$file.files[0], {
-      header:true,
-      //worker:true,
-      // step: function(results, parser) {
-      //   let row = results.data[0]
-      //
-      //   if ( ! row.rxstring || ! row.spl_strength || ! row.product_code)
-      //     return
-      //
-      //   let brand = row.rxstring.split(' [')
-      // 	data.push({
-      //     _id:row.product_code,
-      //     generics:capitalize(row.spl_strength.slice(0, -1)).split(';').map(v => {
-      //       v = v.split(' ')
-      //       return {name:v.slice(0, -2).join(' '), strength:v.slice(-2).join(' ')}
-      //     }),
-      //     brand: brand.length > 1 ? capitalize(row.medicine_name) : '',
-      //     form:brand[0].split(' ').slice(-2).join(' '),
-      //     ndc9:row.ndc9,
-      //     upc:row.product_code.replace('-', ''),
-      //     image:row.splimage ? "http://pillbox.nlm.nih.gov/assets/large/"+row.splimage+".jpg" : null,
-      //     labeler:capitalize(row.author.split(/,|\.| LLC| Inc| \(| USA| -|limit/)[0]),
-      //     pkgs:[]
-      //   })
-      // },
-      step(results, parser) {
-        let row = results.data[0]
-
-        if ( ! row._id) {
-          console.error('_id field is required', results); return
-        }
-
-        if ( ! row['generics']) {
-          console.error('generics field is required', results); return
-        }
-
-        let generics = row['generics'].split(";").filter(v => v).map(generic => {
-          let [name, strength] = generic.split(/(?= [\d.]+)/)
-          console.log(generic, generic.split(/(?= [\d.]+)/), arguments)
-          return {
-            name:name.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()),
-            strength:strength.trim().toLowerCase()
-          }
-        })
-
-        data.push({
+    this.csv.parse(this.$file.files[0]).then(parsed => {
+      return Promise.all(parsed.map(drug => {
+        return {
           _id:row._id,
-          generics:generics,
           brand:row.brand.trim(),
           form:row.form.trim(),
           image:row.image.trim(),
-          labeler:row.labeler.trim()
-        })
-      },
-
-      complete(results, file) {
-        $this.snackbar.show(`Parsed ${data.length} rows. Uploading to server`)
-      	$this.db.drug.post(data).then(_ => $this.snackbar.show(`CSV import completed in ${Date.now() - start}ms`))
-      }
+          labeler:row.labeler.trim(),
+          generics:drug.generics.split(";").filter(v => v).map(generic => {
+            let [name, strength] = generic.split(/(?= [\d.]+)/)
+            console.log(generic, name, strength, arguments)
+            return {
+              name:name.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()),
+              strength:strength.trim().toLowerCase()
+            }
+          })
+        }
+      }))
     })
+    .then(rows => {
+      this.snackbar.show(`Parsed ${data.length} rows. Uploading to server`)
+      return this.db.drug.post(data)
+    })
+    .then(_ => this.snackbar.show(`Drugs import completed in ${Date.now() - start}ms`))
+    .catch(err => this.snackbar.show('Drugs not imported: '+err))
   }
 
   addGeneric() {
