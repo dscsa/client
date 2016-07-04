@@ -464,7 +464,6 @@ export class dateValueConverter {
 
 function convertDate(date) {
   if ( ! date) return date
-  console.log('date', date)
   date = date.split('/')
   //whether mm/yy or mm/dd/yy, month is always first and year is always last
   date = new Date('20'+date.pop(),date.shift(), 1)
