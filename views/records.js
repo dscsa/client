@@ -55,7 +55,6 @@ export class shipments {
       query.verifiedAt = {$type:'null'}
 
     return this.db.transaction.get(query).then(transactions => {
-      console.log(transactions, transId)
       this.select(transId ? transactions.filter(t => t._id === transId)[0] : transactions[0])
       return this.transactions = transactions
     })
@@ -103,7 +102,7 @@ export class shipments {
   }
 
   exportCSV() {
-    
+
   }
 }
 
