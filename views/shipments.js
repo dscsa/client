@@ -354,8 +354,10 @@ export class shipments {
   }
 
   importCSV() {
+    console.log('this.$file.value', this.$file.value)
     this.csv.parse(this.$file.files[0]).then(parsed => {
       return Promise.all(parsed.map(transaction => {
+        this.$file.value = ''
         transaction.exp.to     = convertDate(transaction.exp.to)
         transaction.exp.from   = convertDate(transaction.exp.from)
         transaction.verifiedAt = convertDate(transaction.verifiedAt)

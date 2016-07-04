@@ -142,6 +142,7 @@ export class drugs {
   importCSV() {
     this.snackbar.show(`Parsing CSV File`)
     this.csv.parse(this.$file.files[0]).then(parsed => {
+      this.$file.value = ''
       return Promise.all(parsed.map(drug => {
         return {
           _id:row._id,
