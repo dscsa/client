@@ -1,8 +1,9 @@
 import {inject} from 'aurelia-framework';
 
 //Create the drawer container so that MDL can find it
-let drawer = document.createElement('nav')
+//MDL code runs before the constructor so need it outside class
 let header = document.querySelector('.mdl-layout__header')
+let drawer = document.createElement('nav')
 drawer.classList.add("mdl-layout__drawer")
 header.parentNode.insertBefore(drawer, header.nextSibling)
 
@@ -10,15 +11,10 @@ header.parentNode.insertBefore(drawer, header.nextSibling)
 export class MdDrawerCustomElement {
 
   constructor(element) {
-
     element.classList.add("mdl-navigation")
     element.style['padding-top'] = '6px'
 
     this.autofocus = element.hasAttribute('autofocus')
-
-    //Empty the drawer
-    if (drawer.firstChild)
-      drawer.removeChild(drawer.firstChild);
 
     //Move md-nav into the drawer
     drawer.appendChild(element)
@@ -27,7 +23,21 @@ export class MdDrawerCustomElement {
   attached() {
     componentHandler.upgradeAllRegistered()
 
+    this.button = document.querySelector('.mdl-layout__drawer-button')
+    this.button.style.display = 'block'
+
     if (this.autofocus)
       header.firstChild.click()
+  }
+
+  detached() {
+    //New drawer is attached before old drawer is detached so children.length == 2
+    //except if going to view without a drawer (e.g login) in which length == 1
+    //console.log('detached', drawer.children.length)
+    if (drawer.children.length == 1)
+      this.button.style.display = 'none'
+
+    //Empty the drawer
+    drawer.removeChild(drawer.firstChild)
   }
 }
