@@ -182,7 +182,7 @@
       </md-autocomplete>
       <md-menu style="position:absolute; z-index:2; top:10px; right:5px;" id="b2">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
-        <li disabled class="mdl-menu__item">
+        <li click.delegate="exportCSV()" class="mdl-menu__item">
           Export CSV
         </li>
         <li click.delegate="$file.click()" class="mdl-menu__item">

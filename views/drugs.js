@@ -124,6 +124,21 @@ export class drugs {
     //return true
   }
 
+  exportCSV() {
+    this.db.drug.get().then(drugs => {
+      this.csv.unparse('Drugs.csv', drugs.map(drug => {
+        let generic = genericName(drug)
+        return {
+          '':drug,
+          _id:" "+drug._id,
+          generic:generic,
+          generics:drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
+          ordered:this.account.ordered[generic] || {minQty:null, minDays:null, message:null}
+        }
+      }))
+    })
+  }
+
   importCSV() {
     this.snackbar.show(`Parsing CSV File`)
     this.csv.parse(this.$file.files[0]).then(parsed => {
