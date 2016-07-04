@@ -1,7 +1,3 @@
-//TODO
-//Autofocus on new drug
-//Disable From/To based on Filter's switch
-
 import {inject}     from 'aurelia-framework'
 import {Router}     from 'aurelia-router'
 import {Db}         from 'libs/pouch'
