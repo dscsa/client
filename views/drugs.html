@@ -195,7 +195,7 @@
         show.bind="group"
         style="position:absolute; right:25px; top:47px; z-index:1"
         checked.one-way="account.ordered[group.name]"
-        disabled.bind=" ! drug._rev"
+        disabled.bind="! account.ordered[group.name] && ! drug._rev"
         click.delegate="order()">
       </md-switch>
       <div style="width:100%; height:100%; display:flex">
