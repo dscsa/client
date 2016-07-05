@@ -22,9 +22,15 @@ export class shipments {
     this.fromMonth = this.toMonth = this.months[new Date().getMonth()]
     this.stati   = ['complete', 'verified', 'destroyed']
     this.status  = this.stati[0]
+    this.scroll  = this.scroll.bind(this)
+  }
+
+  deactivate() {
+    removeEventListener('keyup', this.scroll)
   }
 
   activate(params) {
+    addEventListener('keyup', this.scroll)
     this.db.user.session.get().then(session => {
       this.account = session.account //this is not a full account, just an _id
       this.searchRange(params.id)
@@ -58,6 +64,17 @@ export class shipments {
       this.select(transId ? transactions.filter(t => t._id === transId)[0] : transactions[0])
       return this.transactions = transactions
     })
+  }
+
+  scroll($event) {
+    let index = this.transactions.indexOf(this.transaction)
+    let last  = this.transactions.length - 1
+
+    if ($event.which == 38) //Keyup
+      this.select(this.transactions[index > 0 ? index - 1 : last])
+
+    if ($event.which == 40) //keydown
+      this.select(this.transactions[index < last ? index+1 : 0])
   }
 //this.http.get('//localhost:3000/transactions/'+transaction._id+'/history')
   //Activated from constructor and each time a transaction is selected
