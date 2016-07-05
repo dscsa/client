@@ -10,4 +10,9 @@ export class MdAutocompleteCustomElement {
     //http://stackoverflow.com/questions/18848738/click-event-not-triggered-after-focusout-event
     setTimeout(() => this.showResults = ! this.showResults, 100)
   }
+
+  keydown($event) {
+    $event.which == '13' && this.input.blur()
+    return true
+  }
 }

@@ -11,7 +11,7 @@ export class drugs {
     this.csv    = new Csv(['_id', 'generics', 'form'], ['brand', 'labeler', 'image'])
     this.db     = db
     this.router = router
-    this.drugs  = []
+    addEventListener('keyup', this.scrollDrugs.bind(this))
   }
 
   activate(params) {
@@ -48,8 +48,30 @@ export class drugs {
     })
   }
 
-  selectGroup(group, autoselectDrug) {
+  scrollGroups($event) {
+    //group won't be a reference so we must search manually
+    let index = this.groups.map(group => group.name).indexOf(this.group.name)
+    this.scrollSelect($event, index, this.groups, group => this.selectGroup(group, true))
+  }
 
+  scrollDrugs($event) {
+    let index = this.group.drugs.indexOf(this.drug)
+    this.scrollSelect($event, index, this.group.drugs, drug => this.selectDrug(drug))
+  }
+
+  scrollSelect($event, index, list, cb, autoselect) {
+    $event.stopPropagation()
+
+    let last  = list.length - 1
+
+    if ($event.which == 38) //Keyup
+      cb(list[index > 0 ? index - 1 : last])
+
+    if ($event.which == 40 )//keydown
+      cb(list[index < last ? index+1 : 0])
+  }
+
+  selectGroup(group, autoselectDrug) {
     group = group || this.search().then(_ => {
       return this.groups[0]
     })
@@ -65,7 +87,6 @@ export class drugs {
   }
 
   selectDrug(drug, autoselectGroup) {
-
     if ( ! drug.generic && drug.form) //new drug won't have drug.form yet
       drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
 
@@ -80,6 +101,7 @@ export class drugs {
   }
 
   search() {
+
     let term = this.term.trim()
 
     if (term.length < 3)
