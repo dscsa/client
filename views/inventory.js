@@ -180,8 +180,9 @@ export class filterValueConverter {
 }
 
 export class drugNameValueConverter {
-  toView(transaction){
-    return genericName(transaction)
+  toView(transaction, bold){
+    let text = genericName(transaction)
+    return bold ? text.replace(RegExp('('+bold+')', 'i'), '<strong>$1</strong>') : text
   }
 }
 

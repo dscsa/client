@@ -79,9 +79,7 @@
           </tr>
         </thead>
         <tr repeat.for="group of groups | filter:filter" click.delegate="select(group)" class="${ $parent.group != group || 'is-selected'}">
-          <td style="text-align:left; white-space: normal;">
-            ${ group.transactions[0] | drugName }
-          </td>
+          <td style="text-align:left; white-space: normal;" innerHTML.bind="group.transactions[0] | drugName:filter"></td>
           <td class="mdl-data-table__cell--non-numeric">
             ${ group.transactions[0].drug._id }
           </td>
