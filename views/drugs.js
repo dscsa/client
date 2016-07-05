@@ -147,7 +147,7 @@ export class drugs {
     } else {
       console.log('order')
       //Add New Order but Keep Add New Item on Top
-      this.quickSearch.ordered.splice(1, 0, this.group)
+      this.quickSearch.ordered.unshift(this.group)
       this.account.ordered[this.group.name] = {}
     }
 
