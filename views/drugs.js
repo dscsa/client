@@ -26,8 +26,8 @@ export class drugs {
       return this.db.account.get({_id:session.account._id})
     })
     .then(accounts => {
-      this.account     = accounts[0]
-      this.quickSearch = {}
+      this.account = accounts[0]
+      this.drawer  = {}
 
       let all = Object.keys(this.account.ordered).map(generic => this.db.drug.get({generic})
       .then(drugs => {
@@ -38,12 +38,12 @@ export class drugs {
       }))
 
       all = Promise.all(all).then(ordered => {
-        this.quickSearch.ordered = ordered
+        this.drawer.ordered = ordered
       })
 
       if ( ! params.id) {
         return all.then(_ => {
-          this.selectGroup(this.quickSearch.ordered[0], true)
+          this.selectGroup(this.drawer.ordered[0], true)
         })
       }
 
@@ -138,8 +138,8 @@ export class drugs {
   //TODO: Warn on delete since we won't save save any of the preferences?
   order() {
     if (this.account.ordered[this.group.name]) {
-      //Delete this group from the quickSearch drawer
-      this.quickSearch.ordered = this.quickSearch.ordered.filter(group => {
+      //Delete this group from the drawer drawer
+      this.drawer.ordered = this.drawer.ordered.filter(group => {
         return group.name != this.group.name
       })
 
@@ -147,7 +147,7 @@ export class drugs {
     } else {
       console.log('order')
       //Add New Order but Keep Add New Item on Top
-      this.quickSearch.ordered.unshift(this.group)
+      this.drawer.ordered.unshift(this.group)
       this.account.ordered[this.group.name] = {}
     }
 
