@@ -102,7 +102,7 @@ export class shipments {
             return v
 
             let status = this.status || 'pickup' //Might not be initialized yet
-            let href   = '/#/shipments/'+v.shipment._id.split('.')[2]
+            let href   = '/#/shipments/'+v.shipment._id
 
             return pad('From: '+v.shipment.account.from.name)+pad('To: '+v.shipment.account.to.name)+"<a href='"+href+"'>"+v.type+" <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a><br>"+
                    pad(v.shipment.account.from.street)+pad(v.shipment.account.to.street)+'Date '+v.createdAt.slice(2, 10)+'<br>'+
