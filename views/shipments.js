@@ -276,14 +276,24 @@ export class shipments {
     drugs.then(drugs => {
       console.log('drug search', drugs.length, Date.now() - start)
       this.drugs = drugs
+      this.index = 0
     })
   }
 
   //Enter in the autocomplete adds the first transaction
   //TODO support up/down arrow keys to pick different transaction?
-  autocompleteShortcut($event) {
+  scrollDrugs($event) {
+    //group won't be a reference so we must search manually
+    let last = this.drugs.length - 1
+
+    if ($event.which == 38) //Keyup
+      this.index = this.index > 0 ? this.index - 1 : last
+
+    if ($event.which == 40 )//keydown
+      this.index = this.index < last ? this.index+1 : 0
+
     if ($event.which == 13)
-      this.addTransaction(this.drugs[0])
+      this.addTransaction(this.drugs[this.index])
   }
 
   //Since this is triggered by a focusin and then does a focus, it activates itself a 2nd time

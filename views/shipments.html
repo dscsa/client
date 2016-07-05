@@ -156,13 +156,14 @@
         placeholder="Add Drugs by Generic Name or NDC..."
         value.bind="term"
         input.delegate="search()"
-        keyup.delegate="autocompleteShortcut($event)"
+        keyup.delegate="scrollDrugs($event)"
         disabled.bind="role.account == 'to' && ! shipment._rev"
         style="margin:0px 16px">
         <table md-table>
           <tr
             repeat.for="drug of drugs"
-            click.delegate="addTransaction(drug)">
+            click.delegate="addTransaction(drug)"
+            class="${ $index == index && 'is-selected'}">
             <td class="mdl-data-table__cell--non-numeric" innerHTML.bind="drug | drugName:regex" style="white-space:normal; max-width:70%"></td>
             <td class="mdl-data-table__cell--non-numeric" style="max-width:30%">${ drug._id }</td>
           </tr>

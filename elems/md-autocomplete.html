@@ -6,13 +6,11 @@
     class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
     style="z-index:2; width:100%; padding-top:10px">
     <input class="md-input mdl-textfield__input"
-      ref="input"
       value.bind="value"
       disabled.bind="disabled"
       placeholder.bind="placeholder"
       focus.trigger="toggleResults()"
-      focusout.delegate="toggleResults()"
-      keydown.delegate="keydown($event)"
+      focusout.delegate="toggleResults($event)"
       style="font-size:20px;">
     <div show.bind="showResults"
       tabindex="-1"

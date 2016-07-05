@@ -11,10 +11,15 @@ export class drugs {
     this.csv    = new Csv(['_id', 'generics', 'form'], ['brand', 'labeler', 'image'])
     this.db     = db
     this.router = router
-    addEventListener('keyup', this.scrollDrugs.bind(this))
+    this.scrollDrugs = this.scrollDrugs.bind(this)
+  }
+
+  deactivate() {
+    removeEventListener('keyup', this.scrollDrugs)
   }
 
   activate(params) {
+    addEventListener('keyup', this.scrollDrugs)
     return this.db.user.session.get()
     .then(session => {
       return this.db.account.get({_id:session.account._id})
@@ -52,6 +57,7 @@ export class drugs {
     //group won't be a reference so we must search manually
     let index = this.groups.map(group => group.name).indexOf(this.group.name)
     this.scrollSelect($event, index, this.groups, group => this.selectGroup(group, true))
+    $event.stopPropagation() //scrolling groups doesn't need to scroll drugs as well
   }
 
   scrollDrugs($event) {
@@ -60,15 +66,18 @@ export class drugs {
   }
 
   scrollSelect($event, index, list, cb, autoselect) {
-    $event.stopPropagation()
 
     let last  = list.length - 1
 
     if ($event.which == 38) //Keyup
       cb(list[index > 0 ? index - 1 : last])
 
-    if ($event.which == 40 )//keydown
+    if ($event.which == 40) //keydown
       cb(list[index < last ? index+1 : 0])
+
+    if ($event.which == 13) { //Enter get rid of the results
+      document.querySelector('md-autocomplete input').blur()
+    }
   }
 
   selectGroup(group, autoselectDrug) {

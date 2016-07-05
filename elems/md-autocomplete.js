@@ -4,15 +4,11 @@ import {bindable, bindingMode} from 'aurelia-framework';
 @bindable('disabled')
 @bindable('placeholder')
 export class MdAutocompleteCustomElement {
-  toggleResults() {
+  toggleResults($event) {
+    console.log('toggle results', $event)
     //Foucusout removes the results from the view before the click on
     //the selected result can register.  Delaying a bit prevents this
     //http://stackoverflow.com/questions/18848738/click-event-not-triggered-after-focusout-event
     setTimeout(() => this.showResults = ! this.showResults, 100)
-  }
-
-  keydown($event) {
-    $event.which == '13' && this.input.blur()
-    return true
   }
 }
