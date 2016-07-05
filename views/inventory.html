@@ -9,22 +9,13 @@
   <require from="elems/md-snackbar"></require>
   <md-drawer>
     <md-input value.bind="filter" style="padding:0 8px;">Filter Inventory</md-input>
-    <md-select
-      value.bind="to"
-      options.bind="['', 'All Ordered', 'Not Ordered', 'TLC', 'SET', 'BHP']"
-      style="padding:0 8px;">
-      Requested by
-    </md-select>
-    <div style="margin:0 auto">
-      <md-button raised>Export</md-button>
-    </div>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
       <div
         class="mdl-card__supporting-text"
         style="font-size:13px;">
-        <div repeat.for="transaction of group.transactions"   input.delegate="saveTransaction(transaction) & debounce:1000">
+        <div repeat.for="transaction of group.transactions" input.delegate="saveTransaction(transaction) & debounce:1000">
           <div style="display:inline-block; width:calc(100% - 90px)">
             <a if.bind="transaction.history[0].transaction._id" href.bind="'/#/records/'+transaction.history[0].transaction._id">${transaction.history[0].transaction._id}</a>
             ${ transaction.history[0].transaction._id ? '' : 'inventory' }

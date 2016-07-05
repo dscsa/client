@@ -9,24 +9,43 @@ export class inventory {
     this.db      = db
     this.session =
     this.router  = router
+    this.scrollGroups = this.scrollGroups.bind(this)
+  }
+
+  deactivate() {
+    removeEventListener('keyup', this.scrollGroups)
   }
 
   activate(params) {
+    addEventListener('keyup', this.scrollGroups)
     return this.db.user.session.get().then(session => {
       return this.db.transaction.get({'shipment._id':session.account._id})
     })
     .then(transactions => {
-      this.groups = {}
+      let groups = {}
 
       for (let transaction of transactions) {
-        this.groups[transaction.drug._id] = this.groups[transaction.drug._id] || {total:0, transactions:[]}
-        this.groups[transaction.drug._id].total += +transaction.qty.from || 0
-        this.groups[transaction.drug._id].transactions.push(transaction)
+        groups[transaction.drug._id] = groups[transaction.drug._id] || {total:0, transactions:[]}
+        groups[transaction.drug._id].total += +transaction.qty.from || 0
+        groups[transaction.drug._id].transactions.push(transaction)
       }
 
-      this.select(this.groups[params.id] || Object.values(this.groups)[0])
+      this.groups = Object.values(groups)
+
+      this.select(groups[params.id] || this.groups[0])
     })
     .catch(console.log)
+  }
+
+  scrollGroups($event) {
+    let index = this.groups.indexOf(this.group)
+    let last  = this.groups.length - 1
+
+    if ($event.which == 38) //Keyup
+      this.select(this.groups[index > 0 ? index - 1 : last])
+
+    if ($event.which == 40) //keydown
+      this.select(this.groups[index < last ? index+1 : 0])
   }
 
   select(group) {
@@ -151,16 +170,21 @@ export class numberValueConverter {
 
 //ADDED step of converting object to array
 export class filterValueConverter {
-  toView(groups = {}, filter = ''){
+  toView(groups = [], filter = ''){
+    console.log(groups, filter)
     filter = filter.toLowerCase()
-    return Object.values(groups).filter(group => {
-      return ~ `${group.transactions[0].name} ${group.transactions[0].strength} ${group.transactions[0].form} ${group.transactions[0].drug}`.toLowerCase().indexOf(filter)
+    return groups.filter(group => {
+      return ~ genericName(group.transactions[0]).toLowerCase().indexOf(filter)
     })
   }
 }
 
 export class drugNameValueConverter {
   toView(transaction){
-    return transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+transaction.drug.form
+    return genericName(transaction)
   }
+}
+
+function genericName(transaction) {
+  return transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+transaction.drug.form
 }
