@@ -283,6 +283,7 @@ export class shipments {
   //Enter in the autocomplete adds the first transaction
   //TODO support up/down arrow keys to pick different transaction?
   scrollDrugs($event) {
+    console.log($event)
     //group won't be a reference so we must search manually
     let last = this.drugs.length - 1
 
@@ -471,7 +472,6 @@ export class dateValueConverter {
 }
 
 function convertDate(date) {
-  if ( ! date) return date
   date = date.split('/')
   //whether mm/yy or mm/dd/yy, month is always first and year is always last
   date = new Date('20'+date.pop(),date.shift(), 1)
