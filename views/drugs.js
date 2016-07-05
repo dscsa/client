@@ -180,7 +180,7 @@ export class drugs {
           brand:row.brand.trim(),
           form:row.form.trim(),
           image:row.image.trim(),
-          labeler:row.labeler.trim(),
+          labeler:row.labeler.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()),
           generics:drug.generics.split(";").filter(v => v).map(generic => {
             let [name, strength] = generic.split(/(?= [\d.]+)/)
             console.log(generic, name, strength, arguments)
