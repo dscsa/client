@@ -283,7 +283,6 @@ export class shipments {
   //Enter in the autocomplete adds the first transaction
   //TODO support up/down arrow keys to pick different transaction?
   scrollDrugs($event) {
-    console.log($event)
     //group won't be a reference so we must search manually
     let last = this.drugs.length - 1
 

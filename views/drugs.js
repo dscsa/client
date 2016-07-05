@@ -11,6 +11,7 @@ export class drugs {
     this.csv    = new Csv(['_id', 'generics', 'form'], ['brand', 'labeler', 'image'])
     this.db     = db
     this.router = router
+    this.term   = ''
     this.scrollDrugs = this.scrollDrugs.bind(this)
   }
 
@@ -25,7 +26,6 @@ export class drugs {
       return this.db.account.get({_id:session.account._id})
     })
     .then(accounts => {
-
       this.account     = accounts[0]
       this.quickSearch = {}
 
@@ -82,7 +82,7 @@ export class drugs {
 
   selectGroup(group, autoselectDrug) {
     group = group || this.search().then(_ => {
-      return this.groups[0]
+      return this.groups[0] || {drugs:[]}
     })
 
     Promise.resolve(group).then(group => {
@@ -95,7 +95,7 @@ export class drugs {
     })
   }
 
-  selectDrug(drug = {generics:[]}, autoselectGroup) {
+  selectDrug(drug = {generics:[{}]}, autoselectGroup) {
     if ( ! drug.generic && drug.form) //new drug won't have drug.form yet
       drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
 
