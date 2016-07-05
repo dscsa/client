@@ -95,7 +95,7 @@ export class drugs {
     })
   }
 
-  selectDrug(drug, autoselectGroup) {
+  selectDrug(drug = {generics:[]}, autoselectGroup) {
     if ( ! drug.generic && drug.form) //new drug won't have drug.form yet
       drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
 
