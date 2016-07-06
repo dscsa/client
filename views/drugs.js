@@ -172,29 +172,35 @@ export class drugs {
 
   importCSV() {
     this.snackbar.show(`Parsing CSV File`)
+    function capitalize(text) {
+      return text ? text.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()) : text
+    }
+    function trim(text) {
+      return text ? text.trim() : text
+    }
     this.csv.parse(this.$file.files[0]).then(parsed => {
       this.$file.value = ''
       return Promise.all(parsed.map(drug => {
         return {
-          _id:row._id,
-          brand:row.brand.trim(),
-          form:row.form.trim(),
-          image:row.image.trim(),
-          labeler:row.labeler.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()),
+          _id:trim(drug._id),
+          brand:trim(drug.brand),
+          form:capitalize(drug.form),
+          image:trim(drug.image),
+          labeler:capitalize(drug.labeler),
           generics:drug.generics.split(";").filter(v => v).map(generic => {
             let [name, strength] = generic.split(/(?= [\d.]+)/)
             console.log(generic, name, strength, arguments)
             return {
-              name:name.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()),
-              strength:strength.trim().toLowerCase()
+              name:capitalize(name),
+              strength:trim(strength || '').toLowerCase().replace(/ /g, '')
             }
           })
         }
       }))
     })
     .then(rows => {
-      this.snackbar.show(`Parsed ${data.length} rows. Uploading to server`)
-      return this.db.drug.post(data)
+      this.snackbar.show(`Parsed ${rows.length} rows. Uploading to server`)
+      return this.db.drug.post(rows)
     })
     .then(_ => this.snackbar.show(`Drugs import completed in ${Date.now() - start}ms`))
     .catch(err => this.snackbar.show('Drugs not imported: '+err))
