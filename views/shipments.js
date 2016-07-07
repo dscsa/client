@@ -173,6 +173,19 @@ export class shipments {
     })
   }
 
+  expShortcuts($event, $index) {
+    if ($event.which == 37 || $event.which == 39 || $event.which == 9)
+      return //ignore left and right arrows and tabs https://css-tricks.com/snippets/javascript/javascript-keycodes/
+
+    if ($event.which == 13) //Enter should focus on quantity
+      return document.querySelector('#qty_'+$index+' input').focus()
+
+    //See if this transaction qualifies for autoCheck
+    this.autoCheck($index)
+
+    return true
+  }
+
   qtyShortcuts($event, $index) {
     if ($event.which == 37 || $event.which == 39 || $event.which == 9)
       return //ignore left and right arrows and tabs https://css-tricks.com/snippets/javascript/javascript-keycodes/
@@ -204,22 +217,22 @@ export class shipments {
     let transaction = this.transactions[$index]
 
     let ordered = this.ordered[this.shipment.account.to._id][genericName(transaction.drug)]
-
-    if ( ! ordered) return
-
     let qty = +transaction.qty[this.role.account]
     let exp = transaction.exp[this.role.account]
+
+    if ( ! ordered || ! qty) return
 
     let minQty    = qty >= (+ordered.minQty || 1)
     let minExp    = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 60)*24*60*60*1000 : !ordered.minDays
     let isChecked = this.isChecked[$index] || false //apparently false != undefined
 
-    if((minQty && minExp) == isChecked) return
+    if((minQty && minExp) == isChecked)
+      return console.log('minQty', minQty, qty, 'minExp', minExp, exp)
 
     this.manualCheck($index)
     this.isChecked[$index] = ! isChecked
-    if (this.isChecked[$index] && ordered.message)
-      this.snackbar.show(ordered.message)
+    if (this.isChecked[$index])
+      this.snackbar.show(ordered.message || 'Drug is ordered')
   }
 
   manualCheck($index) {
@@ -316,7 +329,10 @@ export class shipments {
   addTransaction(drug, transaction) {
     transaction = transaction || {
       qty:{from:null, to:null},
-      exp:{from:null, to:null}
+      exp:{
+        from:this.transactions[0] ? this.transactions[0].exp.from : null,
+        to:this.transactions[0] ? this.transactions[0].exp.to : null
+      }
     }
 
     transaction.drug = {
@@ -440,7 +456,8 @@ export class filterValueConverter {
 export class valueValueConverter {
   toView(transactions = [], filter='') {
     return transactions.reduce((a, b) => {
-      return b.drug.price.goodrx ? b.drug.price.goodrx*(b.qty.to || b.qty.from) : 0 + a
+      let price = b.drug.price.goodrx || b.drug.price.nadac || 0
+      return a + (b.qty.to || b.qty.from || 0)*price
     }, 0).toFixed(2)
   }
 }
