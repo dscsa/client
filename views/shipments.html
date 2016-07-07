@@ -235,7 +235,7 @@
                   tabindex="-1"
                   ref="input"
                   input.delegate="saveTransaction($index) & debounce:1000"
-                  input.trigger="autoCheck($index)"
+                  keyup.delegate="expShortcuts($event, $index)"
                   pattern="(0?[1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp[role.account] | date"
                   style="width:40px; margin-bottom:-8px"
