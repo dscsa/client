@@ -481,17 +481,12 @@ export class dateValueConverter {
 
   fromView(date){
 
-    let {month, year} = parseUserDate(date)
+    let add = date.includes('+')
+    let sub = date.includes('-')
+    let {month, year} = parseUserDate(date.replace(/[+-]/, ''))
 
-    if (year.slice(-1) == '+') {
-      year = year.slice(0, -1)
-      month++
-    }
-
-    if (year.slice(-1) == '-') {
-      year = year.slice(0, -1)
-      month--
-    }
+    if (add) month++
+    if (sub) month--
 
     if (month == 0) {
       month = 12
