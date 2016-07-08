@@ -378,9 +378,9 @@ export class shipments {
     this.csv.parse(this.$file.files[0]).then(parsed => {
       return Promise.all(parsed.map(transaction => {
         this.$file.value = ''
-        transaction.exp.to     = convertDate(transaction.exp.to)
-        transaction.exp.from   = convertDate(transaction.exp.from)
-        transaction.verifiedAt = convertDate(transaction.verifiedAt)
+        transaction.exp.to     = toJsonDate(parseUserDate(transaction.exp.to))
+        transaction.exp.from   = toJsonDate(parseUserDate(transaction.exp.from))
+        transaction.verifiedAt = toJsonDate(parseUserDate(transaction.verifiedAt))
         return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
           //This will add drugs upto the point where a drug cannot be found rather than rejecting all
           if (drugs[0]) return {drug:drugs[0], transaction}
@@ -480,15 +480,47 @@ export class dateValueConverter {
   }
 
   fromView(date){
-    this.view  = date
-    return this.model = convertDate(date)
+
+    let {month, year} = parseUserDate(date)
+
+    if (year.slice(-1) == '+') {
+      year = year.slice(0, -1)
+      month++
+    }
+
+    if (year.slice(-1) == '-') {
+      year = year.slice(0, -1)
+      month--
+    }
+
+    if (month == 0) {
+      month = 12
+      year--
+    }
+
+    if (month == 13) {
+      month = 1
+      year++
+    }
+
+    this.view  = month+'/'+year
+
+    return this.model = toJsonDate({month, year})
   }
 }
 
-function convertDate(date) {
+//whether mm/yy or mm/dd/yy, month is always first and year is always last
+function parseUserDate(date) {
   date = date.split('/')
-  //whether mm/yy or mm/dd/yy, month is always first and year is always last
-  date = new Date('20'+date.pop(),date.shift(), 1)
+  return {
+    year:date.pop(),
+    month:date.shift()
+  }
+}
+
+//To get last day in month, set it to next month and subtract a day
+function toJsonDate({month, year}) {
+  let date = new Date('20'+year,month, 1)
   date.setDate(0)
   return date.toJSON()
 }
