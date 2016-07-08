@@ -156,6 +156,8 @@ export class drugs {
         return {
           '':drug,
           _id:" "+drug._id,
+          upc:" "+drug.upc,
+          ndc9:" "+drug.ndc9,
           generic:generic,
           generics:drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
           ordered:this.account.ordered[generic] || {minQty:null, minDays:null, message:null}
