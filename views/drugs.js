@@ -27,24 +27,18 @@ export class drugs {
     })
     .then(accounts => {
       this.account = accounts[0]
-      this.drawer  = {}
-
-      let all = Object.keys(this.account.ordered).map(generic => this.db.drug.get({generic})
-      .then(drugs => {
-        return {
-          name:generic,
-          drugs:drugs.filter(drug => drug.generic == generic)
-        }
-      }))
-
-      all = Promise.all(all).then(ordered => {
-        this.drawer.ordered = ordered
-      })
+      this.drawer  = {
+        ordered:Object.keys(this.account.ordered).map(generic => {
+          let ordered = { name:generic }
+          this.db.drug.get({generic}).then(drugs => {
+            ordered.drugs = drugs.filter(drug => drug.generic == generic)
+          })
+          return ordered
+        })
+      }
 
       if ( ! params.id) {
-        return all.then(_ => {
-          this.selectGroup(this.drawer.ordered[0], true)
-        })
+        return this.selectGroup(null, true)
       }
 
       return this.db.drug.get({_id:params.id}).then(drugs => {
