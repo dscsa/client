@@ -227,11 +227,18 @@ componentHandler = (function() {
         }
       } else {
         throw new Error(
-            'Unable to find a registered component for the given class.');
+          'Unable to find a registered component for the given class.');
       }
 
-      var ev = document.createEvent('Events');
-      ev.initEvent('mdl-componentupgraded', true, true);
+      var ev;
+      if ('CustomEvent' in window && typeof window.CustomEvent === 'function') {
+        ev = new Event('mdl-componentupgraded', {
+          'bubbles': true, 'cancelable': false
+        });
+      } else {
+        ev = document.createEvent('Events');
+        ev.initEvent('mdl-componentupgraded', true, true);
+      }
       element.dispatchEvent(ev);
     }
   }
@@ -345,17 +352,25 @@ componentHandler = (function() {
    * @param {?componentHandler.Component} component
    */
   function deconstructComponentInternal(component) {
-    var componentIndex = createdComponents_.indexOf(component);
-    createdComponents_.splice(componentIndex, 1);
+    if (component) {
+      var componentIndex = createdComponents_.indexOf(component);
+      createdComponents_.splice(componentIndex, 1);
 
-    var upgrades = component.element_.getAttribute('data-upgraded').split(',');
-    var componentPlace = upgrades.indexOf(component[componentConfigProperty_].classAsString);
-    upgrades.splice(componentPlace, 1);
-    component.element_.setAttribute('data-upgraded', upgrades.join(','));
+      var upgrades = component.element_.getAttribute('data-upgraded').split(',');
+      var componentPlace = upgrades.indexOf(component[componentConfigProperty_].classAsString);
+      upgrades.splice(componentPlace, 1);
+      component.element_.setAttribute('data-upgraded', upgrades.join(','));
 
-    var ev = document.createEvent('Events');
-    ev.initEvent('mdl-componentdowngraded', true, true);
-    component.element_.dispatchEvent(ev);
+      var ev;
+      if ('CustomEvent' in window && typeof window.CustomEvent === 'function') {
+        ev = new Event('mdl-componentdowngraded', {
+          'bubbles': true, 'cancelable': false
+        });
+      } else {
+        ev = document.createEvent('Events');
+        ev.initEvent('mdl-componentdowngraded', true, true);
+      }
+    }
   }
 
   /**
@@ -2774,7 +2789,8 @@ MaterialTextfield.prototype.CssClasses_ = {
     IS_FOCUSED: 'is-focused',
     IS_DISABLED: 'is-disabled',
     IS_INVALID: 'is-invalid',
-    IS_UPGRADED: 'is-upgraded'
+    IS_UPGRADED: 'is-upgraded',
+    HAS_PLACEHOLDER: 'has-placeholder'
 };
 /**
    * Handle input being entered.
@@ -2927,6 +2943,9 @@ MaterialTextfield.prototype.init = function () {
                 if (isNaN(this.maxRows)) {
                     this.maxRows = this.Constant_.NO_MAX_ROWS;
                 }
+            }
+            if (this.input_.hasAttribute('placeholder')) {
+                this.element_.classList.add(this.CssClasses_.HAS_PLACEHOLDER);
             }
             this.boundUpdateClassesHandler = this.updateClasses_.bind(this);
             this.boundFocusHandler = this.onFocus_.bind(this);
@@ -3133,6 +3152,7 @@ window['MaterialLayout'] = MaterialLayout;
 MaterialLayout.prototype.Constant_ = {
     MAX_WIDTH: '(max-width: 1024px)',
     TAB_SCROLL_PIXELS: 100,
+    RESIZE_TIMEOUT: 100,
     MENU_ICON: '&#xE5D2;',
     CHEVRON_LEFT: 'chevron_left',
     CHEVRON_RIGHT: 'chevron_right'
@@ -3213,14 +3233,19 @@ MaterialLayout.prototype.contentScrollHandler_ = function () {
     if (this.header_.classList.contains(this.CssClasses_.IS_ANIMATING)) {
         return;
     }
+    var headerVisible = !this.element_.classList.contains(this.CssClasses_.IS_SMALL_SCREEN) || this.element_.classList.contains(this.CssClasses_.FIXED_HEADER);
     if (this.content_.scrollTop > 0 && !this.header_.classList.contains(this.CssClasses_.IS_COMPACT)) {
         this.header_.classList.add(this.CssClasses_.CASTING_SHADOW);
         this.header_.classList.add(this.CssClasses_.IS_COMPACT);
-        this.header_.classList.add(this.CssClasses_.IS_ANIMATING);
+        if (headerVisible) {
+            this.header_.classList.add(this.CssClasses_.IS_ANIMATING);
+        }
     } else if (this.content_.scrollTop <= 0 && this.header_.classList.contains(this.CssClasses_.IS_COMPACT)) {
         this.header_.classList.remove(this.CssClasses_.CASTING_SHADOW);
         this.header_.classList.remove(this.CssClasses_.IS_COMPACT);
-        this.header_.classList.add(this.CssClasses_.IS_ANIMATING);
+        if (headerVisible) {
+            this.header_.classList.add(this.CssClasses_.IS_ANIMATING);
+        }
     }
 };
 /**
@@ -3230,7 +3255,8 @@ MaterialLayout.prototype.contentScrollHandler_ = function () {
    * @private
    */
 MaterialLayout.prototype.keyboardEventHandler_ = function (evt) {
-    if (evt.keyCode === this.Keycodes_.ESCAPE) {
+    // Only react when the drawer is open.
+    if (evt.keyCode === this.Keycodes_.ESCAPE && this.drawer_.classList.contains(this.CssClasses_.IS_DRAWER_OPEN)) {
         this.toggleDrawer();
     }
 };
@@ -3334,9 +3360,13 @@ MaterialLayout.prototype.init = function () {
     if (this.element_) {
         var container = document.createElement('div');
         container.classList.add(this.CssClasses_.CONTAINER);
+        var focusedElement = this.element_.querySelector(':focus');
         this.element_.parentElement.insertBefore(container, this.element_);
         this.element_.parentElement.removeChild(this.element_);
         container.appendChild(this.element_);
+        if (focusedElement) {
+            focusedElement.focus();
+        }
         var directChildren = this.element_.childNodes;
         var numChildren = directChildren.length;
         for (var c = 0; c < numChildren; c++) {
@@ -3471,8 +3501,9 @@ MaterialLayout.prototype.init = function () {
             tabContainer.appendChild(leftButton);
             tabContainer.appendChild(this.tabBar_);
             tabContainer.appendChild(rightButton);
-            // Add and remove buttons depending on scroll position.
-            var tabScrollHandler = function () {
+            // Add and remove tab buttons depending on scroll position and total
+            // window size.
+            var tabUpdateHandler = function () {
                 if (this.tabBar_.scrollLeft > 0) {
                     leftButton.classList.add(this.CssClasses_.IS_ACTIVE);
                 } else {
@@ -3484,8 +3515,20 @@ MaterialLayout.prototype.init = function () {
                     rightButton.classList.remove(this.CssClasses_.IS_ACTIVE);
                 }
             }.bind(this);
-            this.tabBar_.addEventListener('scroll', tabScrollHandler);
-            tabScrollHandler();
+            this.tabBar_.addEventListener('scroll', tabUpdateHandler);
+            tabUpdateHandler();
+            // Update tabs when the window resizes.
+            var windowResizeHandler = function () {
+                // Use timeouts to make sure it doesn't happen too often.
+                if (this.resizeTimeoutId_) {
+                    clearTimeout(this.resizeTimeoutId_);
+                }
+                this.resizeTimeoutId_ = setTimeout(function () {
+                    tabUpdateHandler();
+                    this.resizeTimeoutId_ = null;
+                }.bind(this), this.Constant_.RESIZE_TIMEOUT);
+            }.bind(this);
+            window.addEventListener('resize', windowResizeHandler);
             if (this.tabBar_.classList.contains(this.CssClasses_.JS_RIPPLE_EFFECT)) {
                 this.tabBar_.classList.add(this.CssClasses_.RIPPLE_IGNORE_EVENTS);
             }
@@ -3537,15 +3580,6 @@ function MaterialLayoutTab(tab, tabs, panels, layout) {
         }
     });
     tab.show = selectTab;
-    tab.addEventListener('click', function (e) {
-        e.preventDefault();
-        var href = tab.href.split('#')[1];
-        var panel = layout.content_.querySelector('#' + href);
-        layout.resetTabState_(tabs);
-        layout.resetPanelState_(panels);
-        tab.classList.add(layout.CssClasses_.IS_ACTIVE);
-        panel.classList.add(layout.CssClasses_.IS_ACTIVE);
-    });
 }
 window['MaterialLayoutTab'] = MaterialLayoutTab;
 // The component registers itself. It can assume componentHandler is available

@@ -25,6 +25,10 @@ export class MdInputCustomElement {
 
   attached() {
     componentHandler.upgradeElement(this.div)
+
+    if ( ! this.placeholder)
+      this.div.classList.remove('has-placeholder')
+
     if (this.autoselect)
       this.div.MaterialTextfield.input_.focus()
   }
