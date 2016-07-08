@@ -454,9 +454,9 @@ export class filterValueConverter {
 }
 
 export class valueValueConverter {
-  toView(transactions = [], filter='') {
+  toView(transactions = [], trigger) {
     return transactions.reduce((a, b) => {
-      let price = b.drug.price.goodrx || b.drug.price.nadac || 0
+      let price = (b.drug.price && (b.drug.price.goodrx || b.drug.price.nadac)) || 0
       return a + (b.qty.to || b.qty.from || 0)*price
     }, 0).toFixed(2)
   }
