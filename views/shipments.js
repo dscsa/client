@@ -222,8 +222,8 @@ export class shipments {
 
     if ( ! ordered || ! qty) return
 
-    let minQty    = qty >= (+ordered.minQty || 1)
-    let minExp    = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 60)*24*60*60*1000 : !ordered.minDays
+    let minQty    = qty >= (+ordered.minQty || 10)
+    let minExp    = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120)*24*60*60*1000 : !ordered.minDays
     let isChecked = this.isChecked[$index] || false //apparently false != undefined
 
     if((minQty && minExp) == isChecked)
@@ -272,7 +272,6 @@ export class shipments {
   }
 
   search() {
-    let start = Date.now()
     let term = this.term.trim()
 
     if (term.length < 3)
@@ -287,7 +286,6 @@ export class shipments {
     }
 
     drugs.then(drugs => {
-      console.log('drug search', drugs.length, Date.now() - start)
       this.drugs = drugs
       this.index = 0
     })
