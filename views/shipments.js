@@ -443,9 +443,6 @@ export class filterValueConverter {
   toView(shipments = [], filter = ''){
     filter = filter.toLowerCase()
     return shipments.filter(shipment => {
-      if ( ! shipment.account.to || ! shipment.account.from)
-        return !filter //create new shipment
-
       return ~ `${shipment.account.from.name} ${shipment.account.to.name} ${shipment.tracking} ${shipment.status}`.toLowerCase().indexOf(filter)
     })
   }
