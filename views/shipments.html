@@ -200,7 +200,8 @@
               <th style="width:15px"></th>
               <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
               <th class="mdl-data-table__cell--non-numeric" style="width:90px;padding-left:0">Ndc</th>
-              <th style="text-align:left; width:40px; padding-left:0">Exp</th>
+              <th style="width:40px; padding-left:0; padding-right:0px">Value</th>
+              <th style="text-align:left; width:40px;">Exp</th>
               <th style="text-align:left; width:40px">Qty</th>
               <th style="text-align:left; width:10px; padding-left:0"></th>
             </tr>
@@ -227,6 +228,9 @@
                   value.bind="package"
                   options.bind="['', '00','01','10','90']">
                 </md-select> -->
+              </td>
+              <td style="padding:0">
+                ${ transaction.drug.price && ((transaction.drug.price.nadac || transaction.drug.price.goodrx || 0) * (transaction.qty.to || transaction.qty.from || 0)).toFixed(2) }
               </td>
               <td style="padding:0">
                 ${ transaction.exp[role.partner] | date}
