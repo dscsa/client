@@ -204,6 +204,7 @@ export class shipments {
         this.isChecked.splice($index, 1)
         this.diffs = this.diffs.filter(i => i != $index).map(i => i > $index ? i-1 : i)
       })
+      document.querySelector('md-autocomplete input').focus()
     }
 
     //See if this transaction qualifies for autoCheck
