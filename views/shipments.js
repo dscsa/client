@@ -33,7 +33,6 @@ export class shipments {
       ])
     })
     .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
-
       //This abbreviated denormalized account information will be assigned to account.to/from
       let selected, fromMap = {}, toMap = {}
       let makeMap = (map, account) => {
@@ -45,8 +44,8 @@ export class shipments {
       for (let account of toAccounts) makeMap(toMap, account)
 
       this.accounts  = {
-        from:['', ...Object.values(fromMap)],
-        to:['', ...Object.values(toMap)]
+        from:['', ...Object.keys(fromMap).map(key => fromMap[key])],
+        to:['', ...Object.keys(toMap).map(key => toMap[key])]
       }
 
       //Selected account != shipment.account.to because they are not references
@@ -64,7 +63,6 @@ export class shipments {
         if (params.id === shipment._id)
           selected = shipment  //Sneak this in since we are already making the loop
       }
-
       fromShipments.forEach(makeReference)
 
       this.role = selected //switch default role depending on shipment selection

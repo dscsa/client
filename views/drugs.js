@@ -124,7 +124,7 @@ export class drugs {
         groups[drug.generic] = groups[drug.generic] || {name:drug.generic, drugs:[]}
         groups[drug.generic].drugs.push(drug)
       }
-      this.groups = Object.values(groups)
+      this.groups = Object.keys(groups).map(key => groups[key])
     })
   }
 

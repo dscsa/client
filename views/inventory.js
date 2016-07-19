@@ -30,7 +30,7 @@ export class inventory {
         groups[transaction.drug._id].transactions.push(transaction)
       }
 
-      this.groups = Object.values(groups)
+      this.groups = Object.keys(groups).map(key => groups[key])
 
       this.select(groups[params.id] || this.groups[0])
     })
@@ -171,7 +171,6 @@ export class numberValueConverter {
 //ADDED step of converting object to array
 export class filterValueConverter {
   toView(groups = [], filter = ''){
-    console.log(groups, filter)
     filter = filter.toLowerCase()
     return groups.filter(group => {
       return ~ genericName(group.transactions[0]).toLowerCase().indexOf(filter)
