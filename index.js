@@ -1,5 +1,6 @@
 export function configure(aurelia) {
 
+  Promise.config({warnings:false})
   console.log = console.log.bind(console)
 
   aurelia.use
