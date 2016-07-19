@@ -5,6 +5,6 @@
     click.delegate="click($event)"
     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
     style="width:100%; height:inherit; line-height:inherit">
-    <content style="padding:auto"></content>
+    <slot style="padding:auto"></slot>
   </button>
 </template>

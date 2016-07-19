@@ -1,11 +1,7 @@
 import {inject} from 'aurelia-framework';
 
-//Create the drawer container so that MDL can find it
-//MDL code runs before the constructor so need it outside class
-let header = document.querySelector('.mdl-layout__header')
 let drawer = document.createElement('nav')
 drawer.classList.add("mdl-layout__drawer")
-header.parentNode.insertBefore(drawer, header.nextSibling)
 
 @inject(Element)
 export class MdDrawerCustomElement {
@@ -15,19 +11,21 @@ export class MdDrawerCustomElement {
     element.style['padding-top'] = '6px'
 
     this.autofocus = element.hasAttribute('autofocus')
-
     //Move md-nav into the drawer
     drawer.appendChild(element)
   }
 
   attached() {
+    this.header = document.querySelector('.mdl-layout__header')
+    this.header.parentNode.insertBefore(drawer, this.header.nextSibling)
+
     componentHandler.upgradeAllRegistered()
 
     this.button = document.querySelector('.mdl-layout__drawer-button')
     this.button.style.display = 'block'
 
     if (this.autofocus)
-      header.firstChild.click()
+      this.header.firstChild.click()
   }
 
   detached() {
