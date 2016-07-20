@@ -8,5 +8,5 @@ export function configure(aurelia) {
     .standardConfiguration()
     .plugin('aurelia-animator-css')
 
-  aurelia.start().then(a => a.setRoot('routes'));
+  aurelia.start().then(a => a.setRoot('views/routes'));
 }

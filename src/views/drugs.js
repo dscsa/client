@@ -1,7 +1,7 @@
 import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
-import {Db}     from 'libs/pouch'
-import {Csv}    from 'libs/csv'
+import {Db}     from '../libs/pouch'
+import {Csv}    from '../libs/csv'
 
 //@pageState()
 @inject(Db, Router)

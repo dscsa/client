@@ -20,7 +20,7 @@ export class App {
 }
 
 import {inject}   from 'aurelia-framework'
-import {Db}       from 'libs/pouch'
+import {Db}       from '../libs/pouch'
 import {Router, Redirect} from 'aurelia-router'
 
 @inject(Router, Db)

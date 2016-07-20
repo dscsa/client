@@ -1,6 +1,6 @@
 {
   "name": "client",
-  "description": "DSCSA's full developer and deployment code.",
+  "description": "DSCSA's client app including server, csv, and db.",
   "version": "0.0.0",
   "repository": {
     "type": "???",
@@ -8,9 +8,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "server":"https://github.com/dscsa/server",
-    "db":"https://github.com/dscsa/pouch",
-    "csv":"https://github.com/dscsa/csv",
+    "dscsa-server":"https://github.com/dscsa/server",
+    "dscsa-db":"https://github.com/dscsa/pouch",
+    "dscsa-csv":"https://github.com/dscsa/csv",
     "aurelia-bootstrapper": "^1.0.0-rc.1.0.0",
     "aurelia-fetch-client": "^1.0.0-rc.1.0.0",
     "aurelia-animator-css": "^1.0.0-rc.1.0.0",

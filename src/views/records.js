@@ -4,7 +4,7 @@
 
 import {inject}     from 'aurelia-framework';
 import {Router}     from 'aurelia-router';
-import {Db}         from 'libs/pouch'
+import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client';
 
 //@pageState()
