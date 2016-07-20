@@ -1,11 +1,6 @@
 {
   "name": "sirum",
   "type": "project:application",
-  "platform": {
-    "id": "web",
-    "displayName": "Web",
-    "output": "assets"
-  },
   "transpiler": {
     "id": "babel",
     "displayName": "Babel",
@@ -48,11 +43,10 @@
   },
   "paths": {
     "root": "src",
-    "resources": "src/resources",
-    "elements": "src/resources/elements",
-    "attributes": "src/resources/attributes",
-    "valueConverters": "src/resources/value-converters",
-    "bindingBehaviors": "src/resources/binding-behaviors"
+    "/": "views",
+    "/assets/db": "../node_modules/db",
+    "/assets/csv": "../node_modules/csv",
+    "/assets/server": "../node_modules/server"
   },
   "build": {
     "targets": [

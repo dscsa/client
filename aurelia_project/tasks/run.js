@@ -14,6 +14,13 @@ function reload(done) {
   done();
 }
 
+let assets = project.build.targets[0].output
+let routes = {['/'+assets]:assets}
+
+for (let i in project.paths)
+  if (i != 'root')
+    routes[i] = project.paths.root+'/'+project.paths[i]
+
 let serve = gulp.series(
   build,
   done => {
@@ -23,8 +30,8 @@ let serve = gulp.series(
       port: 9000,
       logLevel: 'silent',
       server: {
-        baseDir: ['./node_modules'],
-        routes: {"/":"src/views", "/assets":"assets"},
+        routes,
+        baseDir:project.paths.root,
         middleware: [historyApiFallback(), function(req, res, next) {
           res.setHeader('Access-Control-Allow-Origin', '*');
           next();
