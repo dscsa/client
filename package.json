@@ -11,6 +11,7 @@
     "server":"https://github.com/dscsa/server",
     "db":"https://github.com/dscsa/pouch",
     "csv":"https://github.com/dscsa/csv",
+    "aurelia-http-client": "^1.0.0-rc.1.0.0",
     "aurelia-bootstrapper": "^1.0.0-rc.1.0.0",
     "aurelia-fetch-client": "^1.0.0-rc.1.0.0",
     "aurelia-animator-css": "^1.0.0-rc.1.0.0",
