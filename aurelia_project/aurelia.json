@@ -90,46 +90,138 @@
           "aurelia_project/require.js"
         ],
         "dependencies": [
-          "aurelia-http-client",
-          "aurelia-animator-css",
-          "aurelia-binding",
-          "aurelia-bootstrapper",
-          "aurelia-dependency-injection",
-          "aurelia-event-aggregator",
-          "aurelia-framework",
-          "aurelia-history",
-          "aurelia-history-browser",
-          "aurelia-loader",
-          "aurelia-loader-default",
-          "aurelia-logging",
-          "aurelia-logging-console",
-          "aurelia-metadata",
-          "aurelia-pal",
-          "aurelia-pal-browser",
-          "aurelia-path",
-          "aurelia-polyfills",
-          "aurelia-route-recognizer",
-          "aurelia-router",
-          "aurelia-task-queue",
-          "aurelia-templating",
-          "aurelia-templating-binding",
+          {
+            "name": "aurelia-http-client",
+            "path": "../../aurelia-http-client/dist/amd",
+            "main": "aurelia-http-client"
+          },
+          {
+            "name": "aurelia-animator-css",
+            "path": "../../aurelia-animator-css/dist/amd",
+            "main": "aurelia-animator-css"
+          },
+          {
+            "name": "aurelia-binding",
+            "path": "../../aurelia-binding/dist/amd",
+            "main": "aurelia-binding"
+          },
+          {
+            "name": "aurelia-bootstrapper",
+            "path": "../../aurelia-bootstrapper/dist/amd",
+            "main": "aurelia-bootstrapper"
+          },
+          {
+            "name": "aurelia-dependency-injection",
+            "path": "../../aurelia-dependency-injection/dist/amd",
+            "main": "aurelia-dependency-injection"
+          },
+          {
+            "name": "aurelia-event-aggregator",
+            "path": "../../aurelia-event-aggregator/dist/amd",
+            "main": "aurelia-event-aggregator"
+          },
+          {
+            "name": "aurelia-framework",
+            "path": "../../aurelia-framework/dist/amd",
+            "main": "aurelia-framework"
+          },
+          {
+            "name": "aurelia-history",
+            "path": "../../aurelia-history/dist/amd",
+            "main": "aurelia-history"
+          },
+          {
+            "name": "aurelia-history-browser",
+            "path": "../../aurelia-history-browser/dist/amd",
+            "main": "aurelia-history-browser"
+          },
+          {
+            "name": "aurelia-loader",
+            "path": "../../aurelia-loader/dist/amd",
+            "main": "aurelia-loader"
+          },
+          {
+            "name": "aurelia-loader-default",
+            "path": "../../aurelia-loader-default/dist/amd",
+            "main": "aurelia-loader-default"
+          },
+          {
+            "name": "aurelia-logging",
+            "path": "../../aurelia-logging/dist/amd",
+            "main": "aurelia-logging"
+          },
+          {
+            "name": "aurelia-logging-console",
+            "path": "../../aurelia-logging-console/dist/amd",
+            "main": "aurelia-logging-console"
+          },
+          {
+            "name": "aurelia-metadata",
+            "path": "../../aurelia-metadata/dist/amd",
+            "main": "aurelia-metadata"
+          },
+          {
+            "name": "aurelia-pal",
+            "path": "../../aurelia-pal/dist/amd",
+            "main": "aurelia-pal"
+          },
+          {
+            "name": "aurelia-pal-browser",
+            "path": "../../aurelia-pal-browser/dist/amd",
+            "main": "aurelia-pal-browser"
+          },
+          {
+            "name": "aurelia-path",
+            "path": "../../aurelia-path/dist/amd",
+            "main": "aurelia-path"
+          },
+          {
+            "name": "aurelia-polyfills",
+            "path": "../../aurelia-polyfills/dist/amd",
+            "main": "aurelia-polyfills"
+          },
+          {
+            "name": "aurelia-route-recognizer",
+            "path": "../../aurelia-route-recognizer/dist/amd",
+            "main": "aurelia-route-recognizer"
+          },
+          {
+            "name": "aurelia-router",
+            "path": "../../aurelia-router/dist/amd",
+            "main": "aurelia-router"
+          },
+          {
+            "name": "aurelia-task-queue",
+            "path": "../../aurelia-task-queue/dist/amd",
+            "main": "aurelia-task-queue"
+          },
+          {
+            "name": "aurelia-templating",
+            "path": "../../aurelia-templating/dist/amd",
+            "main": "aurelia-templating"
+          },
+          {
+            "name": "aurelia-templating-binding",
+            "path": "../../aurelia-templating-binding/dist/amd",
+            "main": "aurelia-templating-binding"
+          },
           {
             "name": "text",
             "path": "../aurelia_project/text"
           },
           {
             "name": "aurelia-templating-resources",
-            "path": "../node_modules/aurelia-templating-resources/dist/amd",
+            "path": "../../aurelia-templating-resources/dist/amd",
             "main": "aurelia-templating-resources"
           },
           {
             "name": "aurelia-templating-router",
-            "path": "../node_modules/aurelia-templating-router/dist/amd",
+            "path": "../../aurelia-templating-router/dist/amd",
             "main": "aurelia-templating-router"
           },
           {
             "name": "aurelia-testing",
-            "path": "../node_modules/aurelia-testing/dist/amd",
+            "path": "../../aurelia-testing/dist/amd",
             "main": "aurelia-testing",
             "env": "dev"
           }
