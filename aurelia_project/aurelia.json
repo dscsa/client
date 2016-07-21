@@ -86,8 +86,8 @@
       {
         "name": "vendor-bundle.js",
         "prepend": [
-          "node_modules/bluebird/js/browser/bluebird.core.js",
-          "aurelia_project/require.js"
+          "../../bluebird/js/browser/bluebird.core.js",
+          "../aurelia_project/require.js"
         ],
         "dependencies": [
           {
