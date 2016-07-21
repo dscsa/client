@@ -44,9 +44,9 @@
   "paths": {
     "root": "src",
     "/": "views",
-    "/assets/db": "../node_modules/db",
-    "/assets/csv": "../node_modules/csv",
-    "/assets/server": "../node_modules/server"
+    "/assets/db": "../../db",
+    "/assets/csv": "../../csv",
+    "/assets/server": "../../server"
   },
   "build": {
     "targets": [
@@ -86,8 +86,8 @@
       {
         "name": "vendor-bundle.js",
         "prepend": [
-          "../../bluebird/js/browser/bluebird.core.js",
-          "../aurelia_project/require.js"
+          "../bluebird/js/browser/bluebird.core.js",
+          "aurelia_project/require.js"
         ],
         "dependencies": [
           {
