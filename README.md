@@ -1,6 +1,50 @@
 # client
 Application that uses the RESTful API written with the Aurelia framework
 
+## install development
+[install node](https://nodejs.org/en/download/current)
+[install couchbb](http://couchdb.apache.org/#download)
+```
+cd /<installation directory>
+sudo mkdir /keys
+sudo nano  /keys/dev.js
+sudo npm install aurelia-cli -g            #install dev tool
+sudo npm install dscsa/client              #install the app
+sudo node /dscsa/node_modules/server       #run the api
+cd node_modules/client && au run —-watch   #start dev environment
+```
+Test that both http://localhost and http://localhost:9000 now serve the app
+
+## install production (ubuntu)
+```
+ssh -i /path/to/private-key ubuntu@<elastic-ip>
+
+#mount volume
+sudo mkdir /dscsa
+lsblk                            #details http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
+sudo mount /dev/<volume> /dscsa
+sudo mkfs -t ext4 /dev/<volume>  #only make filesystem, if new empty volume.
+cd /dscsa
+sudo mkdir /dscsa/keys
+sudo nano  /dscsa/keys/dev.js
+
+#install couchdb
+sudo add-apt-repository ppa:couchdb/stable -y
+sudo apt-get update
+sudo apt-get install couchdb -y
+sudo nano /etc/couchdb/local.ini #change bind_address to 0.0.0.0
+sudo service couchdb restart
+#check <elastic-ip>:5984/_utils serves futon
+
+#install nodejs and application
+curl --silent --location https://rpm.nodesource.com/setup_6.x | sudo bash -
+sudo yum install nodejs -y
+sudo yum install git-core
+sudo npm install dscsa/client
+sudo npm install forever -g
+forever start /dscsa/node_modules/server
+```
+
 ## tests
 |Test|2016-06-XX|
 |----|----------|
