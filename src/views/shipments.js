@@ -218,15 +218,25 @@ export class shipments {
     let ordered = this.ordered[this.shipment.account.to._id][genericName(transaction.drug)]
     let qty = +transaction.qty[this.role.account]
     let exp = transaction.exp[this.role.account]
+    let destMess = ordered.destroyedMessage || ""
 
     if ( ! ordered || ! qty) return
+
+    let qtyToCheck = 10   
+    if(transaction.drug.brand) qtyToCheck = 1
 
     let minQty    = qty >= (+ordered.minQty || 10)
     let minExp    = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120)*24*60*60*1000 : !ordered.minDays
     let isChecked = this.isChecked[$index] || false //apparently false != undefined
 
-    if((minQty && minExp) == isChecked)
-      return console.log('minQty', minQty, qty, 'minExp', minExp, exp)
+    if((minQty && minExp) == isChecked){
+        if(destMess != ""){
+          this.snackbar.show(ordered.destroyedMessage)
+          return
+        } else {
+          return console.log('minQty', minQty, qty, 'minExp', minExp, exp)
+        }
+    }
 
     this.manualCheck($index)
     this.isChecked[$index] = ! isChecked
@@ -304,6 +314,10 @@ export class shipments {
 
     if ($event.which == 13)
       this.addTransaction(this.drugs[this.index])
+
+    if ($event.which == 106){ //clearing input field
+        this.term = ""
+    }
   }
 
   //Since this is triggered by a focusin and then does a focus, it activates itself a 2nd time
@@ -336,6 +350,7 @@ export class shipments {
       _id:drug._id,
       generics:drug.generics,
       form:drug.form,
+      brand:drug.brand,
     }
 
     transaction.shipment = {
