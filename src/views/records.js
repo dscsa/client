@@ -22,6 +22,7 @@ export class shipments {
     this.fromMonth = this.toMonth = this.months[new Date().getMonth()]
     this.stati   = ['complete', 'verified', 'destroyed']
     this.status  = this.stati[0]
+    this.history = ''
     this.scroll  = this.scroll.bind(this)
   }
 

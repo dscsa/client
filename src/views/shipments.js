@@ -218,30 +218,23 @@ export class shipments {
     let ordered = this.ordered[this.shipment.account.to._id][genericName(transaction.drug)]
     let qty = +transaction.qty[this.role.account]
     let exp = transaction.exp[this.role.account]
-    let destMess = ordered.destroyedMessage || ""
 
     if ( ! ordered || ! qty) return
 
-    let qtyToCheck = 10   
-    if(transaction.drug.brand) qtyToCheck = 1
+    let defaultQty = transaction.drug.brand ? 1 : 10
+    let minQty     = qty >= (+ordered.minQty || defaultQty)
+    let minExp     = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120)*24*60*60*1000 : !ordered.minDays
+    let isChecked  = this.isChecked[$index] || false //apparently false != undefined
 
-    let minQty    = qty >= (+ordered.minQty || 10)
-    let minExp    = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120)*24*60*60*1000 : !ordered.minDays
-    let isChecked = this.isChecked[$index] || false //apparently false != undefined
-
-    if((minQty && minExp) == isChecked){
-        if(destMess != ""){
-          this.snackbar.show(ordered.destroyedMessage)
-          return
-        } else {
-          return console.log('minQty', minQty, qty, 'minExp', minExp, exp)
-        }
+    if((minQty && minExp) == isChecked) {
+      ordered.destroyedMessage && this.snackbar.show(ordered.destroyedMessage)
+      return console.log('minQty', minQty, qty, 'minExp', minExp, exp)
     }
 
     this.manualCheck($index)
     this.isChecked[$index] = ! isChecked
     if (this.isChecked[$index])
-      this.snackbar.show(ordered.message || 'Drug is ordered')
+      this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
   }
 
   manualCheck($index) {
@@ -315,9 +308,8 @@ export class shipments {
     if ($event.which == 13)
       this.addTransaction(this.drugs[this.index])
 
-    if ($event.which == 106){ //clearing input field
-        this.term = ""
-    }
+    if ($event.which == 106) //clearing autocomplete field with an asterick (to match exp date clearing and make keyboard compatible)
+      this.term = ""
   }
 
   //Since this is triggered by a focusin and then does a focus, it activates itself a 2nd time
@@ -349,8 +341,7 @@ export class shipments {
     transaction.drug = {
       _id:drug._id,
       generics:drug.generics,
-      form:drug.form,
-      brand:drug.brand,
+      form:drug.form
     }
 
     transaction.shipment = {
