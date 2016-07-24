@@ -165,7 +165,7 @@
             click.delegate="addTransaction(drug)"
             class="${ $index == index && 'is-selected'}">
             <td class="mdl-data-table__cell--non-numeric" innerHTML.bind="drug | drugName:regex" style="white-space:normal; max-width:70%"></td>
-            <td class="mdl-data-table__cell--non-numeric" style="max-width:30%">${ drug._id }</td>
+            <td class="mdl-data-table__cell--non-numeric" style="max-width:30%">${ drug._id + (drug.pkg ? '-'+drug.pkg : '') }</td>
           </tr>
         </table>
       </md-autocomplete>
@@ -222,7 +222,7 @@
                 ${ transaction.drug | drugName }
               </td>
               <td click.delegate="selectRow($index)" class="mdl-data-table__cell--non-numeric" style="padding:0">
-                ${ transaction.drug._id }
+                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }
                 <!-- <md-select
                   style="margin-left:-3px"
                   value.bind="package"

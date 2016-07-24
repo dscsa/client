@@ -97,7 +97,7 @@
                 ${ transaction | drugName }
               </td>
               <td style="text-align:left;">
-                ${ transaction.drug._id }
+                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }
               </td>
               <td style="text-align:left;">
                 ${ (transaction.exp.to || transaction.exp.from).slice(0, 10) }
