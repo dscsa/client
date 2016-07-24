@@ -293,22 +293,22 @@ export class shipments {
     })
   }
 
-  //Enter in the autocomplete adds the first transaction
+  //Enter in the autocomplete adds the selected transaction
   //TODO support up/down arrow keys to pick different transaction?
   scrollDrugs($event) {
     //group won't be a reference so we must search manually
     let last = this.drugs.length - 1
 
-    if ($event.which == 38) //Keyup
+    if ($event.which == 38) //Arrow up
       this.index = this.index > 0 ? this.index - 1 : last
 
-    if ($event.which == 40 )//keydown
+    if ($event.which == 40 )//Arrow down
       this.index = this.index < last ? this.index+1 : 0
 
-    if ($event.which == 13)
+    if ($event.which == 13) //Enter
       this.addTransaction(this.drugs[this.index])
 
-    if ($event.which == 106) //clearing autocomplete field with an asterick (to match exp date clearing and make keyboard compatible)
+    if ($event.which == 106) //clearing autocomplete field with an asterick (to match exp date clearing and make numberpad compatible)
       this.term = ""
   }
 
@@ -348,14 +348,14 @@ export class shipments {
       _id:this.shipment._id
     }
 
+    this.term = '' //Reset search's auto-complete
+
     //Assume db query works.
     this.transactions.unshift(transaction) //Add the drug to the view
     this.isChecked.unshift(!!transaction.verifiedAt)
     this.diffs = this.diffs.map(val => val+1)
 
-    this.term = ''    //Reset search's auto-complete
     setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
-    console.log('addTransaction', drug, transaction)
     return this.db.transaction.post(transaction)
     .catch(err => {
       this.snackbar.show(`Transaction could not be added: ${err.name}`)
@@ -425,7 +425,6 @@ export class shipments {
   //   .catch(this.attachment.url = null)
   // }
 }
-
 
 //
 // Value Converters
