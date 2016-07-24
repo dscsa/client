@@ -869,6 +869,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
     drugs.prototype.exportCSV = function exportCSV() {
       var _this7 = this;
 
+      this.snackbar.show('Exporting drugs as csv. This may take a few minutes');
       this.db.drug.get().then(function (drugs) {
         _this7.csv.unparse('Drugs.csv', drugs.map(function (drug) {
           var generic = genericName(drug);
@@ -888,10 +889,9 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
     };
 
     drugs.prototype.importCSV = function importCSV() {
-      var _this8 = this,
-          _arguments = arguments;
+      var _this8 = this;
 
-      this.snackbar.show('Parsing CSV File');
+      this.snackbar.show('Parsing csv file');
       function capitalize(text) {
         return text ? text.trim().toLowerCase().replace(/\b[a-z]/g, function (l) {
           return l.toUpperCase();
@@ -917,7 +917,6 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
               var name = _generic$split[0];
               var strength = _generic$split[1];
 
-              console.log(generic, name, strength, _arguments);
               return {
                 name: capitalize(name),
                 strength: trim(strength || '').toLowerCase().replace(/ /g, '')

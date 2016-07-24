@@ -150,6 +150,7 @@ export class drugs {
   }
 
   exportCSV() {
+    this.snackbar.show(`Exporting drugs as csv. This may take a few minutes`)
     this.db.drug.get().then(drugs => {
       this.csv.unparse('Drugs.csv', drugs.map(drug => {
         let generic = genericName(drug)
@@ -167,7 +168,7 @@ export class drugs {
   }
 
   importCSV() {
-    this.snackbar.show(`Parsing CSV File`)
+    this.snackbar.show(`Parsing csv file`)
     function capitalize(text) {
       return text ? text.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()) : text
     }
@@ -185,7 +186,6 @@ export class drugs {
           labeler:capitalize(drug.labeler),
           generics:drug.generics.split(";").filter(v => v).map(generic => {
             let [name, strength] = generic.split(/(?= [\d.]+)/)
-            console.log(generic, name, strength, arguments)
             return {
               name:capitalize(name),
               strength:trim(strength || '').toLowerCase().replace(/ /g, '')
