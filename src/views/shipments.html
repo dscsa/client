@@ -45,7 +45,7 @@
         </div>
         <div style="margin-top:3px; margin-bottom:-25px">
           <strong>${transactions.length}</strong> items worth
-          <strong>$${ transactions | value:transactions.length }</strong>
+          <strong>$${ transactions | value:0:transactions.length }</strong>
         </div>
       </div>
       <div class="mdl-card__supporting-text" style="font-size:16px;">
@@ -230,7 +230,7 @@
                 </md-select> -->
               </td>
               <td style="padding:0">
-                ${ transaction.drug.price && ((transaction.drug.price.nadac || transaction.drug.price.goodrx || 0) * (transaction.qty.to || transaction.qty.from || 0)).toFixed(2) }
+                ${ transaction | value:2 }
               </td>
               <td style="padding:0">
                 ${ transaction.exp[role.partner] | date}

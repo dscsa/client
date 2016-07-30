@@ -468,11 +468,15 @@ export class filterValueConverter {
 }
 
 export class valueValueConverter {
-  toView(transactions = [], trigger) {
-    return transactions.reduce((a, b) => {
-      let price = (b.drug.price && (b.drug.price.nadac || b.drug.price.goodrx)) || 0
-      return a + (b.qty.to || b.qty.from || 0)*price
-    }, 0).toFixed(2)
+  toView(transactions, decimals, trigger) {
+    transactions = Array.isArray(transactions) ? transactions : [transactions]
+
+    return transactions.reduce((total, transaction) => {
+      if ( ! transaction.drug.price || ! transaction.qty) return 0
+      let price = transaction.drug.price.nadac || transaction.drug.price.goodrx || 0
+      let   qty = transaction.qty.to || transaction.qty.from || 0
+      return total + qty * price
+    }, 0).toFixed(decimals)
   }
 }
 
