@@ -156,7 +156,7 @@
         placeholder="Filter by Rx or Add Drugs by Generic Name or NDC..."
         value.bind="term"
         input.delegate="search()"
-        keyup.delegate="scrollDrugs($event)"
+        keydown.delegate="scrollDrugs($event)"
         disabled.bind="role.account == 'to' && ! shipment._rev"
         style="margin:0px 16px">
         <table md-table>
@@ -199,15 +199,16 @@
             <tr>
               <th style="width:15px"></th>
               <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
-              <th class="mdl-data-table__cell--non-numeric" style="width:90px;padding-left:0">Ndc</th>
+              <!-- <th class="mdl-data-table__cell--non-numeric" style="width:90px;padding-left:0">Ndc</th> -->
               <th style="width:40px; padding-left:0; padding-right:0px">Value</th>
               <th style="text-align:left; width:40px;">Exp</th>
               <th style="text-align:left; width:40px">Qty</th>
-              <th style="text-align:left; width:10px; padding-left:0"></th>
+              <th style="text-align:left; width:40px">Rx</th>
+              <th style="text-align:left; width:40px;">Box</th>
             </tr>
           </thead>
           <tbody>
-            <tr style="padding-top:7px;" repeat.for="transaction of transactions">
+            <tr style="padding-top:7px;" repeat.for="transaction of transactions" input.delegate="saveTransaction($index) & debounce:1000">
               <td style="padding:0 0 0 8px">
                 <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->
                 <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->
@@ -221,14 +222,9 @@
               <td click.delegate="selectRow($index)" class="mdl-data-table__cell--non-numeric" style="max-width:300px; white-space:normal; padding-left:0">
                 ${ transaction.drug | drugName }
               </td>
-              <td click.delegate="selectRow($index)" class="mdl-data-table__cell--non-numeric" style="padding:0">
+              <!-- <td click.delegate="selectRow($index)" class="mdl-data-table__cell--non-numeric" style="padding:0">
                 ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }
-                <!-- <md-select
-                  style="margin-left:-3px"
-                  value.bind="package"
-                  options.bind="['', '00','01','10','90']">
-                </md-select> -->
-              </td>
+              </td> -->
               <td style="padding:0">
                 ${ transaction | value:2 }
               </td>
@@ -236,6 +232,7 @@
                 ${ transaction.exp[role.partner] | date}
                 <md-input
                   id.bind="'exp_'+$index"
+                  disabled.bind="transaction.verifiedAt"
                   keyup.delegate="expShortcuts($event, $index)"
                   pattern="(0?[1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp[role.account] | date"
@@ -246,9 +243,10 @@
               <td style="padding:0">
                 ${ transaction.qty[role.partner] }
                   <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->
+                  <!-- keyup rather than keydown because we want the new quantity not the old one -->
                   <md-input
                     id.bind="'qty_'+$index"
-                    input.delegate="saveTransaction($index) & debounce:1000"
+                    disabled.bind="transaction.verifiedAt"
                     keyup.delegate="qtyShortcuts($event, $index)"
                     type="number"
                     value.bind="transaction.qty[role.account] | number"
@@ -256,11 +254,35 @@
                     placeholder>
                   </md-input>
               </td>
-              <td style="padding:0 16px">
+              <td style="padding:0">
+                ${ transaction.rx[role.partner] }
+                <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->
+                <md-input
+                  id.bind="'rx_'+$index"
+                  disabled.bind="transaction.verifiedAt || ! transaction.isChecked"
+                  keyup.delegate="rxShortcuts($event, $index)"
+                  value.bind="transaction.rx[role.account]"
+                  style="width:40px; margin-bottom:-8px; text-overflow:ellipsis"
+                  placeholder>
+                </md-input>
+              </td>
+              <td style="padding:0">
+                <md-input
+                  id.bind="'box_'+$index"
+                  disabled.bind="transaction.verifiedAt || ! transaction.isChecked"
+                  keydown.delegate="boxShortcuts($event, $index)"
+                  focusout.delegate="saveLastBox($event)"
+                  pattern="[A-Z]\d{3}"
+                  value.bind="transaction.location"
+                  style="width:40px; margin-bottom:-8px"
+                  placeholder>
+                </md-input>
+              </td>
+              <!-- <td style="padding:0 16px">
                 <a if.bind="shipment._rev" href="/#/records/${ transaction._id }" tabindex="-1">
                    <i class="material-icons" style="font-size:15px; vertical-align:text-top">history</i>
                 </a>
-              </td>
+              </td> -->
             </tr>
           </tbody>
         </table>

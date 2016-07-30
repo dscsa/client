@@ -173,23 +173,23 @@ export class shipments {
 
   expShortcuts($event, $index) {
     if ($event.which == 37 || $event.which == 39 || $event.which == 9)
-      return //ignore left and right arrows and tabs https://css-tricks.com/snippets/javascript/javascript-keycodes/
+      return //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
 
     if ($event.which == 13) //Enter should focus on quantity
       return document.querySelector('#qty_'+$index+' input').focus()
 
     //See if this transaction qualifies for autoCheck
-    this.autoCheck($index)
-
-    return true
+    this.autoCheck($index, true)
   }
 
   qtyShortcuts($event, $index) {
     if ($event.which == 37 || $event.which == 39 || $event.which == 9)
-      return //ignore left and right arrows and tabs https://css-tricks.com/snippets/javascript/javascript-keycodes/
+      return false //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
 
-    if ($event.which == 13) //Enter should refocus on the search
-      return document.querySelector('md-autocomplete input').focus()
+    if ($event.which == 13) { //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
+      let rxInput = document.querySelector('#rx_'+$index+' input')
+      return rxInput.disabled ? document.querySelector('md-autocomplete input').focus() : rxInput.focus()
+    }
 
     //Delete an item in the qty is 0.  Instead of having a delete button
     let transaction = this.transactions[$index]
@@ -206,8 +206,35 @@ export class shipments {
 
     //See if this transaction qualifies for autoCheck
     this.autoCheck($index, true)
+  }
+
+  boxShortcuts($event, $index) {
+    if ($event.which == 13) //Enter should focus on quantity
+      document.querySelector('md-autocomplete input').focus()
+
+    if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
+      let box = document.querySelector('#box_'+$index+' input')
+      box.value = box.value[0]+(+box.value.slice(1)+1)
+      $event.preventDefault() //don't actually add the +
+    }
+
+    if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
+      let box = document.querySelector('#box_'+$index+' input')
+      box.value = box.value[0]+(+box.value.slice(1)-1)
+      $event.preventDefault() //don't actually add the -
+    }
 
     return true
+  }
+
+  saveLastBox($event) {
+    this.lastBox = $event.target.value
+    console.log(this.lastBox)
+  }
+
+  rxShortcuts($event, $index) {
+    if ($event.which == 13) //Enter should refocus on the search
+      document.querySelector('#box_'+$index+' input').focus()
   }
 
   //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
@@ -232,8 +259,10 @@ export class shipments {
 
     if (isChecked)
       showMessage && this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
+
+    transaction.location = this.lastBox
+
     this.manualCheck($index)
-      this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
   }
 
   manualCheck($index) {
@@ -322,6 +351,8 @@ export class shipments {
 
     if ($event.which == 106) //clearing autocomplete field with an asterick (to match exp date clearing and make numberpad compatible)
       this.term = ""
+
+    return true
   }
 
   //Since this is triggered by a focusin and then does a focus, it activates itself a 2nd time
@@ -344,6 +375,7 @@ export class shipments {
   addTransaction(drug, transaction) {
     transaction = transaction || {
       qty:{from:null, to:null},
+      rx:{from:null, to:null},
       exp:{
         from:this.transactions[0] ? this.transactions[0].exp.from : null,
         to:this.transactions[0] ? this.transactions[0].exp.to : null
@@ -366,9 +398,9 @@ export class shipments {
     this.term = '' //Reset search's auto-complete
 
     //Assume db query works.
+    console.log('addTransaction', transaction)
     this.transactions.unshift(transaction) //Add the drug to the view
-    this.diffs = this.diffs.map(val => val+1)
-
+    this.diffs = this.diffs.map(val => +val+1) //for some reason indexes were strings
     setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
     return this.db.transaction.post(transaction).then(_ => {
       transaction.isChecked = transaction.verifiedAt

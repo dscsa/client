@@ -6,140 +6,126 @@ import {Router} from 'aurelia-router';
 export class inventory {
 
   constructor(db, router){
-    this.db      = db
-    this.session =
-    this.router  = router
-    this.scrollGroups = this.scrollGroups.bind(this)
-  }
-
-  deactivate() {
-    removeEventListener('keyup', this.scrollGroups)
+    this.db        = db
+    this.router    = router
+    this.resetFilter()
   }
 
   activate(params) {
-    addEventListener('keyup', this.scrollGroups)
     return this.db.user.session.get().then(session => {
-      return this.db.transaction.get({'shipment._id':session.account._id})
+      this.account = session.account._id
+      this.selectGroup()
     })
-    .then(transactions => {
-      let groups = {}
-
-      for (let transaction of transactions) {
-        groups[transaction.drug._id] = groups[transaction.drug._id] || {total:0, transactions:[]}
-        groups[transaction.drug._id].total += +transaction.qty.from || 0
-        groups[transaction.drug._id].transactions.push(transaction)
-      }
-
-      this.groups = Object.keys(groups).map(key => groups[key])
-
-      this.select(groups[params.id] || this.groups[0])
-    })
-    .catch(console.log)
   }
 
   scrollGroups($event) {
-    let index = this.groups.indexOf(this.group)
+    //group won't be a reference so we must search manually
+    let index = this.groups.map(group => group.name).indexOf(this.group.name)
     let last  = this.groups.length - 1
 
     if ($event.which == 38) //Keyup
-      this.select(this.groups[index > 0 ? index - 1 : last])
+      this.selectGroup(this.groups[index > 0 ? index - 1 : last])
 
     if ($event.which == 40) //keydown
-      this.select(this.groups[index < last ? index+1 : 0])
-  }
+      this.selectGroup(this.groups[index < last ? index+1 : 0])
 
-  select(group) {
-    //Update URL with lifecycle methods so we can come back to this shipment
-    if (group) {
-      this.group = group
-      let drugId = group.transactions[0].drug._id
-      this.router.navigate('inventory/'+drugId, { trigger: false })
-      this.db.drug.get({_id:drugId}).then(drugs => this.image = drugs[0].image)
+    if ($event.which == 13) { //Enter get rid of the results
+      document.querySelector('md-autocomplete input').blur()
     }
-    else
-      this.group = {transactions:[]}
-
-    this.mode = false
   }
 
-  toggleRepack() {
-    this.mode = ! this.mode
-    this.repack = this.group.transactions.map(s => s.qty.from)
-    this.sumRepack()
-    return true
+  selectGroup(group) {
+    group = group || this.search().then(_ => {
+      return this.groups[0] || {transactions:[]}
+    })
+
+    Promise.resolve(group).then(group => {
+      this.term  = group.name
+      this.group = group
+
+      group.transactions.sort((a, b) => {
+        let aExp = a.exp.from || ''
+        let bExp = b.exp.from || ''
+        let aBox = a.location || ''
+        let bBox = b.location || ''
+        let aQty = a.qty.from || ''
+        let bQty = b.qty.from || ''
+
+        if (aBox > bBox) return -1
+        if (aBox < bBox) return 1
+        if (aExp < bExp) return -1
+        if (aExp > bExp) return 1
+        if (aQty > bQty) return -1
+        if (aQty < bQty) return 1
+        return 0
+      })
+
+      this.resetFilter()
+      for (let transaction of group.transactions) {
+        this.filter.exp[transaction.exp.from] = {isChecked:true, count:0, qty:0}
+        this.filter.ndc[transaction.drug._id] = {isChecked:true, count:0, qty:0}
+      }
+    })
   }
 
-  //ValueConverter wasn't picking up on changes so trigger manually
-  //For some reason input[type=number] doesn't save as a number
-  //not sure if this is an html of aurelia bug
-  sumGroup() {
-    this.group.total = this.group.transactions.reduce((a,b) => a + (+b.qty.from || 0), 0)
+  resetFilter() {
+    this.filter = {exp:{},ndc:{}}
   }
 
-  sumRepack() {
-    this.repack.total = this.repack.reduce((a,b) => (+a)+(+b), 0)
+  search() {
+
+    let term = (this.term || '').trim()
+
+    if (term.length < 3)
+      return Promise.resolve(this.groups = [])
+
+    //TODO make this an Rx search instead.  Also look up ndc in drug db to get generic name then do generic search
+    if (/^[\d-]+$/.test(term)) {
+      // this.regex = RegExp('('+term+')', 'gi')
+      // var transactions = this.db.transaction.get({ndc:term, 'shipment._id':this.account})
+    } else {
+      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+      var transactions = this.db.transaction.get({generic:term})
+    }
+
+    let groups = {}
+    return transactions.then(transactions => {
+      for (let transaction of transactions) {
+        groups[transaction.drug.generic] = groups[transaction.drug.generic] || {name:transaction.drug.generic, transactions:[]}
+        groups[transaction.drug.generic].transactions.push(transaction)
+      }
+      this.groups = Object.keys(groups).map(key => groups[key])
+    })
+  }
+
+  signalFilter(obj) {
+    if (obj) obj.val.isChecked = ! obj.val.isChecked
+    this.filter = Object.assign({}, this.filter)
   }
 
   saveTransaction(transaction) {
+    //save isChecked in the transaction because the isChecked[$index] has an $index that changes with filters
+    let isChecked = transaction.isChecked
+    delete transaction.isChecked
     console.log('saving', transaction)
     this.db.transaction.put(transaction)
-    .catch(e => this.snackbar.show({
-       message: `Transaction with exp ${transaction.exp[this.role.account]} and qty ${transaction.qty[this.role.account]} could not be saved`,
-     }))
+    .then(_ => {
+      transaction.isChecked = isChecked
+    })
+    .catch(e => this.snackbar.show(`Transaction with exp ${transaction.exp.from} and qty ${transaction.qty.from} could not be saved: ${e}`))
   }
 
-//TODO don't bind when repacking so that you can skip and change things to get to 30
-//Skip over and dont delete items that have a repack quantity of 0
-  repackage() {
-    let all   = []
-    let exp   = null
-    let trans = {
-      _id:undefined,
-      _rev:undefined,
-      qty:{from:0, to:0},
-      lot:{from:null, to:null},
-      exp:{from:Infinity, to:Infinity}, //JSON.stringify will convert these to null if neccessary
-      history:[]
-    }
-
-    trans = Object.assign({}, this.group.transactions[0], trans)
-    //Go backwards since we are deleting array vals as we go
-    for (let i=this.repack.length-1; i>=0; i--) {
-      let qty = +this.repack[i]
-      let src = this.group.transactions[i]
-
-      //Falsey quantity such as null, "", or 0 should mean skip this source
-      //Do not allow items to be repackaged a 2nd time with a partial quantity
-      //because we don't know by how much to reduce each of the original qtys
-      if ( ! qty || (src.qty.from != qty && src.history.length >1))
-        continue
-
-      trans.qty.from += qty
-
-      if (src.qty.from == qty) {
-        trans.history.push(...src.history)
-        this.group.transactions.splice(i, 1) //assume delete is successful
-        all.push(this.db.transaction.delete(src))
-      } else { //cannot take partial quantity from repackaged drug, so history must have length <= 1
-        if (src.history.length == 1) {
-          let [{transaction}] = src.history
-          trans.history.push({transaction, qty})
-        }
-        src.qty.from -= qty
-        all.push(this.db.transaction.put(src))
+  removeInventory() {
+    let remove = []
+    for (let transaction of this.group.transactions) {
+      if (transaction.isChecked) {
+        remove.push(this.db.transaction.delete(transaction).then(_ =>
+          this.group.transactions.splice(this.group.transactions.indexOf(transaction), 1)
+        ))
       }
-
-      if (src.exp.from)
-        trans.exp.from = Math.min(trans.exp.from, new Date(src.exp.from))
     }
 
-    trans.exp.from = new Date(trans.exp.from).toJSON()
-
-    //assume add is successful.  TODO fallback code on failure
-    this.group.transactions.unshift(trans)
-    this.mode = false
-
-    return this.db.transaction.post(trans).then(_ => Promise.all(all))
+    Promise.all(remove).then(_ => this.snackbar.show(`${remove.length} transactions removed from inventory`))
   }
 }
 
@@ -162,29 +148,63 @@ export class dateValueConverter {
   }
 }
 
-export class numberValueConverter {
-  fromView(str){
-    return +str
+export class jsonValueConverter {
+  toView(object = null){
+    return JSON.stringify(object, null, " ")
+  }
+}
+
+export class toArrayValueConverter {
+  toView(obj = {}){
+    let arr = []
+    for (var key in obj)
+      arr.push({key, val:obj[key]})
+
+    return arr
   }
 }
 
 //ADDED step of converting object to array
 export class filterValueConverter {
-  toView(groups = [], filter = ''){
-    filter = filter.toLowerCase()
-    return groups.filter(group => {
-      return ~ genericName(group.transactions[0]).toLowerCase().indexOf(filter)
+  toView(transactions = [], filter){
+    for (let transaction of transactions) {
+      filter.exp[transaction.exp.from].count = 0
+      filter.exp[transaction.exp.from].qty = 0
+      filter.ndc[transaction.drug._id].count = 0
+      filter.ndc[transaction.drug._id].qty = 0
+    }
+
+    transactions = transactions.filter(transaction => {
+      if (filter.rx) {
+        if ( ! transaction.rx) return false
+        if ( ! transaction.rx.from.includes(filter.rx)) return false
+      }
+
+      if ( ! filter.exp[transaction.exp.from].isChecked) {
+        if (filter.ndc[transaction.drug._id].isChecked) {
+          filter.exp[transaction.exp.from].count++
+          filter.exp[transaction.exp.from].qty += transaction.qty.from
+        }
+        return false
+      }
+      if ( ! filter.ndc[transaction.drug._id].isChecked) {
+        if (filter.exp[transaction.exp.from].isChecked) {
+          filter.ndc[transaction.drug._id].count++
+          filter.ndc[transaction.drug._id].qty += transaction.qty.from
+        }
+        return false
+      }
+
+      filter.exp[transaction.exp.from].count++
+      filter.ndc[transaction.drug._id].count++
+      filter.exp[transaction.exp.from].qty += transaction.qty.from
+      filter.ndc[transaction.drug._id].qty += transaction.qty.from
+      return true
     })
-  }
-}
 
-export class drugNameValueConverter {
-  toView(transaction, bold){
-    let text = genericName(transaction)
-    return bold ? text.replace(RegExp('('+bold+')', 'i'), '<strong>$1</strong>') : text
-  }
-}
+    filter.exp = Object.assign({}, filter.exp)
+    filter.ndc = Object.assign({}, filter.ndc)
 
-function genericName(transaction) {
-  return transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+transaction.drug.form
+    return transactions
+  }
 }

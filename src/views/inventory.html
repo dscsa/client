@@ -7,86 +7,119 @@
   <require from="elems/md-button"></require>
   <require from="elems/md-switch"></require>
   <require from="elems/md-snackbar"></require>
+  <require from="elems/md-checkbox"></require>
+  <require from="elems/md-autocomplete"></require>
+  <require from="binding-behaviors/array"></require>
+  <style>
+    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}
+    .mdl-textfield__label { color:black; font-size:1rem }
+  </style>
+  <style media="print"> .hideWhenPrinted { display: none; }</style>
   <md-drawer>
-    <md-input value.bind="filter" style="padding:0 8px;">Filter Inventory</md-input>
   </md-drawer>
   <section class="mdl-grid au-animate">
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
-      <div
-        class="mdl-card__supporting-text"
-        style="font-size:13px;">
-        <div repeat.for="transaction of group.transactions" input.delegate="saveTransaction(transaction) & debounce:1000">
-          <div style="display:inline-block; width:calc(100% - 90px)">
-            <a if.bind="transaction.history[0].transaction._id" href.bind="'/#/records/'+transaction.history[0].transaction._id">${transaction.history[0].transaction._id}</a>
-            ${ transaction.history[0].transaction._id ? '' : 'inventory' }
-            <a if.bind="!mode" style="float:right">
-              <i class="material-icons" style="font-size:18px; vertical-align:text-top; padding-right:5px">print</i>
-            </a>
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height hideWhenPrinted"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
+      <div class="mdl-card__supporting-text" style="padding:0">
+        <div repeat.for="ndc of filter.ndc | toArray" class="mdl-grid" style="padding:0 0 0 8px; margin-top:-8px">
+          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:16px 0 0 0; width:100%">
+            <div class="mdl-cell mdl-cell--6-col">Ndc Filter</div>
+            <div class="mdl-cell mdl-cell--2-col">Qty</div>
+            <div class="mdl-cell mdl-cell--2-col">Count</div>
           </div>
-          <span style="white-space:nowrap;">
-            <md-input
-              disabled.bind="mode"
-              pattern="(0?[1-9]|1[012])/\d{2}"
-              style="width:40px"
-              value.bind="transaction.exp.from | date"
-              placeholder="Exp">
-            </md-input>
-            <md-input
-              if.bind=" ! mode"
-              type="number"
-              style="width:40px"
-              value.bind="transaction.qty.from | number"
-              input.trigger="sumGroup()"
-              placeholder="Qty">
-            </md-input>
-            <md-input
-              if.bind="mode"
-              type="number"
-              style="width:40px"
-              value.bind="repack[$index]"
-              input.delegate="sumRepack()"
-              placeholder="Qty"
-              max.bind="transaction.qty.from">
-            </md-input>
-          </span>
+          <md-checkbox class="mdl-cell mdl-cell--6-col" click.delegate="signalFilter(ndc)" checked.bind="ndc.val.isChecked">${ndc.key}</md-checkbox>
+          <div class="mdl-cell mdl-cell--2-col">${ndc.val.qty}</div>
+          <div class="mdl-cell mdl-cell--2-col">${ndc.val.count}</div>
         </div>
-        <img style="width:100%" if.bind="image" src.bind="image">
+        <div repeat.for="exp of filter.exp | toArray" class="mdl-grid" style="padding:0 0 0 8px; margin-bottom:-8px">
+          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:0; width:100%">
+            <div class="mdl-cell mdl-cell--6-col">Exp Filter</div>
+          </div>
+          <md-checkbox class="mdl-cell mdl-cell--6-col" click.delegate="signalFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
+          <div class="mdl-cell mdl-cell--2-col">${exp.val.qty}</div>
+          <div class="mdl-cell mdl-cell--2-col">${exp.val.count}</div>
+        </div>
+        <md-input show.bind="group.transactions.length" input.delegate="signalFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input>
       </div>
-      <div class="mdl-card__actions mdl-grid">
-        <md-switch
-          checked.bind="mode"
-          click.delegate="toggleRepack()"
-          style="flex:1; align-self:flex-end">
-        </md-switch>
-        <md-button
-          color raised
-          if.bind="mode"
-          disabled.bind="group.transactions.length < 2"
-          click.delegate="repackage()"
-          style="width:140px">
-          Repackage ${ repack.total }
+      <div class="mdl-card__actions">
+        <md-button color raised
+          style="width:100%"
+          disabled.bind=" ! group.transactions.length"
+          click.delegate="removeInventory()">
+          ${'Remove Selected'}
         </md-button>
       </div>
     </div>
-    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
-      <table md-table style="margin:8px 16px; width:calc(100% - 32px)">
-        <thead>
-          <tr>
-            <th class="mdl-data-table__cell--non-numeric">Drug</th>
-            <th class="mdl-data-table__cell--non-numeric">Ndc</th>
-            <th>Items</th>
-            <th>Qty</th>
+    <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
+      <md-autocomplete
+        placeholder="Search Drugs by Generic Name..."
+        value.bind="term"
+        input.delegate="search()"
+        keyup.delegate="scrollGroups($event)"
+        style="margin:0px 16px; padding-right:15px">
+        <table md-table>
+          <tr
+            repeat.for="group of groups"
+            click.delegate="selectGroup(group)"
+            class="${ group.name == $parent.group.name && 'is-selected'}">
+            <td
+              class="mdl-data-table__cell--non-numeric"
+              innerHTML.bind="group.name.replace(regex, '<strong>$1</strong>')">
+            </td>
           </tr>
-        </thead>
-        <tr repeat.for="group of groups | filter:filter" click.delegate="select(group)" class="${ $parent.group != group || 'is-selected'}">
-          <td style="text-align:left; white-space: normal;" innerHTML.bind="group.transactions[0] | drugName:filter"></td>
-          <td class="mdl-data-table__cell--non-numeric">
-            ${ group.transactions[0].drug._id }
-          </td>
-          <td>${ group.transactions.length }</td>
-          <td>${ group.total}</td>
-        </tr>
-      </table>
+        </table>
+      </md-autocomplete>
+      <div style="width:100%; height:100%; display:flex">
+        <div style="overflow-y:scroll; margin:8px 0px 8px 16px; flex:1;">
+          <table md-table style="width:calc(100% - 16px);">
+            <thead>
+              <tr>
+                <th style="width:15px"></th>
+                <th class="mdl-data-table__cell--non-numeric">Drug</th>
+                <th class="mdl-data-table__cell--non-numeric">Ndc</th>
+                <th style="text-align:left; width:40px;">Exp</th>
+                <th style="text-align:left; width:40px;">Qty</th>
+                <th style="text-align:left; width:40px;">Rx</th>
+                <th style="text-align:left; width:40px;">Box</th>
+              </tr>
+            </thead>
+            <tr repeat.for="transaction of group.transactions | filter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
+              <td style="padding:0 0 0 8px">
+                <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
+              </td>
+              <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.generic }</td>
+              <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id }</td>
+              <td style="padding:0">
+                <md-input
+                  value.bind="transaction.exp.from | date"
+                  style="width:40px; margin-bottom:-8px"
+                  placeholder>
+                </md-input>
+              </td>
+              <td style="padding:0">
+                <md-input
+                  value.bind="transaction.qty.from"
+                  style="width:40px; margin-bottom:-8px"
+                  placeholder>
+                </md-input>
+              </td>
+              <td style="padding:0">
+                <md-input
+                  value.bind="transaction.rx.from"
+                  style="width:40px; margin-bottom:-8px"
+                  placeholder>
+                </md-input>
+              </td>
+              <td style="padding:0">
+                <md-input
+                  value.bind="transaction.location"
+                  style="width:40px; margin-bottom:-8px"
+                  placeholder>
+                </md-input>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
     </div>
     <md-snackbar ref="snackbar"></md-snackbar>
   </section>
