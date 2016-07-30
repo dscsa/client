@@ -118,6 +118,8 @@ export class shipments {
       this.originalTransactions = transactions
       for (let i in this.transactions) {
         this.transactions[i].isChecked = this.transactions[i].verifiedAt
+        if ( ! this.transactions[i].verifiedAt) this.autoCheck(i, false)
+      }
     })
     .catch(console.log)
   }
@@ -146,7 +148,6 @@ export class shipments {
   //Move these items to a different "alternative" shipment then select it
   //TODO need to select the new shipment once user confirms the move
   moveTransactionsToShipment(shipment) {
-
     //Change all selected transactions to the new or existing shipment
     Promise.all(this.transactions.map(transaction => {
       //do not allow movement of verified transactions
@@ -160,7 +161,6 @@ export class shipments {
 
   //Create shipment then move inventory transactions to it
   createShipment() {
-
     if (this.shipment.tracking == 'New Tracking #')
       delete this.shipment.tracking
 
@@ -205,7 +205,7 @@ export class shipments {
     }
 
     //See if this transaction qualifies for autoCheck
-    this.autoCheck($index)
+    this.autoCheck($index, true)
 
     return true
   }
@@ -226,10 +226,12 @@ export class shipments {
     let isChecked  = transaction.isChecked || false //apparently false != undefined
 
     if((minQty && minExp) == isChecked) {
-      ordered.destroyedMessage && this.snackbar.show(ordered.destroyedMessage)
-      return console.log('minQty', minQty, qty, 'minExp', minExp, exp)
+      showMessage && ordered.destroyedMessage && this.snackbar.show(ordered.destroyedMessage)
+      return showMessage && console.log('minQty', minQty, qty, 'minExp', minExp, exp)
     }
 
+    if (isChecked)
+      showMessage && this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
     this.manualCheck($index)
       this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
   }
