@@ -51,6 +51,11 @@ export class drugs {
     //group won't be a reference so we must search manually
     let index = this.groups.map(group => group.name).indexOf(this.group.name)
     this.scrollSelect($event, index, this.groups, group => this.selectGroup(group, true))
+
+    if ($event.which == 13) { //Enter get rid of the results
+      document.querySelector('md-autocomplete input').blur()
+    }
+
     $event.stopPropagation() //scrolling groups doesn't need to scroll drugs as well
   }
 
@@ -68,10 +73,6 @@ export class drugs {
 
     if ($event.which == 40) //keydown
       cb(list[index < last ? index+1 : 0])
-
-    if ($event.which == 13) { //Enter get rid of the results
-      document.querySelector('md-autocomplete input').blur()
-    }
   }
 
   selectGroup(group, autoselectDrug) {
@@ -105,7 +106,7 @@ export class drugs {
 
   search() {
 
-    let term = this.term.trim()
+    let term = (this.term || '').trim()
 
     if (term.length < 3)
       return Promise.resolve(this.groups = [])
