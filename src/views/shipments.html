@@ -215,7 +215,7 @@
                 <md-checkbox
                   disabled.bind="(role.account == 'to' && diffs.length && ! transactions[diffs[0]].verifiedAt != ! transaction.verifiedAt) || (role.account == 'to' && transaction.verifiedAt && shipment._id != shipmentId) || (role.account == 'from' && transaction.verifiedAt)"
                   click.delegate="manualCheck($index)"
-                  checked.bind="isChecked[$index]">
+                  checked.bind="transaction.isChecked">
                 </md-checkbox>
               </td>
               <td click.delegate="selectRow($index)" class="mdl-data-table__cell--non-numeric" style="max-width:300px; white-space:normal; padding-left:0">

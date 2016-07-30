@@ -9,7 +9,7 @@ import {Csv}        from '../libs/csv'
 export class shipments {
 
   constructor(db, router, http){
-    this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'verifiedAt'])
+    this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'rx.from', 'rx.to', 'verifiedAt'])
     this.db     = db
     this.drugs  = []
     this.router = router
@@ -110,14 +110,14 @@ export class shipments {
   setTransactions(shipmentId) {
     this.transactions = []
     this.diffs        = [] //Newly checked or unchecked checkboxes. Used to disable buttons if user has not done anything yet
-    this.isChecked    = [] //check.one-way="checkmarks.indexOf($index) > -1" wasn't working
 
     if ( ! shipmentId) return
 
     this.db.transaction.get({'shipment._id':shipmentId}).then(transactions => {
       this.transactions = transactions
-      for (let i in this.transactions)
-        this.isChecked.push(!!this.transactions[i].verifiedAt) //force boolean since aurelia forces checkboxes to be boolean to using date causes checkboxes to stick on first click as aurelia converts date to boolean
+      this.originalTransactions = transactions
+      for (let i in this.transactions) {
+        this.transactions[i].isChecked = this.transactions[i].verifiedAt
     })
     .catch(console.log)
   }
@@ -148,9 +148,9 @@ export class shipments {
   moveTransactionsToShipment(shipment) {
 
     //Change all selected transactions to the new or existing shipment
-    Promise.all(this.transactions.map((transaction, i) => {
+    Promise.all(this.transactions.map(transaction => {
       //do not allow movement of verified transactions
-      if ( ! this.isChecked[i] || transaction.verifiedAt) return
+      if ( ! transaction.isChecked || transaction.verifiedAt) return
 
       transaction.shipment = {_id:shipment._id}
       return this.db.transaction.put(transaction)
@@ -199,7 +199,6 @@ export class shipments {
     if (donorDelete || doneeDelete) {
       this.db.transaction.delete(transaction).then(_ =>  {
         this.transactions.splice($index, 1)
-        this.isChecked.splice($index, 1)
         this.diffs = this.diffs.filter(i => i != $index).map(i => i > $index ? i-1 : i)
       })
       document.querySelector('md-autocomplete input').focus()
@@ -212,7 +211,7 @@ export class shipments {
   }
 
   //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
-  autoCheck($index) {
+  autoCheck($index, showMessage) {
     let transaction = this.transactions[$index]
 
     let ordered = this.ordered[this.shipment.account.to._id][genericName(transaction.drug)]
@@ -224,7 +223,7 @@ export class shipments {
     let defaultQty = transaction.drug.brand ? 1 : 10
     let minQty     = qty >= (+ordered.minQty || defaultQty)
     let minExp     = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120)*24*60*60*1000 : !ordered.minDays
-    let isChecked  = this.isChecked[$index] || false //apparently false != undefined
+    let isChecked  = transaction.isChecked || false //apparently false != undefined
 
     if((minQty && minExp) == isChecked) {
       ordered.destroyedMessage && this.snackbar.show(ordered.destroyedMessage)
@@ -232,17 +231,15 @@ export class shipments {
     }
 
     this.manualCheck($index)
-    this.isChecked[$index] = ! isChecked
-    if (this.isChecked[$index])
       this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
   }
 
   manualCheck($index) {
+    this.transactions[$index].isChecked = ! this.transactions[$index].isChecked
+
     let j = this.diffs.indexOf($index)
     ~ j ? this.diffs.splice(j, 1)
       : this.diffs.push($index)
-
-    return true
   }
 
   saveInventory() {
@@ -262,7 +259,7 @@ export class shipments {
         return true
       })
       .catch(err => {
-        this.isChecked[i] = !!this.transactions[i].verifiedAt
+        this.transactions[i].isChecked = this.transactions[i].verifiedAt
         this.manualCheck(i)
         this.snackbar.show(err.reason)
       })
@@ -276,10 +273,23 @@ export class shipments {
   search() {
     let term = this.term.trim()
 
-    if (term.length < 3)
+    if (term.length < 3) {
+      this.transactions = this.originalTransactions
       return this.drugs = []
+    }
 
     if (/^[\d-]+$/.test(term)) {
+      if (term[0] != '3' || term.length != 12) {
+        let filter = this.transactions.filter(transaction => {
+          console.log('search term', transaction.rx && transaction.rx.from, transaction.rx && transaction.rx.to, transaction.rx && (transaction.rx.from == term || transaction.rx.to == term))
+          return transaction.rx && (transaction.rx.from == term || transaction.rx.to == term)
+        })
+        console.log('search term', filter)
+        if (filter.length) {
+          return this.transactions = filter
+        }
+      }
+
       this.regex = RegExp('('+term+')', 'gi')
       var drugs = this.db.drug.get({ndc:term})
     } else {
@@ -338,6 +348,8 @@ export class shipments {
       }
     }
 
+    delete transaction.isChecked
+
     transaction.drug = {
       _id:drug._id,
       generics:drug.generics,
@@ -353,15 +365,15 @@ export class shipments {
 
     //Assume db query works.
     this.transactions.unshift(transaction) //Add the drug to the view
-    this.isChecked.unshift(!!transaction.verifiedAt)
     this.diffs = this.diffs.map(val => val+1)
 
     setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
-    return this.db.transaction.post(transaction)
+    return this.db.transaction.post(transaction).then(_ => {
+      transaction.isChecked = transaction.verifiedAt
+    })
     .catch(err => {
       this.snackbar.show(`Transaction could not be added: ${err.name}`)
       this.transactions.shift()
-      this.isChecked.shift()
       this.diffs = this.diffs.map(val => val-1)
     })
   }
