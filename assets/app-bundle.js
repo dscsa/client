@@ -1736,6 +1736,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       var _this = this;
 
       return this.db.user.session.get().then(function (session) {
+        _this.user = session._id;
         return _this.db.account.get({ _id: session.account._id });
       }).then(function (accounts) {
         var _this$ordered;
@@ -2124,6 +2125,10 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       transaction.shipment = {
         _id: this.shipment._id
+      };
+
+      transaction.user = {
+        _id: this.user
       };
 
       this.term = '';

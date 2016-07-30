@@ -20,7 +20,10 @@ export class shipments {
 
   activate(params) {
     return this.db.user.session.get()
-    .then(session  => this.db.account.get({_id:session.account._id}))
+    .then(session  => {
+      this.user = session._id
+      return this.db.account.get({_id:session.account._id})
+    })
     .then(accounts => {
       this.account = {_id:accounts[0]._id, name:accounts[0].name}
       this.ordered = {[accounts[0]._id]:accounts[0].ordered}
@@ -393,6 +396,10 @@ export class shipments {
 
     transaction.shipment = {
       _id:this.shipment._id
+    }
+
+    transaction.user = {
+      _id:this.user
     }
 
     this.term = '' //Reset search's auto-complete
