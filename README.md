@@ -2,15 +2,25 @@
 Application that uses the RESTful API written with the Aurelia framework
 
 ## install development
-[install node](https://nodejs.org/en/download/current)
-[install couchbb](http://couchdb.apache.org/#download)
+- [install node](https://nodejs.org/en/download/current)
+- [install couchdb](http://couchdb.apache.org/#download)
+- install git
 ```
-cd /<installation directory>
-sudo mkdir /keys
-sudo nano  /keys/dev.js
-sudo npm install aurelia-cli -g            #install dev tool
-sudo npm install dscsa/client              #install the app
-sudo node /dscsa/node_modules/server       #run the api
+sudo npm install aurelia-cli -g               #install dev tool
+
+sudo mkdir /path/to/install/dev
+sudo mkdir /path/to/install/master/keys
+sudo nano  /path/to/install/master/keys/dev.js
+sudo ln -s /path/to/install/keys /path/to/install/dev/keys
+
+sudo npm install dscsa/client --prefix='/path/to/install/master'   #install the app
+sudo ln -s /path/to/install/master/node_modules/* /path/to/install/dev/node_modules #note this was not working for Omar
+
+git checkout dscsa/server into dev/node_modules/server
+git checkout dscsa/pouch into dev/node_modules/db
+git checkout dscsa/csv into dev/node_modules/csv
+
+sudo node /path/to/install/dev/node_modules/server              #run the api
 cd node_modules/client && au run —-watch   #start dev environment
 ```
 Test that both http://localhost and http://localhost:9000 now serve the app
