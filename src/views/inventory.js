@@ -176,7 +176,7 @@ export class filterValueConverter {
 
     transactions = transactions.filter(transaction => {
       if (filter.rx) {
-        if ( ! transaction.rx) return false
+        if ( ! transaction.rx || ! transaction.rx.from) return false
         if ( ! transaction.rx.from.includes(filter.rx)) return false
       }
 

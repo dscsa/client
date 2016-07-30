@@ -1315,7 +1315,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
       transactions = transactions.filter(function (transaction) {
         if (filter.rx) {
-          if (!transaction.rx) return false;
+          if (!transaction.rx || !transaction.rx.from) return false;
           if (!transaction.rx.from.includes(filter.rx)) return false;
         }
 
