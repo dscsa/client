@@ -15,9 +15,8 @@
       </div>
     </header>
     <main class="mdl-layout__content">
-      <div class="page-content" style="height:100%">
-        <router-view style="display:block; height:100%"></router-view>
-      </div>
+      <!-- http://stackoverflow.com/questions/33636796/chrome-safari-not-filling-100-height-of-flex-parent -->
+      <router-view style="display:block; height:100vh"></router-view>
     </main>
   </div>
 </template>
