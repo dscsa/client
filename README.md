@@ -44,12 +44,12 @@ sudo apt-get update
 sudo apt-get install couchdb -y
 sudo nano /etc/couchdb/local.ini #change bind_address to 0.0.0.0
 sudo service couchdb restart
-#check <elastic-ip>:5984/_utils serves futon
+goto <elastic-ip>:5984/_utils and create server login
 
 #install nodejs and application
-curl --silent --location https://rpm.nodesource.com/setup_6.x | sudo bash -
-sudo yum install nodejs -y
-sudo yum install git-core
+curl --silent --location https://deb.nodesource.com/setup_6.x | sudo bash -
+sudo apt-get install nodejs -y
+sudo apt-get install git-core
 sudo npm install dscsa/client
 sudo npm install forever -g
 forever start /dscsa/node_modules/server
