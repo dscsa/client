@@ -2118,6 +2118,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       transaction.drug = {
         _id: drug._id,
+        brand: drug.brand,
         generics: drug.generics,
         form: drug.form,
         pkg: drug.pkg
