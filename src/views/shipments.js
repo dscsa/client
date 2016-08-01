@@ -507,7 +507,7 @@ export class filterValueConverter {
 }
 
 export class valueValueConverter {
-  toView(transactions, decimals, trigger) {
+  toView(transactions = [], decimals, trigger) {
     transactions = Array.isArray(transactions) ? transactions : [transactions]
 
     return transactions.reduce((total, transaction) => {
