@@ -176,44 +176,56 @@ export class shipments {
 
   expShortcuts($event, $index) {
     if ($event.which == 37 || $event.which == 39 || $event.which == 9)
-      return //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
+      return true //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
 
-    if ($event.which == 13) //Enter should focus on quantity
-      return document.querySelector('#qty_'+$index+' input').focus()
+    if ($event.which == 13) {//Enter should focus on quantity
+      document.querySelector('#qty_'+$index+' input').focus()
+      return false
+    }
 
     //See if this transaction qualifies for autoCheck
     this.autoCheck($index, true)
+
+    return true
   }
 
   qtyShortcuts($event, $index) {
-    if ($event.which == 37 || $event.which == 39 || $event.which == 9)
-      return false //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
-
     if ($event.which == 13) { //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
       let rxInput = document.querySelector('#rx_'+$index+' input')
-      return rxInput.disabled ? document.querySelector('md-autocomplete input').focus() : rxInput.focus()
+      rxInput.disabled ? document.querySelector('md-autocomplete input').focus() : rxInput.focus()
+      return false
     }
 
-    //Delete an item in the qty is 0.  Instead of having a delete button
-    let transaction = this.transactions[$index]
-    let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
-    let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
+    setTimeout(_ => { //keydown means that input has not changed yet.  keyup can't be canceled
 
-    if (donorDelete || doneeDelete) {
-      this.db.transaction.delete(transaction).then(_ =>  {
-        this.transactions.splice($index, 1)
-        this.diffs = this.diffs.filter(i => i != $index).map(i => i > $index ? i-1 : i)
-      })
-      document.querySelector('md-autocomplete input').focus()
-    }
+      if ($event.which == 37 || $event.which == 39 || $event.which == 9)
+        return true //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
 
-    //See if this transaction qualifies for autoCheck
-    this.autoCheck($index, true)
+      //Delete an item in the qty is 0.  Instead of having a delete button
+      let transaction = this.transactions[$index]
+      let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
+      let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
+
+      if (donorDelete || doneeDelete) {
+        this.db.transaction.delete(transaction).then(_ =>  {
+          this.transactions.splice($index, 1)
+          this.diffs = this.diffs.filter(i => i != $index).map(i => i > $index ? i-1 : i)
+        })
+        document.querySelector('md-autocomplete input').focus()
+      }
+
+      //See if this transaction qualifies for autoCheck
+      this.autoCheck($index, true)
+    })
+
+    return true
   }
 
   boxShortcuts($event, $index) {
-    if ($event.which == 13) //Enter should focus on quantity
+    if ($event.which == 13) {//Enter should focus on quantity
       document.querySelector('md-autocomplete input').focus()
+      return false
+    }
 
     if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
       let box = document.querySelector('#box_'+$index+' input')
@@ -235,8 +247,12 @@ export class shipments {
   }
 
   rxShortcuts($event, $index) {
-    if ($event.which == 13) //Enter should refocus on the search
+    if ($event.which == 13) {//Enter should refocus on the search
       document.querySelector('#box_'+$index+' input').focus()
+      return false
+    }
+
+    return true
   }
 
   //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
@@ -360,18 +376,19 @@ export class shipments {
 
   //Since this is triggered by a focusin and then does a focus, it activates itself a 2nd time
   selectRow($index) {
-    console.log('select row')
     document.querySelector('#exp_'+$index+' input').focus()
   }
 
   saveTransaction($index) {
     if ( ! document.querySelector('#exp_'+$index+' input').validity.valid)
-      return
+      return true
 
     this.db.transaction.put(this.transactions[$index])
     .catch(err => {
       this.snackbar.show(`Error saving transaction: ${err.reason}`)
     })
+
+    return true
   }
 
   addTransaction(drug, transaction) {
@@ -539,10 +556,9 @@ export class dateValueConverter {
   }
 
   fromView(date){
-
-    let add = date.includes('+')
+    let add = date.includes('+') || date.includes('=')
     let sub = date.includes('-')
-    let {month, year} = parseUserDate(date.replace(/[+-]/, ''))
+    let {month, year} = parseUserDate(date.replace(/\+|\-|\=/g, ''))
 
     if (add) month++
     if (sub) month--
@@ -557,7 +573,8 @@ export class dateValueConverter {
       year++
     }
 
-    this.view  = month+'/'+year
+    //Keep zerp padding in front of the month which is lost when month changes
+    this.view  = ("00"+month).slice(-2)+'/'+year
 
     return this.model = toJsonDate({month, year})
   }

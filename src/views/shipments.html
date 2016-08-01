@@ -233,7 +233,7 @@
                 <md-input
                   id.bind="'exp_'+$index"
                   disabled.bind="transaction.verifiedAt"
-                  keyup.delegate="expShortcuts($event, $index)"
+                  keydown.delegate="expShortcuts($event, $index)"
                   pattern="(0?[1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp[role.account] | date"
                   style="width:40px; margin-bottom:-8px"
@@ -247,7 +247,7 @@
                   <md-input
                     id.bind="'qty_'+$index"
                     disabled.bind="transaction.verifiedAt"
-                    keyup.delegate="qtyShortcuts($event, $index)"
+                    keydown.delegate="qtyShortcuts($event, $index)"
                     type="number"
                     value.bind="transaction.qty[role.account] | number"
                     style="width:40px; margin-bottom:-8px"
@@ -260,7 +260,7 @@
                 <md-input
                   id.bind="'rx_'+$index"
                   disabled.bind="transaction.verifiedAt || ! transaction.isChecked"
-                  keyup.delegate="rxShortcuts($event, $index)"
+                  keydown.delegate="rxShortcuts($event, $index)"
                   value.bind="transaction.rx[role.account]"
                   style="width:40px; margin-bottom:-8px; text-overflow:ellipsis"
                   placeholder>
