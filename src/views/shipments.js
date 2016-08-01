@@ -348,13 +348,15 @@ export class shipments {
     if ($event.which == 40 )//Arrow down
       this.index = this.index < last ? this.index+1 : 0
 
-    if ($event.which == 13) //Enter
+    if ($event.which == 13) {//Enter
       this.addTransaction(this.drugs[this.index])
+      $event.preventDefault() //Enter was also triggering exp to qty focus
+    }
 
-    if ($event.which == 106) //clearing autocomplete field with an asterick (to match exp date clearing and make numberpad compatible)
+    if ($event.which == 106) //* clearing autocomplete field with an asterick (to match exp date clearing and make numberpad compatible)
       this.term = ""
 
-    return true
+    return true  //still allow typing into autocomplete
   }
 
   //Since this is triggered by a focusin and then does a focus, it activates itself a 2nd time
@@ -367,7 +369,6 @@ export class shipments {
     if ( ! document.querySelector('#exp_'+$index+' input').validity.valid)
       return
 
-    console.log('saving', this.transactions[$index])
     this.db.transaction.put(this.transactions[$index])
     .catch(err => {
       this.snackbar.show(`Error saving transaction: ${err.reason}`)

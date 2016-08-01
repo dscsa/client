@@ -2078,7 +2078,10 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       if ($event.which == 40) this.index = this.index < last ? this.index + 1 : 0;
 
-      if ($event.which == 13) this.addTransaction(this.drugs[this.index]);
+      if ($event.which == 13) {
+        this.addTransaction(this.drugs[this.index]);
+        $event.preventDefault();
+      }
 
       if ($event.which == 106) this.term = "";
 
@@ -2095,7 +2098,6 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       if (!document.querySelector('#exp_' + $index + ' input').validity.valid) return;
 
-      console.log('saving', this.transactions[$index]);
       this.db.transaction.put(this.transactions[$index]).catch(function (err) {
         _this9.snackbar.show('Error saving transaction: ' + err.reason);
       });
