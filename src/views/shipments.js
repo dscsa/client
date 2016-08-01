@@ -218,13 +218,13 @@ export class shipments {
     if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
       let box = document.querySelector('#box_'+$index+' input')
       box.value = box.value[0]+(+box.value.slice(1)+1)
-      $event.preventDefault() //don't actually add the +
+      return false //don't actually add the +
     }
 
     if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
       let box = document.querySelector('#box_'+$index+' input')
       box.value = box.value[0]+(+box.value.slice(1)-1)
-      $event.preventDefault() //don't actually add the -
+      return false //don't actually add the -
     }
 
     return true
@@ -232,7 +232,6 @@ export class shipments {
 
   saveLastBox($event) {
     this.lastBox = $event.target.value
-    console.log(this.lastBox)
   }
 
   rxShortcuts($event, $index) {

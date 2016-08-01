@@ -1954,13 +1954,13 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       if ($event.which == 107 || $event.which == 187) {
         var box = document.querySelector('#box_' + $index + ' input');
         box.value = box.value[0] + (+box.value.slice(1) + 1);
-        $event.preventDefault();
+        return false;
       }
 
       if ($event.which == 109 || $event.which == 189) {
         var _box = document.querySelector('#box_' + $index + ' input');
         _box.value = _box.value[0] + (+_box.value.slice(1) - 1);
-        $event.preventDefault();
+        return false;
       }
 
       return true;
@@ -1968,7 +1968,6 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
     shipments.prototype.saveLastBox = function saveLastBox($event) {
       this.lastBox = $event.target.value;
-      console.log(this.lastBox);
     };
 
     shipments.prototype.rxShortcuts = function rxShortcuts($event, $index) {
