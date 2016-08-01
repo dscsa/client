@@ -2050,10 +2050,9 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       if (/^[\d-]+$/.test(term)) {
         if (term[0] != '3' || term.length != 12) {
           var filter = this.transactions.filter(function (transaction) {
-            console.log('search term', transaction.rx && transaction.rx.from, transaction.rx && transaction.rx.to, transaction.rx && (transaction.rx.from == term || transaction.rx.to == term));
             return transaction.rx && (transaction.rx.from == term || transaction.rx.to == term);
           });
-          console.log('search term', filter);
+          console.log('Rx search term', filter);
           if (filter.length) {
             return this.transactions = filter;
           }
