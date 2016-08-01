@@ -350,7 +350,7 @@ export class shipments {
 
     if ($event.which == 13) {//Enter
       this.addTransaction(this.drugs[this.index])
-      $event.preventDefault() //Enter was also triggering exp to qty focus
+      return false //Enter was also triggering exp to qty focus
     }
 
     if ($event.which == 106) //* clearing autocomplete field with an asterick (to match exp date clearing and make numberpad compatible)

@@ -2080,7 +2080,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       if ($event.which == 13) {
         this.addTransaction(this.drugs[this.index]);
-        $event.preventDefault();
+        return false;
       }
 
       if ($event.which == 106) this.term = "";
