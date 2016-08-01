@@ -79,8 +79,8 @@ export class inventory {
     if (term.length < 3)
       return Promise.resolve(this.groups = [])
 
-    //TODO make this an Rx search instead.  Also look up ndc in drug db to get generic name then do generic search
     if (/^[\d-]+$/.test(term)) {
+      //TODO make this an Rx search.  Also look up ndc in drug db to get generic name then do generic search
       // this.regex = RegExp('('+term+')', 'gi')
       // var transactions = this.db.transaction.get({ndc:term, 'shipment._id':this.account})
     } else {
