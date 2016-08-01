@@ -49,8 +49,8 @@ export class join {
       console.log('join success', _)
       return this.router.navigate('account')
     })
-    .catch(_ => {
-      console.log('join failed', _)
+    .catch(err => {
+      this.snackbar.show('Join failed: '+err.reason)
     })
   }
 }
