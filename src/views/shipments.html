@@ -226,7 +226,7 @@
                 ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }
               </td> -->
               <td style="padding:0">
-                ${ transaction | value:2 }
+                ${ transaction | value:2:transaction.qty.to }
               </td>
               <td style="padding:0">
                 ${ transaction.exp[role.partner] | date}
