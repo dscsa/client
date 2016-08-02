@@ -155,7 +155,7 @@
       <md-autocomplete
         placeholder="Filter by Rx or Add Drugs by Generic Name or NDC..."
         value.bind="term"
-        input.delegate="search()"
+        input.delegate="search() & debounce:50"
         keydown.delegate="scrollDrugs($event)"
         disabled.bind="role.account == 'to' && ! shipment._rev"
         style="margin:0px 16px">

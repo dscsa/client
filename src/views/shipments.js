@@ -326,7 +326,7 @@ export class shipments {
       this.transactions = this.originalTransactions
       return this.drugs = []
     }
-
+    
     if (/^[\d-]+$/.test(term)) {
       if (term[0].toLowerCase() == 'r') {
         let filter = this.transactions.filter(transaction => {
