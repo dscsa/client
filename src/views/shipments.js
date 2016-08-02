@@ -328,11 +328,11 @@ export class shipments {
     }
 
     if (/^[\d-]+$/.test(term)) {
-      if (term[0] != '3' || term.length != 12) {
+      if (term[0].toLowerCase() == 'r') {
         let filter = this.transactions.filter(transaction => {
           return transaction.rx && (transaction.rx.from == term || transaction.rx.to == term)
         })
-        console.log('Rx search term', filter)
+        console.log('Rx search term', term, filter)
         if (filter.length) {
           return this.transactions = filter
         }
