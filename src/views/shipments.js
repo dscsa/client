@@ -275,7 +275,7 @@ export class shipments {
       return showMessage && console.log('minQty', minQty, qty, 'minExp', minExp, exp)
     }
 
-    if (isChecked)
+    if ( ! isChecked) //manual check has not switched the boolean yet
       showMessage && this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
 
     transaction.location = this.lastBox
