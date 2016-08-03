@@ -2021,6 +2021,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.manualCheck = function manualCheck($index) {
+      console.log('manualCheck', this.transactions[$index].isChecked, !this.transactions[$index].isChecked);
       this.transactions[$index].isChecked = !this.transactions[$index].isChecked;
 
       var j = this.diffs.indexOf($index);
@@ -2126,7 +2127,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       if (!document.querySelector('#exp_' + $index + ' input').validity.valid) return true;
 
       var isChecked = this.transactions[$index].isChecked;
-      delete this.transactions[$index].isChecked;
+      this.transactions[$index].isChecked = undefined;
 
       console.log('saveTransaction', this.transactions[$index]);
       this.db.transaction.put(this.transactions[$index]).then(this.transactions[$index].isChecked = isChecked).catch(function (err) {

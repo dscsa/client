@@ -286,6 +286,7 @@ export class shipments {
   }
 
   manualCheck($index) {
+    console.log('manualCheck', this.transactions[$index].isChecked, ! this.transactions[$index].isChecked)
     this.transactions[$index].isChecked = ! this.transactions[$index].isChecked
 
     let j = this.diffs.indexOf($index)
@@ -393,7 +394,7 @@ export class shipments {
       return true
 
     let isChecked = this.transactions[$index].isChecked
-    delete this.transactions[$index].isChecked
+    this.transactions[$index].isChecked = undefined
 
     console.log('saveTransaction', this.transactions[$index])
     this.db.transaction.put(this.transactions[$index]).then(
