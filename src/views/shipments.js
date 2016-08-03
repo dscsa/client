@@ -242,8 +242,9 @@ export class shipments {
     return true
   }
 
-  saveLastBox($event) {
+  saveLastBox($event, $index) {
     this.lastBox = $event.target.value
+    this.saveTransaction($index)
   }
 
   rxShortcuts($event, $index) {
@@ -256,7 +257,7 @@ export class shipments {
   }
 
   //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
-  autoCheck($index, showMessage) {
+  autoCheck($index, userInput) {
     let transaction = this.transactions[$index]
 
     let ordered = this.ordered[this.shipment.account.to._id][genericName(transaction.drug)]
@@ -271,14 +272,15 @@ export class shipments {
     let isChecked  = transaction.isChecked || false //apparently false != undefined
 
     if((minQty && minExp) == isChecked) {
-      showMessage && ordered.destroyedMessage && this.snackbar.show(ordered.destroyedMessage)
-      return showMessage && console.log('minQty', minQty, qty, 'minExp', minExp, exp)
+      userInput && ordered.destroyedMessage && this.snackbar.show(ordered.destroyedMessage)
+      return userInput && console.log('minQty', minQty, qty, 'minExp', minExp, exp)
     }
 
     if ( ! isChecked) //manual check has not switched the boolean yet
-      showMessage && this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
+      userInput && this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
 
-    transaction.location = this.lastBox
+    if (userInput) //don't do this on initial page load
+      transaction.location = this.lastBox
 
     this.manualCheck($index)
   }
@@ -326,7 +328,7 @@ export class shipments {
       this.transactions = this.originalTransactions
       return this.drugs = []
     }
-    
+
     if (/^[\d-]+$/.test(term)) {
       if (term[0].toLowerCase() == 'r') {
         let filter = this.transactions.filter(transaction => {
@@ -363,8 +365,15 @@ export class shipments {
     if ($event.which == 40 )//Arrow down
       this.index = this.index < last ? this.index+1 : 0
 
-    if ($event.which == 13) {//Enter
+    if ($event.which == 13 && this.drugs[this.index]) {//Enter
       this.addTransaction(this.drugs[this.index])
+      return false //Enter was also triggering exp to qty focus
+    }
+
+    if ($event.which == 13 && ! this.drugs[this.index]) {//Barcode scan means search might not be done yet
+      setTimeout(_ => {
+        this.addTransaction(this.drugs[this.index])
+      }, 200)
       return false //Enter was also triggering exp to qty focus
     }
 
@@ -383,9 +392,16 @@ export class shipments {
     if ( ! document.querySelector('#exp_'+$index+' input').validity.valid)
       return true
 
-    this.db.transaction.put(this.transactions[$index])
+    let isChecked = this.transactions[$index].isChecked
+    delete this.transactions[$index].isChecked
+
+    console.log('saveTransaction', this.transactions[$index])
+    this.db.transaction.put(this.transactions[$index]).then(
+      this.transactions[$index].isChecked = isChecked
+    )
     .catch(err => {
       this.snackbar.show(`Error saving transaction: ${err.reason}`)
+      this.transactions[$index].isChecked = isChecked
     })
 
     return true
@@ -400,8 +416,6 @@ export class shipments {
         to:this.transactions[0] ? this.transactions[0].exp.to : null
       }
     }
-
-    delete transaction.isChecked
 
     transaction.drug = {
       _id:drug._id,
@@ -426,9 +440,7 @@ export class shipments {
     this.transactions.unshift(transaction) //Add the drug to the view
     this.diffs = this.diffs.map(val => +val+1) //for some reason indexes were strings
     setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
-    return this.db.transaction.post(transaction).then(_ => {
-      transaction.isChecked = transaction.verifiedAt
-    })
+    return this.db.transaction.post(transaction)
     .catch(err => {
       this.snackbar.show(`Transaction could not be added: ${err.name}`)
       this.transactions.shift()
