@@ -22,7 +22,9 @@ export class MdDrawerCustomElement {
     componentHandler.upgradeAllRegistered()
 
     this.button = document.querySelector('.mdl-layout__drawer-button')
-    this.button.style.display = 'block'
+
+    if (this.button)
+      this.button.style.display = 'block'
 
     if (this.autofocus)
       this.header.firstChild.click()
@@ -32,7 +34,7 @@ export class MdDrawerCustomElement {
     //New drawer is attached before old drawer is detached so children.length == 2
     //except if going to view without a drawer (e.g login) in which length == 1
     //console.log('detached', drawer.children.length)
-    if (drawer.children.length == 1)
+    if (drawer.children.length == 1 && this.button)
       this.button.style.display = 'none'
 
     //Empty the drawer
