@@ -8,8 +8,8 @@ export class login {
   constructor(db, router){
     this.db       = db
     this.router   = router
-    this.email    = '@sirum.org'
-    this.password = 'password'
+    this.email    = 'oregon@sirum.org'
+    this.password = ''
     this.disabled = true
   }
 
