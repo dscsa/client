@@ -1167,6 +1167,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
           var transaction = _ref2;
 
+          transaction.drug.generic = genericName(transaction.drug);
           groups[transaction.drug.generic] = groups[transaction.drug.generic] || { name: transaction.drug.generic, transactions: [] };
           groups[transaction.drug.generic].transactions.push(transaction);
         }
@@ -1357,6 +1358,12 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
     return filterValueConverter;
   }();
+
+  function genericName(drug) {
+    return drug.generics.map(function (generic) {
+      return generic.name + " " + generic.strength;
+    }).join(', ') + ' ' + drug.form;
+  }
 });
 define('views/join',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient) {
   'use strict';

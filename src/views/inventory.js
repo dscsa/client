@@ -91,6 +91,7 @@ export class inventory {
     let groups = {}
     return transactions.then(transactions => {
       for (let transaction of transactions) {
+        transaction.drug.generic = genericName(transaction.drug)
         groups[transaction.drug.generic] = groups[transaction.drug.generic] || {name:transaction.drug.generic, transactions:[]}
         groups[transaction.drug.generic].transactions.push(transaction)
       }
@@ -207,4 +208,8 @@ export class filterValueConverter {
 
     return transactions
   }
+}
+
+function genericName(drug) {
+  return drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
 }
