@@ -1949,6 +1949,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         var donorDelete = !transaction.qty.to && transaction.qty.from === 0;
 
         if (donorDelete || doneeDelete) {
+          _this6.drugs = [];
           _this6.db.transaction.delete(transaction).then(function (_) {
             _this6.transactions.splice($index, 1);
             _this6.diffs = _this6.diffs.filter(function (i) {

@@ -207,6 +207,7 @@ export class shipments {
       let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
 
       if (donorDelete || doneeDelete) {
+        this.drugs = [] //get rid of previous results since someone might press enter and accidentally readd the same drug
         this.db.transaction.delete(transaction).then(_ =>  {
           this.transactions.splice($index, 1)
           this.diffs = this.diffs.filter(i => i != $index).map(i => i > $index ? i-1 : i)
