@@ -322,6 +322,7 @@ export class shipments {
   }
 
   search() {
+    this.drugs = [] //clear out old search so barcode scan's enter does not select and old drug
     let term = this.term.trim()
 
     if (term.length < 3) {
@@ -365,7 +366,7 @@ export class shipments {
     if ($event.which == 40 )//Arrow down
       this.index = this.index < last ? this.index+1 : 0
 
-    if ($event.which == 13 && this.drugs[this.index]) {//Enter
+    if ($event.which == 13 && this.drugs[this.index]) {//Enter with a selected drug.  Force term to be falsey so a barcode scan which is entering digits does not trigger
       this.addTransaction(this.drugs[this.index])
       return false //Enter was also triggering exp to qty focus
     }
@@ -408,6 +409,9 @@ export class shipments {
   }
 
   addTransaction(drug, transaction) {
+    if ( ! drug)
+      return this.snackbar.show(`Cannot find drug matching this search`)
+
     transaction = transaction || {
       qty:{from:null, to:null},
       rx:{from:null, to:null},

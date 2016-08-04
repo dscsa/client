@@ -156,7 +156,7 @@
         placeholder="Filter by Rx or Add Drugs by Generic Name or NDC..."
         value.bind="term"
         input.delegate="search() & debounce:50"
-        keydown.delegate="scrollDrugs($event)"
+        keydown.delegate="scrollDrugs($event) & debounce:50"
         disabled.bind="role.account == 'to' && ! shipment._rev"
         style="margin:0px 16px">
         <table md-table>
