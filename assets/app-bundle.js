@@ -839,6 +839,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
 
           var drug = _ref;
 
+          drug.generic = genericName(drug);
           groups[drug.generic] = groups[drug.generic] || { name: drug.generic, drugs: [] };
           groups[drug.generic].drugs.push(drug);
         }
@@ -968,7 +969,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
     drugs.prototype.saveDrug = function saveDrug() {
       var _this10 = this;
 
-      delete this.drug.generic;
+      this.drug.generic = undefined;
       this.db.drug.put(this.drug).catch(function (err) {
         return _this10.snackbar.show('Drug not saved: ' + err.name);
       });
@@ -1010,6 +1011,12 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
 
     return numberValueConverter;
   }();
+
+  function genericName(drug) {
+    return drug.generics.map(function (generic) {
+      return generic.name + " " + generic.strength;
+    }).join(', ') + ' ' + drug.form;
+  }
 });
 define('views/index',['exports'], function (exports) {
   'use strict';
@@ -2021,7 +2028,6 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.manualCheck = function manualCheck($index) {
-      console.log('manualCheck', this.transactions[$index].isChecked, !this.transactions[$index].isChecked);
       this.transactions[$index].isChecked = !this.transactions[$index].isChecked;
 
       var j = this.diffs.indexOf($index);

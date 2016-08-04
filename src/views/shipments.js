@@ -286,7 +286,6 @@ export class shipments {
   }
 
   manualCheck($index) {
-    console.log('manualCheck', this.transactions[$index].isChecked, ! this.transactions[$index].isChecked)
     this.transactions[$index].isChecked = ! this.transactions[$index].isChecked
 
     let j = this.diffs.indexOf($index)
