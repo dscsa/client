@@ -122,6 +122,7 @@ export class drugs {
     let groups = {}
     return drugs.then(drugs => {
       for (let drug of drugs) {
+        drug.generic = genericName(drug)
         groups[drug.generic] = groups[drug.generic] || {name:drug.generic, drugs:[]}
         groups[drug.generic].drugs.push(drug)
       }
@@ -241,7 +242,7 @@ export class drugs {
   }
 
   saveDrug() {
-    delete this.drug.generic
+    this.drug.generic = undefined
     this.db.drug.put(this.drug)
     .catch(err => this.snackbar.show(`Drug not saved: ${err.name}`))
   }
@@ -267,4 +268,8 @@ export class numberValueConverter {
     //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
     return str != null && decimals ? (+str).toFixed(decimals) : str
   }
+}
+
+function genericName(drug) {
+  return drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
 }
