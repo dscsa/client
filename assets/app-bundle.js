@@ -192,6 +192,7 @@ define('elems/md-drawer',['exports', 'aurelia-framework'], function (exports, _a
 
   var drawer = document.createElement('nav');
   drawer.classList.add("mdl-layout__drawer");
+  console.log('drawer was created');
 
   var MdDrawerCustomElement = exports.MdDrawerCustomElement = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
     function MdDrawerCustomElement(element) {
@@ -203,19 +204,28 @@ define('elems/md-drawer',['exports', 'aurelia-framework'], function (exports, _a
       this.autofocus = element.hasAttribute('autofocus');
 
       drawer.appendChild(element);
+      console.log('drawer was constructed');
     }
 
     MdDrawerCustomElement.prototype.attached = function attached() {
+      var _this = this;
+
       this.header = document.querySelector('.mdl-layout__header');
       this.header.parentNode.insertBefore(drawer, this.header.nextSibling);
 
       componentHandler.upgradeAllRegistered();
+      componentHandler.upgradeDom();
 
       this.button = document.querySelector('.mdl-layout__drawer-button');
 
       if (this.button) this.button.style.display = 'block';
 
-      if (this.autofocus) this.header.firstChild.click();
+      if (this.autofocus && this.header.firstChild) this.header.firstChild.click();
+
+      console.log('drawer was attached', 'header', this.header, 'button', this.button);
+      setTimeout(function (_) {
+        console.log('drawer was attached with timeout', 'header', _this.header, 'button', _this.button);
+      }, 500);
     };
 
     MdDrawerCustomElement.prototype.detached = function detached() {

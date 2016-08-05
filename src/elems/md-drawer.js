@@ -2,6 +2,7 @@ import {inject} from 'aurelia-framework';
 
 let drawer = document.createElement('nav')
 drawer.classList.add("mdl-layout__drawer")
+console.log('drawer was created')
 
 @inject(Element)
 export class MdDrawerCustomElement {
@@ -13,6 +14,7 @@ export class MdDrawerCustomElement {
     this.autofocus = element.hasAttribute('autofocus')
     //Move md-nav into the drawer
     drawer.appendChild(element)
+    console.log('drawer was constructed')
   }
 
   attached() {
@@ -20,14 +22,20 @@ export class MdDrawerCustomElement {
     this.header.parentNode.insertBefore(drawer, this.header.nextSibling)
 
     componentHandler.upgradeAllRegistered()
+    componentHandler.upgradeDom()
 
     this.button = document.querySelector('.mdl-layout__drawer-button')
 
     if (this.button)
       this.button.style.display = 'block'
 
-    if (this.autofocus)
+    if (this.autofocus && this.header.firstChild)
       this.header.firstChild.click()
+
+    console.log('drawer was attached', 'header', this.header, 'button', this.button)
+    setTimeout(_ => {
+      console.log('drawer was attached with timeout', 'header', this.header, 'button', this.button)
+    }, 500)
   }
 
   detached() {
