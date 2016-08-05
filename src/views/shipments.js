@@ -119,9 +119,13 @@ export class shipments {
     this.db.transaction.get({'shipment._id':shipmentId}).then(transactions => {
       this.transactions = transactions
       this.originalTransactions = transactions
+      let verified //do not autocheck past the point where someone has inventoried
       for (let i in this.transactions) {
         this.transactions[i].isChecked = this.transactions[i].verifiedAt
-        if ( ! this.transactions[i].verifiedAt) this.autoCheck(i, false)
+        if (this.transactions[i].verifiedAt)
+          verified = true
+        else if ( ! verified)
+          this.autoCheck(i, false)
       }
     })
     .catch(console.log)

@@ -139,7 +139,7 @@
           if.bind="shipment._id == shipmentId && shipment._rev && role.account == 'to'"
           disabled.bind="! diffs.length"
           click.delegate="saveInventory()">
-          ${ transactions[diffs[0]].verifiedAt ? 'Remove '+diffs.length+' Items' : 'Save '+diffs.length+' Items'}
+          ${ transactions[diffs[0]].verifiedAt ? 'Uninventory '+diffs.length+' Items' : 'Inventory '+diffs.length+' Items'}
         </md-button>
         <md-button color raised
           style="width:100%"
