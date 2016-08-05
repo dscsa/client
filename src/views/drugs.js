@@ -28,14 +28,14 @@ export class drugs {
     .then(accounts => {
       this.account = accounts[0]
       this.drawer  = {
-        ordered:Object.keys(this.account.ordered).map(generic => {
-          let ordered = { name:generic }
-          this.db.drug.get({generic}).then(drugs => {
-            ordered.drugs = drugs.filter(drug => drug.generic == generic)
-          })
-          return ordered
-        })
+        ordered:Object.keys(this.account.ordered)
       }
+
+      // Object.keys(this.account.ordered).map(generic => {
+      //   let ordered = { name:generic }
+      //
+      //   return ordered
+      // })
 
       if ( ! params.id) {
         return this.selectGroup(null, true)
@@ -104,6 +104,15 @@ export class drugs {
       this.selectGroup()
   }
 
+  selectDrawer(generic) {
+    this.term = generic
+    this.db.drug.get({generic}).then(drugs => {
+      //Use filter to get an exact match not just one ingredient
+      let group = {name:generic, drugs:drugs.filter(drug => drug.generic == generic)}
+      this.selectGroup(group, true)
+    })
+  }
+
   search() {
 
     let term = (this.term || '').trim()
@@ -135,15 +144,15 @@ export class drugs {
   order() {
     if (this.account.ordered[this.group.name]) {
       //Delete this group from the drawer drawer
-      this.drawer.ordered = this.drawer.ordered.filter(group => {
-        return group.name != this.group.name
+      this.drawer.ordered = this.drawer.ordered.filter(generic => {
+        return generic != this.group.name
       })
 
       this.account.ordered[this.group.name] = undefined
     } else {
       console.log('order')
       //Add New Order but Keep Add New Item on Top
-      this.drawer.ordered.unshift(this.group)
+      this.drawer.ordered.unshift(this.group.name)
       this.account.ordered[this.group.name] = {}
     }
 

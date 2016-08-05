@@ -25,9 +25,9 @@
     <a
       repeat.for="ordered of drawer.ordered"
       style="font-size:12px; line-height:18px; padding:16px 8px"
-      class="mdl-navigation__link ${ ordered.name == group.name ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectGroup(ordered, true)">
-      ${ ordered.name }
+      class="mdl-navigation__link ${ ordered == group.name ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectDrawer(ordered)">
+      ${ ordered }
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
