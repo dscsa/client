@@ -267,7 +267,8 @@ export class shipments {
 
     if ( ! ordered || ! qty) return
 
-    let defaultQty = transaction.drug.brand ? 1 : 10
+    let price      = transaction.drug.price.nadac || transaction.drug.price.goodrx || 0
+    let defaultQty = price > 1 ? 1 : 10 //keep expensive meds
     let minQty     = qty >= (+ordered.minQty || defaultQty)
     let minExp     = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120)*24*60*60*1000 : !ordered.minDays
     let isChecked  = transaction.isChecked || false //apparently false != undefined

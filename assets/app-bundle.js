@@ -2022,7 +2022,8 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       if (!ordered || !qty) return;
 
-      var defaultQty = transaction.drug.brand ? 1 : 10;
+      var price = transaction.drug.price.nadac || transaction.drug.price.goodrx || 0;
+      var defaultQty = price > 1 ? 1 : 10;
       var minQty = qty >= (+ordered.minQty || defaultQty);
       var minExp = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120) * 24 * 60 * 60 * 1000 : !ordered.minDays;
       var isChecked = transaction.isChecked || false;
