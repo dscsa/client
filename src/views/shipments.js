@@ -271,7 +271,7 @@ export class shipments {
 
     if ( ! ordered || ! qty) return
 
-    let price      = transaction.drug.price.nadac || transaction.drug.price.goodrx || 0
+    let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
     let defaultQty = price > 1 ? 1 : 10 //keep expensive meds
     let minQty     = qty >= (+ordered.minQty || defaultQty)
     let minExp     = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120)*24*60*60*1000 : !ordered.minDays
@@ -551,7 +551,7 @@ export class valueValueConverter {
 
     return transactions.reduce((total, transaction) => {
       if ( ! transaction.drug.price || ! transaction.qty) return 0
-      let price = transaction.drug.price.nadac || transaction.drug.price.goodrx || 0
+      let price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
       let   qty = transaction.qty.to || transaction.qty.from || 0
       return total + qty * price
     }, 0).toFixed(decimals)

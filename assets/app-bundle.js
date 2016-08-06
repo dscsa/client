@@ -2033,7 +2033,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       if (!ordered || !qty) return;
 
-      var price = transaction.drug.price.nadac || transaction.drug.price.goodrx || 0;
+      var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
       var defaultQty = price > 1 ? 1 : 10;
       var minQty = qty >= (+ordered.minQty || defaultQty);
       var minExp = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120) * 24 * 60 * 60 * 1000 : !ordered.minDays;
@@ -2322,7 +2322,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       return transactions.reduce(function (total, transaction) {
         if (!transaction.drug.price || !transaction.qty) return 0;
-        var price = transaction.drug.price.nadac || transaction.drug.price.goodrx || 0;
+        var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
         var qty = transaction.qty.to || transaction.qty.from || 0;
         return total + qty * price;
       }, 0).toFixed(decimals);
