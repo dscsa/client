@@ -372,15 +372,9 @@ export class shipments {
     if ($event.which == 40 )//Arrow down
       this.index = this.index < last ? this.index+1 : 0
 
-    if ($event.which == 13 && this.drugs[this.index]) {//Enter with a selected drug.  Force term to be falsey so a barcode scan which is entering digits does not trigger
-      this.addTransaction(this.drugs[this.index])
-      return false //Enter was also triggering exp to qty focus
-    }
-
-    if ($event.which == 13 && ! this.drugs[this.index]) {//Barcode scan means search might not be done yet
-      setTimeout(_ => {
-        this.addTransaction(this.drugs[this.index])
-      }, 200)
+    //Enter with a selected drug.  Force term to be falsey so a barcode scan which is entering digits does not trigger
+    if ($event.which == 13) {//Barcode scan means search might not be done yet
+      setTimeout(_ => this.addTransaction(this.drugs[this.index]), this.drugs[this.index] ? 0 : 200)
       return false //Enter was also triggering exp to qty focus
     }
 

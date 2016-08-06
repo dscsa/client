@@ -765,8 +765,8 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
       var _this3 = this;
 
       var index = this.group.drugs.indexOf(this.drug);
-      this.scrollSelect($event, index, this.group.drugs, function (drug) {
-        return _this3.selectDrug(drug);
+      setTimeout(function (_) {
+        return _this3.scrollSelect($event, index, _this3.group.drugs, _this3.selectDrug, ~index ? 0 : 200);
       });
     };
 
@@ -774,9 +774,9 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
 
       var last = list.length - 1;
 
-      if ($event.which == 38) cb(list[index > 0 ? index - 1 : last]);
+      if ($event.which == 38) cb.call(this, list[index > 0 ? index - 1 : last]);
 
-      if ($event.which == 40) cb(list[index < last ? index + 1 : 0]);
+      if ($event.which == 40) cb.call(this, list[index < last ? index + 1 : 0]);
     };
 
     drugs.prototype.selectGroup = function selectGroup(group, autoselectDrug) {
@@ -2131,15 +2131,10 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       if ($event.which == 40) this.index = this.index < last ? this.index + 1 : 0;
 
-      if ($event.which == 13 && this.drugs[this.index]) {
-        this.addTransaction(this.drugs[this.index]);
-        return false;
-      }
-
-      if ($event.which == 13 && !this.drugs[this.index]) {
+      if ($event.which == 13) {
         setTimeout(function (_) {
-          _this9.addTransaction(_this9.drugs[_this9.index]);
-        }, 200);
+          return _this9.addTransaction(_this9.drugs[_this9.index]);
+        }, this.drugs[this.index] ? 0 : 200);
         return false;
       }
 

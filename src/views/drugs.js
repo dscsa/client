@@ -61,7 +61,7 @@ export class drugs {
 
   scrollDrugs($event) {
     let index = this.group.drugs.indexOf(this.drug)
-    this.scrollSelect($event, index, this.group.drugs, drug => this.selectDrug(drug))
+    setTimeout(_ => this.scrollSelect($event, index, this.group.drugs, this.selectDrug, ~ index ? 0 : 200))
   }
 
   scrollSelect($event, index, list, cb, autoselect) {
@@ -69,10 +69,10 @@ export class drugs {
     let last  = list.length - 1
 
     if ($event.which == 38) //Keyup
-      cb(list[index > 0 ? index - 1 : last])
+      cb.call(this, list[index > 0 ? index - 1 : last])
 
     if ($event.which == 40) //keydown
-      cb(list[index < last ? index+1 : 0])
+      cb.call(this, list[index < last ? index+1 : 0])
   }
 
   selectGroup(group, autoselectDrug) {
