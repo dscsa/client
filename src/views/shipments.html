@@ -25,14 +25,14 @@
     <a
       if.bind=" ! filter"
       class="mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectShipment()">
+      click.delegate="selectShipment(null, true)">
       <div class="mdl-typography--title">Create</div>
       new shipment ${role.account} you
     </a>
     <a
       repeat.for="shipment of shipments[role.account] | filter:filter"
       class="mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectShipment(shipment)">
+      click.delegate="selectShipment(shipment, true)">
       <div class="mdl-typography--title" innerHtml.bind="shipment.account[role.partner].name | bold:filter"></div>
       <div style="font-size:12px" innerHtml.bind="shipment.status+', '+shipment.tracking | bold:filter"></div>
     </a>

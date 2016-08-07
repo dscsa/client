@@ -82,7 +82,10 @@ export class shipments {
   }
 
   //Activated by activate() and each time a shipment is selected from drawer
-  selectShipment(shipment) {
+  selectShipment(shipment, toggleDrawer) {
+    if (toggleDrawer)
+      document.querySelector('.mdl-layout__header').firstChild.click()
+
     if ( ! shipment) return this.emptyShipment()
     this.setUrl('/'+shipment._id)
     this.setShipment(shipment)
