@@ -39,7 +39,7 @@
       </div>
       <div class="mdl-card__actions">
         <md-button color raised style="width:100%" if.bind="! user._id" form click.delegate="addUser()">Create User</md-button>
-        <md-button color raised style="width:100%" if.bind="user._id == session._id" click.delegate="logout()">Uninstall</md-button>
+        <md-button color raised style="width:100%" if.bind="user._id == session._id" click.delegate="logout()" disabled.bind="disableLogout">${ disableLogout || 'Uninstall' }</md-button>
         <md-button color="accent" raised style="width:100%" if.bind="user._id && user._id != session._id" click.delegate="deleteUser()">Delete User</md-button>
       </div>
     </form>

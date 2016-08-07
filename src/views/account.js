@@ -7,8 +7,8 @@ import {Router} from 'aurelia-router'
 export class account {
 
   constructor(db, router){
-    this.db = db
-    this.router = router
+    this.db           = db
+    this.router       = router
   }
 
   activate() {
@@ -82,7 +82,11 @@ export class account {
   }
 
   logout() {
-    this.router.navigate('login', {trigger:true})
+    this.disableLogout = 'Uninstalling...'
+    this.db.user.session.delete().then(_ => {
+      this.router.navigate('login', {trigger:true})
+    })
+    .catch(err => console.log('Logout failed: '+err))
   }
 }
 

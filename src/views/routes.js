@@ -13,8 +13,7 @@ export class App {
       { route: ['drugs', 'drugs/:id'],             moduleId: 'views/drugs',     title:'Drugs',     nav:true, roles:["user"]},
       { route: ['records', 'records/:id'],         moduleId: 'views/records',   title:'Records',   nav:true, roles:["user"]},
       { route: 'account',                          moduleId: 'views/account',   title:'Account',   nav:true, roles:["user"]}
-    ]);
-
+    ])
     this.router = router
   }
 }
@@ -27,30 +26,27 @@ import {Router, Redirect} from 'aurelia-router'
 export class AuthorizeStep {
   constructor(router, db){
     this.db = db
-
     //Unfortunately on browser reload run method is not called
     //so if session has expired we need to check here as well
-    if ( ! document.cookie) {
-      console.log('emergency logout')
+    if ( ! document.cookie)
       router.navigate('login')
-    }
   }
 
-  run(routing, callback) {
-
-    this.db.user.session.get().then(session => {
-
+  run(routing, nextStep) {
+    //Run must return a promise of a navigation route.  i.e., Second parameter is not a pure callback
+    return this.db.user.session.get().then(session => {
       let next = routing.getAllInstructions()[0].config
-
       for (let route of routing.router.navigation) {
-        if ( ! session || ! session.account || ! next.roles) {
+        if ( ! session || ! session.account) {
           route.isVisible = ! route.config.roles; continue
         }
-        var role = session.account._id.length == 7 ? 'user' : 'admin'
+        let role = session.account._id.length == 7 ? 'user' : 'admin'
         route.isVisible = route.config.roles && ~route.config.roles.indexOf(role)
       }
 
-      next.navModel.isVisible ? callback() : callback.cancel(new Redirect('login'))
+      if (next.navModel.isVisible) return nextStep()
+      let redirect = new Redirect(next.navModel.config.roles ? 'login' : 'shipments')
+      return nextStep.cancel(redirect)
     })
     .catch(err => console.log('router error', err))
   }

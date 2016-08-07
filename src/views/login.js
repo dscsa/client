@@ -10,12 +10,6 @@ export class login {
     this.router   = router
     this.email    = 'oregon@sirum.org'
     this.password = ''
-    this.disabled = true
-  }
-
-  activate() {
-    this.db.user.session.delete().then(_ => this.disabled = false)
-    .catch(err => console.log('Logout failed: '+err))
   }
 
   login() {
