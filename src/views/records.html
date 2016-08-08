@@ -94,7 +94,7 @@
           <tbody>
             <tr repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="select(transaction)">
               <td style="text-align:left; white-space:normal;">
-                ${ transaction | drugName }
+                ${ transaction.drug.generic }
               </td>
               <td style="text-align:left;">
                 ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }

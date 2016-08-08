@@ -268,7 +268,7 @@ export class shipments {
   autoCheck($index, userInput) {
     let transaction = this.transactions[$index]
 
-    let ordered = this.ordered[this.shipment.account.to._id][genericName(transaction.drug)]
+    let ordered = this.ordered[this.shipment.account.to._id][transaction.drug.generic]
     let qty = +transaction.qty[this.role.account]
     let exp = transaction.exp[this.role.account]
 
@@ -331,7 +331,6 @@ export class shipments {
   }
 
   search() {
-    this.drugs = [] //clear out old search so barcode scan's enter does not select and old drug
     let term = this.term.trim()
 
     if (term.length < 3) {
@@ -449,6 +448,7 @@ export class shipments {
     setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
     return this.db.transaction.post(transaction)
     .catch(err => {
+      console.log(JSON.stringify(transaction))
       this.snackbar.show(`Transaction could not be added: ${err.name}`)
       this.transactions.shift()
       this.diffs = this.diffs.map(val => val-1)
@@ -461,7 +461,6 @@ export class shipments {
       return {
         '':transaction,
         'drug._id':" "+transaction.drug._id,
-        'drug.generic':genericName(transaction.drug),
         'drug.generics':transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
         shipment:this.shipment
       }
@@ -555,15 +554,11 @@ export class valueValueConverter {
   }
 }
 
-export class drugNameValueConverter {
-  toView(drug, regex){
-    return genericName(drug).replace(regex, '<strong>$1</strong>') + (drug.brand ? ' ('+drug.brand+')' : '')
-  }
-}
-
 export class boldValueConverter {
   toView(text, bold){
-    return bold ? text.replace(RegExp('('+bold+')', 'i'), '<strong>$1</strong>') : text
+    if ( ! bold) return text
+    bold = RegExp('('+bold.replace(/ /g, '|')+')', 'gi')
+    return text.replace(bold, '<strong>$1</strong>')
   }
 }
 
@@ -613,8 +608,4 @@ function toJsonDate({month, year}) {
   let date = new Date('20'+year,month, 1)
   date.setDate(0)
   return date.toJSON()
-}
-
-function genericName(drug) {
-  return drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
 }

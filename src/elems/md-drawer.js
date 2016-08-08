@@ -22,7 +22,7 @@ export class MdDrawerCustomElement {
     this.header.parentNode.insertBefore(drawer, this.header.nextSibling)
 
     componentHandler.upgradeAllRegistered()
-    componentHandler.upgradeDom()
+    //componentHandler.upgradeDom()
 
     this.button = document.querySelector('.mdl-layout__drawer-button')
 
@@ -31,11 +31,6 @@ export class MdDrawerCustomElement {
 
     if (this.autofocus && this.header.firstChild)
       this.header.firstChild.click()
-
-    console.log('drawer was attached', 'header', this.header, 'button', this.button)
-    setTimeout(_ => {
-      console.log('drawer was attached with timeout', 'header', this.header, 'button', this.button)
-    }, 500)
   }
 
   detached() {
