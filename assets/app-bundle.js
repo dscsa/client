@@ -2040,7 +2040,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       }
 
       Promise.all(this.diffs.map(function (i) {
-        return _this7.db.transaction.verified[method]({ _id: _this7.transactions[i]._id }).then(function (_) {
+        return _this7.db.transaction.verified[method](_this7.transactions[i]).then(function (_) {
           _this7.transactions[i].verifiedAt = verified;
           return true;
         }).catch(function (err) {
@@ -2115,7 +2115,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       console.log('saveTransaction', this.transactions[$index]);
       this.db.transaction.put(this.transactions[$index]).then(this.transactions[$index].isChecked = isChecked).catch(function (err) {
-        _this10.snackbar.show('Error saving transaction: ' + err.reason);
+        _this10.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
         _this10.transactions[$index].isChecked = isChecked;
       });
 

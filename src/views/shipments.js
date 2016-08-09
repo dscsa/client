@@ -313,7 +313,7 @@ export class shipments {
     }
 
     Promise.all(this.diffs.map(i => {
-      return this.db.transaction.verified[method]({_id:this.transactions[i]._id})
+      return this.db.transaction.verified[method](this.transactions[i])
       .then(_ => {
         this.transactions[i].verifiedAt = verified
         return true
@@ -393,7 +393,7 @@ export class shipments {
       this.transactions[$index].isChecked = isChecked
     )
     .catch(err => {
-      this.snackbar.show(`Error saving transaction: ${err.reason}`)
+      this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`) //message is for pouchdb errors
       this.transactions[$index].isChecked = isChecked
     })
 
