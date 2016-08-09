@@ -48,20 +48,22 @@ export class drugs {
   }
 
   scrollGroups($event) {
-    //group won't be a reference so we must search manually
-    let index = this.groups.map(group => group.name).indexOf(this.group.name)
-    this.scrollSelect($event, index, this.groups, group => this.selectGroup(group, true))
+    Promise.resolve(this._search).then(_ => {
+      //group won't be a reference so we must search manually
+      let index = this.groups.map(group => group.name).indexOf(this.group.name)
+      this.scrollSelect($event, index, this.groups, group => this.selectGroup(group, true))
 
-    if ($event.which == 13) { //Enter get rid of the results
-      document.querySelector('md-autocomplete input').blur()
-    }
+      if ($event.which == 13) { //Enter get rid of the results
+        this.selectGroup(null, true)
+        document.querySelector('md-autocomplete input').blur()
+      }
+    })
 
     $event.stopPropagation() //scrolling groups doesn't need to scroll drugs as well
   }
 
   scrollDrugs($event) {
-    let index = this.group.drugs.indexOf(this.drug)
-    setTimeout(_ => this.scrollSelect($event, index, this.group.drugs, this.selectDrug, ~ index ? 0 : 200))
+    this.scrollSelect($event, this.group.drugs.indexOf(this.drug), this.group.drugs, this.selectDrug)
   }
 
   scrollSelect($event, index, list, cb, autoselect) {
@@ -122,14 +124,14 @@ export class drugs {
 
     if (/^[\d-]+$/.test(term)) {
       this.regex = RegExp('('+term+')', 'gi')
-      var drugs = this.db.drug.get({ndc:term})
+      var drugs  = this.db.drug.get({ndc:term})
     } else {
       this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      var drugs = this.db.drug.get({generic:term})
+      var drugs  = this.db.drug.get({generic:term})
     }
 
     let groups = {}
-    return drugs.then(drugs => {
+    return this._search = drugs.then(drugs => {
       for (let drug of drugs) {
         drug.generic = genericName(drug)
         groups[drug.generic] = groups[drug.generic] || {name:drug.generic, drugs:[]}

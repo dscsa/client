@@ -350,15 +350,15 @@ export class shipments {
       }
 
       this.regex = RegExp('('+term+')', 'gi')
-      var drugs = this.db.drug.get({ndc:term})
+      var drugs  = this.db.drug.get({ndc:term})
     } else {
       this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      var drugs = this.db.drug.get({generic:term})
+      var drugs  = this.db.drug.get({generic:term})
     }
 
-    drugs.then(drugs => {
-      this.drugs = drugs
-      this.index = 0
+    this._search = drugs.then(drugs => {
+      this.drugs     = drugs
+      this.index     = 0
     })
   }
 
@@ -376,7 +376,7 @@ export class shipments {
 
     //Enter with a selected drug.  Force term to be falsey so a barcode scan which is entering digits does not trigger
     if ($event.which == 13) {//Barcode scan means search might not be done yet
-      setTimeout(_ => this.addTransaction(this.drugs[this.index]), this.drugs[this.index] ? 0 : 200)
+      Promise.resolve(this._search).then(_ => this.addTransaction(this.drugs[this.index]))
       return false //Enter was also triggering exp to qty focus
     }
 

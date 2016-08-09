@@ -140,8 +140,8 @@
       <md-autocomplete
         placeholder="Search Drugs by Generic Name or NDC..."
         value.bind="term"
-        input.delegate="search()"
-        keyup.delegate="scrollGroups($event)"
+        input.delegate="search() & debounce:50"
+        keydown.delegate="scrollGroups($event) & debounce:50"
         style="margin:0px 16px; padding-right:15px">
         <table md-table>
           <tr
