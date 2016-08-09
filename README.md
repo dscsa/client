@@ -8,20 +8,21 @@ Application that uses the RESTful API written with the Aurelia framework
 ```
 sudo npm install aurelia-cli -g               #install dev tool
 
-sudo mkdir /path/to/install/dev
-sudo mkdir /path/to/install/master/keys
-sudo nano  /path/to/install/master/keys/dev.js
-sudo ln -s /path/to/install/keys /path/to/install/dev/keys
+sudo mkdir /path/to/repos
+sudo mkdir /path/to/install/keys
+sudo nano  /path/to/install/keys/dev.js
+sudo ln -s /path/to/install/keys /path/to/repos/keys
 
-sudo npm install dscsa/client --prefix='/path/to/install/master'   #install the app
-sudo ln -s /path/to/install/master/node_modules/* /path/to/install/dev/node_modules #note this was not working for Omar
+sudo npm install dscsa/client --prefix='/path/to/install'              #install the app
+sudo npm install dscsa/development --prefix='/path/to/install'         #install the development environment
+sudo ln -s /path/to/install/node_modules/* /path/to/repos/node_modules #note this was not working for Omar
 
-git checkout dscsa/server into dev/node_modules/server
-git checkout dscsa/pouch into dev/node_modules/db
-git checkout dscsa/csv into dev/node_modules/csv
+git checkout dscsa/server into /path/to/repos/node_modules/server
+git checkout dscsa/pouch  into /path/to/repos/node_modules/db
+git checkout dscsa/csv    into /path/to/repos/node_modules/csv
 
-sudo node /path/to/install/dev/node_modules/server              #run the api
-cd node_modules/client && au run —-watch   #start dev environment
+sudo node /path/to/repos/node_modules/server #run the server api
+cd node_modules/client && au run —-watch     #start dev environment
 ```
 Test that both http://localhost and http://localhost:9000 now serve the app
 
