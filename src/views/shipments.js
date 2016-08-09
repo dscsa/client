@@ -339,16 +339,6 @@ export class shipments {
     }
 
     if (/^[\d-]+$/.test(term)) {
-      if (term[0].toLowerCase() == 'r') {
-        let filter = this.transactions.filter(transaction => {
-          return transaction.rx && (transaction.rx.from == term || transaction.rx.to == term)
-        })
-        console.log('Rx search term', term, filter)
-        if (filter.length) {
-          return this.transactions = filter
-        }
-      }
-
       this.regex = RegExp('('+term+')', 'gi')
       var drugs  = this.db.drug.get({ndc:term})
     } else {
