@@ -198,8 +198,8 @@ export class shipments {
 
   qtyShortcuts($event, $index) {
     if ($event.which == 13) { //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-      let rxInput = document.querySelector('#rx_'+$index+' input')
-      rxInput.disabled ? document.querySelector('md-autocomplete input').focus() : rxInput.focus()
+      let boxInput = document.querySelector('#box_'+$index+' input')
+      boxInput.disabled ? document.querySelector('md-autocomplete input').focus() : boxInput.focus()
       return false
     }
 
@@ -255,14 +255,14 @@ export class shipments {
     this.saveTransaction($index)
   }
 
-  rxShortcuts($event, $index) {
-    if ($event.which == 13) {//Enter should refocus on the search
-      document.querySelector('#box_'+$index+' input').focus()
-      return false
-    }
-
-    return true
-  }
+  // rxShortcuts($event, $index) {
+  //   if ($event.which == 13) {//Enter should refocus on the search
+  //     document.querySelector('#box_'+$index+' input').focus()
+  //     return false
+  //   }
+  //
+  //   return true
+  // }
 
   //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
   autoCheck($index, userInput) {

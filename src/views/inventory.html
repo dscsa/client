@@ -38,7 +38,7 @@
           <div class="mdl-cell mdl-cell--2-col">${exp.val.qty}</div>
           <div class="mdl-cell mdl-cell--2-col">${exp.val.count}</div>
         </div>
-        <md-input show.bind="group.transactions.length" input.delegate="signalFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input>
+        <!-- <md-input show.bind="group.transactions.length" input.delegate="signalFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input> -->
       </div>
       <div class="mdl-card__actions">
         <md-button color raised
@@ -78,7 +78,7 @@
                 <th class="mdl-data-table__cell--non-numeric">Ndc</th>
                 <th style="text-align:left; width:40px;">Exp</th>
                 <th style="text-align:left; width:40px;">Qty</th>
-                <th style="text-align:left; width:40px;">Rx</th>
+                <!-- <th style="text-align:left; width:40px;">Rx</th> -->
                 <th style="text-align:left; width:40px;">Box</th>
               </tr>
             </thead>
@@ -102,13 +102,13 @@
                   placeholder>
                 </md-input>
               </td>
-              <td style="padding:0">
+              <!-- <td style="padding:0">
                 <md-input
                   value.bind="transaction.rx.from"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>
-              </td>
+              </td> -->
               <td style="padding:0">
                 <md-input
                   value.bind="transaction.location"
