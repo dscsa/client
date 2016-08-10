@@ -34,14 +34,14 @@
       class="mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(shipment, true)">
       <div class="mdl-typography--title" innerHtml.bind="shipment.account[role.partner].name | bold:filter"></div>
-      <div style="font-size:12px" innerHtml.bind="shipment.createdAt.slice(0, 10)+', '+shipment.tracking.slice(-6) | bold:filter"></div>
+      <div style="font-size:12px" innerHtml.bind="shipment.createdAt.slice(0, 10)+', '+(shipment.tracking.slice(-6) || shipment.tracking) | bold:filter"></div>
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height">
       <div class="mdl-card__title" style="display:block;">
         <div class="mdl-card__title-text" style="text-transform:capitalize">
-          ${ shipment._rev ? 'Shipment '+shipment.tracking.slice(-6) : 'New Shipment '+role.account+' You' }
+          ${ shipment._rev ? 'Shipment '+(shipment.tracking.slice(-6) || shipment.tracking) : 'New Shipment '+role.account+' You' }
         </div>
         <div style="margin-top:3px; margin-bottom:-25px">
           <strong>${transactions.length}</strong> items worth
@@ -255,6 +255,7 @@
                   </md-input>
               </td>
               <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->
+              <!-- <td style="padding:0">
                 ${ transaction.rx[role.partner] }
                 <md-input
                   id.bind="'rx_'+$index"
