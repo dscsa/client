@@ -3,9 +3,6 @@
   <require from='elems/md-drawer'></require>
   <require from='elems/md-table'></require>
   <require from="elems/md-input"></require>
-  <require from="elems/md-select"></require>
-  <require from="elems/md-switch"></require>
-  <require from="elems/md-button"></require>
   <require from="elems/md-checkbox"></require>
   <md-drawer>
     <md-input
@@ -14,6 +11,12 @@
       style="padding:0 8px; width:auto">
       Filter
     </md-input>
+    <a
+      repeat.for="week of weeks | filter:filter"
+      class="mdl-navigation__link ${ week == $parent.week ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectWeek(week)">
+      <div class="mdl-typography--title">Week of ${ week }</div>
+    </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell full-height" style="width:424px">
@@ -25,38 +28,8 @@
       <div innerHTML.bind="history" class="mdl-grid" style="font-size:10px; font-family:Monaco; margin:0; padding:0 16px; white-space:pre; line-height:15px"></div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell full-height" style="width:calc(100% - 424px - 32px)">
-      <div class="mdl-card__title" style="display:block; margin-bottom:-40px; box-sizing:content-box">
-        <div class="mdl-card__title-text">
-          Record
-          <md-select
-            style="width:auto; padding:0 5px; text-align-last:center;"
-            change.delegate="searchRange()"
-            value.bind="fromMonth"
-            options.bind="months">
-          </md-select>
-          <md-select
-            style="width:auto; padding:0"
-            change.delegate="searchRange()"
-            value.bind="fromYear"
-            options.bind="years">
-          </md-select>
-          &nbsp;–
-          <md-select
-            style="width:auto; padding:0 5px; text-align-last:center;"
-            change.delegate="searchRange()"
-            value.bind="toMonth"
-            options.bind="months">
-          </md-select>
-          <md-select
-            style="width:auto; padding:0"
-            change.delegate="searchRange()"
-            value.bind="toYear"
-            options.bind="years">
-          </md-select>
-        </div>
-      </div>
       <button id="import-export"
-        style="position:absolute; z-index:2; text-align:right; top:10px; right:5px;"
+        style="position:absolute; z-index:2; text-align:right; top:5px; right:5px;"
         class="mdl-button mdl-js-button mdl-button--icon">
         <i class="material-icons">more_vert</i>
       </button>
@@ -88,7 +61,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="select(transaction)">
+            <tr repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="selectTransaction(transaction)">
               <td style="padding:0 0 0 8px">
                 <md-checkbox
                   disabled.one-time="true"

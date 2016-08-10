@@ -9,19 +9,25 @@ import {HttpClient} from 'aurelia-http-client';
 
 //@pageState()
 @inject(Db, Router, HttpClient)
-export class shipments {
+export class records {
 
   constructor(db, router, http){
     this.db      = db
     this.router  = router
     this.http    = http
-    this.months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-    //this.months  = ['January','February','March','April','May','June','July','August','September','October','November','December']
-    this.years   = [2016,2015,2014,2013,2012,2011,2010]
-    this.fromYear  = this.toYear  = new Date().getYear()+1900
-    this.fromMonth = this.toMonth = this.months[new Date().getMonth()]
     this.history = ''
+    this.weeks   = []
     this.scroll  = this.scroll.bind(this)
+
+    let today  = new Date();
+    let start  = new Date(2016, 7, 1)
+    let offset = today.getDay()
+
+    while (today > start) {
+      today.setHours(-24 * offset)
+      offset = 7
+      this.weeks.push(today.toJSON().slice(0, 10))
+    }
   }
 
   deactivate() {
@@ -32,30 +38,27 @@ export class shipments {
     addEventListener('keyup', this.scroll)
     this.db.user.session.get().then(session => {
       this.account = session.account //this is not a full account, just an _id
-      this.searchRange(params.id)
+      this.selectWeek(params._id) //TODO save week in parameter for browser reloads
     })
   }
 
-  searchRange(transId) {
-    let fromMonth = this.months.indexOf(this.fromMonth)
-    let toMonth   = this.months.indexOf(this.toMonth)
+  selectWeek(week) {
+    this.week = week || this.weeks[0]
+    this.router.navigate('records/'+this.week, { trigger: false })
 
-    let fromDate = new Date(this.fromYear,fromMonth, 1)
-    let toDate   = new Date(this.toYear,toMonth, 1)
 
     //Just in case the user inverts the to & from dates.
-    let from = fromDate <= toDate ? fromDate : toDate
-    let to   = fromDate > toDate ? fromDate : toDate
-
-    to.setMonth(to.getMonth()+1) //to get last day of month, increase by one month then reduce it by a day to get end of previous month.  Got this from stackoverflow
-    to.setDate(0)
+    // let from = fromDate <= toDate ? fromDate : toDate
+    // let to   = fromDate > toDate ? fromDate : toDate
+    let to   = new Date(this.week)
+    to.setHours(24 * 7)
 
     //Do not show inventory $eq, $lt, $gt,
-    let query = {'shipment._id':{$ne:this.account._id}, createdAt:{$gte:from, $lte:to}}
+    let query = {'shipment._id':{$ne:this.account._id}, createdAt:{$gte:this.week, $lte:to.toJSON().slice(0, 10)}}
 
     return this.db.transaction.get(query).then(transactions => {
-      this.select(transId ? transactions.filter(t => t._id === transId)[0] : transactions[0])
-      return this.transactions = transactions
+      this.transactions = transactions
+      return this.selectTransaction()
     })
   }
 
@@ -64,18 +67,16 @@ export class shipments {
     let last  = this.transactions.length - 1
 
     if ($event.which == 38) //Keyup
-      this.select(this.transactions[index > 0 ? index - 1 : last])
+      this.selectTransaction(this.transactions[index > 0 ? index - 1 : last])
 
     if ($event.which == 40) //keydown
-      this.select(this.transactions[index < last ? index+1 : 0])
+      this.selectTransaction(this.transactions[index < last ? index+1 : 0])
   }
 //this.http.get('//localhost:3000/transactions/'+transaction._id+'/history')
   //Activated from constructor and each time a transaction is selected
-  select(transaction) {
-    if ( ! transaction) return
-    this.transaction = transaction
-    this.router.navigate('records/'+transaction._id, { trigger: false })
-    this.db.transaction.get({_id:transaction._id}, {history:true})
+  selectTransaction(transaction) {
+    this.transaction = transaction || this.transactions[0]
+    this.db.transaction.get({_id:this.transaction._id}, {history:true})
     .then(history => {
       //TODO move this to /history?text=true. Other formatting options?
       function id(k,o) {
@@ -117,10 +118,7 @@ export class shipments {
 }
 
 export class filterValueConverter {
-  toView(transactions = [], filter = ''){
-    filter = filter.toLowerCase()
-    return transactions.filter(transaction => {
-      return ~ `${transaction.to.name} ${transaction.tracking} ${transaction.status}`.toLowerCase().indexOf(filter)
-    })
+  toView(weeks = [], filter = ''){
+    return weeks.filter(week => ~ week.indexOf(filter))
   }
 }
