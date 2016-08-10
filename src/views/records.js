@@ -16,17 +16,15 @@ export class records {
     this.router  = router
     this.http    = http
     this.history = ''
-    this.weeks   = []
+    this.days    = []
     this.scroll  = this.scroll.bind(this)
 
     let today  = new Date();
     let start  = new Date(2016, 7, 1)
-    let offset = today.getDay()
 
     while (today > start) {
-      today.setHours(-24 * offset)
-      offset = 7
-      this.weeks.push(today.toJSON().slice(0, 10))
+      today.setHours(-24)
+      this.days.push(today.toJSON().slice(0, 10))
     }
   }
 
@@ -38,23 +36,22 @@ export class records {
     addEventListener('keyup', this.scroll)
     this.db.user.session.get().then(session => {
       this.account = session.account //this is not a full account, just an _id
-      this.selectWeek(params._id) //TODO save week in parameter for browser reloads
+      this.selectDay(params._id) //TODO save day in parameter for browser reloads
     })
   }
 
-  selectWeek(week) {
-    this.week = week || this.weeks[0]
-    this.router.navigate('records/'+this.week, { trigger: false })
-
+  selectDay(day) {
+    this.day = day || this.days[0]
+    this.router.navigate('records/'+this.day, { trigger: false })
 
     //Just in case the user inverts the to & from dates.
     // let from = fromDate <= toDate ? fromDate : toDate
     // let to   = fromDate > toDate ? fromDate : toDate
-    let to   = new Date(this.week)
-    to.setHours(24 * 7)
+    let to = new Date(this.day)
+    to.setHours(24*2)
 
     //Do not show inventory $eq, $lt, $gt,
-    let query = {'shipment._id':{$ne:this.account._id}, createdAt:{$gte:this.week, $lte:to.toJSON().slice(0, 10)}}
+    let query = {'shipment._id':{$ne:this.account._id}, createdAt:{$gte:this.day, $lte:to.toJSON().slice(0, 10)}}
 
     return this.db.transaction.get(query).then(transactions => {
       this.transactions = transactions
@@ -118,7 +115,7 @@ export class records {
 }
 
 export class filterValueConverter {
-  toView(weeks = [], filter = ''){
-    return weeks.filter(week => ~ week.indexOf(filter))
+  toView(days = [], filter = ''){
+    return days.filter(day => ~ day.indexOf(filter))
   }
 }

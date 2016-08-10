@@ -12,10 +12,10 @@
       Filter
     </md-input>
     <a
-      repeat.for="week of weeks | filter:filter"
-      class="mdl-navigation__link ${ week == $parent.week ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectWeek(week)">
-      <div class="mdl-typography--title">Week of ${ week }</div>
+      repeat.for="day of days | filter:filter"
+      class="mdl-navigation__link ${ day == $parent.day ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectDay(day)">
+      <div class="mdl-typography--title">${ day }</div>
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
