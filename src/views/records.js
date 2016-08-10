@@ -20,8 +20,6 @@ export class shipments {
     this.years   = [2016,2015,2014,2013,2012,2011,2010]
     this.fromYear  = this.toYear  = new Date().getYear()+1900
     this.fromMonth = this.toMonth = this.months[new Date().getMonth()]
-    this.stati   = ['complete', 'verified', 'destroyed']
-    this.status  = this.stati[0]
     this.history = ''
     this.scroll  = this.scroll.bind(this)
   }
@@ -53,13 +51,7 @@ export class shipments {
     to.setDate(0)
 
     //Do not show inventory $eq, $lt, $gt,
-    let query = { 'shipment._id':{$ne:this.account._id}, createdAt:{$gte:from, $lte:to}}
-
-    if (this.status == 'verified')
-      query.verifiedAt = {$type:'string'}
-
-    if (this.status == 'destroyed') //verifiedAt:null and {$eq:null} didn't seem to work.  Not sure if this is bug
-      query.verifiedAt = {$type:'null'}
+    let query = {'shipment._id':{$ne:this.account._id}, createdAt:{$gte:from, $lte:to}}
 
     return this.db.transaction.get(query).then(transactions => {
       this.select(transId ? transactions.filter(t => t._id === transId)[0] : transactions[0])

@@ -85,7 +85,7 @@ export class inventory {
       // var transactions = this.db.transaction.get({ndc:term, 'shipment._id':this.account})
     } else {
       this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      var transactions = this.db.transaction.get({generic:term})
+      var transactions = this.db.transaction.get({generic:term, 'shipment._id':this.account})
     }
 
     let groups = {}

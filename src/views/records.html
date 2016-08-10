@@ -6,6 +6,7 @@
   <require from="elems/md-select"></require>
   <require from="elems/md-switch"></require>
   <require from="elems/md-button"></require>
+  <require from="elems/md-checkbox"></require>
   <md-drawer>
     <md-input
       value.bind="filter"
@@ -26,13 +27,7 @@
     <div md-shadow="2" class="mdl-card mdl-cell full-height" style="width:calc(100% - 424px - 32px)">
       <div class="mdl-card__title" style="display:block; margin-bottom:-40px; box-sizing:content-box">
         <div class="mdl-card__title-text">
-          <md-select
-            style="width:auto;padding:0 5px;text-transform:capitalize; text-align-last:center;"
-            change.delegate="searchRange()"
-            value.bind="status"
-            options.bind="stati">
-          </md-select>
-          record
+          Record
           <md-select
             style="width:auto; padding:0 5px; text-align-last:center;"
             change.delegate="searchRange()"
@@ -85,6 +80,7 @@
         <table md-table style="width:calc(100% - 16px);">
           <thead>
             <tr>
+              <th style="width:15px"></th>
               <th style="text-align:left;">Drug</th>
               <th style="text-align:left;">Ndc</th>
               <th style="text-align:left; width:5%;">Exp</th>
@@ -93,6 +89,12 @@
           </thead>
           <tbody>
             <tr repeat.for="transaction of transactions" class="${ $parent.transaction != transaction || 'is-selected'}" click.delegate="select(transaction)">
+              <td style="padding:0 0 0 8px">
+                <md-checkbox
+                  disabled.one-time="true"
+                  checked.bind="transaction.verifiedAt">
+                </md-checkbox>
+              </td>
               <td style="text-align:left; white-space:normal;">
                 ${ transaction.drug.generic }
               </td>
