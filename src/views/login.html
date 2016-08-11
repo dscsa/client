@@ -3,6 +3,7 @@
   <require from="elems/md-input"></require>
   <require from="elems/md-button"></require>
   <require from="elems/md-snackbar"></require>
+  <require from="elems/md-loading"></require>
   <section class="mdl-grid" style="margin-top:30vh;">
     <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
       <md-input value.bind="email" type="email" pattern="[\w._]{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>
@@ -14,6 +15,7 @@
         style="padding-top:16px">
         Login
       </md-button>
+      <md-loading value.bind="progress.last_seq/progress.update_seq * 100"></md-loading>
       <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading }</p>
     </form>
   </section>

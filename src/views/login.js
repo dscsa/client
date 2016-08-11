@@ -19,7 +19,8 @@ export class login {
       this.disabled = true
 
       //wait for all resources except 'drugs' to sync
-      this.loading = loading.resources
+      this.loading  = loading.resources
+      this.progress = loading.progress
 
       return Promise.all(loading.syncing)
     })
