@@ -440,13 +440,13 @@ export class shipments {
     let start = Date.now()
     return this.db.transaction.post(transaction).then(_ => {
       let ordered    = this.ordered[this.shipment.account.to._id][transaction.drug.generic]
-      let pharmerica = /pharmerica/i.test(this.shipment.account.from.name)
+      let pharmerica = /pharmerica.*/i.test(this.shipment.account.from.name)
 
       if ( !  ordered && pharmerica ) //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
         return this.snackbar.show(`Destroy, record already exists`)
 
       console.log('ordered transaction added in', Date.now() - start)
-      setTimeout(_ => this.selectRow(0), 50) // Select the row.  Wait for repeat.for to refresh
+      setTimeout(_ => this.selectRow(0), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
     })
     .catch(err => {
       console.log(JSON.stringify(transaction), err)

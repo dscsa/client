@@ -2145,7 +2145,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       var start = Date.now();
       return this.db.transaction.post(transaction).then(function (_) {
         var ordered = _this11.ordered[_this11.shipment.account.to._id][transaction.drug.generic];
-        var pharmerica = /pharmerica/i.test(_this11.shipment.account.from.name);
+        var pharmerica = /pharmerica.*/i.test(_this11.shipment.account.from.name);
 
         if (!ordered && pharmerica) return _this11.snackbar.show('Destroy, record already exists');
 
