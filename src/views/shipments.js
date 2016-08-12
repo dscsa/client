@@ -124,8 +124,9 @@ export class shipments {
       this.originalTransactions = transactions
       let verified //do not autocheck past the point where someone has inventoried
       for (let i in this.transactions) {
-        this.transactions[i].isChecked = this.transactions[i].verifiedAt
-        if (this.transactions[i].verifiedAt)
+        let transaction = this.transactions[i]
+        transaction.isChecked = transaction.verifiedAt
+        if (transaction.verifiedAt)
           verified = true
         else if ( ! verified)
           this.autoCheck(i, false)
@@ -389,9 +390,9 @@ export class shipments {
     this.transactions[$index].isChecked = undefined
 
     console.log('saveTransaction', this.transactions[$index])
-    this.db.transaction.put(this.transactions[$index]).then(
+    this.db.transaction.put(this.transactions[$index]).then(_ => {
       this.transactions[$index].isChecked = isChecked
-    )
+    })
     .catch(err => {
       this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`) //message is for pouchdb errors
       this.transactions[$index].isChecked = isChecked
@@ -401,6 +402,7 @@ export class shipments {
   }
 
   addTransaction(drug, transaction) {
+
     if ( ! drug)
       return this.snackbar.show(`Cannot find drug matching this search`)
 
@@ -435,10 +437,19 @@ export class shipments {
     console.log('addTransaction', transaction)
     this.transactions.unshift(transaction) //Add the drug to the view
     this.diffs = this.diffs.map(val => +val+1) //for some reason indexes were strings
-    setTimeout(_ => this.selectRow(0), 100) // Select the row.  Wait for repeat.for to refresh
-    return this.db.transaction.post(transaction)
+    let start = Date.now()
+    return this.db.transaction.post(transaction).then(_ => {
+      let ordered    = this.ordered[this.shipment.account.to._id][transaction.drug.generic]
+      let pharmerica = /pharmerica/i.test(this.shipment.account.from.name)
+
+      if ( !  ordered && pharmerica ) //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
+        return this.snackbar.show(`Destroy, record already exists`)
+
+      console.log('ordered transaction added in', Date.now() - start)
+      setTimeout(_ => this.selectRow(0), 50) // Select the row.  Wait for repeat.for to refresh
+    })
     .catch(err => {
-      console.log(JSON.stringify(transaction))
+      console.log(JSON.stringify(transaction), err)
       this.snackbar.show(`Transaction could not be added: ${err.name}`)
       this.transactions.shift()
       this.diffs = this.diffs.map(val => val-1)

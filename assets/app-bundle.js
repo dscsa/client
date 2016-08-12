@@ -419,7 +419,7 @@ define('elems/md-snackbar',['exports', 'aurelia-framework'], function (exports, 
 
       componentHandler.upgradeElement(this.element);
       this.element.show = function (opts) {
-        if (typeof opts == 'string') opts = { message: opts, timeout: 8000 };
+        if (typeof opts == 'string') opts = { message: opts, timeout: 5000 };
 
         _this.element.MaterialSnackbar.showSnackbar(opts);
       };
@@ -1845,8 +1845,9 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         _this2.originalTransactions = transactions;
         var verified = void 0;
         for (var i in _this2.transactions) {
-          _this2.transactions[i].isChecked = _this2.transactions[i].verifiedAt;
-          if (_this2.transactions[i].verifiedAt) verified = true;else if (!verified) _this2.autoCheck(i, false);
+          var transaction = _this2.transactions[i];
+          transaction.isChecked = transaction.verifiedAt;
+          if (transaction.verifiedAt) verified = true;else if (!verified) _this2.autoCheck(i, false);
         }
       }).catch(console.log);
     };
@@ -2095,7 +2096,9 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       this.transactions[$index].isChecked = undefined;
 
       console.log('saveTransaction', this.transactions[$index]);
-      this.db.transaction.put(this.transactions[$index]).then(this.transactions[$index].isChecked = isChecked).catch(function (err) {
+      this.db.transaction.put(this.transactions[$index]).then(function (_) {
+        _this10.transactions[$index].isChecked = isChecked;
+      }).catch(function (err) {
         _this10.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
         _this10.transactions[$index].isChecked = isChecked;
       });
@@ -2139,11 +2142,19 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       this.diffs = this.diffs.map(function (val) {
         return +val + 1;
       });
-      setTimeout(function (_) {
-        return _this11.selectRow(0);
-      }, 100);
-      return this.db.transaction.post(transaction).catch(function (err) {
-        console.log(JSON.stringify(transaction));
+      var start = Date.now();
+      return this.db.transaction.post(transaction).then(function (_) {
+        var ordered = _this11.ordered[_this11.shipment.account.to._id][transaction.drug.generic];
+        var pharmerica = /pharmerica/i.test(_this11.shipment.account.from.name);
+
+        if (!ordered && pharmerica) return _this11.snackbar.show('Destroy, record already exists');
+
+        console.log('ordered transaction added in', Date.now() - start);
+        setTimeout(function (_) {
+          return _this11.selectRow(0);
+        }, 50);
+      }).catch(function (err) {
+        console.log(JSON.stringify(transaction), err);
         _this11.snackbar.show('Transaction could not be added: ' + err.name);
         _this11.transactions.shift();
         _this11.diffs = _this11.diffs.map(function (val) {
