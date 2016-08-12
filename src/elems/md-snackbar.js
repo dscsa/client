@@ -12,7 +12,7 @@ export class MdSnackbarCustomElement {
     componentHandler.upgradeElement(this.element)
     this.element.show = opts => {
       if (typeof opts == 'string')
-        opts = {message:opts, timeout:8000}
+        opts = {message:opts, timeout:5000}
 
       this.element.MaterialSnackbar.showSnackbar(opts)
     }
