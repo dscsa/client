@@ -207,7 +207,7 @@ export class shipments {
     setTimeout(_ => { //keydown means that input has not changed yet.  keyup can't be canceled
 
       if ($event.which == 37 || $event.which == 39 || $event.which == 9)
-        return true //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
+        return //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
 
       //Delete an item in the qty is 0.  Instead of having a delete button
       let transaction = this.transactions[$index]
@@ -232,6 +232,7 @@ export class shipments {
 
   boxShortcuts($event, $index) {
     if ($event.which == 13) {//Enter should focus on quantity
+      console.log('')
       document.querySelector('md-autocomplete input').focus()
       return false
     }
@@ -383,19 +384,16 @@ export class shipments {
   }
 
   saveTransaction($index) {
-    if ( ! document.querySelector('#exp_'+$index+' input').validity.valid)
-      return true
+    Promise.resolve(this._saveTransaction).then(_ => {
 
-    let isChecked = this.transactions[$index].isChecked
-    this.transactions[$index].isChecked = undefined
+      if ( ! document.querySelector('#exp_'+$index+' input').validity.valid)
+        return true
 
-    console.log('saveTransaction', this.transactions[$index])
-    this.db.transaction.put(this.transactions[$index]).then(_ => {
-      this.transactions[$index].isChecked = isChecked
-    })
-    .catch(err => {
-      this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`) //message is for pouchdb errors
-      this.transactions[$index].isChecked = isChecked
+      console.log('saveTransaction', this.transactions[$index])
+      this._saveTransaction = this.db.transaction.put(this.transactions[$index])
+      .catch(err => {
+        this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`) //message is for pouchdb errors
+      })
     })
 
     return true
@@ -420,6 +418,7 @@ export class shipments {
       brand:drug.brand,
       generics:drug.generics,
       form:drug.form,
+      price:drug.price,
       pkg:drug.pkg
     }
 

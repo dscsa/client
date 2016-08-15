@@ -15,7 +15,6 @@ export class login {
   login() {
     this.db.user.session.post({email:this.email, password:this.password})
     .then(loading => {
-
       this.disabled = true
 
       //wait for all resources except 'drugs' to sync
@@ -29,6 +28,7 @@ export class login {
     })
     .catch(err => {
       this.disabled = false
+      console.log(err)
       this.snackbar.show('Login failed: '+err.reason)
     })
   }

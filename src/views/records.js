@@ -73,6 +73,9 @@ export class records {
   //Activated from constructor and each time a transaction is selected
   selectTransaction(transaction) {
     this.transaction = transaction || this.transactions[0]
+
+    if ( ! this.transaction) return
+    
     this.db.transaction.get({_id:this.transaction._id}, {history:true})
     .then(history => {
       //TODO move this to /history?text=true. Other formatting options?

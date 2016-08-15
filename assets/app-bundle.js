@@ -1473,7 +1473,6 @@ define('views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs
       var _this = this;
 
       this.db.user.session.post({ email: this.email, password: this.password }).then(function (loading) {
-
         _this.disabled = true;
 
         _this.loading = loading.resources;
@@ -1484,6 +1483,7 @@ define('views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs
         _this.router.navigate('shipments');
       }).catch(function (err) {
         _this.disabled = false;
+        console.log(err);
         _this.snackbar.show('Login failed: ' + err.reason);
       });
     };
@@ -1571,6 +1571,9 @@ define('views/records',['exports', 'aurelia-framework', 'aurelia-router', '../li
       var _this3 = this;
 
       this.transaction = transaction || this.transactions[0];
+
+      if (!this.transaction) return;
+
       this.db.transaction.get({ _id: this.transaction._id }, { history: true }).then(function (history) {
         function id(k, o) {
           if (Array.isArray(o)) return o;
@@ -1925,7 +1928,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       setTimeout(function (_) {
 
-        if ($event.which == 37 || $event.which == 39 || $event.which == 9) return true;
+        if ($event.which == 37 || $event.which == 39 || $event.which == 9) return;
         var transaction = _this6.transactions[$index];
         var doneeDelete = !transaction.qty.from && transaction.qty.to === 0;
         var donorDelete = !transaction.qty.to && transaction.qty.from === 0;
@@ -1951,6 +1954,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
     shipments.prototype.boxShortcuts = function boxShortcuts($event, $index) {
       if ($event.which == 13) {
+        console.log('');
         document.querySelector('md-autocomplete input').focus();
         return false;
       }
@@ -2090,17 +2094,14 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     shipments.prototype.saveTransaction = function saveTransaction($index) {
       var _this10 = this;
 
-      if (!document.querySelector('#exp_' + $index + ' input').validity.valid) return true;
+      Promise.resolve(this._saveTransaction).then(function (_) {
 
-      var isChecked = this.transactions[$index].isChecked;
-      this.transactions[$index].isChecked = undefined;
+        if (!document.querySelector('#exp_' + $index + ' input').validity.valid) return true;
 
-      console.log('saveTransaction', this.transactions[$index]);
-      this.db.transaction.put(this.transactions[$index]).then(function (_) {
-        _this10.transactions[$index].isChecked = isChecked;
-      }).catch(function (err) {
-        _this10.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
-        _this10.transactions[$index].isChecked = isChecked;
+        console.log('saveTransaction', _this10.transactions[$index]);
+        _this10._saveTransaction = _this10.db.transaction.put(_this10.transactions[$index]).catch(function (err) {
+          _this10.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
+        });
       });
 
       return true;
@@ -2125,6 +2126,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         brand: drug.brand,
         generics: drug.generics,
         form: drug.form,
+        price: drug.price,
         pkg: drug.pkg
       };
 
