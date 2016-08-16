@@ -1,6 +1,7 @@
 <template style="display:inline-block; height:36px; line-height:36px">
   <button
     ref="button"
+    type="button"
     disabled.bind="disabledOrInvalid"
     click.delegate="click($event)"
     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
@@ -8,3 +9,4 @@
     <slot style="padding:auto"></slot>
   </button>
 </template>
+<!-- type="button" because a button inside a form has it's type implicitly set to submit. And the spec says that the first button or input with type="submit" is triggered on enter -->

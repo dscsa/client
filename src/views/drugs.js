@@ -217,7 +217,7 @@ export class drugs {
 
   addGeneric() {
     this.drug.generics.push({name:'', strength:''})
-    this.saveDrug() //button doesn't trigger focusout -> save
+    this.drug._rev && this.saveDrug() //button doesn't trigger focusout -> save (if not a new drug)
     return true
   }
 
@@ -243,7 +243,6 @@ export class drugs {
   }
 
   addDrug() {
-    delete this.drug.generic
     this.db.drug.post(this.drug)
     .then(res => {
       //Wait for the server POST to replicate back to client
@@ -253,7 +252,6 @@ export class drugs {
   }
 
   saveDrug() {
-    this.drug.generic = undefined
     this.db.drug.put(this.drug)
     .catch(err => this.snackbar.show(`Drug not saved: ${err.name}`))
   }
