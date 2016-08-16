@@ -472,9 +472,12 @@ export class shipments {
     this.csv.parse(this.$file.files[0]).then(parsed => {
       return Promise.all(parsed.map(transaction => {
         this.$file.value = ''
-        transaction.exp.to     = toJsonDate(parseUserDate(transaction.exp.to))
-        transaction.exp.from   = toJsonDate(parseUserDate(transaction.exp.from))
-        transaction.verifiedAt = toJsonDate(parseUserDate(transaction.verifiedAt))
+        transaction._id          = undefined
+        transaction._rev         = undefined
+        transaction.shipment._id = undefined
+        transaction.exp.to       = toJsonDate(parseUserDate(transaction.exp.to))
+        transaction.exp.from     = toJsonDate(parseUserDate(transaction.exp.from))
+        transaction.verifiedAt   = toJsonDate(parseUserDate(transaction.verifiedAt))
         return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
           //This will add drugs upto the point where a drug cannot be found rather than rejecting all
           if (drugs[0]) return {drug:drugs[0], transaction}
@@ -596,7 +599,7 @@ export class dateValueConverter {
 
 //whether mm/yy or mm/dd/yy, month is always first and year is always last
 function parseUserDate(date) {
-  date = date.split('/')
+  date = (date || "").split('/') //can't do default arugment because can be null as well as undefined
   return {
     year:date.pop(),
     month:date.shift()

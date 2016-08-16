@@ -2186,6 +2186,9 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       this.csv.parse(this.$file.files[0]).then(function (parsed) {
         return Promise.all(parsed.map(function (transaction) {
           _this13.$file.value = '';
+          transaction._id = undefined;
+          transaction._rev = undefined;
+          transaction.shipment._id = undefined;
           transaction.exp.to = toJsonDate(parseUserDate(transaction.exp.to));
           transaction.exp.from = toJsonDate(parseUserDate(transaction.exp.from));
           transaction.verifiedAt = toJsonDate(parseUserDate(transaction.verifiedAt));
@@ -2332,7 +2335,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
   }();
 
   function parseUserDate(date) {
-    date = date.split('/');
+    date = (date || "").split('/');
     return {
       year: date.pop(),
       month: date.shift()
