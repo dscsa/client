@@ -1999,7 +1999,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         if (ordered.destroyedMessage && !this.destroyedMessage) this.destroyedMessage = setTimeout(function (_) {
           delete _this7.destroyedMessage;
           _this7.snackbar.show(ordered.destroyedMessage);
-        }, 500);
+        }, 1000);
 
         return console.log('minQty', minQty, qty, 'minExp', minExp, exp);
       }

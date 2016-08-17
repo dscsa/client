@@ -291,7 +291,7 @@ export class shipments {
         this.destroyedMessage = setTimeout(_ => {
           delete this.destroyedMessage
           this.snackbar.show(ordered.destroyedMessage)
-        }, 500)
+        }, 1000)
 
       return console.log('minQty', minQty, qty, 'minExp', minExp, exp)
     }
