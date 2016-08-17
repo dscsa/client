@@ -240,12 +240,14 @@ export class shipments {
     if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
       let box = document.querySelector('#box_'+$index+' input')
       box.value = box.value[0]+(+box.value.slice(1)+1)
+      this.saveTransaction($index) //doesn't trigger input so save manually
       return false //don't actually add the +
     }
 
     if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
       let box = document.querySelector('#box_'+$index+' input')
       box.value = box.value[0]+(+box.value.slice(1)-1)
+      this.saveTransaction($index) //doesn't trigger input so save manually
       return false //don't actually add the -
     }
 
