@@ -282,9 +282,22 @@ export class shipments {
     let isChecked  = transaction.isChecked || false //apparently false != undefined
 
     if((minQty && minExp) == isChecked) {
-      userInput && ordered.destroyedMessage && this.snackbar.show(ordered.destroyedMessage)
-      return userInput && console.log('minQty', minQty, qty, 'minExp', minExp, exp)
+      if ( ! userInput) return
+
+      //If qty is 30 and user types "3" then destroyed message will display before user can type "0"
+      //this code puts a delay on the destroyed message and then clears it out if the user does type a "0"
+      //an alternative would be wait to trigger autocheck until enter is pressed but this would delay all messages
+      if (ordered.destroyedMessage && ! this.destroyedMessage)
+        this.destroyedMessage = setTimeout(_ => {
+          delete this.destroyedMessage
+          this.snackbar.show(ordered.destroyedMessage)
+        }, 500)
+
+      return console.log('minQty', minQty, qty, 'minExp', minExp, exp)
     }
+
+    clearTimeout(this.destroyedMessage)
+    delete this.destroyedMessage
 
     if ( ! isChecked) //manual check has not switched the boolean yet
       userInput && this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
