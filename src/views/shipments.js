@@ -232,22 +232,19 @@ export class shipments {
 
   boxShortcuts($event, $index) {
     if ($event.which == 13) {//Enter should focus on quantity
-      console.log('')
       document.querySelector('md-autocomplete input').focus()
       return false
     }
 
     if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
-      let box = document.querySelector('#box_'+$index+' input')
-      box.value = box.value[0]+(+box.value.slice(1)+1)
-      this.saveTransaction($index) //doesn't trigger input so save manually
+      let transaction = this.transactions[$index]
+      transaction.location = transaction.location[0]+(+transaction.location.slice(1)+1)
       return false //don't actually add the +
     }
 
     if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
-      let box = document.querySelector('#box_'+$index+' input')
-      box.value = box.value[0]+(+box.value.slice(1)-1)
-      this.saveTransaction($index) //doesn't trigger input so save manually
+      let transaction = this.transactions[$index]
+      transaction.location = transaction.location[0]+(+transaction.location.slice(1)-1)
       return false //don't actually add the -
     }
 

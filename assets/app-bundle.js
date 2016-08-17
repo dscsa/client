@@ -1952,22 +1952,19 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
     shipments.prototype.boxShortcuts = function boxShortcuts($event, $index) {
       if ($event.which == 13) {
-        console.log('');
         document.querySelector('md-autocomplete input').focus();
         return false;
       }
 
       if ($event.which == 107 || $event.which == 187) {
-        var box = document.querySelector('#box_' + $index + ' input');
-        box.value = box.value[0] + (+box.value.slice(1) + 1);
-        this.saveTransaction($index);
+        var transaction = this.transactions[$index];
+        transaction.location = transaction.location[0] + (+transaction.location.slice(1) + 1);
         return false;
       }
 
       if ($event.which == 109 || $event.which == 189) {
-        var _box = document.querySelector('#box_' + $index + ' input');
-        _box.value = _box.value[0] + (+_box.value.slice(1) - 1);
-        this.saveTransaction($index);
+        var _transaction = this.transactions[$index];
+        _transaction.location = _transaction.location[0] + (+_transaction.location.slice(1) - 1);
         return false;
       }
 
