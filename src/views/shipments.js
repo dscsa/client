@@ -252,7 +252,9 @@ export class shipments {
   }
 
   saveLastBox($event, $index) {
-    this.lastBox = $event.target.value
+    if ($event.target.validity.valid) //defaultLocation won't be valid
+      this.lastBox = $event.target.value
+
     this.saveTransaction($index)
   }
 
@@ -303,7 +305,7 @@ export class shipments {
       userInput && this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
 
     if (userInput) //don't do this on initial page load
-      transaction.location = this.lastBox
+      transaction.location = ordered.defaultLocation || this.lastBox
 
     this.manualCheck($index)
   }

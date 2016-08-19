@@ -220,6 +220,12 @@
             Destroyed Message
           </md-input>
           <md-input
+            pattern="\w{1,4}"
+            value.bind="(account.ordered[group.name] || {}).defaultLocation"
+            style="width:100%">
+            Default Box
+          </md-input>
+          <!-- <md-input
             type="number"
             value.bind="(account.ordered[group.name] || {}).maxPrice"
             disabled.bind="true"
@@ -239,7 +245,7 @@
             disabled.bind="true"
             style="width:100%">
             Reorder To
-          </md-input>
+          </md-input> -->
         </div>
       </div>
     </div>
