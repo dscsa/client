@@ -37,9 +37,8 @@ export class drugs {
       //   return ordered
       // })
 
-      if ( ! params.id) {
-        return this.selectGroup(null, true)
-      }
+      if ( ! params.id)
+        return this.selectDrawer(this.drawer.ordered[0])
 
       return this.db.drug.get({_id:params.id}).then(drugs => {
         this.selectDrug(drugs[0], true)
@@ -77,13 +76,23 @@ export class drugs {
       cb.call(this, list[index < last ? index+1 : 0])
   }
 
+  //Three entrances.
+  //1) User searches and then selects group from autocomplete (group already supplied)
+  //2) selectDrawer and we need to find the group with that particular generic name
+  //3) selectDrug and we need to find the group with that particular generic name
   selectGroup(group, autoselectDrug) {
-    group = group || this.search().then(_ => {
-      return this.groups[0] || {drugs:[]}
-    })
+
+    this.term = group.name
+
+    if ( ! group.drugs)
+      group = this.search().then(_ => {
+        //Use filter to get an exact match not just one ingredient
+        return this.groups.filter(group => this.term == group.name)[0]
+      })
 
     Promise.resolve(group).then(group => {
       this.group = group
+
       //TODO if this was called by selectDrug then we should establish establish a reference
       //between the approriate this.group.drugs and this.drug so that changes to the drug
       //appear in realtime on the right hand side.  This works if selectGroup
@@ -92,27 +101,23 @@ export class drugs {
     })
   }
 
-  selectDrug(drug = {generics:[{}]}, autoselectGroup) {
-    if ( ! drug.generic && drug.form) //new drug won't have drug.form yet
-      drug.generic = drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
+  selectDrug(drug, autoselectGroup) {
 
-    this.drug = drug
-    this.term = drug.generic || ''
+    this.drug = drug || {
+      generics:this.group.drugs[0].generics,
+      form:this.group.drugs[0].form
+    }
 
-    let url = drug._id ? 'drugs/'+drug._id : 'drugs'
+    let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
 
     if (autoselectGroup)
-      this.selectGroup()
+      this.selectGroup({name:this.drug.generic})
   }
 
   selectDrawer(generic) {
-    this.term = generic
-    this.db.drug.get({generic}).then(drugs => {
-      //Use filter to get an exact match not just one ingredient
-      let group = {name:generic, drugs:drugs.filter(drug => drug.generic == generic)}
-      this.selectGroup(group, true)
-    })
+    this.selectGroup({name:generic}, true)
+    document.querySelector('.mdl-layout__header').firstChild.click()
   }
 
   search() {
@@ -133,7 +138,6 @@ export class drugs {
     let groups = {}
     return this._search = drugs.then(drugs => {
       for (let drug of drugs) {
-        drug.generic = genericName(drug)
         groups[drug.generic] = groups[drug.generic] || {name:drug.generic, drugs:[]}
         groups[drug.generic].drugs.push(drug)
       }
@@ -166,13 +170,11 @@ export class drugs {
     this.snackbar.show(`Exporting drugs as csv. This may take a few minutes`)
     this.db.drug.get().then(drugs => {
       this.csv.unparse('Drugs.csv', drugs.map(drug => {
-        let generic = genericName(drug)
         return {
           '':drug,
           _id:" "+drug._id,
           upc:" "+drug.upc,
           ndc9:" "+drug.ndc9,
-          generic:generic,
           generics:drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
           ordered:this.account.ordered[generic] || {minQty:null, minDays:null, message:null}
         }
@@ -217,13 +219,11 @@ export class drugs {
 
   addGeneric() {
     this.drug.generics.push({name:'', strength:''})
-    this.drug._rev && this.saveDrug() //button doesn't trigger focusout -> save (if not a new drug)
     return true
   }
 
   removeGeneric() {
     this.drug.generics.pop()
-    this.saveDrug() //button doesn't trigger focusout -> save
     return true
   }
 
@@ -246,14 +246,18 @@ export class drugs {
     this.db.drug.post(this.drug)
     .then(res => {
       //Wait for the server POST to replicate back to client
-      setTimeout(_ => this.selectDrug(this.drug, true), 200)
+      setTimeout(_ => this.selectDrug(this.drug, true), 500)
     })
-    .catch(err => this.snackbar.show(`Drug not added: ${err.name}`))
+    .catch(err => this.snackbar.show(`Drug not added: ${err.reason}`))
   }
 
   saveDrug() {
     this.db.drug.put(this.drug)
-    .catch(err => this.snackbar.show(`Drug not saved: ${err.name}`))
+    .then(res => {
+      //Wait for the server POST to replicate back to client
+      setTimeout(_ => this.selectDrug(this.drug, true), 500)
+    })
+    .catch(err => this.snackbar.show(`Drug not saved: ${err.reason}`))
   }
 
   deleteDrug() {
@@ -277,8 +281,4 @@ export class numberValueConverter {
     //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
     return str != null && decimals ? (+str).toFixed(decimals) : str
   }
-}
-
-function genericName(drug) {
-  return drug.generics.map(generic => generic.name+" "+generic.strength).join(', ')+' '+drug.form
 }

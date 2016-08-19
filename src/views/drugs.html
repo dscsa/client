@@ -12,30 +12,21 @@
   <md-drawer>
     <md-select
       options.bind="['Ordered', 'Inventory < ReorderAt', 'Inventory > ReorderTo', 'Inventory Expiring before Min Days', 'Missing Retail Price', 'Missing Wholesale Price', 'Missing Image']"
-      style="padding:0 8px;"
+      style="padding:0 8px; margin-bottom:-20px"
       disabled.bind="true">
       Quick Search
     </md-select>
     <a
-      style="font-size:12px; line-height:18px; padding:16px 8px"
-      class="mdl-navigation__link ${ ! group.name ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectDrug(undefined, true)">
-      Add New Drug
-    </a>
-    <a
       repeat.for="ordered of drawer.ordered"
-      style="font-size:12px; line-height:18px; padding:16px 8px"
+      style="font-size:12px; line-height:18px; padding:8px 8px"
       class="mdl-navigation__link ${ ordered == group.name ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectDrawer(ordered)">
       ${ ordered }
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
-    <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
-      <div
-        class="mdl-card__supporting-text"
-        input.delegate="drug._rev && saveDrug() & debounce:1000"
-        style="font-size:16px;">
+    <form ref="drugForm" md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
+      <div class="mdl-card__supporting-text" style="font-size:16px;">
         <md-input
           required
           style="width:49%"
@@ -51,13 +42,13 @@
         </md-input>
         <div if.bind="drug.generics[0].name" style="position:relative">
           <md-button color fab="11"
-            show.bind="drug.generics[drug.generics.length-1].name"
+            show.bind="drug._rev && drug.generics[drug.generics.length-1].name"
             click.delegate="addGeneric()"
             style="position:absolute; left:153px; margin-top:-5px; z-index:1">
             +
           </md-button>
           <md-button color fab="11"
-            show.bind="! drug.generics[drug.generics.length-1].name"
+            show.bind="drug._rev && ! drug.generics[drug.generics.length-1].name"
             mousedown.delegate="removeGeneric()"
             style="position:absolute; right:153px; margin-top:-5px; z-index:1">
             -
@@ -66,24 +57,31 @@
         <div repeat.for="generic of drug.generics">
           <md-input
             required
-            style="width:82%"
+            style="width:75%"
+            pattern="([A-Z][a-z]+\s?)+"
+            disabled.bind=" ! drug._rev"
             value.bind="generic.name">
             ${ $index == 0 ? 'Generic Names & Strengths' : ''}
           </md-input>
           <md-input
             required
-            style="width:16%"
+            style="width:23%"
+            pattern="[0-9][0-9a-z/.]+"
+            disabled.bind=" ! drug._rev"
             value.bind="generic.strength">
           </md-input>
         </div>
         <md-input
           style="width:49%"
+          pattern="[A-Z][a-z]+"
           value.bind="drug.brand">
           Brand Name
         </md-input>
         <md-input
           required
           style="width:49%"
+          pattern="([A-Z][a-z]+\s?)+"
+          disabled.bind=" ! drug._rev"
           value.bind="drug.form">
           Form
         </md-input>
@@ -128,11 +126,10 @@
           Delete Drug
         </md-button> -->
         <md-button color raised
-          if.bind=" ! drug._rev"
           style="width:100%;"
-          click.delegate="addDrug()"
+          click.delegate="drug._rev ? saveDrug() : addDrug()"
           form>
-          Add Drug
+          ${ drug._rev ? 'Save Drug' : 'Add Drug' }
         </md-button>
       </div>
     </form>
@@ -157,6 +154,9 @@
       </md-autocomplete>
       <md-menu style="position:absolute; z-index:2; top:10px; right:5px;">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
+        <li click.delegate="selectDrug()" class="mdl-menu__item">
+          Add Drug
+        </li>
         <li click.delegate="exportCSV()" class="mdl-menu__item">
           Export CSV
         </li>
