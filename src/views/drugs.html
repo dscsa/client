@@ -58,13 +58,12 @@
           <md-input
             required
             style="width:75%"
-            pattern="([A-Z][a-z]+\s?)+"
+            pattern="([A-Z][0-9a-z]*\s?)+"
             disabled.bind=" ! drug._rev"
             value.bind="generic.name">
             ${ $index == 0 ? 'Generic Names & Strengths' : ''}
           </md-input>
           <md-input
-            required
             style="width:23%"
             pattern="[0-9][0-9a-z/.]+"
             disabled.bind=" ! drug._rev"
