@@ -248,7 +248,7 @@ export class shipments {
       return false //don't actually add the -
     }
 
-    return true
+    return true //don't cancel someone typing in the box number
   }
 
   saveLastBox($event, $index) {

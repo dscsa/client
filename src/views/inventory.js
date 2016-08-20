@@ -153,24 +153,26 @@ export class inventory {
 
   //TODO same as shipment's method
   boxShortcuts($event, $index) {
-    if ($event.which == 13) {//Enter should focus on quantity
+    if ($event.which == 13) {//Enter should focus on next row's exp
       document.querySelector('#exp_'+($index+1)+' input').focus()
       return false
     }
 
+    let transaction = this.group.transactions[$index]
+
     if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
-      let transaction = this.group.transactions[$index]
       transaction.location = transaction.location[0]+(+transaction.location.slice(1)+1)
-      return false //don't actually add the +
+      this.saveTransaction($index)
+      return false //don't actually add the +/-
     }
 
-    if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
-      let transaction = this.group.transactions[$index]
+    if ($event.which == 109 || $event.which == 189) { // - key on numpad, keyboard
       transaction.location = transaction.location[0]+(+transaction.location.slice(1)-1)
-      return false //don't actually add the -
+      this.saveTransaction($index)
+      return false //don't actually add the +/-
     }
 
-    return true
+    return true //don't cancel someone typing in the box number
   }
 }
 

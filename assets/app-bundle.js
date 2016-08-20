@@ -1255,15 +1255,17 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
         return false;
       }
 
+      var transaction = this.group.transactions[$index];
+
       if ($event.which == 107 || $event.which == 187) {
-        var _transaction = this.group.transactions[$index];
-        _transaction.location = _transaction.location[0] + (+_transaction.location.slice(1) + 1);
+        transaction.location = transaction.location[0] + (+transaction.location.slice(1) + 1);
+        this.saveTransaction($index);
         return false;
       }
 
       if ($event.which == 109 || $event.which == 189) {
-        var _transaction2 = this.group.transactions[$index];
-        _transaction2.location = _transaction2.location[0] + (+_transaction2.location.slice(1) - 1);
+        transaction.location = transaction.location[0] + (+transaction.location.slice(1) - 1);
+        this.saveTransaction($index);
         return false;
       }
 
@@ -1395,12 +1397,12 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
           _ref5 = _i4.value;
         }
 
-        var _transaction3 = _ref5;
+        var _transaction = _ref5;
 
-        filter.exp[_transaction3.exp.from].count = 0;
-        filter.exp[_transaction3.exp.from].qty = 0;
-        filter.ndc[_transaction3.drug._id].count = 0;
-        filter.ndc[_transaction3.drug._id].qty = 0;
+        filter.exp[_transaction.exp.from].count = 0;
+        filter.exp[_transaction.exp.from].qty = 0;
+        filter.ndc[_transaction.drug._id].count = 0;
+        filter.ndc[_transaction.drug._id].qty = 0;
       }
 
       transactions = transactions.filter(function (transaction) {
