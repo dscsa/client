@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 
 let drawer = document.createElement('nav')
 drawer.classList.add("mdl-layout__drawer")
-console.log('drawer was created')
+//console.log('drawer was created')
 
 @inject(Element)
 export class MdDrawerCustomElement {
@@ -14,7 +14,7 @@ export class MdDrawerCustomElement {
     this.autofocus = element.hasAttribute('autofocus')
     //Move md-nav into the drawer
     drawer.appendChild(element)
-    console.log('drawer was constructed')
+    //console.log('drawer was constructed')
   }
 
   attached() {
