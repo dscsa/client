@@ -160,14 +160,12 @@ export class drugs {
 
       this.account.ordered[this.group.name] = undefined
     } else {
-      console.log('order')
       //Add New Order but Keep Add New Item on Top
       this.drawer.ordered.unshift(this.group.name)
       this.account.ordered[this.group.name] = {}
     }
 
     this.saveOrder()
-    //return true
   }
 
   exportCSV() {
@@ -258,7 +256,14 @@ export class drugs {
   saveDrug() {
     this.db.drug.put(this.drug)
     .then(res => {
-      //Wait for the server POST to replicate back to client
+      //If we move the last drug out of the group, make sure we unorder it
+      if (
+        this.group.name != this.drug.generic &&
+        this.group.drugs.length == 1 &&
+        this.account.ordered[this.group.name]
+      ) this.order()
+      
+      //Wait for the server PUT to replicate back to client
       setTimeout(_ => this.selectDrug(this.drug, true), 500)
     })
     .catch(err => this.snackbar.show(`Drug not saved: ${err.reason}`))

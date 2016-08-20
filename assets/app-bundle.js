@@ -864,8 +864,6 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
 
         this.account.ordered[this.group.name] = undefined;
       } else {
-        console.log('order');
-
         this.drawer.ordered.unshift(this.group.name);
         this.account.ordered[this.group.name] = {};
       }
@@ -970,6 +968,8 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
       var _this9 = this;
 
       this.db.drug.put(this.drug).then(function (res) {
+        if (_this9.group.name != _this9.drug.generic && _this9.group.drugs.length == 1 && _this9.account.ordered[_this9.group.name]) _this9.order();
+
         setTimeout(function (_) {
           return _this9.selectDrug(_this9.drug, true);
         }, 500);
