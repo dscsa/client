@@ -81,7 +81,7 @@
                 <th style="text-align:left; width:40px;">Box</th>
               </tr>
             </thead>
-            <tr repeat.for="transaction of group.transactions | filter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
+            <tr repeat.for="transaction of group.transactions | filter:filter" input.delegate="saveTransaction($index) & debounce:1000">
               <td style="padding:0 0 0 8px">
                 <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
               </td>
@@ -89,6 +89,9 @@
               <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id }</td>
               <td style="padding:0">
                 <md-input
+                  id.bind="'exp_'+$index"
+                  keydown.delegate="expShortcuts($event, $index)"
+                  pattern="(0?[1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp.from | date"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
@@ -96,7 +99,10 @@
               </td>
               <td style="padding:0">
                 <md-input
-                  value.bind="transaction.qty.from"
+                  id.bind="'qty_'+$index"
+                  keydown.delegate="qtyShortcuts($event, $index)"
+                  type="number"
+                  value.bind="transaction.qty.from | number"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>
@@ -110,6 +116,9 @@
               </td> -->
               <td style="padding:0">
                 <md-input
+                  id.bind="'box_'+$index"
+                  keydown.delegate="boxShortcuts($event, $index)"
+                  pattern="[A-Z]\d{3}"
                   value.bind="transaction.location"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>

@@ -535,13 +535,6 @@ export class shipments {
 //
 // Value Converters
 //
-export class numberValueConverter {
-  fromView(str){
-    //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
-    return str != null && str !== '' ? +str : null
-  }
-}
-
 export class jsonValueConverter {
   toView(object = null){
     //console.log(Object.keys(object), JSON.stringify(object, null, " "))
@@ -576,6 +569,13 @@ export class boldValueConverter {
     if ( ! bold) return text
     bold = RegExp('('+bold.replace(/ /g, '|')+')', 'gi')
     return text.replace(bold, '<strong>$1</strong>')
+  }
+}
+
+export class numberValueConverter {
+  fromView(str){
+    //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
+    return str != null && str !== '' ? +str : null
   }
 }
 

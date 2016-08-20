@@ -103,16 +103,16 @@ export class inventory {
     this.filter = Object.assign({}, this.filter)
   }
 
-  saveTransaction(transaction) {
-    //save isChecked in the transaction because the isChecked[$index] has an $index that changes with filters
-    let isChecked = transaction.isChecked
-    delete transaction.isChecked
-    console.log('saving', transaction)
-    this.db.transaction.put(transaction)
-    .then(_ => {
-      transaction.isChecked = isChecked
+  saveTransaction($index) {
+    Promise.resolve(this._saveTransaction).then(_ => {
+
+      if ( ! document.querySelector('#exp_'+$index+' input').validity.valid)
+        return true
+
+      console.log('saving', this.group.transactions[$index])
+      this._saveTransaction = this.db.transaction.put(this.group.transactions[$index])
     })
-    .catch(e => this.snackbar.show(`Transaction with exp ${transaction.exp.from} and qty ${transaction.qty.from} could not be saved: ${e}`))
+    .catch(err => this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`))
   }
 
   removeInventory() {
@@ -127,9 +127,62 @@ export class inventory {
 
     Promise.all(remove).then(_ => this.snackbar.show(`${remove.length} transactions removed from inventory`))
   }
+
+  //TODO same as shipment's method (without autocheck)
+  expShortcuts($event, $index) {
+    if ($event.which == 37 || $event.which == 39 || $event.which == 9)
+      return true //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
+
+    if ($event.which == 13) {//Enter should focus on quantity
+      document.querySelector('#qty_'+$index+' input').focus()
+      return false
+    }
+
+    return true
+  }
+
+  //TODO same as shipment's method (without autocheck)
+  qtyShortcuts($event, $index) {
+    if ($event.which == 13) { //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
+      document.querySelector('#box_'+$index+' input').focus()
+      return false
+    }
+
+    return true
+  }
+
+  //TODO same as shipment's method
+  boxShortcuts($event, $index) {
+    if ($event.which == 13) {//Enter should focus on quantity
+      document.querySelector('#exp_'+($index+1)+' input').focus()
+      return false
+    }
+
+    if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
+      let transaction = this.group.transactions[$index]
+      transaction.location = transaction.location[0]+(+transaction.location.slice(1)+1)
+      return false //don't actually add the +
+    }
+
+    if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
+      let transaction = this.group.transactions[$index]
+      transaction.location = transaction.location[0]+(+transaction.location.slice(1)-1)
+      return false //don't actually add the -
+    }
+
+    return true
+  }
 }
 
-//TODO combine with the shipment filter with the same code
+//TODO Same as shipment's number converter.
+export class numberValueConverter {
+  fromView(str){
+    //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
+    return str != null && str !== '' ? +str : null
+  }
+}
+
+//TODO Same as shipment's number converter.
 export class dateValueConverter {
 
   toView(date) {
@@ -138,14 +191,46 @@ export class dateValueConverter {
   }
 
   fromView(date){
-    this.view  = date
+    let add = date.includes('+') || date.includes('=')
+    let sub = date.includes('-')
+    let {month, year} = parseUserDate(date.replace(/\+|\-|\=/g, ''))
 
-    let [month, year] = date.split('/')
-    date = new Date('20'+year,month, 1)
-    date.setDate(0)
+    if (add) month++
+    if (sub) month--
 
-    return this.model = date.toJSON()
+    if (month == 0) {
+      month = 12
+      year--
+    }
+
+    if (month == 13) {
+      month = 1
+      year++
+    }
+
+    //Keep zerp padding in front of the month which is lost when month changes
+    this.view  = ("00"+month).slice(-2)+'/'+year
+
+    return this.model = toJsonDate({month, year})
   }
+}
+
+//TODO Same as shipment's function
+//whether mm/yy or mm/dd/yy, month is always first and year is always last
+function parseUserDate(date) {
+  date = (date || "").split('/') //can't do default arugment because can be null as well as undefined
+  return {
+    year:date.pop(),
+    month:date.shift()
+  }
+}
+
+//TODO Same as shipment's function
+//To get last day in month, set it to next month and subtract a day
+function toJsonDate({month, year}) {
+  let date = new Date('20'+year,month, 1)
+  date.setDate(0)
+  return date.toJSON()
 }
 
 export class jsonValueConverter {
