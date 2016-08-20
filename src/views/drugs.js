@@ -90,6 +90,10 @@ export class drugs {
         return this.groups.filter(group => this.term == group.name)[0]
       })
 
+    this.db.transaction.get({generic:this.term, 'shipment._id':this.account._id}).then(transactions => {
+      this.inventory = transactions.reduce((a, b) => a+b.qty.from, 0)
+    })
+
     Promise.resolve(group).then(group => {
       this.group = group
 

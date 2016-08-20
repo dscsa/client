@@ -195,6 +195,13 @@
         <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="overflow:hidden; width:200px; margin-top:10px; margin-right:16px">
           Ordered
           <md-input
+            disabled
+            type="number"
+            value.bind="inventory"
+            style="width:100%">
+            Inventory
+          </md-input>
+          <md-input
             type="number"
             value.bind="(account.ordered[group.name] || {}).minQty"
             placeholder="10"
