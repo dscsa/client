@@ -156,14 +156,14 @@
         placeholder="Add Drugs by Generic Name or NDC..."
         value.bind="term"
         input.delegate="search() & debounce:50"
-        keydown.delegate="scrollDrugs($event) & debounce:50"
+        keydown.delegate="autocompleteShortcuts($event) & debounce:50"
         disabled.bind="role.account == 'to' && ! shipment._rev"
         style="margin:0px 16px">
         <table md-table>
           <tr
             repeat.for="drug of drugs"
             click.delegate="addTransaction(drug)"
-            class="${ $index == index && 'is-selected'}">
+            class="${ drug._id == $parent.drug._id && 'is-selected'}">
             <td class="mdl-data-table__cell--non-numeric" innerHTML.bind="drug.generic | bold:term" style="white-space:normal; max-width:70%"></td>
             <td class="mdl-data-table__cell--non-numeric" style="max-width:30%">${ drug._id + (drug.pkg ? '-'+drug.pkg : '') }</td>
           </tr>
@@ -208,7 +208,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr style="padding-top:7px;" repeat.for="transaction of transactions" input.delegate="saveTransaction($index) & debounce:1000">
+            <tr style="padding-top:7px;" repeat.for="transaction of transactions" input.delegate=" saveTransaction(transaction) & debounce:1000">
               <td style="padding:0 0 0 8px">
                 <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->
                 <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->
@@ -219,10 +219,10 @@
                   checked.bind="transaction.isChecked">
                 </md-checkbox>
               </td>
-              <td click.delegate="selectRow($index)" class="mdl-data-table__cell--non-numeric" style="white-space:normal; padding-left:0">
+              <td click.delegate="focusInput('#exp'+$index)" class="mdl-data-table__cell--non-numeric" style="white-space:normal; padding-left:0">
                 ${ transaction.drug.generic }
               </td>
-              <td click.delegate="selectRow($index)" class="mdl-data-table__cell--non-numeric" style="padding:0">
+              <td click.delegate="focusInput('#exp_'+$index)" class="mdl-data-table__cell--non-numeric" style="padding:0">
                 ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }
               </td>
               <td style="padding:0">

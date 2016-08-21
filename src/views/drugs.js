@@ -2,6 +2,8 @@ import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
 import {Db}     from '../libs/pouch'
 import {Csv}    from '../libs/csv'
+import {scrollSelect, toggleDrawer} from '../resources/helpers'
+
 
 //@pageState()
 @inject(Db, Router)
@@ -13,6 +15,9 @@ export class drugs {
     this.router = router
     this.term   = ''
     this.scrollDrugs = this.scrollDrugs.bind(this)
+
+    this.toggleDrawer = toggleDrawer
+    this.scrollSelect = scrollSelect
   }
 
   deactivate() {
@@ -52,10 +57,8 @@ export class drugs {
       let index = this.groups.map(group => group.name).indexOf(this.group.name)
       this.scrollSelect($event, index, this.groups, group => this.selectGroup(group, true))
 
-      if ($event.which == 13) { //Enter get rid of the results
+      if ($event.which == 13)//Enter get rid of the results
         this.selectGroup(null, true)
-        document.querySelector('md-autocomplete input').blur()
-      }
     })
 
     $event.stopPropagation() //scrolling groups doesn't need to scroll drugs as well
@@ -63,17 +66,6 @@ export class drugs {
 
   scrollDrugs($event) {
     this.scrollSelect($event, this.group.drugs.indexOf(this.drug), this.group.drugs, this.selectDrug)
-  }
-
-  scrollSelect($event, index, list, cb, autoselect) {
-
-    let last  = list.length - 1
-
-    if ($event.which == 38) //Keyup
-      cb.call(this, list[index > 0 ? index - 1 : last])
-
-    if ($event.which == 40) //keydown
-      cb.call(this, list[index < last ? index+1 : 0])
   }
 
   //Three entrances.
@@ -115,13 +107,15 @@ export class drugs {
     let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
 
+    document.querySelector('md-input input').focus()
+
     if (autoselectGroup)
       this.selectGroup({name:this.drug.generic})
   }
 
   selectDrawer(generic) {
     this.selectGroup({name:generic}, true)
-    document.querySelector('.mdl-layout__header').firstChild.click()
+    this.toggleDrawer()
   }
 
   search() {
@@ -129,7 +123,7 @@ export class drugs {
     let term = (this.term || '').trim()
 
     if (term.length < 3)
-      return Promise.resolve(this.groups = [])
+      return Promise.resolve(this.groups = []) //always return a promise
 
     if (/^[\d-]+$/.test(term)) {
       this.regex = RegExp('('+term+')', 'gi')

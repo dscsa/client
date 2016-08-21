@@ -1,6 +1,7 @@
 import {inject} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
+import {incrementBox, saveTransaction, focusInput, scrollSelect} from '../resources/helpers'
 
 @inject(Db, Router)
 export class inventory {
@@ -9,6 +10,11 @@ export class inventory {
     this.db        = db
     this.router    = router
     this.resetFilter()
+
+    this.saveTransaction = saveTransaction
+    this.incrementBox    = incrementBox
+    this.focusInput      = focusInput
+    this.scrollSelect    = scrollSelect
   }
 
   activate(params) {
@@ -19,19 +25,11 @@ export class inventory {
   }
 
   scrollGroups($event) {
-    //group won't be a reference so we must search manually
-    let index = this.groups.map(group => group.name).indexOf(this.group.name)
-    let last  = this.groups.length - 1
+    let index = this.groups.reduce((a, group, index) => group.name == this.group.name ? index : a, 0)
+    this.scrollSelect($event, index, this.groups, this.selectGroup)
 
-    if ($event.which == 38) //Keyup
-      this.selectGroup(this.groups[index > 0 ? index - 1 : last])
-
-    if ($event.which == 40) //keydown
-      this.selectGroup(this.groups[index < last ? index+1 : 0])
-
-    if ($event.which == 13) { //Enter get rid of the results
-      document.querySelector('md-autocomplete input').blur()
-    }
+    if ($event.which == 13)//Enter get rid of the results
+      this.focusInput(`#exp_0`)
   }
 
   selectGroup(group) {
@@ -103,18 +101,6 @@ export class inventory {
     this.filter = Object.assign({}, this.filter)
   }
 
-  saveTransaction($index) {
-    Promise.resolve(this._saveTransaction).then(_ => {
-
-      if ( ! document.querySelector('#exp_'+$index+' input').validity.valid)
-        return true
-
-      console.log('saving', this.group.transactions[$index])
-      this._saveTransaction = this.db.transaction.put(this.group.transactions[$index])
-    })
-    .catch(err => this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`))
-  }
-
   removeInventory() {
     let remove = []
     for (let transaction of this.group.transactions) {
@@ -130,48 +116,25 @@ export class inventory {
 
   //TODO same as shipment's method (without autocheck)
   expShortcuts($event, $index) {
-    if ($event.which == 37 || $event.which == 39 || $event.which == 9)
-      return true //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
-
-    if ($event.which == 13) {//Enter should focus on quantity
-      document.querySelector('#qty_'+$index+' input').focus()
-      return false
-    }
+    if ($event.which == 13) //Enter should focus on quantity
+      return this.focusInput(`#qty_${$index}`)
 
     return true
   }
 
   //TODO same as shipment's method (without autocheck)
   qtyShortcuts($event, $index) {
-    if ($event.which == 13) { //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-      document.querySelector('#box_'+$index+' input').focus()
-      return false
-    }
+    if ($event.which == 13) //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
+      return this.focusInput(`#box_${$index}`)
 
     return true
   }
 
   //TODO same as shipment's method
   boxShortcuts($event, $index) {
-    if ($event.which == 13) {//Enter should focus on next row's exp
-      document.querySelector('#exp_'+($index+1)+' input').focus()
-      return false
-    }
+    if ($event.which == 13) //Enter should focus on next row's exp
+      return this.focusInput(`#exp_${$index+1}`)
 
-    let transaction = this.group.transactions[$index]
-
-    if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
-      transaction.location = transaction.location[0]+(+transaction.location.slice(1)+1)
-      this.saveTransaction($index)
-      return false //don't actually add the +/-
-    }
-
-    if ($event.which == 109 || $event.which == 189) { // - key on numpad, keyboard
-      transaction.location = transaction.location[0]+(+transaction.location.slice(1)-1)
-      this.saveTransaction($index)
-      return false //don't actually add the +/-
-    }
-
-    return true //don't cancel someone typing in the box number
+    return this.incrementBox($event, this.group.transactions[$index])
   }
 }

@@ -3,6 +3,7 @@ import {Router}     from 'aurelia-router'
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {Csv}        from '../libs/csv'
+import {incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
@@ -16,6 +17,12 @@ export class shipments {
     this.http   = http
     this.stati  = ['pickup', 'shipped', 'received']
     this.shipments = {}
+
+    this.incrementBox    = incrementBox
+    this.saveTransaction = saveTransaction
+    this.focusInput      = focusInput
+    this.scrollSelect    = scrollSelect
+    this.toggleDrawer    = toggleDrawer
   }
 
   activate(params) {
@@ -84,7 +91,7 @@ export class shipments {
   //Activated by activate() and each time a shipment is selected from drawer
   selectShipment(shipment, toggleDrawer) {
     if (toggleDrawer)
-      document.querySelector('.mdl-layout__header').firstChild.click()
+      this.toggleDrawer()
 
     if ( ! shipment) return this.emptyShipment()
     this.setUrl('/'+shipment._id)
@@ -186,10 +193,8 @@ export class shipments {
     if ($event.which == 37 || $event.which == 39 || $event.which == 9)
       return true //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
 
-    if ($event.which == 13) {//Enter should focus on quantity
-      document.querySelector('#qty_'+$index+' input').focus()
-      return false
-    }
+    if ($event.which == 13) //Enter should focus on quantity
+      return this.focusInput(`#qty_${$index}`)
 
     //See if this transaction qualifies for autoCheck
     this.autoCheck($index, true)
@@ -199,8 +204,8 @@ export class shipments {
 
   qtyShortcuts($event, $index) {
     if ($event.which == 13) { //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-      let boxInput = document.querySelector('#box_'+$index+' input')
-      boxInput.disabled ? document.querySelector('md-autocomplete input').focus() : boxInput.focus()
+      let boxInput = document.querySelector(`#box_${$index} input`)
+      boxInput.disabled ? this.focusInput(`md-autocomplete`) : boxInput.focus()
       return false
     }
 
@@ -220,7 +225,7 @@ export class shipments {
           this.transactions.splice($index, 1)
           this.diffs = this.diffs.filter(i => i != $index).map(i => i > $index ? i-1 : i)
         })
-        document.querySelector('md-autocomplete input').focus()
+        this.focusInput(`md-autocomplete`)
       }
 
       //See if this transaction qualifies for autoCheck
@@ -231,41 +236,18 @@ export class shipments {
   }
 
   boxShortcuts($event, $index) {
-    if ($event.which == 13) {//Enter should focus on quantity
-      document.querySelector('md-autocomplete input').focus()
-      return false
-    }
+    if ($event.which == 13)//Enter should focus on quantity
+      return this.focusInput(`md-autocomplete`)
 
-    if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
-      let transaction = this.transactions[$index]
-      transaction.location = transaction.location[0]+(+transaction.location.slice(1)+1)
-      return false //don't actually add the +
-    }
-
-    if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
-      let transaction = this.transactions[$index]
-      transaction.location = transaction.location[0]+(+transaction.location.slice(1)-1)
-      return false //don't actually add the -
-    }
-
-    return true //don't cancel someone typing in the box number
+    return this.incrementBox($event, this.transactions[$index])
   }
 
   saveLastBox($event, $index) {
     if ($event.target.validity.valid) //defaultLocation won't be valid
       this.lastBox = $event.target.value
 
-    this.saveTransaction($index)
+    this.saveTransaction(this.transactions[$index])
   }
-
-  // rxShortcuts($event, $index) {
-  //   if ($event.which == 13) {//Enter should refocus on the search
-  //     document.querySelector('#box_'+$index+' input').focus()
-  //     return false
-  //   }
-  //
-  //   return true
-  // }
 
   //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
   autoCheck($index, userInput) {
@@ -351,7 +333,7 @@ export class shipments {
 
     if (term.length < 3) {
       this.transactions = this.originalTransactions
-      return this.drugs = []
+      return Promise.resolve(this.drugs = []) //always return a promise
     }
 
     if (/^[\d-]+$/.test(term)) {
@@ -363,26 +345,21 @@ export class shipments {
     }
 
     this._search = drugs.then(drugs => {
-      this.drugs     = drugs
-      this.index     = 0
+      this.drugs = drugs
+      this.drug  = drugs[0]
     })
   }
 
   //Enter in the autocomplete adds the selected transaction
   //TODO support up/down arrow keys to pick different transaction?
-  scrollDrugs($event) {
-    //group won't be a reference so we must search manually
-    let last = this.drugs.length - 1
+  autocompleteShortcuts($event) {
 
-    if ($event.which == 38) //Arrow up
-      this.index = this.index > 0 ? this.index - 1 : last
-
-    if ($event.which == 40 )//Arrow down
-      this.index = this.index < last ? this.index+1 : 0
+    let index = this.drugs.indexOf(this.drug)
+    this.scrollSelect($event, index, this.drugs, drug => this.drug = drug)
 
     //Enter with a selected drug.  Force term to be falsey so a barcode scan which is entering digits does not trigger
     if ($event.which == 13) {//Barcode scan means search might not be done yet
-      Promise.resolve(this._search).then(_ => this.addTransaction(this.drugs[this.index]))
+      Promise.resolve(this._search).then(_ => this.addTransaction(this.drug))
       return false //Enter was also triggering exp to qty focus
     }
 
@@ -390,27 +367,6 @@ export class shipments {
       this.term = ""
 
     return true  //still allow typing into autocomplete
-  }
-
-  //Since this is triggered by a focusin and then does a focus, it activates itself a 2nd time
-  selectRow($index) {
-    document.querySelector('#exp_'+$index+' input').focus()
-  }
-
-  saveTransaction($index) {
-    Promise.resolve(this._saveTransaction).then(_ => {
-
-      if ( ! document.querySelector('#exp_'+$index+' input').validity.valid)
-        return true
-
-      console.log('saveTransaction', this.transactions[$index])
-      this._saveTransaction = this.db.transaction.put(this.transactions[$index])
-      .catch(err => {
-        this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`) //message is for pouchdb errors
-      })
-    })
-
-    return true
   }
 
   addTransaction(drug, transaction) {
@@ -459,7 +415,7 @@ export class shipments {
         return this.snackbar.show(`Destroy, record already exists`)
 
       console.log('ordered transaction added in', Date.now() - start)
-      setTimeout(_ => this.selectRow(0), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
+      setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
     })
     .catch(err => {
       console.log(JSON.stringify(transaction), err)
