@@ -20,7 +20,7 @@
     <md-switch
       checked.one-way="role.account == 'to'"
       click.delegate="swapRole()"
-      style="margin:-42px 0 0 185px;">
+      style="margin:-33px 0 0 185px;">
     </md-switch>
     <a
       if.bind=" ! filter"
@@ -30,7 +30,7 @@
       new shipment ${role.account} you
     </a>
     <a
-      repeat.for="shipment of shipments[role.account] | filter:filter"
+      repeat.for="shipment of shipments[role.account] | shipmentFilter:filter"
       class="mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(shipment, true)">
       <div class="mdl-typography--title" innerHtml.bind="shipment.account[role.partner].name | bold:filter"></div>

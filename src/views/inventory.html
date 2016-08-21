@@ -9,7 +9,6 @@
   <require from="elems/md-snackbar"></require>
   <require from="elems/md-checkbox"></require>
   <require from="elems/md-autocomplete"></require>
-  <require from="binding-behaviors/array"></require>
   <style>
     .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}
     .mdl-textfield__label { color:black; font-size:1rem }
@@ -81,7 +80,7 @@
                 <th style="text-align:left; width:40px;">Box</th>
               </tr>
             </thead>
-            <tr repeat.for="transaction of group.transactions | filter:filter" input.delegate="saveTransaction($index) & debounce:1000">
+            <tr repeat.for="transaction of group.transactions | inventoryFilter:filter" input.delegate="saveTransaction($index) & debounce:1000">
               <td style="padding:0 0 0 8px">
                 <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
               </td>

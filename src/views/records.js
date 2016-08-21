@@ -75,7 +75,7 @@ export class records {
     this.transaction = transaction || this.transactions[0]
 
     if ( ! this.transaction) return
-    
+
     this.db.transaction.get({_id:this.transaction._id}, {history:true})
     .then(history => {
       //TODO move this to /history?text=true. Other formatting options?
@@ -114,11 +114,5 @@ export class records {
 
   exportCSV() {
 
-  }
-}
-
-export class filterValueConverter {
-  toView(days = [], filter = ''){
-    return days.filter(day => ~ day.indexOf(filter))
   }
 }

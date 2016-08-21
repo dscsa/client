@@ -12,7 +12,7 @@
       Filter
     </md-input>
     <a
-      repeat.for="day of days | filter:filter"
+      repeat.for="day of days | recordFilter:filter"
       class="mdl-navigation__link ${ day == $parent.day ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectDay(day)">
       <div class="mdl-typography--title">${ day }</div>

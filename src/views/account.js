@@ -89,26 +89,3 @@ export class account {
     .catch(err => console.log('Logout failed: '+err))
   }
 }
-
-export class jsonValueConverter {
-  toView(object = null){
-    //console.log(Object.keys(object), JSON.stringify(object, null, " "))
-    return JSON.stringify(object, null, " ")
-  }
-}
-
-export class dateValueConverter {
-  toView(date = ''){
-    return date.slice(0, 10)
-  }
-}
-
-//TODO make this work with added items
-export class filterValueConverter {
-  toView(users = [], filter = ''){
-    filter = filter.toLowerCase()
-    return users.filter(user => {
-      return ~ `${user.name.first} ${user.name.last}`.toLowerCase().indexOf(filter)
-    })
-  }
-}

@@ -17,7 +17,7 @@
       <div class="mdl-typography--title">New User</div>
     </a>
     <a
-      repeat.for="user of users | filter:filter"
+      repeat.for="user of users | userFilter:filter"
       class="mdl-navigation__link ${ user.email == $parent.user.email ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectUser(user)">
       <div class="mdl-typography--title">${ user.name.first+' '+user.name.last}</div>

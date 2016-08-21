@@ -262,7 +262,7 @@ export class drugs {
         this.group.drugs.length == 1 &&
         this.account.ordered[this.group.name]
       ) this.order()
-      
+
       //Wait for the server PUT to replicate back to client
       setTimeout(_ => this.selectDrug(this.drug, true), 500)
     })
@@ -271,23 +271,6 @@ export class drugs {
 
   deleteDrug() {
     console.log('TO BE IMPLEMENETED')
-  }
-}
-
-export class jsonValueConverter {
-  toView(object = null){
-    return JSON.stringify(object, null, " ")
-  }
-}
-
-export class numberValueConverter {
-  fromView(str, decimals){
-    //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
-    return str != null && str !== '' ? +str : null
-  }
-
-  toView(str, decimals){
-    //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
-    return str != null && decimals ? (+str).toFixed(decimals) : str
+    //TODO complicated since drug might be used in a transaction.  Switch trans to a new drug
   }
 }
