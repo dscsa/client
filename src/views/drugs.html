@@ -58,7 +58,7 @@
           <md-input
             required
             style="width:75%"
-            pattern="([A-Z][0-9a-z]*\s?)+"
+            pattern="([A-Z][0-9a-z]*\s?)+\b"
             disabled.bind=" ! drug._rev"
             value.bind="generic.name">
             ${ $index == 0 ? 'Generic Names & Strengths' : ''}
@@ -72,14 +72,14 @@
         </div>
         <md-input
           style="width:49%"
-          pattern="([A-Z][a-z]*){1,2}"
+          pattern="([A-Z][a-z]*\s?){1,2}\b"
           value.bind="drug.brand">
           Brand Name
         </md-input>
         <md-input
           required
           style="width:49%"
-          pattern="([A-Z][a-z]+\s?)+"
+          pattern="([A-Z][a-z]+\s?)+\b"
           disabled.bind=" ! drug._rev"
           value.bind="drug.form">
           Form
