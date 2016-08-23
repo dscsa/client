@@ -36,7 +36,12 @@ export function scrollSelect($event, index, list, cb) {
 }
 
 export function focusInput(selector) {
-  document.querySelector(`${selector} input`).focus()
+  let elem = document.querySelector(`${selector} input`)
+
+  elem
+    ? elem.focus()
+    : console.log(`Cannot find ${selector} input`)
+
   return false
 }
 
