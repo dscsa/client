@@ -33,7 +33,7 @@ export class drugs {
     .then(accounts => {
       this.account = accounts[0]
       this.drawer  = {
-        ordered:Object.keys(this.account.ordered)
+        ordered:Object.keys(this.account.ordered).sort()
       }
 
       // Object.keys(this.account.ordered).map(generic => {
@@ -41,7 +41,6 @@ export class drugs {
       //
       //   return ordered
       // })
-
       if ( ! params.id)
         return this.selectDrawer(this.drawer.ordered[0])
 
@@ -73,7 +72,6 @@ export class drugs {
   //2) selectDrawer and we need to find the group with that particular generic name
   //3) selectDrug and we need to find the group with that particular generic name
   selectGroup(group, autoselectDrug) {
-
     this.term = group.name
 
     if ( ! group.drugs)
@@ -98,7 +96,6 @@ export class drugs {
   }
 
   selectDrug(drug, autoselectGroup) {
-
     this.drug = drug || {
       generics:this.group.drugs[0].generics,
       form:this.group.drugs[0].form
@@ -106,8 +103,6 @@ export class drugs {
 
     let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
-
-    document.querySelector('md-input input').focus()
 
     if (autoselectGroup)
       this.selectGroup({name:this.drug.generic})
