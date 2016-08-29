@@ -26,7 +26,7 @@ export class inventory {
   }
 
   scrollGroups($event) {
-    let index = this.groups.reduce((a, group, index) => group.name == this.group.name ? index : a, 0)
+    let index = this.groups.indexOf(this.group)
     this.scrollSelect($event, index, this.groups, this.selectGroup)
 
     if ($event.which == 13)//Enter get rid of the results

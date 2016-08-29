@@ -37,11 +37,6 @@ export class drugs {
         ordered:Object.keys(this.account.ordered).sort()
       }
 
-      // Object.keys(this.account.ordered).map(generic => {
-      //   let ordered = { name:generic }
-      //
-      //   return ordered
-      // })
       if ( ! params.id)
         return this.selectDrawer(this.drawer.ordered[0])
 
@@ -54,7 +49,7 @@ export class drugs {
   scrollGroups($event) {
     Promise.resolve(this._search).then(_ => {
       //group won't be a reference so we must search manually
-      let index = this.groups.map(group => group.name).indexOf(this.group.name)
+      let index = this.groups.indexOf(this.group)
       this.scrollSelect($event, index, this.groups, group => this.selectGroup(group, true))
 
       if ($event.which == 13)//Enter get rid of the results

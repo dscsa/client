@@ -129,7 +129,6 @@ export class shipments {
 
     this.db.transaction.get({'shipment._id':shipmentId}).then(transactions => {
       this.transactions = transactions
-      this.originalTransactions = transactions
       let verified //do not autocheck past the point where someone has inventoried
       for (let i in this.transactions) {
         let transaction = this.transactions[i]
