@@ -371,6 +371,7 @@ export class shipments {
     transaction.drug = {
       _id:drug._id,
       brand:drug.brand,
+      generic:drug.generic,
       generics:drug.generics,
       form:drug.form,
       price:drug.price,

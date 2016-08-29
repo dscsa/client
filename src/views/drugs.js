@@ -70,19 +70,19 @@ export class drugs {
   selectGroup(group, autoselectDrug) {
     this.term = group.name
 
-    if ( ! group.drugs)
-      group = this.search().then(_ => {
-        //Use filter to get an exact match not just one ingredient
-        return this.groups.filter(group => this.term == group.name)[0]
-      })
-
-    this.db.transaction.get({generic:this.term, 'shipment._id':this.account._id}).then(transactions => {
+    this.db.transaction.get({generic:group.name, 'shipment._id':this.account._id}).then(transactions => {
       this.inventory = transactions.reduce((a, b) => a+b.qty.from, 0)
     })
 
-    Promise.resolve(group).then(group => {
-      this.group = group
+    if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
+      group.drugs = this.search().then(_ => {
+        //Use filter to get an exact match not just one ingredient
+        return this.groups.length ? this.groups.filter(group => this.term == group.name)[0].drugs : []
+      })
 
+    Promise.resolve(group.drugs).then(drugs => {
+      group.drugs = drugs
+      this.group  = group
       //TODO if this was called by selectDrug then we should establish establish a reference
       //between the approriate this.group.drugs and this.drug so that changes to the drug
       //appear in realtime on the right hand side.  This works if selectGroup
@@ -92,12 +92,9 @@ export class drugs {
   }
 
   selectDrug(drug, autoselectGroup) {
-    this.drug = drug || {
-      generics:this.group.drugs[0].generics,
-      form:this.group.drugs[0].form
-    }
+    this.drug = drug
 
-    let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
+    let url = this.drug ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
 
     if (autoselectGroup)

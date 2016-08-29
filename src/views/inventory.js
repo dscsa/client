@@ -21,7 +21,6 @@ export class inventory {
   activate(params) {
     return this.db.user.session.get().then(session => {
       this.account = session.account._id
-      this.selectGroup()
     })
   }
 
@@ -33,16 +32,12 @@ export class inventory {
       this.focusInput(`#exp_0`)
   }
 
-  selectGroup(group) {
-    group = group || this.search().then(_ => {
-      return this.groups[0] || {transactions:[]}
-    })
-
-    Promise.resolve(group).then(group => {
+  selectGroup(group = {}) {
+    this.db.transaction.get({generic:group.name, 'shipment._id':this.account})
+    .then(transactions => {
       this.term  = group.name
       this.group = group
-
-      group.transactions.sort((a, b) => {
+      group.transactions = transactions.sort((a, b) => {
         let aExp = a.exp.from || ''
         let bExp = b.exp.from || ''
         let aBox = a.location || ''

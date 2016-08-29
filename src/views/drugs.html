@@ -165,7 +165,6 @@
       </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <md-switch
-        show.bind="group"
         style="position:absolute; right:25px; top:47px; z-index:1"
         checked.one-way="account.ordered[group.name]"
         disabled.bind="! account.ordered[group.name] && ! drug._rev"
@@ -177,6 +176,7 @@
             <thead>
               <tr>
                 <th class="mdl-data-table__cell--non-numeric">Ndc</th>
+                <th class="mdl-data-table__cell--non-numeric">Form</th>
                 <th class="mdl-data-table__cell--non-numeric">Labeler</th>
                 <th class="mdl-data-table__cell--non-numeric">Brand</th>
                 <th style="text-align:left; width:40px; padding-left:0;">Nadac</th>
@@ -185,6 +185,7 @@
             </thead>
             <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
               <td class="mdl-data-table__cell--non-numeric">${ drug._id }</td>
+              <td class="mdl-data-table__cell--non-numeric">${ drug.form }</td>
               <td class="mdl-data-table__cell--non-numeric">${ drug.labeler }</td>
               <td class="mdl-data-table__cell--non-numeric">${ drug.brand }</td>
               <td style="padding:0; text-align:left">${ drug.price.nadac | number:3 }</td>
