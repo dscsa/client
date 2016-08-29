@@ -46,5 +46,7 @@ export function focusInput(selector) {
 }
 
 export function toggleDrawer() {
-  document.querySelector('.mdl-layout__header').firstChild.click()
+  let drawer = document.querySelector('.mdl-layout__header')
+  drawer && drawer.firstChild.click() //view might not be attached yet meaning selector is null
+}
 }
