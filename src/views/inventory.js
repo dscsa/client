@@ -1,7 +1,7 @@
 import {inject} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
-import {incrementBox, saveTransaction, focusInput, scrollSelect} from '../resources/helpers'
+import {incrementBox, saveTransaction, focusInput, scrollSelect, drugSearch} from '../resources/helpers'
 
 @inject(Db, Router)
 export class inventory {
@@ -15,6 +15,7 @@ export class inventory {
     this.incrementBox    = incrementBox
     this.focusInput      = focusInput
     this.scrollSelect    = scrollSelect
+    this.drugSearch      = drugSearch
   }
 
   activate(params) {
@@ -71,26 +72,12 @@ export class inventory {
   }
 
   search() {
-
-    let term = (this.term || '').trim()
-
-    if (term.length < 3)
-      return Promise.resolve(this.groups = [])
-
-    if (/^[\d-]+$/.test(term)) {
-      //TODO make this an Rx search.  Also look up ndc in drug db to get generic name then do generic search
-      // this.regex = RegExp('('+term+')', 'gi')
-      // var transactions = this.db.transaction.get({ndc:term, 'shipment._id':this.account})
-    } else {
-      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      var transactions = this.db.transaction.get({generic:term, 'shipment._id':this.account})
-    }
-
-    let groups = {}
-    return transactions.then(transactions => {
-      for (let transaction of transactions) {
-        groups[transaction.drug.generic] = groups[transaction.drug.generic] || {name:transaction.drug.generic, transactions:[]}
-        groups[transaction.drug.generic].transactions.push(transaction)
+    this.drugSearch().then(drugs => {
+      let groups = {}
+      for (let drug of drugs) {
+        if ( ! drug.generic)
+        console.log('drug.generic', drug.generic, drug)
+        groups[drug.generic] = groups[drug.generic] || {name:drug.generic}
       }
       this.groups = Object.keys(groups).map(key => groups[key])
     })

@@ -49,4 +49,21 @@ export function toggleDrawer() {
   let drawer = document.querySelector('.mdl-layout__header')
   drawer && drawer.firstChild.click() //view might not be attached yet meaning selector is null
 }
+
+export function drugSearch() {
+  let term = this.term.trim()
+
+  if (term.length < 3) {
+    return Promise.resolve(this._search = []) //always return a promise
+  }
+
+  if (/^[\d-]+$/.test(term)) {
+    this.regex = RegExp('('+term+')', 'gi')
+    this._search = this.db.drug.get({ndc:term})
+  } else {
+    this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
+    this._search = this.db.drug.get({generic:term})
+  }
+
+  return this._search
 }

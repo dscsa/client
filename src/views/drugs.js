@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
 import {Db}     from '../libs/pouch'
 import {Csv}    from '../libs/csv'
-import {scrollSelect, toggleDrawer} from '../resources/helpers'
+import {scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
 
 
 //@pageState()
@@ -18,6 +18,7 @@ export class drugs {
 
     this.toggleDrawer = toggleDrawer
     this.scrollSelect = scrollSelect
+    this.drugSearch   = drugSearch
   }
 
   deactivate() {
@@ -114,22 +115,8 @@ export class drugs {
   }
 
   search() {
-
-    let term = (this.term || '').trim()
-
-    if (term.length < 3)
-      return Promise.resolve(this.groups = []) //always return a promise
-
-    if (/^[\d-]+$/.test(term)) {
-      this.regex = RegExp('('+term+')', 'gi')
-      var drugs  = this.db.drug.get({ndc:term})
-    } else {
-      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      var drugs  = this.db.drug.get({generic:term})
-    }
-
-    let groups = {}
-    return this._search = drugs.then(drugs => {
+    return this.drugSearch().then(drugs => {
+      let groups = {}
       for (let drug of drugs) {
         groups[drug.generic] = groups[drug.generic] || {name:drug.generic, drugs:[]}
         groups[drug.generic].drugs.push(drug)

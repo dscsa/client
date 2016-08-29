@@ -3,7 +3,7 @@ import {Router}     from 'aurelia-router'
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {Csv}        from '../libs/csv'
-import {incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer} from '../resources/helpers'
+import {incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
@@ -23,6 +23,7 @@ export class shipments {
     this.focusInput      = focusInput
     this.scrollSelect    = scrollSelect
     this.toggleDrawer    = toggleDrawer
+    this.drugSearch      = drugSearch
   }
 
   activate(params) {
@@ -329,22 +330,7 @@ export class shipments {
   }
 
   search() {
-    let term = this.term.trim()
-
-    if (term.length < 3) {
-      this.transactions = this.originalTransactions
-      return Promise.resolve(this.drugs = []) //always return a promise
-    }
-
-    if (/^[\d-]+$/.test(term)) {
-      this.regex = RegExp('('+term+')', 'gi')
-      var drugs  = this.db.drug.get({ndc:term})
-    } else {
-      this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-      var drugs  = this.db.drug.get({generic:term})
-    }
-
-    this._search = drugs.then(drugs => {
+    this.drugSearch().then(drugs => {
       this.drugs = drugs
       this.drug  = drugs[0]
     })
