@@ -57,7 +57,7 @@ export class valueValueConverter {
 
 export class boldValueConverter {
   toView(text, bold){
-    if ( ! bold) return text
+    if ( ! bold || ! text) return text
     bold = RegExp('('+bold.replace(/ /g, '|')+')', 'gi')
     return text.replace(bold, '<strong>$1</strong>')
   }
