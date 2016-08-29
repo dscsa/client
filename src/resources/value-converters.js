@@ -112,12 +112,15 @@ function toJsonDate({month, year}) {
 }
 
 export class toArrayValueConverter {
-  toView(obj = {}){
-    let arr = []
-    for (var key in obj)
-      arr.push({key, val:obj[key]})
+  toView(obj = {}, sort){
 
-    return arr
+    let arr = Object.keys(obj)
+
+    if (sort) arr.sort()
+
+    return arr.map(key => {
+      return {key, val:obj[key]}
+    })
   }
 }
 
