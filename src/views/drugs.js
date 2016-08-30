@@ -38,7 +38,7 @@ export class drugs {
       }
 
       if ( ! params.id)
-        return this.selectDrawer(this.drawer.ordered[0])
+        return this.drawer.ordered[0] && this.selectDrawer(this.drawer.ordered[0])
 
       return this.db.drug.get({_id:params.id}).then(drugs => {
         this.selectDrug(drugs[0], true)
@@ -145,7 +145,7 @@ export class drugs {
           upc:" "+drug.upc,
           ndc9:" "+drug.ndc9,
           generics:drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
-          ordered:this.account.ordered[generic] || {minQty:null, minDays:null, message:null}
+          ordered:this.account.ordered[drug.generic]
         }
       }))
     })
