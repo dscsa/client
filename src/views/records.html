@@ -14,7 +14,7 @@
     <a
       repeat.for="day of days | recordFilter:filter"
       class="mdl-navigation__link ${ day == $parent.day ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectDay(day)">
+      click.delegate="selectDay(day, true)">
       <div class="mdl-typography--title">${ day }</div>
     </a>
   </md-drawer>

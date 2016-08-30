@@ -25,25 +25,24 @@ export class inventory {
   }
 
   scrollGroups($event) {
-    let index = this.groups.indexOf(this.group)
-    this.scrollSelect($event, index, this.groups, this.selectGroup)
+    this.scrollSelect($event, this.group, this.groups, this.selectGroup)
 
     if ($event.which == 13)//Enter get rid of the results
       this.focusInput(`#exp_0`)
   }
 
   selectGroup(group = {}) {
-    this.db.transaction.get({generic:group.name, 'shipment._id':this.account})
+    this.db.transaction.get({generic:group.name, inventory:true})
     .then(transactions => {
       this.term  = group.name
       this.group = group
       group.transactions = transactions.sort((a, b) => {
-        let aExp = a.exp.from || ''
-        let bExp = b.exp.from || ''
+        let aExp = a.exp.to || a.exp.from || ''
+        let bExp = b.exp.to || b.exp.from || ''
+        let aQty = a.qty.to || a.qty.from || ''
+        let bQty = b.qty.to || b.qty.from || ''
         let aBox = a.location || ''
         let bBox = b.location || ''
-        let aQty = a.qty.from || ''
-        let bQty = b.qty.from || ''
 
         if (aBox > bBox) return -1
         if (aBox < bBox) return 1
@@ -56,7 +55,7 @@ export class inventory {
 
       this.resetFilter()
       for (let transaction of group.transactions) {
-        this.filter.exp[transaction.exp.from] = {isChecked:true, count:0, qty:0}
+        this.filter.exp[transaction.exp.to || transaction.exp.from] = {isChecked:true, count:0, qty:0}
         this.filter.ndc[transaction.drug._id] = {isChecked:true, count:0, qty:0}
       }
     })
@@ -83,17 +82,19 @@ export class inventory {
     this.filter = Object.assign({}, this.filter)
   }
 
-  removeInventory() {
-    let remove = []
+  repackInventory() {
+    let repack = []
     for (let transaction of this.group.transactions) {
       if (transaction.isChecked) {
-        remove.push(this.db.transaction.delete(transaction).then(_ =>
+        transaction.next = transaction.next || []
+        transaction.next.push({qty:transaction.qty.to || transaction.qty.from, dispensed:{}})
+        repack.push(this.db.transaction.put(transaction).then(_ =>
           this.group.transactions.splice(this.group.transactions.indexOf(transaction), 1)
         ))
       }
     }
 
-    Promise.all(remove).then(_ => this.snackbar.show(`${remove.length} transactions removed from inventory`))
+    Promise.all(repack).then(_ => this.snackbar.show(`${repack.length} transactions were repacked`))
   }
 
   //TODO same as shipment's method (without autocheck)

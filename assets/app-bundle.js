@@ -827,37 +827,39 @@ define('resources/value-converters',['exports'], function (exports) {
 
         var transaction = _ref2;
 
-        filter.exp[transaction.exp.from].count = 0;
-        filter.exp[transaction.exp.from].qty = 0;
-        filter.ndc[transaction.drug._id].count = 0;
-        filter.ndc[transaction.drug._id].qty = 0;
+        var exp = transaction.exp.to || transaction.exp.from;
+        var ndc = transaction.drug._id;
+        filter.exp[exp].count = 0;
+        filter.exp[exp].qty = 0;
+        filter.ndc[ndc].count = 0;
+        filter.ndc[ndc].qty = 0;
       }
 
       transactions = transactions.filter(function (transaction) {
-        if (filter.rx) {
-          if (!transaction.rx || !transaction.rx.from) return false;
-          if (!transaction.rx.from.includes(filter.rx)) return false;
-        }
 
-        if (!filter.exp[transaction.exp.from].isChecked) {
-          if (filter.ndc[transaction.drug._id].isChecked) {
-            filter.exp[transaction.exp.from].count++;
-            filter.exp[transaction.exp.from].qty += transaction.qty.from;
+        var qty = transaction.qty.to || transaction.qty.from;
+        var exp = transaction.exp.to || transaction.exp.from;
+        var ndc = transaction.drug._id;
+
+        if (!filter.exp[exp].isChecked) {
+          if (filter.ndc[ndc].isChecked) {
+            filter.exp[exp].count++;
+            filter.exp[exp].qty += qty;
           }
           return false;
         }
-        if (!filter.ndc[transaction.drug._id].isChecked) {
-          if (filter.exp[transaction.exp.from].isChecked) {
-            filter.ndc[transaction.drug._id].count++;
-            filter.ndc[transaction.drug._id].qty += transaction.qty.from;
+        if (!filter.ndc[ndc].isChecked) {
+          if (filter.exp[exp].isChecked) {
+            filter.ndc[ndc].count++;
+            filter.ndc[ndc].qty += qty;
           }
           return false;
         }
 
-        filter.exp[transaction.exp.from].count++;
-        filter.ndc[transaction.drug._id].count++;
-        filter.exp[transaction.exp.from].qty += transaction.qty.from;
-        filter.ndc[transaction.drug._id].qty += transaction.qty.from;
+        filter.exp[exp].count++;
+        filter.ndc[ndc].count++;
+        filter.exp[exp].qty += qty;
+        filter.ndc[ndc].qty += qty;
         return true;
       });
 
@@ -1043,8 +1045,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
       var _this2 = this;
 
       Promise.resolve(this._search).then(function (_) {
-        var index = _this2.groups.indexOf(_this2.group);
-        _this2.scrollSelect($event, index, _this2.groups, function (group) {
+        _this2.scrollSelect($event, _this2.group, _this2.groups, function (group) {
           return _this2.selectGroup(group, true);
         });
 
@@ -1055,7 +1056,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
     };
 
     drugs.prototype.scrollDrugs = function scrollDrugs($event) {
-      this.scrollSelect($event, this.group.drugs.indexOf(this.drug), this.group.drugs, this.selectDrug);
+      this.scrollSelect($event, this.drug, this.group.drugs, this.selectDrug);
     };
 
     drugs.prototype.selectGroup = function selectGroup(group, autoselectDrug) {
@@ -1315,8 +1316,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
     };
 
     inventory.prototype.scrollGroups = function scrollGroups($event) {
-      var index = this.groups.indexOf(this.group);
-      this.scrollSelect($event, index, this.groups, this.selectGroup);
+      this.scrollSelect($event, this.group, this.groups, this.selectGroup);
 
       if ($event.which == 13) this.focusInput('#exp_0');
     };
@@ -1326,16 +1326,16 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
       var group = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-      this.db.transaction.get({ generic: group.name, 'shipment._id': this.account }).then(function (transactions) {
+      this.db.transaction.get({ generic: group.name, inventory: true }).then(function (transactions) {
         _this2.term = group.name;
         _this2.group = group;
         group.transactions = transactions.sort(function (a, b) {
-          var aExp = a.exp.from || '';
-          var bExp = b.exp.from || '';
+          var aExp = a.exp.to || a.exp.from || '';
+          var bExp = b.exp.to || b.exp.from || '';
+          var aQty = a.qty.to || a.qty.from || '';
+          var bQty = b.qty.to || b.qty.from || '';
           var aBox = a.location || '';
           var bBox = b.location || '';
-          var aQty = a.qty.from || '';
-          var bQty = b.qty.from || '';
 
           if (aBox > bBox) return -1;
           if (aBox < bBox) return 1;
@@ -1361,7 +1361,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
           var transaction = _ref;
 
-          _this2.filter.exp[transaction.exp.from] = { isChecked: true, count: 0, qty: 0 };
+          _this2.filter.exp[transaction.exp.to || transaction.exp.from] = { isChecked: true, count: 0, qty: 0 };
           _this2.filter.ndc[transaction.drug._id] = { isChecked: true, count: 0, qty: 0 };
         }
       });
@@ -1404,10 +1404,10 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
       this.filter = Object.assign({}, this.filter);
     };
 
-    inventory.prototype.removeInventory = function removeInventory() {
+    inventory.prototype.repackInventory = function repackInventory() {
       var _this4 = this;
 
-      var remove = [];
+      var repack = [];
 
       var _loop = function _loop() {
         if (_isArray3) {
@@ -1422,7 +1422,9 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
         var transaction = _ref3;
 
         if (transaction.isChecked) {
-          remove.push(_this4.db.transaction.delete(transaction).then(function (_) {
+          transaction.next = transaction.next || [];
+          transaction.next.push({ qty: transaction.qty.to || transaction.qty.from, dispensed: {} });
+          repack.push(_this4.db.transaction.put(transaction).then(function (_) {
             return _this4.group.transactions.splice(_this4.group.transactions.indexOf(transaction), 1);
           }));
         }
@@ -1436,8 +1438,8 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
         if (_ret === 'break') break;
       }
 
-      Promise.all(remove).then(function (_) {
-        return _this4.snackbar.show(remove.length + ' transactions removed from inventory');
+      Promise.all(repack).then(function (_) {
+        return _this4.snackbar.show(repack.length + ' transactions were repacked');
       });
     };
 
@@ -1577,7 +1579,7 @@ define('views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs
     return login;
   }()) || _class);
 });
-define('views/records',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient) {
+define('views/records',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient, _helpers) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -1603,13 +1605,14 @@ define('views/records',['exports', 'aurelia-framework', 'aurelia-router', '../li
       this.history = '';
       this.days = [];
       this.scroll = this.scroll.bind(this);
+      this.toggleDrawer = _helpers.toggleDrawer;
 
       var today = new Date();
       var start = new Date(2016, 7, 1);
 
       while (today > start) {
-        today.setHours(-24);
         this.days.push(today.toJSON().slice(0, 10));
+        today.setHours(-24);
       }
     }
 
@@ -1623,20 +1626,21 @@ define('views/records',['exports', 'aurelia-framework', 'aurelia-router', '../li
       addEventListener('keyup', this.scroll);
       this.db.user.session.get().then(function (session) {
         _this.account = session.account;
-        _this.selectDay(params._id);
+        _this.selectDay(params.id);
       });
     };
 
-    records.prototype.selectDay = function selectDay(day) {
+    records.prototype.selectDay = function selectDay(day, toggleDrawer) {
       var _this2 = this;
 
       this.day = day || this.days[0];
       this.router.navigate('records/' + this.day, { trigger: false });
+      toggleDrawer && this.toggleDrawer();
 
       var to = new Date(this.day);
       to.setHours(24 * 2);
 
-      var query = { 'shipment._id': { $ne: this.account._id }, createdAt: { $gte: this.day, $lte: to.toJSON().slice(0, 10) } };
+      var query = { createdAt: { $gte: this.day, $lte: to.toJSON().slice(0, 10) } };
 
       return this.db.transaction.get(query).then(function (transactions) {
         _this2.transactions = transactions;
@@ -1669,7 +1673,7 @@ define('views/records',['exports', 'aurelia-framework', 'aurelia-router', '../li
         function pad(word) {
           return (word + ' '.repeat(25)).slice(0, 25);
         }
-        _this3.history = JSON.stringify(history, function (k, v) {
+        _this3.history = JSON.stringify(history.reverse(), function (k, v) {
           if (Array.isArray(v)) return v;
 
           var status = _this3.status || 'pickup';
@@ -1914,20 +1918,33 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     shipments.prototype.setTransactions = function setTransactions(shipmentId) {
       var _this2 = this;
 
-      this.transactions = [];
       this.diffs = [];
 
-      if (!shipmentId) return;
+      if (!shipmentId) return this.transactions = [];
 
       this.db.transaction.get({ 'shipment._id': shipmentId }).then(function (transactions) {
         _this2.transactions = transactions;
-        var verified = void 0;
-        for (var i in _this2.transactions) {
-          var transaction = _this2.transactions[i];
-          transaction.isChecked = transaction.verifiedAt;
-          if (transaction.verifiedAt) verified = true;else if (!verified) _this2.autoCheck(i, false);
-        }
+        _this2.setCheckboxes();
       }).catch(console.log);
+    };
+
+    shipments.prototype.setCheckboxes = function setCheckboxes() {
+      for (var _iterator3 = this.transactions, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+        var _ref4;
+
+        if (_isArray3) {
+          if (_i3 >= _iterator3.length) break;
+          _ref4 = _iterator3[_i3++];
+        } else {
+          _i3 = _iterator3.next();
+          if (_i3.done) break;
+          _ref4 = _i3.value;
+        }
+
+        var transaction = _ref4;
+
+        transaction.isChecked = this.shipmentId == this.shipment._id ? transaction.verifiedAt : null;
+      }
     };
 
     shipments.prototype.setStatus = function setStatus(shipment) {
@@ -1937,9 +1954,9 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.swapRole = function swapRole() {
-      var _ref4 = [this.role.partner, this.role.account];
-      this.role.account = _ref4[0];
-      this.role.partner = _ref4[1];
+      var _ref5 = [this.role.partner, this.role.account];
+      this.role.account = _ref5[0];
+      this.role.partner = _ref5[1];
 
       this.selectShipment();
       return true;
@@ -1948,7 +1965,6 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     shipments.prototype.saveShipment = function saveShipment() {
       var _this3 = this;
 
-      delete this.shipment.status;
       return this.db.shipment.put(this.shipment).then(function (res) {
         _this3.setStatus(_this3.shipment);
       });
@@ -1958,10 +1974,10 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       var _this4 = this;
 
       Promise.all(this.transactions.map(function (transaction) {
-        if (!transaction.isChecked || transaction.verifiedAt) return;
-
-        transaction.shipment = { _id: shipment._id };
-        return _this4.db.transaction.put(transaction);
+        if (transaction.isChecked) {
+          transaction.shipment = { _id: shipment._id };
+          return _this4.db.transaction.put(transaction);
+        }
       })).then(function (_) {
         return _this4.selectShipment(shipment);
       });
@@ -1992,33 +2008,11 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     shipments.prototype.qtyShortcuts = function qtyShortcuts($event, $index) {
       var _this6 = this;
 
-      if ($event.which == 13) {
-        var boxInput = document.querySelector('#box_' + $index + ' input');
-        boxInput.disabled ? this.focusInput('md-autocomplete') : boxInput.focus();
-        return false;
-      }
+      if ($event.which == 13) return this.focusInput('#box_' + $index, 'md-autocomplete');
 
-      setTimeout(function (_) {
-
-        if ($event.which == 37 || $event.which == 39 || $event.which == 9) return;
-        var transaction = _this6.transactions[$index];
-        var doneeDelete = !transaction.qty.from && transaction.qty.to === 0;
-        var donorDelete = !transaction.qty.to && transaction.qty.from === 0;
-
-        if (donorDelete || doneeDelete) {
-          _this6.drugs = [];
-          _this6.db.transaction.delete(transaction).then(function (_) {
-            _this6.transactions.splice($index, 1);
-            _this6.diffs = _this6.diffs.filter(function (i) {
-              return i != $index;
-            }).map(function (i) {
-              return i > $index ? i - 1 : i;
-            });
-          });
-          _this6.focusInput('md-autocomplete');
-        }
-
-        _this6.autoCheck($index, true);
+      if ($event.which != 37 && $event.which != 39 && $event.which != 9) setTimeout(function (_) {
+        _this6.deleteTransactionIfQty0($index);
+        _this6.autoCheck($index);
       });
 
       return true;
@@ -2030,106 +2024,111 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       return this.incrementBox($event, this.transactions[$index]);
     };
 
-    shipments.prototype.saveLastBox = function saveLastBox($event, $index) {
-      if ($event.target.validity.valid) this.lastBox = $event.target.value;
-
-      this.saveTransaction(this.transactions[$index]);
+    shipments.prototype.getLocation = function getLocation(transaction) {
+      return (this.getOrder(transaction) || {}).defaultLocation || this._location;
     };
 
-    shipments.prototype.autoCheck = function autoCheck($index, userInput) {
+    shipments.prototype.setLocation = function setLocation(transaction) {
       var _this7 = this;
 
-      var transaction = this.transactions[$index];
+      if (this.getOrder(transaction).defaultLocation != transaction.location) this._location = transaction.location;
 
-      var ordered = this.ordered[this.shipment.account.to._id][transaction.drug.generic];
+      this.saveTransaction(transaction).catch(function (err) {
+        _this7.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
+      });
+    };
+
+    shipments.prototype.aboveMinQty = function aboveMinQty(order, transaction) {
       var qty = +transaction.qty[this.role.account];
-      var exp = transaction.exp[this.role.account];
-
-      if (!ordered || !qty) return;
-
+      if (!qty) return false;
       var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
       var defaultQty = price > 1 ? 1 : 10;
-      var minQty = qty >= (+ordered.minQty || defaultQty);
-      var minExp = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120) * 24 * 60 * 60 * 1000 : !ordered.minDays;
+      return qty >= (+order.minQty || defaultQty);
+    };
+
+    shipments.prototype.aboveMinExp = function aboveMinExp(order, transaction) {
+      var exp = transaction.exp[this.role.account];
+      if (!exp) return !order.minDays;
+      var minDays = order.minDays || 120;
+      return new Date(exp) - Date.now() >= minDays * 24 * 60 * 60 * 1000;
+    };
+
+    shipments.prototype.getOrder = function getOrder(transaction) {
+      return this.ordered[this.shipment.account.to._id][transaction.drug.generic];
+    };
+
+    shipments.prototype.isOrdered = function isOrdered(order, transaction) {
+      return order ? this.aboveMinQty(order, transaction) && this.aboveMinExp(order, transaction) : false;
+    };
+
+    shipments.prototype.autoCheck = function autoCheck($index) {
+      var _this8 = this;
+
+      var transaction = this.transactions[$index];
       var isChecked = transaction.isChecked || false;
+      var order = this.getOrder(transaction);
 
-      if ((minQty && minExp) == isChecked) {
-        if (!userInput) return;
+      if (this.isOrdered(order, transaction) == isChecked) return;
 
-        if (ordered.destroyedMessage && !this.destroyedMessage) this.destroyedMessage = setTimeout(function (_) {
-          delete _this7.destroyedMessage;
-          _this7.snackbar.show(ordered.destroyedMessage);
-        }, 1000);
+      if (isChecked && order && order.destroyedMessage && !this.destroyedMessage) this.destroyedMessage = setTimeout(function (_) {
+        delete _this8.destroyedMessage;
+        _this8.snackbar.show(order.destroyedMessage);
+      }, 1000);
 
-        return console.log('minQty', minQty, qty, 'minExp', minExp, exp);
+      if (!isChecked) {
+        this.snackbar.show(order.verifiedMessage || 'Drug is ordered');
+        clearTimeout(this.destroyedMessage);
+        delete this.destroyedMessage;
       }
-
-      clearTimeout(this.destroyedMessage);
-      delete this.destroyedMessage;
-
-      if (!isChecked) userInput && this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered');
-
-      if (userInput) transaction.location = ordered.defaultLocation || this.lastBox;
 
       this.manualCheck($index);
     };
 
-    shipments.prototype.manualCheck = function manualCheck($index) {
-      this.transactions[$index].isChecked = !this.transactions[$index].isChecked;
+    shipments.prototype.toggleVerified = function toggleVerified(transaction) {
+      var _this9 = this;
 
-      var j = this.diffs.indexOf($index);
-      ~j ? this.diffs.splice(j, 1) : this.diffs.push($index);
-    };
+      transaction.verifiedAt = transaction.verifiedAt ? null : new Date().toJSON();
 
-    shipments.prototype.saveInventory = function saveInventory() {
-      var _this8 = this;
+      if (transaction.verifiedAt) transaction.location = this.getLocation(transaction);
 
-      var method = 'post';
-      var verified = true;
-      var phrase = 'saved to';
-      if (this.transactions[this.diffs[0]].verifiedAt) {
-        method = 'delete';
-        verified = null;
-        phrase = 'removed from';
-      }
-
-      Promise.all(this.diffs.map(function (i) {
-        return _this8.db.transaction.verified[method](_this8.transactions[i]).then(function (_) {
-          _this8.transactions[i].verifiedAt = verified;
-          return true;
-        }).catch(function (err) {
-          _this8.transactions[i].isChecked = _this8.transactions[i].verifiedAt;
-          _this8.manualCheck(i);
-          _this8.snackbar.show(err.reason);
-        });
-      })).then(function (all) {
-        _this8.diffs = [];
-        if (all.every(function (i) {
-          return i;
-        })) _this8.snackbar.show(all.length + ' items were ' + phrase + ' inventory');
+      this.saveTransaction(transaction).catch(function (err) {
+        transaction.isChecked = !transaction.isChecked;
+        _this9.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
       });
     };
 
+    shipments.prototype.toggleDiff = function toggleDiff(transaction) {
+      var index = this.diffs.indexOf(transaction);
+      ~index ? this.diffs.splice(index, 1) : this.diffs.push(transaction);
+    };
+
+    shipments.prototype.manualCheck = function manualCheck($index) {
+      var transaction = this.transactions[$index];
+
+      if (this.moveItemsButton.offsetParent || this.newShipmentButton.offsetParent) this.toggleDiff(transaction);else this.toggleVerified(transaction);
+
+      transaction.isChecked = !transaction.isChecked;
+    };
+
     shipments.prototype.search = function search() {
-      var _this9 = this;
+      var _this10 = this;
 
       this.drugSearch().then(function (drugs) {
-        _this9.drugs = drugs;
-        _this9.drug = drugs[0];
+        _this10.drugs = drugs;
+        _this10.drug = drugs[0];
       });
     };
 
     shipments.prototype.autocompleteShortcuts = function autocompleteShortcuts($event) {
-      var _this10 = this;
+      var _this11 = this;
 
-      var index = this.drugs.indexOf(this.drug);
-      this.scrollSelect($event, index, this.drugs, function (drug) {
-        return _this10.drug = drug;
+      this.scrollSelect($event, this.drug, this.drugs, function (drug) {
+        return _this11.drug = drug;
       });
 
       if ($event.which == 13) {
         Promise.resolve(this._search).then(function (_) {
-          return _this10.addTransaction(_this10.drug);
+          return _this11.addTransaction(_this11.drug);
         });
         return false;
       }
@@ -2140,13 +2139,12 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.addTransaction = function addTransaction(drug, transaction) {
-      var _this11 = this;
+      var _this12 = this;
 
       if (!drug) return this.snackbar.show('Cannot find drug matching this search');
 
       transaction = transaction || {
         qty: { from: null, to: null },
-        rx: { from: null, to: null },
         exp: {
           from: this.transactions[0] ? this.transactions[0].exp.from : null,
           to: this.transactions[0] ? this.transactions[0].exp.to : null
@@ -2174,32 +2172,43 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       this.term = '';
       console.log('addTransaction', transaction);
       this.transactions.unshift(transaction);
-      this.diffs = this.diffs.map(function (val) {
-        return +val + 1;
-      });
+      setTimeout(function (_) {
+        return _this12.focusInput('#exp_0');
+      }, 50);
       var start = Date.now();
       return this.db.transaction.post(transaction).then(function (_) {
-        var ordered = _this11.ordered[_this11.shipment.account.to._id][transaction.drug.generic];
-        var pharmerica = /pharmerica.*/i.test(_this11.shipment.account.from.name);
 
-        if (!ordered && pharmerica) return _this11.snackbar.show('Destroy, record already exists');
+        var ordered = _this12.getOrder(transaction);
+        var pharmerica = /pharmerica.*/i.test(_this12.shipment.account.from.name);
+
+        if (!ordered && pharmerica) return _this12.snackbar.show('Destroy, record already exists');
 
         console.log('ordered transaction added in', Date.now() - start);
-        setTimeout(function (_) {
-          return _this11.focusInput('#exp_0');
-        }, 50);
       }).catch(function (err) {
         console.log(JSON.stringify(transaction), err);
-        _this11.snackbar.show('Transaction could not be added: ' + err.name);
-        _this11.transactions.shift();
-        _this11.diffs = _this11.diffs.map(function (val) {
-          return val - 1;
-        });
+        _this12.snackbar.show('Transaction could not be added: ' + err.name);
+        _this12.transactions.shift();
       });
     };
 
+    shipments.prototype.deleteTransactionIfQty0 = function deleteTransactionIfQty0($index) {
+      var _this13 = this;
+
+      var transaction = this.transactions[$index];
+      var doneeDelete = !transaction.qty.from && transaction.qty.to === 0;
+      var donorDelete = !transaction.qty.to && transaction.qty.from === 0;
+
+      if (donorDelete || doneeDelete) {
+        this.drugs = [];
+        this.db.transaction.delete(transaction).then(function (_) {
+          _this13.transactions.splice($index, 1);
+        });
+        this.focusInput('md-autocomplete');
+      }
+    };
+
     shipments.prototype.exportCSV = function exportCSV() {
-      var _this12 = this;
+      var _this14 = this;
 
       var name = this.shipment._id ? 'Shipment ' + this.shipment._id + '.csv' : 'Inventory.csv';
       this.csv.unparse(name, this.transactions.map(function (transaction) {
@@ -2209,25 +2218,25 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
           'drug.generics': transaction.drug.generics.map(function (generic) {
             return generic.name + " " + generic.strength;
           }).join(';'),
-          shipment: _this12.shipment
+          shipment: _this14.shipment
         };
       }));
     };
 
     shipments.prototype.importCSV = function importCSV() {
-      var _this13 = this;
+      var _this15 = this;
 
       console.log('this.$file.value', this.$file.value);
       this.csv.parse(this.$file.files[0]).then(function (parsed) {
         return Promise.all(parsed.map(function (transaction) {
-          _this13.$file.value = '';
+          _this15.$file.value = '';
           transaction._id = undefined;
           transaction._rev = undefined;
           transaction.shipment._id = undefined;
           transaction.exp.to = toJsonDate(parseUserDate(transaction.exp.to));
           transaction.exp.from = toJsonDate(parseUserDate(transaction.exp.from));
           transaction.verifiedAt = toJsonDate(parseUserDate(transaction.verifiedAt));
-          return _this13.db.drug.get({ _id: transaction.drug._id }).then(function (drugs) {
+          return _this15.db.drug.get({ _id: transaction.drug._id }).then(function (drugs) {
             if (drugs[0]) return { drug: drugs[0], transaction: transaction };
             throw 'Cannot find drug with _id ' + transaction.drug._id;
           });
@@ -2235,12 +2244,12 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       }).then(function (rows) {
         console.log('rows', rows);
         return Promise.all(rows.map(function (row) {
-          return _this13.addTransaction(row.drug, row.transaction);
+          return _this15.addTransaction(row.drug, row.transaction);
         }));
       }).then(function (_) {
-        return _this13.snackbar.show('All Transactions Imported');
+        return _this15.snackbar.show('All Transactions Imported');
       }).catch(function (err) {
-        return _this13.snackbar.show('Transactions not imported: ' + err);
+        return _this15.snackbar.show('Transactions not imported: ' + err);
       });
     };
 
@@ -2550,18 +2559,14 @@ define('resources/helpers',['exports'], function (exports) {
   function saveTransaction(transaction) {
     var _this = this;
 
-    Promise.resolve(this._saveTransaction).then(function (_) {
-      console.log('saveTransaction', transaction);
-      _this._saveTransaction = _this.db.transaction.put(transaction).catch(function (err) {
-        _this.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
-      });
+    return Promise.resolve(this._saveTransaction).then(function (_) {
+      return _this._saveTransaction = _this.db.transaction.put(transaction);
     });
-
-    return true;
   }
 
-  function scrollSelect($event, index, list, cb) {
+  function scrollSelect($event, curr, list, cb) {
 
+    var index = list.indexOf(curr);
     var last = list.length - 1;
 
     if ($event.which == 38) cb.call(this, list[index > 0 ? index - 1 : last]);
@@ -2569,10 +2574,10 @@ define('resources/helpers',['exports'], function (exports) {
     if ($event.which == 40) cb.call(this, list[index < last ? index + 1 : 0]);
   }
 
-  function focusInput(selector) {
+  function focusInput(selector, fallback) {
     var elem = document.querySelector(selector + ' input');
 
-    elem ? elem.focus() : console.log('Cannot find ' + selector + ' input');
+    if (elem && !elem.disabled) elem.focus();else if (fallback) document.querySelector(fallback + ' input').focus();else console.log('Cannot find ' + selector + ' input');
 
     return false;
   }
@@ -2612,11 +2617,11 @@ define('text!elems/md-snackbar.html', ['module'], function(module) { module.expo
 define('text!elems/md-switch.html', ['module'], function(module) { module.exports = "<template>\n  <label ref=\"label\" class=\"mdl-switch mdl-js-switch mdl-js-ripple-effect\" for=\"switch\" style=\"width:100%\">\n    <input\n      required.bind=\"required || required ===''\"\n      disabled.bind=\"disabled || disabled ===''\"\n      checked.bind=\"checked\"\n      type=\"checkbox\"\n      class=\"mdl-switch__input\"\n      click.delegate=\"stopPropogation()\"/>\n    <span class=\"mdl-switch__label\"><slot></slot></span>\n  </label>\n</template>\n"; });
 define('text!views/account.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-switch\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <md-drawer>\n    <md-input value.bind=\"filter\" style=\"padding:0 8px\">Filter Users</md-input>\n    <a\n      if.bind=\" ! filter\"\n      class=\"mdl-navigation__link ${ ! user.email ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectUser({name:{}, account:{_id:session.account._id}})\">\n      <div class=\"mdl-typography--title\">New User</div>\n    </a>\n    <a\n      repeat.for=\"user of users | userFilter:filter\"\n      class=\"mdl-navigation__link ${ user.email == $parent.user.email ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectUser(user)\">\n      <div class=\"mdl-typography--title\">${ user.name.first+' '+user.name.last}</div>\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--4-col full-height\">\n      <div class=\"mdl-card__title\">\n        <div class=\"mdl-card__title-text\">\n          User Information\n        </div>\n      </div>\n      <div class=\"mdl-card__supporting-text\" style=\"font-size:16px;\" input.delegate=\"saveUser() & debounce:1000\">\n        <md-input style=\"width:49%\" value.bind=\"user.name.first\" required>First Name</md-input>\n        <md-input style=\"width:49%\" value.bind=\"user.name.last\" required>Last Name</md-input>\n        <md-input style=\"width:100%\" value.bind=\"user.email\" type=\"email\" pattern=\"[\\w._]{2,}@\\w{3,}\\.(com|org|net|gov)\" required>Email</md-input>\n        <md-input style=\"width:100%\" value.bind=\"user.phone\" type=\"tel\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Phone</md-input>\n        <md-input style=\"width:100%\" value.bind=\"user.password\" if.bind=\" ! user._id\" required>Password</md-input>\n      </div>\n      <div class=\"mdl-card__actions\">\n        <md-button color raised style=\"width:100%\" if.bind=\"! user._id\" form click.delegate=\"addUser()\">Create User</md-button>\n        <md-button color raised style=\"width:100%\" if.bind=\"user._id == session._id\" click.delegate=\"logout()\" disabled.bind=\"disableLogout\">${ disableLogout || 'Uninstall' }</md-button>\n        <md-button color=\"accent\" raised style=\"width:100%\" if.bind=\"user._id && user._id != session._id\" click.delegate=\"deleteUser()\">Delete User</md-button>\n      </div>\n    </form>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--8-col full-height\">\n      <table md-table style=\"margin:8px 16px; width:calc(100% - 32px)\">\n        <thead>\n          <tr>\n            <th class=\"mdl-data-table__cell--non-numeric\">Authorized</th>\n            <th class=\"mdl-data-table__cell--non-numeric\">\n              <md-select\n                value.bind=\"type\"\n                options.bind=\"['From', 'To']\"\n                style=\"width:50px; font-weight:bold; margin-bottom:-26px\">\n              </md-select>\n            </th>\n            <th class=\"mdl-data-table__cell--non-numeric\">License</th>\n            <th class=\"mdl-data-table__cell--non-numeric\">Joined</th>\n            <th class=\"mdl-data-table__cell--non-numeric\">Location</th>\n          </tr>\n        </thead>\n        <tr repeat.for=\"account of accounts\" if.bind=\"account != $parent.account\">\n          <td class=\"mdl-data-table__cell--non-numeric\">\n            <md-checkbox\n              if.bind=\"type != 'To'\"\n              checked.one-time=\"$parent.account.authorized.indexOf(account._id) != -1\"\n              click.delegate=\"authorize(account._id)\">\n            </md-checkbox>\n            <md-checkbox\n              if.bind=\"type == 'To'\"\n              checked.one-time=\"account.authorized.indexOf($parent.account._id) != -1\"\n              disabled.bind=\"true\">\n            </md-checkbox>\n          </td>\n          <td class=\"mdl-data-table__cell--non-numeric\">${ account.name }</td>\n          <td class=\"mdl-data-table__cell--non-numeric\">${ account.license }</td>\n          <td class=\"mdl-data-table__cell--non-numeric\">${ account.createdAt | date }</td>\n          <td class=\"mdl-data-table__cell--non-numeric\">${ account.city+', '+account.state }</td>\n        </tr>\n      </table>\n    </div>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
 define('text!views/drugs.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-table'></require>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-menu\"></require>\n  <require from=\"elems/md-switch\"></require>\n  <require from=\"elems/md-autocomplete\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <md-drawer>\n    <md-select\n      options.bind=\"['Ordered', 'Inventory < ReorderAt', 'Inventory > ReorderTo', 'Inventory Expiring before Min Days', 'Missing Retail Price', 'Missing Wholesale Price', 'Missing Image']\"\n      style=\"padding:0 8px; margin-bottom:-20px\"\n      disabled.bind=\"true\">\n      Quick Search\n    </md-select>\n    <a\n      repeat.for=\"ordered of drawer.ordered\"\n      style=\"font-size:12px; line-height:18px; padding:8px 8px\"\n      class=\"mdl-navigation__link ${ ordered == group.name ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectDrawer(ordered)\">\n      ${ ordered }\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--4-col full-height\">\n      <div class=\"mdl-card__supporting-text\" style=\"font-size:16px;\">\n        <md-input\n          required\n          style=\"width:49%\"\n          value.bind=\"drug._id\"\n          disabled.bind=\"drug._rev\"\n          pattern=\"\\d{4}-\\d{4}|\\d{5}-\\d{3}|\\d{5}-\\d{4}\">\n          Product NDC\n        </md-input>\n        <md-input style=\"width:49%\"\n          value.one-way=\"drug._id ? ('00000'+drug._id.split('-').slice(0,1)).slice(-5)+('0000'+drug._id.split('-').slice(1)).slice(-4) : ''\"\n          disabled=\"true\">\n          NDC9\n        </md-input>\n        <div if.bind=\"drug.generics[0].name\" style=\"position:relative\">\n          <md-button color fab=\"11\"\n            show.bind=\"drug._rev && drug.generics[drug.generics.length-1].name\"\n            click.delegate=\"addGeneric()\"\n            style=\"position:absolute; left:153px; margin-top:-5px; z-index:1\">\n            +\n          </md-button>\n          <md-button color fab=\"11\"\n            show.bind=\"drug._rev && ! drug.generics[drug.generics.length-1].name\"\n            mousedown.delegate=\"removeGeneric()\"\n            style=\"position:absolute; right:153px; margin-top:-5px; z-index:1\">\n            -\n          </md-button>\n        </div>\n        <div repeat.for=\"generic of drug.generics\">\n          <md-input\n            required\n            style=\"width:75%\"\n            pattern=\"([A-Z][0-9a-z]*\\s?)+\\b\"\n            disabled.bind=\" ! drug._rev\"\n            value.bind=\"generic.name\">\n            ${ $index == 0 ? 'Generic Names & Strengths' : ''}\n          </md-input>\n          <md-input\n            style=\"width:23%\"\n            pattern=\"[0-9][0-9a-z/.]+\"\n            disabled.bind=\" ! drug._rev\"\n            value.bind=\"generic.strength\">\n          </md-input>\n        </div>\n        <md-input\n          style=\"width:49%\"\n          pattern=\"([A-Z][a-z]*\\s?){1,2}\\b\"\n          value.bind=\"drug.brand\">\n          Brand Name\n        </md-input>\n        <md-input\n          required\n          style=\"width:49%\"\n          pattern=\"([A-Z][a-z]+\\s?)+\\b\"\n          disabled.bind=\" ! drug._rev\"\n          value.bind=\"drug.form\">\n          Form\n        </md-input>\n        <md-input\n          style=\"width:100%\"\n          value.bind=\"drug.labeler\">\n          Labeler\n        </md-input>\n        <md-input\n          value.bind=\"drug.price.nadac\"\n          disabled.bind=\"! drug._rev\"\n          type=\"number\"\n          step=\".0001\"\n          style=\"width:49%\">\n          Nadac Price\n        </md-input>\n        <md-input\n          value.bind=\"drug.price.goodrx | number:3\"\n          disabled.bind=\"! drug._rev\"\n          type=\"number\"\n          step=\".0001\"\n          style=\"width:49%\">\n          GoodRx Price\n        </md-input>\n        <md-input\n          pattern=\"//[a-zA-Z0-9/.\\-_%]+\"\n          value.bind=\"drug.image\"\n          style=\"width:100%; font-size:9px;\">\n          ${ drug.image ? 'Image' : 'Image URL'}\n        </md-input>\n        <img\n          style=\"width:100%;\"\n          if.bind=\"drug.image\"\n          src.bind=\"drug.image\">\n      </div>\n      <div class=\"mdl-card__actions\">\n        <!-- <md-button color=\"accent\" raised\n          if.bind=\"drug._rev\"\n          style=\"width:100%;\"\n          disabled\n          click.delegate=\"deleteDrug()\">\n          Delete Drug\n        </md-button> -->\n        <md-button color raised\n          style=\"width:100%;\"\n          click.delegate=\"drug._rev ? saveDrug() : addDrug()\"\n          form>\n          ${ drug._rev ? 'Save Drug' : 'Add Drug' }\n        </md-button>\n      </div>\n    </form>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--8-col full-height\">\n      <md-autocomplete\n        placeholder=\"Search Drugs by Generic Name or NDC...\"\n        value.bind=\"term\"\n        input.delegate=\"search() & debounce:50\"\n        keydown.delegate=\"scrollGroups($event) & debounce:50\"\n        style=\"margin:0px 16px; padding-right:15px\">\n        <table md-table>\n          <tr\n            repeat.for=\"group of groups\"\n            click.delegate=\"selectGroup(group, true)\"\n            class=\"${ group.name == $parent.group.name && 'is-selected'}\">\n            <td\n              class=\"mdl-data-table__cell--non-numeric\"\n              innerHTML.bind=\"group.name.replace(regex, '<strong>$1</strong>')\">\n            </td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <md-menu style=\"position:absolute; z-index:2; top:10px; right:5px;\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li click.delegate=\"selectDrug()\" class=\"mdl-menu__item\">\n          Add Drug\n        </li>\n        <li click.delegate=\"exportCSV()\" class=\"mdl-menu__item\">\n          Export CSV\n        </li>\n        <li click.delegate=\"$file.click()\" class=\"mdl-menu__item\">\n          Import CSV\n        </li>\n      </md-menu>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <md-switch\n        style=\"position:absolute; right:25px; top:47px; z-index:1\"\n        checked.one-way=\"account.ordered[group.name]\"\n        disabled.bind=\"! account.ordered[group.name] && ! drug._rev\"\n        click.delegate=\"order()\">\n      </md-switch>\n      <div style=\"width:100%; height:100%; display:flex\">\n        <div style=\"overflow-y:scroll; margin:8px 0px 8px 16px; flex:1;\">\n          <table md-table style=\"width:calc(100% - 16px);\">\n            <thead>\n              <tr>\n                <th class=\"mdl-data-table__cell--non-numeric\">Ndc</th>\n                <th class=\"mdl-data-table__cell--non-numeric\">Form</th>\n                <th class=\"mdl-data-table__cell--non-numeric\">Labeler</th>\n                <th class=\"mdl-data-table__cell--non-numeric\">Brand</th>\n                <th style=\"text-align:left; width:40px; padding-left:0;\">Nadac</th>\n                <th style=\"text-align:left; width:${ account.ordered[group.name] ? '40px' : '85px'}; padding-left:0;\">GoodRx</th>\n              </tr>\n            </thead>\n            <tr repeat.for=\"drug of group.drugs\" click.delegate=\"selectDrug(drug)\" class=\"${ drug._id == $parent.drug._id ? 'is-selected' : ''}\">\n              <td class=\"mdl-data-table__cell--non-numeric\">${ drug._id }</td>\n              <td class=\"mdl-data-table__cell--non-numeric\">${ drug.form }</td>\n              <td class=\"mdl-data-table__cell--non-numeric\">${ drug.labeler }</td>\n              <td class=\"mdl-data-table__cell--non-numeric\">${ drug.brand }</td>\n              <td style=\"padding:0; text-align:left\">${ drug.price.nadac | number:3 }</td>\n              <td style=\"padding:0; text-align:left\">${ drug.price.goodrx | number:3 }</td>\n            </tr>\n          </table>\n        </div>\n        <div show.bind=\"account.ordered[group.name]\" input.delegate=\"saveOrder() & debounce:1000\" style=\"overflow:hidden; width:200px; margin-top:10px; margin-right:16px\">\n          Ordered\n          <md-input\n            disabled\n            type=\"number\"\n            value.bind=\"inventory\"\n            style=\"width:100%\">\n            Inventory\n          </md-input>\n          <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).minQty\"\n            placeholder=\"10\"\n            style=\"width:100%\">\n            Min Qty\n          </md-input>\n          <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).minDays\"\n            placeholder=\"120\"\n            style=\"width:100%\">\n            Min Days\n          </md-input>\n          <md-input\n            value.bind=\"(account.ordered[group.name] || {}).verifiedMessage\"\n            style=\"width:100%; font-size:12px\">\n            Verified Message\n          </md-input>\n          <md-input\n            value.bind=\"(account.ordered[group.name] || {}).destroyedMessage\"\n            style=\"width:100%; font-size:12px\">\n            Destroyed Message\n          </md-input>\n          <md-input\n            pattern=\"\\w{1,4}\"\n            value.bind=\"(account.ordered[group.name] || {}).defaultLocation\"\n            style=\"width:100%\">\n            Default Box\n          </md-input>\n          <!-- <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).maxPrice\"\n            disabled.bind=\"true\"\n            style=\"width:100%\">\n            Max Price\n          </md-input>\n          <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).reorderAt\"\n            disabled.bind=\"true\"\n            style=\"width:100%\">\n            Reorder At\n          </md-input>\n          <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).reorderTo\"\n            disabled.bind=\"true\"\n            style=\"width:100%\">\n            Reorder To\n          </md-input> -->\n        </div>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n  </section>\n</template>\n"; });
-define('text!views/index.html', ['module'], function(module) { module.exports = "<!doctype html>\n<html style=\"overflow:hidden\">\n  <head>\n    <title>Loading SIRUM...</title>\n    <script src=\"assets/material.1.1.3.js\"></script>\n    <link rel=\"stylesheet\" href=\"assets/material.icon.css\">\n    <link rel=\"stylesheet\" href=\"assets/material.1.1.3.css\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <style>\n    body { background:#eee }\n    a { color:rgb(0,88,123); text-decoration:none }\n\n    .full-height { height:calc(100vh - 96px); overflow-y:auto}\n\n    .mdl-layout__header { background:white;}\n    .mdl-layout__header, .mdl-layout__drawer, .mdl-layout__header-row .mdl-navigation__link, .mdl-layout__header .mdl-layout__drawer-button { color:rgb(66,66,66);}\n\n    .mdl-layout__drawer .mdl-navigation .mdl-navigation__link { padding:16px;}\n    .mdl-layout__drawer .mdl-navigation .mdl-navigation__link--current { border-left:solid 3px red; padding-left:13px; background:#e0e0e0; color:inherit }\n\n    .mdl-layout__header-row .mdl-navigation__link { border-top:solid 3px white; }\n    .mdl-layout__header-row .mdl-navigation__link--current { font-weight:600;  border-top-color:red;}\n\n    .mdl-data-table th { height:32px }\n    .mdl-data-table tbody tr { height:auto }\n    .mdl-data-table td { border:none; padding-top:8px; padding-bottom:8px; height:auto }\n\n    .mdl-button--raised { box-shadow:none } /*otherwise disabled.bind has weird animaiton twitching */\n    .mdl-button--fab.mdl-button--colored{ background:rgb(0,88,123);}\n\n    .mdl-card__supporting-text { width:100%; box-sizing: border-box; overflow-y:scroll; flex:1 }\n    .mdl-card__actions { padding:16px }\n    /* animate page transitions */\n    .au-enter-active { animation:slideDown .5s; }\n\n    .mdl-snackbar { left:auto; right:6px; bottom:6px; margin-right:0%; font-size:24px; font-weight:300; max-width:100% }\n    .mdl-snackbar--active { transform:translate(0, 0); -webkit-transform:translate(0, 0); }\n    .mdl-snackbar__text { padding:8px 24px; }\n\n    @keyframes slideDown {\n      0% {\n        opacity:0;\n        -webkit-transform:translate3d(0, -100%, 0);\n        -ms-transform:translate3d(0, -100%, 0);\n        transform:translate3d(0, -100%, 0)\n      }\n      100% {\n        opacity:.9;\n        -webkit-transform:none;\n        -ms-transform:none;\n        transform:none\n      }\n    }\n\n    /*.au-leave-active {\n      position:absolute;\n      -webkit-animation:slideLeft .5s;\n      animation:slideLeft .5s;\n    }*/\n\n    </style>\n    <style media=\"print\">\n      .hide-when-printed { display:none; }\n      .mdl-data-table td { padding-top:4px; padding-bottom:4px; }\n    </style>\n  </head>\n  <body aurelia-app=\"views/index\">\n    <div class=\"splash\">\n      <div class=\"message\">Loading SIRUM...</div>\n      <i class=\"fa fa-spinner fa-spin\"></i>\n    </div>\n    <script src=\"assets/db/pouchdb-5.1.0.js\"></script>\n    <script src=\"assets/db/pouchdb-0.9.0.find.js\"></script>\n    <script src=\"assets/db/pouch.js\"></script>\n    <script src=\"assets/csv/papa.min.js\"></script>\n    <script src=\"assets/csv/index.js\"></script>\n    <script src=\"assets/vendor-bundle.js\" data-main=\"aurelia-bootstrapper\"></script>\n  </body>\n</html>\n"; });
-define('text!views/inventory.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-switch\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-autocomplete\"></require>\n  <style>\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n    .mdl-textfield__label { color:black; font-size:1rem }\n  </style>\n  <md-drawer>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed\"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->\n      <div class=\"mdl-card__supporting-text\" style=\"padding:0\">\n        <div repeat.for=\"ndc of filter.ndc | toArray:true\" class=\"mdl-grid\" style=\"padding:0 0 0 8px; margin-top:-8px\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title mdl-grid\" style=\"padding:16px 0 0 0; width:100%\">\n            <div class=\"mdl-cell mdl-cell--6-col\">Ndc Filter</div>\n            <div class=\"mdl-cell mdl-cell--2-col\">Qty</div>\n            <div class=\"mdl-cell mdl-cell--2-col\">Count</div>\n          </div>\n          <md-checkbox class=\"mdl-cell mdl-cell--6-col\" click.delegate=\"signalFilter(ndc)\" checked.bind=\"ndc.val.isChecked\">${ndc.key}</md-checkbox>\n          <div class=\"mdl-cell mdl-cell--2-col\">${ndc.val.qty}</div>\n          <div class=\"mdl-cell mdl-cell--2-col\">${ndc.val.count}</div>\n        </div>\n        <div repeat.for=\"exp of filter.exp | toArray:true\" class=\"mdl-grid\" style=\"padding:0 0 0 8px; margin-bottom:-8px\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title mdl-grid\" style=\"padding:0; width:100%\">\n            <div class=\"mdl-cell mdl-cell--6-col\">Exp Filter</div>\n          </div>\n          <md-checkbox class=\"mdl-cell mdl-cell--6-col\" click.delegate=\"signalFilter(exp)\" checked.bind=\"exp.val.isChecked\">${exp.key.slice(0, 10)}</md-checkbox>\n          <div class=\"mdl-cell mdl-cell--2-col\">${exp.val.qty}</div>\n          <div class=\"mdl-cell mdl-cell--2-col\">${exp.val.count}</div>\n        </div>\n        <!-- <md-input show.bind=\"group.transactions.length\" input.delegate=\"signalFilter()\" value.bind=\"filter.rx\" style=\"margin-left:16px;\" class=\"mdl-cell mdl-cell--10-col\">Rx Filter</md-input> -->\n      </div>\n      <div class=\"mdl-card__actions\">\n        <md-button color raised\n          style=\"width:100%\"\n          disabled.bind=\" ! group.transactions.length\"\n          click.delegate=\"removeInventory()\">\n          ${'Remove Selected'}\n        </md-button>\n      </div>\n    </div>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--9-col full-height\">\n      <md-autocomplete\n        placeholder=\"Search Drugs by Generic Name...\"\n        value.bind=\"term\"\n        input.delegate=\"search()\"\n        keyup.delegate=\"scrollGroups($event)\"\n        style=\"margin:0px 16px; padding-right:15px\">\n        <table md-table>\n          <tr\n            repeat.for=\"group of groups\"\n            click.delegate=\"selectGroup(group)\"\n            class=\"${ group.name == $parent.group.name && 'is-selected'}\">\n            <td\n              class=\"mdl-data-table__cell--non-numeric\"\n              innerHTML.bind=\"group.name.replace(regex, '<strong>$1</strong>')\">\n            </td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <div style=\"width:100%; height:100%; display:flex\">\n        <div style=\"overflow-y:scroll; margin:8px 0px 8px 16px; flex:1;\">\n          <table md-table style=\"width:calc(100% - 16px);\">\n            <thead>\n              <tr>\n                <th style=\"width:15px\"></th>\n                <th class=\"mdl-data-table__cell--non-numeric\">Drug</th>\n                <th class=\"mdl-data-table__cell--non-numeric\">Ndc</th>\n                <th style=\"text-align:left; width:40px;\">Exp</th>\n                <th style=\"text-align:left; width:40px;\">Qty</th>\n                <!-- <th style=\"text-align:left; width:40px;\">Rx</th> -->\n                <th style=\"text-align:left; width:40px;\">Box</th>\n              </tr>\n            </thead>\n            <tr repeat.for=\"transaction of group.transactions | inventoryFilter:filter\" input.delegate=\"saveTransaction(transaction) & debounce:1000\">\n              <td style=\"padding:0 0 0 8px\">\n                <md-checkbox checked.bind=\"transaction.isChecked\"></md-checkbox>\n              </td>\n              <td class=\"mdl-data-table__cell--non-numeric\">${ transaction.drug.generic }</td>\n              <td class=\"mdl-data-table__cell--non-numeric\">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>\n              <td style=\"padding:0\">\n                <md-input\n                  id.bind=\"'exp_'+$index\"\n                  keydown.delegate=\"expShortcuts($event, $index)\"\n                  pattern=\"(0?[1-9]|1[012])/\\d{2}\"\n                  value.bind=\"transaction.exp.from | date\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <td style=\"padding:0\">\n                <md-input\n                  id.bind=\"'qty_'+$index\"\n                  keydown.delegate=\"qtyShortcuts($event, $index)\"\n                  type=\"number\"\n                  value.bind=\"transaction.qty.from | number\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <!-- <td style=\"padding:0\">\n                <md-input\n                  value.bind=\"transaction.rx.from\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td> -->\n              <td style=\"padding:0\">\n                <md-input\n                  id.bind=\"'box_'+$index\"\n                  keydown.delegate=\"boxShortcuts($event, $index)\"\n                  pattern=\"[A-Z]\\d{3}\"\n                  value.bind=\"transaction.location\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n            </tr>\n          </table>\n        </div>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n  </section>\n</template>\n"; });
+define('text!views/index.html', ['module'], function(module) { module.exports = "<!doctype html>\n<html style=\"overflow:hidden\">\n  <head>\n    <title>Loading SIRUM...</title>\n    <script src=\"assets/material.1.1.3.js\"></script>\n    <link rel=\"stylesheet\" href=\"assets/material.icon.css\">\n    <link rel=\"stylesheet\" href=\"assets/material.1.1.3.css\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <style>\n    body { background:#eee }\n    a { color:rgb(0,88,123); text-decoration:none }\n\n    .full-height { height:calc(100vh - 96px); overflow-y:auto}\n\n    .mdl-layout__header { background:white;}\n    .mdl-layout__header, .mdl-layout__drawer, .mdl-layout__header-row .mdl-navigation__link, .mdl-layout__header .mdl-layout__drawer-button { color:rgb(66,66,66);}\n\n    .mdl-layout__drawer .mdl-navigation .mdl-navigation__link { padding:16px;}\n    .mdl-layout__drawer .mdl-navigation .mdl-navigation__link--current { border-left:solid 3px red; padding-left:13px; background:#e0e0e0; color:inherit }\n\n    .mdl-layout__header-row .mdl-navigation__link { border-top:solid 3px white; }\n    .mdl-layout__header-row .mdl-navigation__link--current { font-weight:600;  border-top-color:red;}\n\n    .mdl-data-table th { height:32px }\n    .mdl-data-table tbody tr { height:auto }\n    .mdl-data-table td { border:none; padding-top:8px; padding-bottom:8px; height:auto }\n\n    .mdl-button--raised { box-shadow:none } /*otherwise disabled.bind has weird animaiton twitching */\n    .mdl-button--fab.mdl-button--colored{ background:rgb(0,88,123);}\n\n    .mdl-card__supporting-text { width:100%; box-sizing: border-box; overflow-y:scroll; flex:1 }\n    .mdl-card__actions { padding:16px }\n    /* animate page transitions */\n    .au-enter-active { animation:slideDown .5s; }\n\n    .mdl-snackbar { left:auto; right:6px; bottom:6px; margin-right:0%; font-size:24px; font-weight:300; max-width:100% }\n    .mdl-snackbar--active { transform:translate(0, 0); -webkit-transform:translate(0, 0); }\n    .mdl-snackbar__text { padding:8px 24px; }\n\n    .mdl-checkbox__tick-outline { width:13px } /*widen by 1px to avoid pixel gap for checkboxes on small screens*/ \n\n    @keyframes slideDown {\n      0% {\n        opacity:0;\n        -webkit-transform:translate3d(0, -100%, 0);\n        -ms-transform:translate3d(0, -100%, 0);\n        transform:translate3d(0, -100%, 0)\n      }\n      100% {\n        opacity:.9;\n        -webkit-transform:none;\n        -ms-transform:none;\n        transform:none\n      }\n    }\n\n    /*.au-leave-active {\n      position:absolute;\n      -webkit-animation:slideLeft .5s;\n      animation:slideLeft .5s;\n    }*/\n\n    </style>\n    <style media=\"print\">\n      .hide-when-printed { display:none; }\n      .mdl-data-table td { padding-top:4px; padding-bottom:4px; }\n    </style>\n  </head>\n  <body aurelia-app=\"views/index\">\n    <div class=\"splash\">\n      <div class=\"message\">Loading SIRUM...</div>\n      <i class=\"fa fa-spinner fa-spin\"></i>\n    </div>\n    <script src=\"assets/db/pouchdb-5.1.0.js\"></script>\n    <script src=\"assets/db/pouchdb-0.9.0.find.js\"></script>\n    <script src=\"assets/db/pouch.js\"></script>\n    <script src=\"assets/csv/papa.min.js\"></script>\n    <script src=\"assets/csv/index.js\"></script>\n    <script src=\"assets/vendor-bundle.js\" data-main=\"aurelia-bootstrapper\"></script>\n  </body>\n</html>\n"; });
+define('text!views/inventory.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-switch\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-autocomplete\"></require>\n  <style>\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n    .mdl-textfield__label { color:black; font-size:1rem }\n  </style>\n  <md-drawer>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed\"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->\n      <div class=\"mdl-card__supporting-text\" style=\"padding:0\">\n        <div repeat.for=\"ndc of filter.ndc | toArray:true\" class=\"mdl-grid\" style=\"padding:0 0 0 8px; margin-top:-8px\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title mdl-grid\" style=\"padding:16px 0 0 0; width:100%\">\n            <div class=\"mdl-cell mdl-cell--6-col\">Ndc Filter</div>\n            <div class=\"mdl-cell mdl-cell--2-col\">Qty</div>\n            <div class=\"mdl-cell mdl-cell--2-col\">Count</div>\n          </div>\n          <md-checkbox class=\"mdl-cell mdl-cell--6-col\" click.delegate=\"signalFilter(ndc)\" checked.bind=\"ndc.val.isChecked\">${ndc.key}</md-checkbox>\n          <div class=\"mdl-cell mdl-cell--2-col\">${ndc.val.qty}</div>\n          <div class=\"mdl-cell mdl-cell--2-col\">${ndc.val.count}</div>\n        </div>\n        <div repeat.for=\"exp of filter.exp | toArray:true\" class=\"mdl-grid\" style=\"padding:0 0 0 8px; margin-bottom:-8px\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title mdl-grid\" style=\"padding:0; width:100%\">\n            <div class=\"mdl-cell mdl-cell--6-col\">Exp Filter</div>\n          </div>\n          <md-checkbox class=\"mdl-cell mdl-cell--6-col\" click.delegate=\"signalFilter(exp)\" checked.bind=\"exp.val.isChecked\">${exp.key.slice(0, 10)}</md-checkbox>\n          <div class=\"mdl-cell mdl-cell--2-col\">${exp.val.qty}</div>\n          <div class=\"mdl-cell mdl-cell--2-col\">${exp.val.count}</div>\n        </div>\n        <!-- <md-input show.bind=\"group.transactions.length\" input.delegate=\"signalFilter()\" value.bind=\"filter.rx\" style=\"margin-left:16px;\" class=\"mdl-cell mdl-cell--10-col\">Rx Filter</md-input> -->\n      </div>\n      <div class=\"mdl-card__actions\">\n        <md-button color raised\n          style=\"width:100%\"\n          disabled.bind=\" ! group.transactions.length\"\n          click.delegate=\"repackInventory()\">\n          ${'Repack Selected'}\n        </md-button>\n      </div>\n    </div>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--9-col full-height\">\n      <md-autocomplete\n        placeholder=\"Search Drugs by Generic Name...\"\n        value.bind=\"term\"\n        input.delegate=\"search()\"\n        keyup.delegate=\"scrollGroups($event)\"\n        style=\"margin:0px 16px; padding-right:15px\">\n        <table md-table>\n          <tr\n            repeat.for=\"group of groups\"\n            click.delegate=\"selectGroup(group)\"\n            class=\"${ group.name == $parent.group.name && 'is-selected'}\">\n            <td\n              class=\"mdl-data-table__cell--non-numeric\"\n              innerHTML.bind=\"group.name.replace(regex, '<strong>$1</strong>')\">\n            </td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <div style=\"width:100%; height:100%; display:flex\">\n        <div style=\"overflow-y:scroll; margin:8px 0px 8px 16px; flex:1;\">\n          <table md-table style=\"width:calc(100% - 16px);\">\n            <thead>\n              <tr>\n                <th style=\"width:15px\"></th>\n                <th class=\"mdl-data-table__cell--non-numeric\">Drug</th>\n                <th class=\"mdl-data-table__cell--non-numeric\">Ndc</th>\n                <th style=\"text-align:left; width:40px;\">Exp</th>\n                <th style=\"text-align:left; width:40px;\">Qty</th>\n                <!-- <th style=\"text-align:left; width:40px;\">Rx</th> -->\n                <th style=\"text-align:left; width:40px;\">Box</th>\n              </tr>\n            </thead>\n            <tr repeat.for=\"transaction of group.transactions | inventoryFilter:filter\" input.delegate=\"saveTransaction(transaction) & debounce:1000\">\n              <td style=\"padding:0 0 0 8px\">\n                <md-checkbox checked.bind=\"transaction.isChecked\"></md-checkbox>\n              </td>\n              <td class=\"mdl-data-table__cell--non-numeric\">${ transaction.drug.generic }</td>\n              <td class=\"mdl-data-table__cell--non-numeric\">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>\n              <td style=\"padding:0\">\n                <md-input\n                  id.bind=\"'exp_'+$index\"\n                  keydown.delegate=\"expShortcuts($event, $index)\"\n                  pattern=\"(0?[1-9]|1[012])/\\d{2}\"\n                  value.bind=\"transaction.exp.to || transaction.exp.from | date\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <td style=\"padding:0\">\n                <md-input\n                  id.bind=\"'qty_'+$index\"\n                  keydown.delegate=\"qtyShortcuts($event, $index)\"\n                  type=\"number\"\n                  value.bind=\"transaction.qty.to || transaction.qty.from | number\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <!-- <td style=\"padding:0\">\n                <md-input\n                  value.bind=\"transaction.rx.from\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td> -->\n              <td style=\"padding:0\">\n                <md-input\n                  id.bind=\"'box_'+$index\"\n                  keydown.delegate=\"boxShortcuts($event, $index)\"\n                  pattern=\"[A-Z]\\d{3}\"\n                  value.bind=\"transaction.location\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n            </tr>\n          </table>\n        </div>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n  </section>\n</template>\n"; });
 define('text!views/join.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-loading\"></require>\n  <section class=\"mdl-grid\" style=\"height:80vh;\">\n    <form class=\"mdl-cell mdl-cell--11-col mdl-cell--middle mdl-grid\" style=\"margin:0 auto; max-width:930px\">\n      <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col mdl-grid\" style=\"padding:16px\">\n        <div class=\"mdl-card__title mdl-cell mdl-cell--12-col\" style=\"padding:0\">\n          <div class=\"mdl-card__title-text\">\n            Register Your Facility\n          </div>\n        </div>\n        <md-input value.bind=\"account.name\" class=\"mdl-cell mdl-cell--12-col\">Facility</md-input>\n        <md-input value.bind=\"account.license\" class=\"mdl-cell mdl-cell--12-col\">License</md-input>\n        <md-input value.bind=\"account.street\" class=\"mdl-cell mdl-cell--12-col\">Street</md-input>\n        <md-input value.bind=\"account.city\" class=\"mdl-cell mdl-cell--7-col\">City</md-input>\n        <md-input value.bind=\"account.state\" class=\"mdl-cell mdl-cell--2-col\">State</md-input>\n        <md-input value.bind=\"account.zip\" class=\"mdl-cell mdl-cell--3-col\">Zip</md-input>\n      </div>\n      <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col\" style=\"padding:16px\">\n        <div class=\"mdl-grid\" style=\"margin:0 -16px\">\n          <md-input value.bind=\"user.name.first\" class=\"mdl-cell mdl-cell--6-col\">First Name</md-input>\n          <md-input value.bind=\"user.name.last\" class=\"mdl-cell mdl-cell--6-col\">Last Name</md-input>\n        </div>\n        <md-input value.bind=\"user.email\" type=\"email\" pattern=\"[\\w._]{2,}@\\w{3,}\\.(com|org|net|gov)\">Email</md-input>\n        <md-input value.bind=\"user.phone\" type=\"tel\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\">Phone</md-input>\n        <md-input value.bind=\"user.password\">Password</md-input>\n        <md-checkbox checked.bind=\"accept\" style=\"margin:8px 0 24px\" required>I accept the terms of use</md-checkbox>\n        <md-button raised color form disabled.bind=\"disabled\" click.delegate=\"join()\">Install</md-button>\n        <md-loading value.bind=\"progress.last_seq/progress.update_seq * 100\"></md-loading>\n        <p class=\"mdl-color-text--grey-600\" style=\"margin-top:10px; height:20px; font-size:9px\">${ loading }</p>\n      </div>\n    </form>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
 define('text!views/login.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-loading\"></require>\n  <section class=\"mdl-grid\" style=\"margin-top:30vh;\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle\" style=\"width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px\">\n      <md-input value.bind=\"email\" type=\"email\" pattern=\"[\\w._]{2,}@\\w{3,}\\.(com|org|net|gov)\" required>Email</md-input>\n      <md-input value.bind=\"password\" type=\"password\" required minlength=\"4\">Password</md-input>\n      <md-button\n        raised color form\n        click.delegate=\"login()\"\n        disabled.bind=\"disabled\"\n        style=\"padding-top:16px\">\n        Login\n      </md-button>\n      <md-loading value.bind=\"progress.last_seq/progress.update_seq * 100\"></md-loading>\n      <p class=\"mdl-color-text--grey-600\" style=\"margin-top:10px; height:20px; font-size:9px\">${ loading }</p>\n    </form>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
-define('text!views/records.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <md-drawer>\n    <md-input\n      value.bind=\"filter\"\n      autoselect\n      style=\"padding:0 8px; width:auto\">\n      Filter\n    </md-input>\n    <a\n      repeat.for=\"day of days | recordFilter:filter\"\n      class=\"mdl-navigation__link ${ day == $parent.day ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectDay(day)\">\n      <div class=\"mdl-typography--title\">${ day }</div>\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell full-height\" style=\"width:424px\">\n      <div class=\"mdl-card__title\" style=\"padding-left:16px\">\n        <div class=\"mdl-card__title-text\">\n          Transaction History\n        </div>\n      </div>\n      <div innerHTML.bind=\"history\" class=\"mdl-grid\" style=\"font-size:10px; font-family:Monaco; margin:0; padding:0 16px; white-space:pre; line-height:15px\"></div>\n    </div>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell full-height\" style=\"width:calc(100% - 424px - 32px)\">\n      <button id=\"import-export\"\n        style=\"position:absolute; z-index:2; text-align:right; top:5px; right:5px;\"\n        class=\"mdl-button mdl-js-button mdl-button--icon\">\n        <i class=\"material-icons\">more_vert</i>\n      </button>\n      <ul class=\"mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect\" for=\"import-export\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          show.bind=\"false\"\n          click.delegate=\"exportCSV()\"\n          class=\"mdl-menu__item\">\n          Export CSV\n        </li>\n        <li\n          show.bind=\"true\"\n          disabled\n          class=\"mdl-menu__item\">\n          Export CSV\n        </li>\n      </ul>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div style=\"overflow-y:scroll; margin:8px 0px 8px 16px;\">\n        <table md-table style=\"width:calc(100% - 16px);\">\n          <thead>\n            <tr>\n              <th style=\"width:15px\"></th>\n              <th style=\"text-align:left;\">Drug</th>\n              <th style=\"text-align:left;\">Ndc</th>\n              <th style=\"text-align:left; width:5%;\">Exp</th>\n              <th style=\"width:5%\">Qty</th>\n            </tr>\n          </thead>\n          <tbody>\n            <tr repeat.for=\"transaction of transactions\" class=\"${ $parent.transaction != transaction || 'is-selected'}\" click.delegate=\"selectTransaction(transaction)\">\n              <td style=\"padding:0 0 0 8px\">\n                <md-checkbox\n                  disabled.one-time=\"true\"\n                  checked.bind=\"transaction.verifiedAt\">\n                </md-checkbox>\n              </td>\n              <td style=\"text-align:left; white-space:normal;\">\n                ${ transaction.drug.generic }\n              </td>\n              <td style=\"text-align:left;\">\n                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }\n              </td>\n              <td style=\"text-align:left;\">\n                ${ (transaction.exp.to || transaction.exp.from).slice(0, 10) }\n              </td>\n              <td>\n                ${ transaction.qty.to || transaction.qty.from }\n              </td>\n            </tr>\n          </tbody>\n        </table>\n      </div>\n    </div>\n  </section>\n</template>\n"; });
+define('text!views/records.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <md-drawer>\n    <md-input\n      value.bind=\"filter\"\n      autoselect\n      style=\"padding:0 8px; width:auto\">\n      Filter\n    </md-input>\n    <a\n      repeat.for=\"day of days | recordFilter:filter\"\n      class=\"mdl-navigation__link ${ day == $parent.day ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectDay(day, true)\">\n      <div class=\"mdl-typography--title\">${ day }</div>\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell full-height\" style=\"width:424px\">\n      <div class=\"mdl-card__title\" style=\"padding-left:16px\">\n        <div class=\"mdl-card__title-text\">\n          Transaction History\n        </div>\n      </div>\n      <div innerHTML.bind=\"history\" class=\"mdl-grid\" style=\"font-size:10px; font-family:Monaco; margin:0; padding:0 16px; white-space:pre; line-height:15px\"></div>\n    </div>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell full-height\" style=\"width:calc(100% - 424px - 32px)\">\n      <button id=\"import-export\"\n        style=\"position:absolute; z-index:2; text-align:right; top:5px; right:5px;\"\n        class=\"mdl-button mdl-js-button mdl-button--icon\">\n        <i class=\"material-icons\">more_vert</i>\n      </button>\n      <ul class=\"mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect\" for=\"import-export\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          show.bind=\"false\"\n          click.delegate=\"exportCSV()\"\n          class=\"mdl-menu__item\">\n          Export CSV\n        </li>\n        <li\n          show.bind=\"true\"\n          disabled\n          class=\"mdl-menu__item\">\n          Export CSV\n        </li>\n      </ul>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div style=\"overflow-y:scroll; margin:8px 0px 8px 16px;\">\n        <table md-table style=\"width:calc(100% - 16px);\">\n          <thead>\n            <tr>\n              <th style=\"width:15px\"></th>\n              <th style=\"text-align:left;\">Drug</th>\n              <th style=\"text-align:left;\">Ndc</th>\n              <th style=\"text-align:left; width:5%;\">Exp</th>\n              <th style=\"width:5%\">Qty</th>\n            </tr>\n          </thead>\n          <tbody>\n            <tr repeat.for=\"transaction of transactions\" class=\"${ $parent.transaction != transaction || 'is-selected'}\" click.delegate=\"selectTransaction(transaction)\">\n              <td style=\"padding:0 0 0 8px\">\n                <md-checkbox\n                  disabled.one-time=\"true\"\n                  checked.bind=\"transaction.verifiedAt\">\n                </md-checkbox>\n              </td>\n              <td style=\"text-align:left; white-space:normal;\">\n                ${ transaction.drug.generic }\n              </td>\n              <td style=\"text-align:left;\">\n                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }\n              </td>\n              <td style=\"text-align:left;\">\n                ${ (transaction.exp.to || transaction.exp.from).slice(0, 10) }\n              </td>\n              <td>\n                ${ transaction.qty.to || transaction.qty.from }\n              </td>\n            </tr>\n          </tbody>\n        </table>\n      </div>\n    </div>\n  </section>\n</template>\n"; });
 define('text!views/routes.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"mdl-layout mdl-js-layout mdl-layout--fixed-header\">\n    <header class=\"mdl-layout__header hide-when-printed\">\n      <div class=\"mdl-layout__header-row\">\n        <img src=\"assets/SIRUM.logo.notag.png\" style=\"width:100px; margin-left:-16px\">\n        <span class=\"mdl-layout-title\"></span>\n        <!-- Add spacer, to align navigation to the right -->\n        <div class=\"mdl-layout-spacer\"></div>\n        <nav class=\"mdl-navigation\">\n          <!-- show.bind=\"row.isVisible\"  -->\n          <a repeat.for=\"route of router.navigation\" show.bind=\"route.isVisible\" class=\"mdl-navigation__link ${route.isActive ? 'mdl-navigation__link--current' : ''}\" href.bind=\"route.href\" style=\"\">\n            ${route.title}\n          </a>\n        </nav>\n      </div>\n    </header>\n    <main class=\"mdl-layout__content\">\n      <!-- http://stackoverflow.com/questions/33636796/chrome-safari-not-filling-100-height-of-flex-parent -->\n      <router-view style=\"display:block; height:100vh\"></router-view>\n    </main>\n  </div>\n</template>\n"; });
-define('text!views/shipments.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-switch\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-menu\"></require>\n  <require from=\"elems/md-autocomplete\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <md-drawer autofocus>\n    <md-input\n      value.bind=\"filter\"\n      autoselect\n      style=\"padding:0 8px; width:auto\">\n      Filter shipments ${ role.account } you\n    </md-input>\n    <md-switch\n      checked.one-way=\"role.account == 'to'\"\n      click.delegate=\"swapRole()\"\n      style=\"margin:-33px 0 0 185px;\">\n    </md-switch>\n    <a\n      if.bind=\" ! filter\"\n      class=\"mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(null, true)\">\n      <div class=\"mdl-typography--title\">Create</div>\n      new shipment ${role.account} you\n    </a>\n    <a\n      repeat.for=\"shipment of shipments[role.account] | shipmentFilter:filter\"\n      class=\"mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(shipment, true)\">\n      <div class=\"mdl-typography--title\" innerHtml.bind=\"shipment.account[role.partner].name | bold:filter\"></div>\n      <div style=\"font-size:12px\" innerHtml.bind=\"shipment.createdAt.slice(0, 10)+', '+(shipment.tracking.slice(-6) || shipment.tracking) | bold:filter\"></div>\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--3-col full-height\">\n      <div class=\"mdl-card__title\" style=\"display:block;\">\n        <div class=\"mdl-card__title-text\" style=\"text-transform:capitalize\">\n          ${ shipment._rev ? 'Shipment '+(shipment.tracking.slice(-6) || shipment.tracking) : 'New Shipment '+role.account+' You' }\n        </div>\n        <div style=\"margin-top:3px; margin-bottom:-25px\">\n          <strong>${transactions.length}</strong> items worth\n          <strong>$${ transactions | value:0:transactions.length }</strong>\n        </div>\n      </div>\n      <div class=\"mdl-card__supporting-text\" style=\"font-size:16px;\">\n        <md-select\n          if.bind=\"role.account == 'from' || shipment._rev\"\n          style=\"width:100%\"\n          value.bind=\"shipment\"\n          default.bind=\"{tracking:'New Tracking #', account:{from:account, to:account}}\"\n          options.bind=\"shipments[role.account]\"\n          property=\"tracking\">\n          Tracking #\n        </md-select>\n        <md-input\n          if.bind=\"role.account == 'to' && ! shipment._rev\"\n          required\n          style=\"width:100%\"\n          value.bind=\"shipment.tracking\">\n          Tracking #\n        </md-input>\n        <md-select\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.from\"\n          options.bind=\"(role.account == 'from' || shipment._rev) ? [shipment.account.from] : accounts[role.account]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.account == 'from'\">\n          <!-- disabled is for highlighting the current role -->\n          From\n        </md-select>\n        <md-select\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.to\"\n          options.bind=\"(role.account == 'to' || shipment._rev) ? [shipment.account.to] : accounts[role.account]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.account == 'to'\">\n          <!-- disabled is for highlighting the current role -->\n          To\n        </md-select>\n        <md-select\n          style=\"width:32%;\"\n          value.bind=\"shipment.status\"\n          options.bind=\"stati\"\n          disabled.bind=\"! shipment._rev\">\n          Status\n        </md-select>\n        <md-input\n          type=\"date\"\n          style=\"width:64%; margin-top:20px\"\n          value.bind=\"shipment[shipment.status+'At']\"\n          disabled.bind=\"! shipment._rev\"\n          input.delegate=\"saveShipment() & debounce:1000\">\n        </md-input>\n        <!-- <md-select\n          style=\"width:100%\"\n          value.bind=\"attachment.name\"\n          change.delegate=\"getAttachment()\"\n          options.bind=\"['','Shipping Label', 'Manifest']\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Attachment\n        </md-select>\n        <md-button color\n          if.bind=\"attachment.name\"\n          click.delegate=\"upload.click()\"\n          style=\"position:absolute; right:18px; margin-top:-48px; height:24px; line-height:24px\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Upload\n        </md-button>\n        <input\n          type=\"file\"\n          ref=\"upload\"\n          change.delegate=\"setAttachment(upload.files[0])\"\n          style=\"display:none\">\n        <div if.bind=\"attachment.url\" style=\"width: 100%; padding-top:56px; padding-bottom:129%; position:relative;\">\n          <embed\n            src.bind=\"attachment.url\"\n            type.bind=\"attachment.type\"\n            style=\"position:absolute; height:100%; width:100%; top:0; bottom:0\">\n        </div> -->\n        <!-- The above padding / positioning keeps a constant aspect ratio for the embeded pdf  -->\n      </div>\n      <div class=\"mdl-card__actions\">\n        <md-button color raised form\n          style=\"width:100%\"\n          if.bind=\"shipment._id == shipmentId && ! shipment._rev\"\n          click.delegate=\"createShipment()\">\n          New Shipment Of ${ diffs.length || 'No' } Items\n        </md-button>\n        <md-button color raised\n          style=\"width:100%\"\n          if.bind=\"shipment._id == shipmentId && shipment._rev && role.account == 'to'\"\n          disabled.bind=\"! diffs.length\"\n          click.delegate=\"saveInventory()\">\n          ${ transactions[diffs[0]].verifiedAt ? 'Uninventory '+diffs.length+' Items' : 'Inventory '+diffs.length+' Items'}\n        </md-button>\n        <md-button color raised\n          style=\"width:100%\"\n          if.bind=\"shipment._id != shipmentId\"\n          disabled.bind=\"! diffs.length || ! shipment.account.to._id\"\n          click.delegate=\"shipment._rev ? moveTransactionsToShipment(shipment) : createShipment()\">\n          Move ${ diffs.length } Items\n        </md-button>\n      </div>\n    </form>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--9-col full-height\">\n      <!-- disabled.bind=\"! searchReady\" -->\n      <md-autocomplete\n        placeholder=\"Add Drugs by Generic Name or NDC...\"\n        value.bind=\"term\"\n        input.delegate=\"search() & debounce:50\"\n        keydown.delegate=\"autocompleteShortcuts($event) & debounce:50\"\n        disabled.bind=\"role.account == 'to' && ! shipment._rev\"\n        style=\"margin:0px 16px\">\n        <table md-table>\n          <tr\n            repeat.for=\"drug of drugs\"\n            click.delegate=\"addTransaction(drug)\"\n            class=\"${ drug._id == $parent.drug._id && 'is-selected'}\">\n            <td class=\"mdl-data-table__cell--non-numeric\" innerHTML.bind=\"drug.generic | bold:term\" style=\"white-space:normal; max-width:70%\"></td>\n            <td class=\"mdl-data-table__cell--non-numeric\" style=\"max-width:30%\">${ drug._id + (drug.pkg ? '-'+drug.pkg : '') }</td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <md-menu style=\"position:absolute; z-index:2; top:10px; right:5px;\" id.bind=\"a1\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          show.bind=\"transactions.length\"\n          click.delegate=\"exportCSV()\">\n          Export CSV\n        </li>\n        <li\n          show.bind=\"!transactions.length\"\n          disabled>\n          Export CSV\n        </li>\n        <li\n          show.bind=\"role.account != 'to' || shipment._rev\"\n          click.delegate=\"$file.click()\">\n          Import CSV\n        </li>\n        <li\n          show.bind=\"role.account == 'to' && ! shipment._rev\"\n          disabled>\n          Import CSV\n        </li>\n      </md-menu>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div style=\"overflow-y:scroll; margin:8px 0px 8px 16px;\">\n        <table md-table style=\"width:calc(100% - 16px)\">\n          <thead>\n            <tr>\n              <th style=\"width:15px\"></th>\n              <th class=\"mdl-data-table__cell--non-numeric\" style=\"max-width:400px;padding-left:0\">Drug</th>\n              <th class=\"mdl-data-table__cell--non-numeric\" style=\"width:90px;padding-left:0\">Ndc</th>\n              <th style=\"width:40px; padding-left:0; padding-right:0px\">Value</th>\n              <th style=\"text-align:left; width:40px;\">Exp</th>\n              <th style=\"text-align:left; width:40px\">Qty</th>\n              <!-- <th style=\"text-align:left; width:40px\">Rx</th> -->\n              <th style=\"text-align:left; width:40px;\">Box</th>\n            </tr>\n          </thead>\n          <tbody>\n            <tr style=\"padding-top:7px;\" repeat.for=\"transaction of transactions\" input.delegate=\"saveTransaction(transaction) & debounce:1000\">\n              <td style=\"padding:0 0 0 8px\">\n                <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->\n                <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->\n                <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use verifiedAt directly rather than isChecked because autocheck coerces isChecked to be out of sync -->\n                <md-checkbox\n                  disabled.bind=\"(role.account == 'to' && diffs.length && ! transactions[diffs[0]].verifiedAt != ! transaction.verifiedAt) || (role.account == 'to' && transaction.verifiedAt && shipment._id != shipmentId) || (role.account == 'from' && transaction.verifiedAt)\"\n                  click.delegate=\"manualCheck($index)\"\n                  checked.bind=\"transaction.isChecked\">\n                </md-checkbox>\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"white-space:normal; padding-left:0\">\n                ${ transaction.drug.generic }\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"padding:0\">\n                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction | value:2:transaction.qty[role.account] }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.exp[role.partner] | date}\n                <md-input\n                  id.bind=\"'exp_'+$index\"\n                  disabled.bind=\"transaction.verifiedAt\"\n                  keydown.delegate=\"expShortcuts($event, $index)\"\n                  pattern=\"(0?[1-9]|1[012])/\\d{2}\"\n                  value.bind=\"transaction.exp[role.account] | date\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.qty[role.partner] }\n                  <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->\n                  <!-- keyup rather than keydown because we want the new quantity not the old one -->\n                  <md-input\n                    id.bind=\"'qty_'+$index\"\n                    disabled.bind=\"transaction.verifiedAt\"\n                    keydown.delegate=\"qtyShortcuts($event, $index)\"\n                    type=\"number\"\n                    value.bind=\"transaction.qty[role.account] | number\"\n                    style=\"width:40px; margin-bottom:-8px\"\n                    placeholder>\n                  </md-input>\n              </td>\n              <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->\n              <!-- <td style=\"padding:0\">\n                ${ transaction.rx[role.partner] }\n                <md-input\n                  id.bind=\"'rx_'+$index\"\n                  disabled.bind=\"transaction.verifiedAt || ! transaction.isChecked\"\n                  keydown.delegate=\"rxShortcuts($event, $index)\"\n                  value.bind=\"transaction.rx[role.account]\"\n                  style=\"width:40px; margin-bottom:-8px; text-overflow:ellipsis\"\n                  placeholder>\n                </md-input>\n              </td> -->\n              <td style=\"padding:0\">\n                <md-input\n                  id.bind=\"'box_'+$index\"\n                  disabled.bind=\"transaction.verifiedAt || ! transaction.isChecked\"\n                  focusout.delegate=\"saveLastBox($event, $index)\"\n                  keydown.delegate=\"boxShortcuts($event, $index)\"\n                  pattern=\"[A-Z]\\d{3}\"\n                  value.bind=\"transaction.location\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <!-- <td style=\"padding:0 16px\">\n                <a if.bind=\"shipment._rev\" href=\"/#/records/${ transaction._id }\" tabindex=\"-1\">\n                   <i class=\"material-icons\" style=\"font-size:15px; vertical-align:text-top\">history</i>\n                </a>\n              </td> -->\n            </tr>\n          </tbody>\n        </table>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n  </section>\n</template>\n"; });
+define('text!views/shipments.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-switch\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-menu\"></require>\n  <require from=\"elems/md-autocomplete\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <md-drawer autofocus>\n    <md-input\n      value.bind=\"filter\"\n      autoselect\n      style=\"padding:0 8px; width:auto\">\n      Filter shipments ${ role.account } you\n    </md-input>\n    <!-- <md-switch\n      checked.one-way=\"role.account == 'to'\"\n      click.delegate=\"swapRole()\"\n      style=\"margin:-33px 0 0 185px;\">\n    </md-switch> -->\n    <a\n      if.bind=\" ! filter\"\n      class=\"mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(null, true)\">\n      <div class=\"mdl-typography--title\">Create</div>\n      new shipment ${role.account} you\n    </a>\n    <a\n      repeat.for=\"shipment of shipments[role.account] | shipmentFilter:filter\"\n      class=\"mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(shipment, true)\">\n      <div class=\"mdl-typography--title\" innerHtml.bind=\"shipment.account[role.partner].name | bold:filter\"></div>\n      <div style=\"font-size:12px\" innerHtml.bind=\"shipment.createdAt.slice(0, 10)+', '+(shipment.tracking.slice(-6) || shipment.tracking) | bold:filter\"></div>\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--3-col full-height\">\n      <div class=\"mdl-card__title\" style=\"display:block;\">\n        <div class=\"mdl-card__title-text\" style=\"text-transform:capitalize\">\n          ${ shipment._rev ? 'Shipment '+(shipment.tracking.slice(-6) || shipment.tracking) : 'New Shipment '+role.account+' You' }\n        </div>\n        <div style=\"margin-top:3px; margin-bottom:-25px\">\n          <strong>${transactions.length}</strong> items worth\n          <strong>$${ transactions | value:0:transactions.length }</strong>\n        </div>\n      </div>\n      <div class=\"mdl-card__supporting-text\" style=\"font-size:16px;\">\n        <md-select\n          if.bind=\"role.account == 'from' || shipment._rev\"\n          change.delegate=\"setCheckboxes()\"\n          style=\"width:100%\"\n          value.bind=\"shipment\"\n          default.bind=\"{tracking:'New Tracking #', account:{from:account, to:account}}\"\n          options.bind=\"shipments[role.account]\"\n          property=\"tracking\">\n          Tracking #\n        </md-select>\n        <md-input\n          if.bind=\"role.account == 'to' && ! shipment._rev\"\n          required\n          style=\"width:100%\"\n          value.bind=\"shipment.tracking\">\n          Tracking #\n        </md-input>\n        <md-select\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.from\"\n          options.bind=\"(role.account == 'from' || shipment._rev) ? [shipment.account.from] : accounts[role.account]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.account == 'from'\">\n          <!-- disabled is for highlighting the current role -->\n          From\n        </md-select>\n        <md-select\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.to\"\n          options.bind=\"(role.account == 'to' || shipment._rev) ? [shipment.account.to] : accounts[role.account]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.account == 'to'\">\n          <!-- disabled is for highlighting the current role -->\n          To\n        </md-select>\n        <md-select\n          style=\"width:32%;\"\n          value.bind=\"shipment.status\"\n          options.bind=\"stati\"\n          disabled.bind=\"! shipment._rev\">\n          Status\n        </md-select>\n        <md-input\n          type=\"date\"\n          style=\"width:64%; margin-top:20px\"\n          value.bind=\"shipment[shipment.status+'At']\"\n          disabled.bind=\"! shipment._rev\"\n          input.delegate=\"saveShipment() & debounce:1000\">\n        </md-input>\n        <!-- <md-select\n          style=\"width:100%\"\n          value.bind=\"attachment.name\"\n          change.delegate=\"getAttachment()\"\n          options.bind=\"['','Shipping Label', 'Manifest']\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Attachment\n        </md-select>\n        <md-button color\n          if.bind=\"attachment.name\"\n          click.delegate=\"upload.click()\"\n          style=\"position:absolute; right:18px; margin-top:-48px; height:24px; line-height:24px\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Upload\n        </md-button>\n        <input\n          type=\"file\"\n          ref=\"upload\"\n          change.delegate=\"setAttachment(upload.files[0])\"\n          style=\"display:none\">\n        <div if.bind=\"attachment.url\" style=\"width: 100%; padding-top:56px; padding-bottom:129%; position:relative;\">\n          <embed\n            src.bind=\"attachment.url\"\n            type.bind=\"attachment.type\"\n            style=\"position:absolute; height:100%; width:100%; top:0; bottom:0\">\n        </div> -->\n        <!-- The above padding / positioning keeps a constant aspect ratio for the embeded pdf  -->\n      </div>\n      <div class=\"mdl-card__actions\">\n        <md-button color raised form\n          ref=\"newShipmentButton\"\n          style=\"width:100%\"\n          show.bind=\"shipment._id == shipmentId && ! shipment._rev\"\n          click.delegate=\"createShipment()\">\n          New Shipment Of ${ diffs.length || 'No' } Items\n        </md-button>\n        <md-button color raised\n          ref=\"moveItemsButton\"\n          style=\"width:100%\"\n          show.bind=\"shipment._id != shipmentId\"\n          disabled.bind=\"! diffs.length || ! shipment.account.to._id\"\n          click.delegate=\"shipment._rev ? moveTransactionsToShipment(shipment) : createShipment()\">\n          Move ${ diffs.length } Items\n        </md-button>\n      </div>\n    </form>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--9-col full-height\">\n      <!-- disabled.bind=\"! searchReady\" -->\n      <md-autocomplete\n        placeholder=\"Add Drugs by Generic Name or NDC...\"\n        value.bind=\"term\"\n        input.delegate=\"search() & debounce:50\"\n        keydown.delegate=\"autocompleteShortcuts($event) & debounce:50\"\n        disabled.bind=\"role.account == 'to' && ! shipment._rev\"\n        style=\"margin:0px 16px\">\n        <table md-table>\n          <tr\n            repeat.for=\"drug of drugs\"\n            click.delegate=\"addTransaction(drug)\"\n            class=\"${ drug._id == $parent.drug._id && 'is-selected'}\">\n            <td class=\"mdl-data-table__cell--non-numeric\" innerHTML.bind=\"drug.generic | bold:term\" style=\"white-space:normal; max-width:70%\"></td>\n            <td class=\"mdl-data-table__cell--non-numeric\" style=\"max-width:30%\">${ drug._id + (drug.pkg ? '-'+drug.pkg : '') }</td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <md-menu style=\"position:absolute; z-index:2; top:10px; right:5px;\" id.bind=\"a1\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          show.bind=\"transactions.length\"\n          click.delegate=\"exportCSV()\">\n          Export CSV\n        </li>\n        <li\n          show.bind=\"!transactions.length\"\n          disabled>\n          Export CSV\n        </li>\n        <li\n          show.bind=\"role.account != 'to' || shipment._rev\"\n          click.delegate=\"$file.click()\">\n          Import CSV\n        </li>\n        <li\n          show.bind=\"role.account == 'to' && ! shipment._rev\"\n          disabled>\n          Import CSV\n        </li>\n      </md-menu>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div style=\"overflow-y:scroll; margin:8px 0px 8px 16px;\">\n        <table md-table style=\"width:calc(100% - 16px)\">\n          <thead>\n            <tr>\n              <th style=\"width:15px\"></th>\n              <th class=\"mdl-data-table__cell--non-numeric\" style=\"max-width:400px;padding-left:0\">Drug</th>\n              <th class=\"mdl-data-table__cell--non-numeric\" style=\"width:90px;padding-left:0\">Ndc</th>\n              <th style=\"width:40px; padding-left:0; padding-right:0px\">Value</th>\n              <th style=\"text-align:left; width:40px;\">Exp</th>\n              <th style=\"text-align:left; width:40px\">Qty</th>\n              <th style=\"text-align:left; width:40px;\">Box</th>\n            </tr>\n          </thead>\n          <tbody>\n            <tr style=\"padding-top:7px;\" repeat.for=\"transaction of transactions\" input.delegate=\"saveTransaction(transaction) & debounce:1000\">\n              <td style=\"padding:0 0 0 8px\">\n                <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->\n                <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->\n                <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use verifiedAt directly rather than isChecked because autocheck coerces isChecked to be out of sync -->\n                <md-checkbox\n                  click.delegate=\"manualCheck($index)\"\n                  checked.bind=\"transaction.isChecked\">\n                </md-checkbox>\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"white-space:normal; padding-left:0\">\n                ${ transaction.drug.generic }\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"padding:0\">\n                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction | value:2:transaction.qty[role.account] }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.exp[role.partner] | date}\n                <md-input\n                  id.bind=\"'exp_'+$index\"\n                  keydown.delegate=\"expShortcuts($event, $index)\"\n                  pattern=\"(0?[1-9]|1[012])/\\d{2}\"\n                  value.bind=\"transaction.exp[role.account] | date\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.qty[role.partner] }\n                  <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->\n                  <!-- keyup rather than keydown because we want the new quantity not the old one -->\n                  <md-input\n                    id.bind=\"'qty_'+$index\"\n                    keydown.delegate=\"qtyShortcuts($event, $index)\"\n                    type=\"number\"\n                    value.bind=\"transaction.qty[role.account] | number\"\n                    style=\"width:40px; margin-bottom:-8px\"\n                    placeholder>\n                  </md-input>\n              </td>\n              <td style=\"padding:0\">\n                <md-input\n                  id.bind=\"'box_'+$index\"\n                  disabled.bind=\" ! transaction.verifiedAt\"\n                  focusout.delegate=\"setLocation(transaction)\"\n                  keydown.delegate=\"boxShortcuts($event, $index)\"\n                  pattern=\"[A-Z]\\d{3}\"\n                  value.bind=\"transaction.location\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n            </tr>\n          </tbody>\n        </table>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n  </section>\n</template>\n"; });
 //# sourceMappingURL=app-bundle.js.map

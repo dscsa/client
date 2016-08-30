@@ -6,6 +6,7 @@ import {inject}     from 'aurelia-framework';
 import {Router}     from 'aurelia-router';
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client';
+import {toggleDrawer} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
@@ -18,13 +19,14 @@ export class records {
     this.history = ''
     this.days    = []
     this.scroll  = this.scroll.bind(this)
+    this.toggleDrawer = toggleDrawer
 
     let today  = new Date();
     let start  = new Date(2016, 7, 1)
 
     while (today > start) {
-      today.setHours(-24)
       this.days.push(today.toJSON().slice(0, 10))
+      today.setHours(-24)
     }
   }
 
@@ -36,13 +38,14 @@ export class records {
     addEventListener('keyup', this.scroll)
     this.db.user.session.get().then(session => {
       this.account = session.account //this is not a full account, just an _id
-      this.selectDay(params._id) //TODO save day in parameter for browser reloads
+      this.selectDay(params.id) //TODO save day in parameter for browser reloads
     })
   }
 
-  selectDay(day) {
+  selectDay(day, toggleDrawer) {
     this.day = day || this.days[0]
     this.router.navigate('records/'+this.day, { trigger: false })
+    toggleDrawer && this.toggleDrawer()
 
     //Just in case the user inverts the to & from dates.
     // let from = fromDate <= toDate ? fromDate : toDate
@@ -51,7 +54,7 @@ export class records {
     to.setHours(24*2)
 
     //Do not show inventory $eq, $lt, $gt,
-    let query = {'shipment._id':{$ne:this.account._id}, createdAt:{$gte:this.day, $lte:to.toJSON().slice(0, 10)}}
+    let query = {createdAt:{$gte:this.day, $lte:to.toJSON().slice(0, 10)}}
 
     return this.db.transaction.get(query).then(transactions => {
       this.transactions = transactions
@@ -90,7 +93,7 @@ export class records {
         return (word+' '.repeat(25)).slice(0, 25)
       }
       this.history = JSON.stringify(
-        history,
+        history.reverse(),
         (k,v) => {
           if (Array.isArray(v))
             return v
@@ -108,7 +111,6 @@ export class records {
       .replace(/\n?\s*\],?/g, '</div>')
       .replace(/ *"/g, '')
       .replace(/\n/g, '<br><br>')
-      //console.log('history', JSON.stringify(this.history))
     })
   }
 

@@ -49,8 +49,7 @@ export class drugs {
   scrollGroups($event) {
     Promise.resolve(this._search).then(_ => {
       //group won't be a reference so we must search manually
-      let index = this.groups.indexOf(this.group)
-      this.scrollSelect($event, index, this.groups, group => this.selectGroup(group, true))
+      this.scrollSelect($event, this.group, this.groups, group => this.selectGroup(group, true))
 
       if ($event.which == 13)//Enter get rid of the results
         this.selectGroup(null, true)
@@ -60,7 +59,7 @@ export class drugs {
   }
 
   scrollDrugs($event) {
-    this.scrollSelect($event, this.group.drugs.indexOf(this.drug), this.group.drugs, this.selectDrug)
+    this.scrollSelect($event, this.drug, this.group.drugs, this.selectDrug)
   }
 
   //Three entrances.

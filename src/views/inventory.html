@@ -42,8 +42,8 @@
         <md-button color raised
           style="width:100%"
           disabled.bind=" ! group.transactions.length"
-          click.delegate="removeInventory()">
-          ${'Remove Selected'}
+          click.delegate="repackInventory()">
+          ${'Repack Selected'}
         </md-button>
       </div>
     </div>
@@ -91,7 +91,7 @@
                   id.bind="'exp_'+$index"
                   keydown.delegate="expShortcuts($event, $index)"
                   pattern="(0?[1-9]|1[012])/\d{2}"
-                  value.bind="transaction.exp.from | date"
+                  value.bind="transaction.exp.to || transaction.exp.from | date"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>
@@ -101,7 +101,7 @@
                   id.bind="'qty_'+$index"
                   keydown.delegate="qtyShortcuts($event, $index)"
                   type="number"
-                  value.bind="transaction.qty.from | number"
+                  value.bind="transaction.qty.to || transaction.qty.from | number"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>

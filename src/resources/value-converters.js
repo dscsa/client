@@ -128,37 +128,39 @@ export class toArrayValueConverter {
 export class inventoryFilterValueConverter {
   toView(transactions = [], filter){
     for (let transaction of transactions) {
-      filter.exp[transaction.exp.from].count = 0
-      filter.exp[transaction.exp.from].qty = 0
-      filter.ndc[transaction.drug._id].count = 0
-      filter.ndc[transaction.drug._id].qty = 0
+      let exp = transaction.exp.to || transaction.exp.from
+      let ndc = transaction.drug._id
+      filter.exp[exp].count = 0
+      filter.exp[exp].qty = 0
+      filter.ndc[ndc].count = 0
+      filter.ndc[ndc].qty = 0
     }
 
     transactions = transactions.filter(transaction => {
-      if (filter.rx) {
-        if ( ! transaction.rx || ! transaction.rx.from) return false
-        if ( ! transaction.rx.from.includes(filter.rx)) return false
-      }
 
-      if ( ! filter.exp[transaction.exp.from].isChecked) {
-        if (filter.ndc[transaction.drug._id].isChecked) {
-          filter.exp[transaction.exp.from].count++
-          filter.exp[transaction.exp.from].qty += transaction.qty.from
+      let qty = transaction.qty.to || transaction.qty.from
+      let exp = transaction.exp.to || transaction.exp.from
+      let ndc = transaction.drug._id
+
+      if ( ! filter.exp[exp].isChecked) {
+        if (filter.ndc[ndc].isChecked) {
+          filter.exp[exp].count++
+          filter.exp[exp].qty += qty
         }
         return false
       }
-      if ( ! filter.ndc[transaction.drug._id].isChecked) {
-        if (filter.exp[transaction.exp.from].isChecked) {
-          filter.ndc[transaction.drug._id].count++
-          filter.ndc[transaction.drug._id].qty += transaction.qty.from
+      if ( ! filter.ndc[ndc].isChecked) {
+        if (filter.exp[exp].isChecked) {
+          filter.ndc[ndc].count++
+          filter.ndc[ndc].qty += qty
         }
         return false
       }
 
-      filter.exp[transaction.exp.from].count++
-      filter.ndc[transaction.drug._id].count++
-      filter.exp[transaction.exp.from].qty += transaction.qty.from
-      filter.ndc[transaction.drug._id].qty += transaction.qty.from
+      filter.exp[exp].count++
+      filter.ndc[ndc].count++
+      filter.exp[exp].qty += qty
+      filter.ndc[ndc].qty += qty
       return true
     })
 
