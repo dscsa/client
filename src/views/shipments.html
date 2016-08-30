@@ -61,6 +61,8 @@
         </md-select>
         <md-input
           if.bind="role.account == 'to' && ! shipment._rev"
+          focusin.delegate="setCheckboxes()"
+          autofocus
           required
           style="width:100%"
           value.bind="shipment.tracking">
@@ -165,7 +167,7 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu style="position:absolute; z-index:2; top:10px; right:5px;" id.bind="a1">
+      <md-menu style="position:absolute; z-index:2; top:10px; right:5px;">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
           show.bind="transactions.length"
