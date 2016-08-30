@@ -122,24 +122,23 @@ export class shipments {
   }
 
   setTransactions(shipmentId) {
-    this.transactions = []
-    this.diffs        = [] //Newly checked or unchecked checkboxes. Used to disable buttons if user has not done anything yet
 
-    if ( ! shipmentId) return
+    this.diffs = [] //Newly checked or unchecked checkboxes. Used to disable buttons if user has not done anything yet
+
+    if ( ! shipmentId)
+      return this.transactions = []
 
     this.db.transaction.get({'shipment._id':shipmentId}).then(transactions => {
       this.transactions = transactions
-      let verified //do not autocheck past the point where someone has inventoried
-      for (let i in this.transactions) {
-        let transaction = this.transactions[i]
-        transaction.isChecked = transaction.verifiedAt
-        if (transaction.verifiedAt)
-          verified = true
-        else if ( ! verified)
-          this.autoCheck(i, false)
-      }
+      this.setCheckboxes()
     })
     .catch(console.log)
+  }
+
+  setCheckboxes() {
+    for (let transaction of this.transactions) {
+      transaction.isChecked = this.shipmentId == this.shipment._id ? transaction.verifiedAt : null
+    }
   }
 
   setStatus(shipment) {
@@ -156,7 +155,6 @@ export class shipments {
   saveShipment() {
     //don't want to save status, but deleting causes weird behavior
     //so instead copy the shipment and delete from copy then assign new rev
-    delete this.shipment.status
     return this.db.shipment.put(this.shipment).then(res => {
       this.setStatus(this.shipment)
     })
@@ -168,11 +166,10 @@ export class shipments {
   moveTransactionsToShipment(shipment) {
     //Change all selected transactions to the new or existing shipment
     Promise.all(this.transactions.map(transaction => {
-      //do not allow movement of verified transactions
-      if ( ! transaction.isChecked || transaction.verifiedAt) return
-
-      transaction.shipment = {_id:shipment._id}
-      return this.db.transaction.put(transaction)
+      if (transaction.isChecked) {
+        transaction.shipment = {_id:shipment._id}
+        return this.db.transaction.put(transaction)
+      }
     }))
     .then(_ => this.selectShipment(shipment)) //Display existing shipment or the newly created shipment
   }
@@ -203,129 +200,120 @@ export class shipments {
   }
 
   qtyShortcuts($event, $index) {
-    if ($event.which == 13) { //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-      let boxInput = document.querySelector(`#box_${$index} input`)
-      boxInput.disabled ? this.focusInput(`md-autocomplete`) : boxInput.focus()
-      return false
-    }
+    if ($event.which == 13) //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
+      return this.focusInput(`#box_${$index}`, `md-autocomplete`)
 
-    setTimeout(_ => { //keydown means that input has not changed yet.  keyup can't be canceled
-
-      if ($event.which == 37 || $event.which == 39 || $event.which == 9)
-        return //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
-
-      //Delete an item in the qty is 0.  Instead of having a delete button
-      let transaction = this.transactions[$index]
-      let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
-      let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
-
-      if (donorDelete || doneeDelete) {
-        this.drugs = [] //get rid of previous results since someone might press enter and accidentally readd the same drug
-        this.db.transaction.delete(transaction).then(_ =>  {
-          this.transactions.splice($index, 1)
-          this.diffs = this.diffs.filter(i => i != $index).map(i => i > $index ? i-1 : i)
-        })
-        this.focusInput(`md-autocomplete`)
-      }
-
-      //See if this transaction qualifies for autoCheck
-      this.autoCheck($index, true)
-    })
+    //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
+    if ($event.which != 37 && $event.which != 39 && $event.which != 9)
+      setTimeout(_ => { //keydown means that input has not changed yet.  keyup can't be canceled, so we wait for value to change
+        this.deleteTransactionIfQty0($index)
+        this.autoCheck($index) //See if this transaction qualifies for autoCheck
+      })
 
     return true
   }
 
   boxShortcuts($event, $index) {
-    if ($event.which == 13)//Enter should focus on quantity
+    if ($event.which == 13)
       return this.focusInput(`md-autocomplete`)
 
     return this.incrementBox($event, this.transactions[$index])
   }
 
-  saveLastBox($event, $index) {
-    if ($event.target.validity.valid) //defaultLocation won't be valid
-      this.lastBox = $event.target.value
+  getLocation(transaction) {
+    return (this.getOrder(transaction) || {}).defaultLocation || this._location
+  }
 
-    this.saveTransaction(this.transactions[$index])
+  setLocation(transaction) {
+    if (this.getOrder(transaction).defaultLocation != transaction.location)
+      this._location = transaction.location //Only prepopulate non-default locations into next transaction
+
+    this.saveTransaction(transaction).catch(err => {
+      this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`) //message is for pouchdb errors
+    })
+  }
+
+  aboveMinQty(order, transaction) {
+    let qty = +transaction.qty[this.role.account]
+    if ( ! qty) return false
+    let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
+    let defaultQty = price > 1 ? 1 : 10 //keep expensive meds
+    return qty >= (+order.minQty || defaultQty)
+  }
+
+  aboveMinExp(order, transaction) {
+    let exp = transaction.exp[this.role.account]
+    if ( ! exp) return ! order.minDays
+    let minDays = order.minDays || 120
+    return new Date(exp) - Date.now() >= minDays*24*60*60*1000
+  }
+
+  getOrder(transaction) {
+    return this.ordered[this.shipment.account.to._id][transaction.drug.generic]
+  }
+
+  isOrdered(order, transaction) {
+    return order ? this.aboveMinQty(order, transaction) && this.aboveMinExp(order, transaction) : false
   }
 
   //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
-  autoCheck($index, userInput) {
+  autoCheck($index) {
     let transaction = this.transactions[$index]
+    let isChecked   = transaction.isChecked || false //apparently false != undefined
+    let order       = this.getOrder(transaction)
 
-    let ordered = this.ordered[this.shipment.account.to._id][transaction.drug.generic]
-    let qty = +transaction.qty[this.role.account]
-    let exp = transaction.exp[this.role.account]
+    if(this.isOrdered(order, transaction) == isChecked)
+      return
 
-    if ( ! ordered || ! qty) return
+    //If qty is 30 and user types "3" then destroyed message will display before user can type "0"
+    //this code puts a delay on the destroyed message and then clears it out if the user does type a "0"
+    //an alternative would be wait to trigger autocheck until enter is pressed but this would delay all messages
+    if (isChecked && order && order.destroyedMessage && ! this.destroyedMessage)
+      this.destroyedMessage = setTimeout(_ => {
+        delete this.destroyedMessage
+        this.snackbar.show(order.destroyedMessage)
+      }, 1000)
 
-    let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
-    let defaultQty = price > 1 ? 1 : 10 //keep expensive meds
-    let minQty     = qty >= (+ordered.minQty || defaultQty)
-    let minExp     = exp ? new Date(exp) - Date.now() >= (ordered.minDays || 120)*24*60*60*1000 : !ordered.minDays
-    let isChecked  = transaction.isChecked || false //apparently false != undefined
-
-    if((minQty && minExp) == isChecked) {
-      if ( ! userInput) return
-
-      //If qty is 30 and user types "3" then destroyed message will display before user can type "0"
-      //this code puts a delay on the destroyed message and then clears it out if the user does type a "0"
-      //an alternative would be wait to trigger autocheck until enter is pressed but this would delay all messages
-      if (ordered.destroyedMessage && ! this.destroyedMessage)
-        this.destroyedMessage = setTimeout(_ => {
-          delete this.destroyedMessage
-          this.snackbar.show(ordered.destroyedMessage)
-        }, 1000)
-
-      return console.log('minQty', minQty, qty, 'minExp', minExp, exp)
+    if ( ! isChecked) {//manual check has not switched the boolean yet
+      this.snackbar.show(order.verifiedMessage || 'Drug is ordered')
+      clearTimeout(this.destroyedMessage)
+      delete this.destroyedMessage
     }
-
-    clearTimeout(this.destroyedMessage)
-    delete this.destroyedMessage
-
-    if ( ! isChecked) //manual check has not switched the boolean yet
-      userInput && this.snackbar.show(ordered.verifiedMessage || 'Drug is ordered')
-
-    if (userInput) //don't do this on initial page load
-      transaction.location = ordered.defaultLocation || this.lastBox
 
     this.manualCheck($index)
   }
 
-  manualCheck($index) {
-    this.transactions[$index].isChecked = ! this.transactions[$index].isChecked
+  toggleVerified(transaction) {
 
-    let j = this.diffs.indexOf($index)
-    ~ j ? this.diffs.splice(j, 1)
-      : this.diffs.push($index)
+    transaction.verifiedAt = transaction.verifiedAt ? null : new Date().toJSON()
+
+    if (transaction.verifiedAt)
+      transaction.location = this.getLocation(transaction)
+
+    this.saveTransaction(transaction).catch(err => {
+      transaction.isChecked = ! transaction.isChecked
+      this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`)
+    })
   }
 
-  saveInventory() {
-    let method   = 'post'
-    let verified = true
-    let phrase   = 'saved to'
-    if (this.transactions[this.diffs[0]].verifiedAt) {
-      method   = 'delete'
-      verified = null
-      phrase   = 'removed from'
-    }
+  toggleDiff(transaction) {
+    let index = this.diffs.indexOf(transaction)
+    ~ index
+      ? this.diffs.splice(index, 1)
+      : this.diffs.push(transaction)
+  }
 
-    Promise.all(this.diffs.map(i => {
-      return this.db.transaction.verified[method](this.transactions[i])
-      .then(_ => {
-        this.transactions[i].verifiedAt = verified
-        return true
-      })
-      .catch(err => {
-        this.transactions[i].isChecked = this.transactions[i].verifiedAt
-        this.manualCheck(i)
-        this.snackbar.show(err.reason)
-      })
-    })).then(all => {
-      this.diffs = []
-      if (all.every(i => i))
-        this.snackbar.show(`${all.length} items were ${phrase} inventory`)
-    })
+  manualCheck($index) {
+    let transaction = this.transactions[$index]
+
+    //If user is not moving items, the shipment exists, and they are the recipient, then autosave their verificaton
+    //offsetParent is null when buttons are hidden.  This keeps us from duplicating the show logic of the buttons here
+    if (this.moveItemsButton.offsetParent || this.newShipmentButton.offsetParent)
+      this.toggleDiff(transaction)
+    else
+      this.toggleVerified(transaction)
+
+    transaction.isChecked = ! transaction.isChecked
   }
 
   search() {
@@ -339,8 +327,7 @@ export class shipments {
   //TODO support up/down arrow keys to pick different transaction?
   autocompleteShortcuts($event) {
 
-    let index = this.drugs.indexOf(this.drug)
-    this.scrollSelect($event, index, this.drugs, drug => this.drug = drug)
+    this.scrollSelect($event, this.drug, this.drugs, drug => this.drug = drug)
 
     //Enter with a selected drug.  Force term to be falsey so a barcode scan which is entering digits does not trigger
     if ($event.which == 13) {//Barcode scan means search might not be done yet
@@ -361,7 +348,6 @@ export class shipments {
 
     transaction = transaction || {
       qty:{from:null, to:null},
-      rx:{from:null, to:null},
       exp:{
         from:this.transactions[0] ? this.transactions[0].exp.from : null,
         to:this.transactions[0] ? this.transactions[0].exp.to : null
@@ -391,24 +377,38 @@ export class shipments {
     //Assume db query works.
     console.log('addTransaction', transaction)
     this.transactions.unshift(transaction) //Add the drug to the view
-    this.diffs = this.diffs.map(val => +val+1) //for some reason indexes were strings
+    setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
     let start = Date.now()
     return this.db.transaction.post(transaction).then(_ => {
-      let ordered    = this.ordered[this.shipment.account.to._id][transaction.drug.generic]
+
+      let ordered    = this.getOrder(transaction)
       let pharmerica = /pharmerica.*/i.test(this.shipment.account.from.name)
 
       if ( !  ordered && pharmerica ) //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
         return this.snackbar.show(`Destroy, record already exists`)
 
       console.log('ordered transaction added in', Date.now() - start)
-      setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
     })
     .catch(err => {
       console.log(JSON.stringify(transaction), err)
       this.snackbar.show(`Transaction could not be added: ${err.name}`)
       this.transactions.shift()
-      this.diffs = this.diffs.map(val => val-1)
     })
+  }
+
+  deleteTransactionIfQty0($index) {
+    //Delete an item in the qty is 0.  Instead of having a delete button
+    let transaction = this.transactions[$index]
+    let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
+    let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
+
+    if (donorDelete || doneeDelete) {
+      this.drugs = [] //get rid of previous results since someone might press enter and accidentally readd the same drug
+      this.db.transaction.delete(transaction).then(_ =>  {
+        this.transactions.splice($index, 1)
+      })
+      this.focusInput(`md-autocomplete`)
+    }
   }
 
   exportCSV() {

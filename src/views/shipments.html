@@ -17,11 +17,11 @@
       style="padding:0 8px; width:auto">
       Filter shipments ${ role.account } you
     </md-input>
-    <md-switch
+    <!-- <md-switch
       checked.one-way="role.account == 'to'"
       click.delegate="swapRole()"
       style="margin:-33px 0 0 185px;">
-    </md-switch>
+    </md-switch> -->
     <a
       if.bind=" ! filter"
       class="mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}"
@@ -51,6 +51,7 @@
       <div class="mdl-card__supporting-text" style="font-size:16px;">
         <md-select
           if.bind="role.account == 'from' || shipment._rev"
+          change.delegate="setCheckboxes()"
           style="width:100%"
           value.bind="shipment"
           default.bind="{tracking:'New Tracking #', account:{from:account, to:account}}"
@@ -129,21 +130,16 @@
       </div>
       <div class="mdl-card__actions">
         <md-button color raised form
+          ref="newShipmentButton"
           style="width:100%"
-          if.bind="shipment._id == shipmentId && ! shipment._rev"
+          show.bind="shipment._id == shipmentId && ! shipment._rev"
           click.delegate="createShipment()">
           New Shipment Of ${ diffs.length || 'No' } Items
         </md-button>
         <md-button color raised
+          ref="moveItemsButton"
           style="width:100%"
-          if.bind="shipment._id == shipmentId && shipment._rev && role.account == 'to'"
-          disabled.bind="! diffs.length"
-          click.delegate="saveInventory()">
-          ${ transactions[diffs[0]].verifiedAt ? 'Uninventory '+diffs.length+' Items' : 'Inventory '+diffs.length+' Items'}
-        </md-button>
-        <md-button color raised
-          style="width:100%"
-          if.bind="shipment._id != shipmentId"
+          show.bind="shipment._id != shipmentId"
           disabled.bind="! diffs.length || ! shipment.account.to._id"
           click.delegate="shipment._rev ? moveTransactionsToShipment(shipment) : createShipment()">
           Move ${ diffs.length } Items
@@ -203,7 +199,6 @@
               <th style="width:40px; padding-left:0; padding-right:0px">Value</th>
               <th style="text-align:left; width:40px;">Exp</th>
               <th style="text-align:left; width:40px">Qty</th>
-              <!-- <th style="text-align:left; width:40px">Rx</th> -->
               <th style="text-align:left; width:40px;">Box</th>
             </tr>
           </thead>
@@ -214,7 +209,6 @@
                 <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->
                 <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use verifiedAt directly rather than isChecked because autocheck coerces isChecked to be out of sync -->
                 <md-checkbox
-                  disabled.bind="(role.account == 'to' && diffs.length && ! transactions[diffs[0]].verifiedAt != ! transaction.verifiedAt) || (role.account == 'to' && transaction.verifiedAt && shipment._id != shipmentId) || (role.account == 'from' && transaction.verifiedAt)"
                   click.delegate="manualCheck($index)"
                   checked.bind="transaction.isChecked">
                 </md-checkbox>
@@ -232,7 +226,6 @@
                 ${ transaction.exp[role.partner] | date}
                 <md-input
                   id.bind="'exp_'+$index"
-                  disabled.bind="transaction.verifiedAt"
                   keydown.delegate="expShortcuts($event, $index)"
                   pattern="(0?[1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp[role.account] | date"
@@ -246,7 +239,6 @@
                   <!-- keyup rather than keydown because we want the new quantity not the old one -->
                   <md-input
                     id.bind="'qty_'+$index"
-                    disabled.bind="transaction.verifiedAt"
                     keydown.delegate="qtyShortcuts($event, $index)"
                     type="number"
                     value.bind="transaction.qty[role.account] | number"
@@ -254,23 +246,11 @@
                     placeholder>
                   </md-input>
               </td>
-              <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->
-              <!-- <td style="padding:0">
-                ${ transaction.rx[role.partner] }
-                <md-input
-                  id.bind="'rx_'+$index"
-                  disabled.bind="transaction.verifiedAt || ! transaction.isChecked"
-                  keydown.delegate="rxShortcuts($event, $index)"
-                  value.bind="transaction.rx[role.account]"
-                  style="width:40px; margin-bottom:-8px; text-overflow:ellipsis"
-                  placeholder>
-                </md-input>
-              </td> -->
               <td style="padding:0">
                 <md-input
                   id.bind="'box_'+$index"
-                  disabled.bind="transaction.verifiedAt || ! transaction.isChecked"
-                  focusout.delegate="saveLastBox($event, $index)"
+                  disabled.bind=" ! transaction.verifiedAt"
+                  focusout.delegate="setLocation(transaction)"
                   keydown.delegate="boxShortcuts($event, $index)"
                   pattern="[A-Z]\d{3}"
                   value.bind="transaction.location"
@@ -278,11 +258,6 @@
                   placeholder>
                 </md-input>
               </td>
-              <!-- <td style="padding:0 16px">
-                <a if.bind="shipment._rev" href="/#/records/${ transaction._id }" tabindex="-1">
-                   <i class="material-icons" style="font-size:15px; vertical-align:text-top">history</i>
-                </a>
-              </td> -->
             </tr>
           </tbody>
         </table>
