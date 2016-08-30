@@ -10,6 +10,7 @@ import {inject, bindable, bindingMode} from 'aurelia-framework';
 @bindable('max')
 @bindable('required')
 @bindable('minlength')
+@bindable('autofocus')
 export class MdInputCustomElement {
 
   valueChanged() {
@@ -29,7 +30,7 @@ export class MdInputCustomElement {
     if ( ! this.placeholder)
       this.div.classList.remove('has-placeholder')
 
-    if (this.autoselect)
+    if (this.autofocus || this.autofocus === '')
       this.div.MaterialTextfield.input_.focus()
   }
 }

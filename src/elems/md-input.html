@@ -3,6 +3,7 @@
   <div ref="div" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%; margin-bottom:-12px; font-size:inherit; text-overflow:inherit; display:block; ${ label.textContent.trim() || 'padding-top:0px'};">
     <!-- Chrome's input[type=date] has a minimum height of 24px because of its internal buttons, to align heights we need to make all have min-height. -->
     <input
+      ref="input"
       required.bind="required || required === ''"
       class="mdl-textfield__input"
       value.bind="value"
