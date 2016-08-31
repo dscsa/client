@@ -10,7 +10,7 @@ import {incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, d
 export class shipments {
 
   constructor(db, router, http){
-    this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'rx.from', 'rx.to', 'verifiedAt'])
+    this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt'])
     this.db     = db
     this.drugs  = []
     this.router = router
