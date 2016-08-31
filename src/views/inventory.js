@@ -1,14 +1,17 @@
 import {inject} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
+import {Csv}    from '../libs/csv'
 import {incrementBox, saveTransaction, focusInput, scrollSelect, drugSearch} from '../resources/helpers'
 
 @inject(Db, Router)
 export class inventory {
 
   constructor(db, router){
-    this.db        = db
-    this.router    = router
+    this.db     = db
+    this.router = router
+    this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt'])
+
     this.resetFilter()
 
     this.saveTransaction = saveTransaction
@@ -119,5 +122,50 @@ export class inventory {
       return this.focusInput(`#exp_${$index+1}`)
 
     return this.incrementBox($event, this.group.transactions[$index])
+  }
+
+  exportCSV() {
+    let name = 'Inventory.csv'
+    this.db.transaction.get({inventory:true}).then(inventory => {
+      this.csv.unparse(name, inventory.map(row => {
+        row.next = JSON.stringify(row.next || [])
+        return row
+      }))
+    })
+  }
+
+  importCSV() {
+    console.log('this.$file.value', this.$file.value)
+    this.csv.parse(this.$file.files[0]).then(parsed => {
+      return Promise.all(parsed.map(transaction => {
+        this.$file.value = ''
+        transaction._id          = undefined
+        transaction._rev         = undefined
+        transaction.next         = JSON.parse(transaction.next)
+        return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
+          //This will add drugs upto the point where a drug cannot be found rather than rejecting all
+          if ( ! drugs[0])
+            throw 'Cannot find drug with _id '+transaction.drug._id
+
+          transaction.drug = {
+            _id:drugs[0]._id,
+            brand:drugs[0].brand,
+            generic:drugs[0].generic,
+            generics:drugs[0].generics,
+            form:drugs[0].form,
+            price:drugs[0].price,
+            pkg:drugs[0].pkg
+          }
+
+          return transaction
+        })
+      }))
+    })
+    .then(rows => {
+      console.log('rows', rows)
+      return Promise.all(rows.map(inventory => this.db.transaction.post(inventory)))
+    })
+    .then(inventory => this.snackbar.show(`Imported ${inventory.length} Inventory Items`))
+    .catch(err => this.snackbar.show('Error Importing Inventory: '+err))
   }
 }

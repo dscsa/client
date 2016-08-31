@@ -416,6 +416,7 @@ export class shipments {
     this.csv.unparse(name, this.transactions.map(transaction => {
       return {
         '':transaction,
+        'next':JSON.stringify(row.next || []),
         'drug._id':" "+transaction.drug._id,
         'drug.generics':transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
         shipment:this.shipment
@@ -431,6 +432,7 @@ export class shipments {
         transaction._id          = undefined
         transaction._rev         = undefined
         transaction.shipment._id = undefined
+        transaction.next         = JSON.parse(transaction.next)
         transaction.exp.to       = toJsonDate(parseUserDate(transaction.exp.to))
         transaction.exp.from     = toJsonDate(parseUserDate(transaction.exp.from))
         transaction.verifiedAt   = toJsonDate(parseUserDate(transaction.verifiedAt))
