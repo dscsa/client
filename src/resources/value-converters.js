@@ -1,3 +1,5 @@
+ import {toJsonDate, parseUserDate} from '../resources/helpers'
+
 //http://stackoverflow.com/questions/32017532/observe-property-on-an-array-of-objects-for-any-changes
 export class jsonValueConverter {
   toView(object = null){
@@ -93,22 +95,6 @@ export class dateValueConverter {
 
     return this.model = toJsonDate({month, year})
   }
-}
-
-//whether mm/yy or mm/dd/yy, month is always first and year is always last
-function parseUserDate(date) {
-  date = (date || "").split('/') //can't do default arugment because can be null as well as undefined
-  return {
-    year:date.pop(),
-    month:date.shift()
-  }
-}
-
-//To get last day in month, set it to next month and subtract a day
-function toJsonDate({month, year}) {
-  let date = new Date('20'+year,month, 1)
-  date.setDate(0)
-  return date.toJSON()
 }
 
 export class toArrayValueConverter {
