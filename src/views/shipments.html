@@ -212,6 +212,7 @@
                 <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use verifiedAt directly rather than isChecked because autocheck coerces isChecked to be out of sync -->
                 <md-checkbox
                   click.delegate="manualCheck($index)"
+                  disabled.bind=" ! moveItemsButton.offsetParent && ! newShipmentButton.offsetParent && transaction.next.length"
                   checked.bind="transaction.isChecked">
                 </md-checkbox>
               </td>

@@ -91,13 +91,14 @@ export class inventory {
       if (transaction.isChecked) {
         transaction.next = transaction.next || []
         transaction.next.push({qty:transaction.qty.to || transaction.qty.from, dispensed:{}})
-        repack.push(this.db.transaction.put(transaction).then(_ =>
+        this.db.transaction.put(transaction).then(_ => {
           this.group.transactions.splice(this.group.transactions.indexOf(transaction), 1)
-        ))
+        }).catch(err => {
+          transaction.isChecked = ! transaction.isChecked
+          this.snackbar.show(`Error repacking: ${err.reason || err.message }`)
+        })
       }
     }
-
-    Promise.all(repack).then(_ => this.snackbar.show(`${repack.length} transactions were repacked`))
   }
 
   //TODO same as shipment's method (without autocheck)
