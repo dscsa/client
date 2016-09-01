@@ -35,9 +35,11 @@ export class inventory {
   }
 
   selectGroup(group = {}) {
-    this.db.transaction.get({generic:group.name, inventory:true})
+    group.inventory = true
+    this.db.transaction.get(group)
     .then(transactions => {
-      this.term  = group.name
+      if (group.generic)
+        this.term  = group.generic
       this.group = group
       group.transactions = transactions.sort((a, b) => {
         let aExp = a.exp.to || a.exp.from || ''
@@ -70,12 +72,16 @@ export class inventory {
   }
 
   search() {
+    if (/[A-Z][0-9]{1,3}/.test(this.term))
+      return this.selectGroup({location:this.term})
+
+    if (/20\d\d-\d\d-?\d?\d?/.test(this.term))
+      return this.selectGroup({exp:this.term})
+
     this.drugSearch().then(drugs => {
       let groups = {}
       for (let drug of drugs) {
-        if ( ! drug.generic)
-        console.log('drug.generic', drug.generic, drug)
-        groups[drug.generic] = groups[drug.generic] || {name:drug.generic}
+        groups[drug.generic] = groups[drug.generic] || {generic:drug.generic}
       }
       this.groups = Object.keys(groups).map(key => groups[key])
     })

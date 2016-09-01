@@ -67,10 +67,10 @@
           <tr
             repeat.for="group of groups"
             click.delegate="selectGroup(group)"
-            class="${ group.name == $parent.group.name && 'is-selected'}">
+            class="${ group.generic == $parent.group.generic && 'is-selected'}">
             <td
               class="mdl-data-table__cell--non-numeric"
-              innerHTML.bind="group.name.replace(regex, '<strong>$1</strong>')">
+              innerHTML.bind="group.generic.replace(regex, '<strong>$1</strong>')">
             </td>
           </tr>
         </table>
