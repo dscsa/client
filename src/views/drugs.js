@@ -59,7 +59,7 @@ export class drugs {
   }
 
   scrollDrugs($event) {
-    this.scrollSelect($event, this.drug, this.group.drugs, this.selectDrug)
+    this.group && this.scrollSelect($event, this.drug, this.group.drugs, this.selectDrug)
   }
 
   //Three entrances.
@@ -91,13 +91,17 @@ export class drugs {
   }
 
   selectDrug(drug, autoselectGroup) {
-    this.drug = drug
+    //Default is for Add Drug menu item in view
+    this.drug = drug || {
+      generics:this.drug.generics,
+      form:this.drug.form
+    }
 
     let url = this.drug ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
 
     if (autoselectGroup)
-      this.selectGroup({name:this.drug.generic})
+      this.selectGroup({name:this.drug.generic || this.term})
   }
 
   selectDrawer(generic) {
