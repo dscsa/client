@@ -69,8 +69,8 @@ export class drugs {
   selectGroup(group, autoselectDrug) {
     this.term = group.name
 
-    this.db.transaction.get({generic:group.name, 'shipment._id':this.account._id}).then(transactions => {
-      this.inventory = transactions.reduce((a, b) => a+b.qty.from, 0)
+    this.db.transaction.get({generic:group.name, inventory:true}).then(transactions => {
+      this.inventory = transactions.reduce((a, b) => a+b.qty.to, 0)
     })
 
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
