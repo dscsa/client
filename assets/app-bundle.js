@@ -2603,7 +2603,10 @@ define('resources/helpers',['exports'], function (exports) {
     });
   }
 
-  function scrollSelect($event, curr, list, cb) {
+  function scrollSelect($event, curr) {
+    var list = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+    var cb = arguments[3];
+
 
     var index = list.indexOf(curr);
     var last = list.length - 1;
