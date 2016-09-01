@@ -37,6 +37,14 @@
           <div class="mdl-cell mdl-cell--2-col">${exp.val.qty}</div>
           <div class="mdl-cell mdl-cell--2-col">${exp.val.count}</div>
         </div>
+        <div repeat.for="form of filter.form | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-bottom:-8px">
+          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:0; width:100%">
+            <div class="mdl-cell mdl-cell--6-col">Form Filter</div>
+          </div>
+          <md-checkbox class="mdl-cell mdl-cell--6-col" click.delegate="signalFilter(form)" checked.bind="form.val.isChecked">${form.key}</md-checkbox>
+          <div class="mdl-cell mdl-cell--2-col">${form.val.qty}</div>
+          <div class="mdl-cell mdl-cell--2-col">${form.val.count}</div>
+        </div>
         <!-- <md-input show.bind="group.transactions.length" input.delegate="signalFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input> -->
       </div>
       <div class="mdl-card__actions">

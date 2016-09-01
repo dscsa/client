@@ -59,13 +59,14 @@ export class inventory {
       this.resetFilter()
       for (let transaction of group.transactions) {
         this.filter.exp[transaction.exp.to || transaction.exp.from] = {isChecked:true, count:0, qty:0}
-        this.filter.ndc[transaction.drug._id] = {isChecked:true, count:0, qty:0}
+        this.filter.ndc[transaction.drug._id]   = {isChecked:true, count:0, qty:0}
+        this.filter.form[transaction.drug.form] = {isChecked:true, count:0, qty:0}
       }
     })
   }
 
   resetFilter() {
-    this.filter = {exp:{},ndc:{}}
+    this.filter = {exp:{},ndc:{},form:{}}
   }
 
   search() {

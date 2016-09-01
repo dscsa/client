@@ -114,39 +114,53 @@ export class toArrayValueConverter {
 export class inventoryFilterValueConverter {
   toView(transactions = [], filter){
     for (let transaction of transactions) {
-      let exp = transaction.exp.to || transaction.exp.from
-      let ndc = transaction.drug._id
+      let exp  = transaction.exp.to || transaction.exp.from
+      let ndc  = transaction.drug._id
+      let form = transaction.drug.form
       filter.exp[exp].count = 0
       filter.exp[exp].qty = 0
       filter.ndc[ndc].count = 0
       filter.ndc[ndc].qty = 0
+      filter.form[form].count = 0
+      filter.form[form].qty = 0
     }
 
     transactions = transactions.filter(transaction => {
 
-      let qty = transaction.qty.to || transaction.qty.from
-      let exp = transaction.exp.to || transaction.exp.from
-      let ndc = transaction.drug._id
+      let qty  = transaction.qty.to || transaction.qty.from
+      let exp  = transaction.exp.to || transaction.exp.from
+      let ndc  = transaction.drug._id
+      let form = transaction.drug.form
 
       if ( ! filter.exp[exp].isChecked) {
-        if (filter.ndc[ndc].isChecked) {
+        if (filter.ndc[ndc].isChecked && filter.form[form].isChecked) {
           filter.exp[exp].count++
           filter.exp[exp].qty += qty
         }
         return false
       }
       if ( ! filter.ndc[ndc].isChecked) {
-        if (filter.exp[exp].isChecked) {
+        if (filter.exp[exp].isChecked && filter.form[form].isChecked) {
           filter.ndc[ndc].count++
           filter.ndc[ndc].qty += qty
         }
         return false
       }
 
+      if ( ! filter.form[form].isChecked) {
+        if (filter.exp[exp].isChecked && filter.ndc[ndc].isChecked) {
+          filter.form[form].count++
+          filter.form[form].qty += qty
+        }
+        return false
+      }
+
       filter.exp[exp].count++
       filter.ndc[ndc].count++
-      filter.exp[exp].qty += qty
-      filter.ndc[ndc].qty += qty
+      filter.form[form].count++
+      filter.exp[exp].qty   += qty
+      filter.ndc[ndc].qty   += qty
+      filter.form[form].qty += qty
       return true
     })
 
