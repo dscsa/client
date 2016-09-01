@@ -18,7 +18,7 @@ export function saveTransaction(transaction) {
   })
 }
 
-export function scrollSelect($event, curr, list, cb) {
+export function scrollSelect($event, curr, list = [], cb) {
 
   let index = list.indexOf(curr)
   let last  = list.length - 1
@@ -49,7 +49,7 @@ export function toggleDrawer() {
 }
 
 export function drugSearch() {
-  let term = this.term.trim()
+  let term = (this.term || '').trim()
 
   if (term.length < 3) {
     return Promise.resolve(this._search = []) //always return a promise

@@ -2627,7 +2627,7 @@ define('resources/helpers',['exports'], function (exports) {
   }
 
   function drugSearch() {
-    var term = this.term.trim();
+    var term = (this.term || '').trim();
 
     if (term.length < 3) {
       return Promise.resolve(this._search = []);
