@@ -225,7 +225,7 @@ export class shipments {
   }
 
   setLocation(transaction) {
-    if (this.getOrder(transaction).defaultLocation != transaction.location)
+    if (this.getLocation(transaction) != transaction.location)
       this._location = transaction.location //Only prepopulate non-default locations into next transaction
 
     this.saveTransaction(transaction).catch(err => {
