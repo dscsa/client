@@ -46,7 +46,7 @@ sudo apt-get update
 sudo apt-get install couchdb -y
 sudo nano /etc/couchdb/local.ini
 #change httpd.bind_address to 0.0.0.0,
-#add compactions._default as [{db_fragmentation, "70%"}, {view_fragmentation, "60%"}]
+#add compactions._default as [{db_fragmentation, "40%"}, {view_fragmentation, "40%"}]
 sudo service couchdb restart
 goto <elastic-ip>:5984/_utils and create server login
 
