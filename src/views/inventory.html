@@ -21,27 +21,27 @@
       <div class="mdl-card__supporting-text" style="padding:0">
         <div repeat.for="ndc of filter.ndc | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-top:-8px">
           <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:16px 0 0 0; width:100%">
-            <div class="mdl-cell mdl-cell--6-col">Ndc Filter</div>
+            <div class="mdl-cell mdl-cell--8-col">Ndc Filter</div>
             <div class="mdl-cell mdl-cell--2-col">Qty</div>
             <div class="mdl-cell mdl-cell--2-col">Count</div>
           </div>
-          <md-checkbox class="mdl-cell mdl-cell--6-col" click.delegate="signalFilter(ndc)" checked.bind="ndc.val.isChecked">${ndc.key}</md-checkbox>
+          <md-checkbox class="mdl-cell mdl-cell--8-col" click.delegate="signalFilter(ndc)" checked.bind="ndc.val.isChecked">${ndc.key}</md-checkbox>
           <div class="mdl-cell mdl-cell--2-col">${ndc.val.qty}</div>
           <div class="mdl-cell mdl-cell--2-col">${ndc.val.count}</div>
         </div>
         <div repeat.for="exp of filter.exp | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-bottom:-8px">
           <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:0; width:100%">
-            <div class="mdl-cell mdl-cell--6-col">Exp Filter</div>
+            <div class="mdl-cell mdl-cell--8-col">Exp Filter</div>
           </div>
-          <md-checkbox class="mdl-cell mdl-cell--6-col" click.delegate="signalFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
+          <md-checkbox class="mdl-cell mdl-cell--8-col" click.delegate="signalFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
           <div class="mdl-cell mdl-cell--2-col">${exp.val.qty}</div>
           <div class="mdl-cell mdl-cell--2-col">${exp.val.count}</div>
         </div>
         <div repeat.for="form of filter.form | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-bottom:-8px">
           <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:0; width:100%">
-            <div class="mdl-cell mdl-cell--6-col">Form Filter</div>
+            <div class="mdl-cell mdl-cell--8-col">Form Filter</div>
           </div>
-          <md-checkbox class="mdl-cell mdl-cell--6-col" click.delegate="signalFilter(form)" checked.bind="form.val.isChecked">${form.key}</md-checkbox>
+          <md-checkbox class="mdl-cell mdl-cell--8-col" click.delegate="signalFilter(form)" checked.bind="form.val.isChecked">${form.key}</md-checkbox>
           <div class="mdl-cell mdl-cell--2-col">${form.val.qty}</div>
           <div class="mdl-cell mdl-cell--2-col">${form.val.count}</div>
         </div>
