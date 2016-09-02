@@ -256,28 +256,37 @@ export class shipments {
     return order ? this.aboveMinQty(order, transaction) && this.aboveMinExp(order, transaction) : false
   }
 
-  //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
-  autoCheck($index) {
-    let transaction = this.transactions[$index]
-    let isChecked   = transaction.isChecked || false //apparently false != undefined
-    let order       = this.getOrder(transaction)
-
-    if(this.isOrdered(order, transaction) == isChecked)
-      return
-
-    //If qty is 30 and user types "3" then destroyed message will display before user can type "0"
-    //this code puts a delay on the destroyed message and then clears it out if the user does type a "0"
-    //an alternative would be wait to trigger autocheck until enter is pressed but this would delay all messages
-    if (isChecked && order && order.destroyedMessage && ! this.destroyedMessage)
+  //If qty is 30 and user types "3" then destroyed message will display before user can type "0"
+  //this code puts a delay on the destroyed message and then clears it out if the user does type a "0"
+  //an alternative would be wait to trigger autocheck until enter is pressed but this would delay all messages
+  setDestroyedMessage(order) {
+    if (order && order.destroyedMessage && ! this.destroyedMessage)
       this.destroyedMessage = setTimeout(_ => {
         delete this.destroyedMessage
         this.snackbar.show(order.destroyedMessage)
-      }, 1000)
+      }, 500)
+  }
+
+  clearDestroyedMessage() {
+    clearTimeout(this.destroyedMessage)
+    delete this.destroyedMessage
+  }
+
+  //TODO should this only be run for the recipient?  Right now when donating to someone else this still runs and displays order messages
+  autoCheck($index) {
+    let transaction = this.transactions[$index]
+    let isChecked   = transaction.isChecked
+    let order       = this.getOrder(transaction)
+
+    if(this.isOrdered(order, transaction) == isChecked)
+      return ! isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order) //isChecked may have never alternated for a destroyed drug so need to check
+
+    if (isChecked)
+      this.setDestroyedMessage(order)
 
     if ( ! isChecked) {//manual check has not switched the boolean yet
       this.snackbar.show(order.verifiedMessage || 'Drug is ordered')
-      clearTimeout(this.destroyedMessage)
-      delete this.destroyedMessage
+      this.clearDestroyedMessage()
     }
 
     this.manualCheck($index)

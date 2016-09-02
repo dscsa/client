@@ -2215,24 +2215,32 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       return order ? this.aboveMinQty(order, transaction) && this.aboveMinExp(order, transaction) : false;
     };
 
-    shipments.prototype.autoCheck = function autoCheck($index) {
+    shipments.prototype.setDestroyedMessage = function setDestroyedMessage(order) {
       var _this8 = this;
 
-      var transaction = this.transactions[$index];
-      var isChecked = transaction.isChecked || false;
-      var order = this.getOrder(transaction);
-
-      if (this.isOrdered(order, transaction) == isChecked) return;
-
-      if (isChecked && order && order.destroyedMessage && !this.destroyedMessage) this.destroyedMessage = setTimeout(function (_) {
+      if (order && order.destroyedMessage && !this.destroyedMessage) this.destroyedMessage = setTimeout(function (_) {
         delete _this8.destroyedMessage;
         _this8.snackbar.show(order.destroyedMessage);
-      }, 1000);
+      }, 500);
+    };
+
+    shipments.prototype.clearDestroyedMessage = function clearDestroyedMessage() {
+      clearTimeout(this.destroyedMessage);
+      delete this.destroyedMessage;
+    };
+
+    shipments.prototype.autoCheck = function autoCheck($index) {
+      var transaction = this.transactions[$index];
+      var isChecked = transaction.isChecked;
+      var order = this.getOrder(transaction);
+
+      if (this.isOrdered(order, transaction) == isChecked) return !isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order);
+
+      if (isChecked) this.setDestroyedMessage(order);
 
       if (!isChecked) {
         this.snackbar.show(order.verifiedMessage || 'Drug is ordered');
-        clearTimeout(this.destroyedMessage);
-        delete this.destroyedMessage;
+        this.clearDestroyedMessage();
       }
 
       this.manualCheck($index);
