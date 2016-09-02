@@ -23,7 +23,7 @@ export class shipmentFilterValueConverter {
   toView(shipments = [], filter = ''){
     filter = filter.toLowerCase()
     return shipments.filter(shipment => {
-      return ~ `${shipment.account.from.name} ${shipment.account.to.name} ${shipment.tracking} ${shipment.status}`.toLowerCase().indexOf(filter)
+      return ~ `${shipment.account.from.name} ${shipment.account.to.name} ${shipment.tracking} ${shipment.status} ${shipment.createdAt.slice(0, 10)}`.toLowerCase().indexOf(filter)
     })
   }
 }
