@@ -1250,8 +1250,8 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
           return {
             '': drug,
             _id: " " + drug._id,
-            upc: " " + drug.upc,
-            ndc9: " " + drug.ndc9,
+            upc: "UPC " + drug.upc,
+            ndc9: "NDC9 " + drug.ndc9,
             generics: drug.generics.map(function (generic) {
               return generic.name + " " + generic.strength;
             }).join(';'),
