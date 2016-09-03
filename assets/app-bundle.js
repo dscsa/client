@@ -292,7 +292,7 @@ define('elems/md-loading',['exports', 'aurelia-framework'], function (exports, _
 
   var _dec, _class;
 
-  var MdLoadingCustomElement = exports.MdLoadingCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec(_class = function () {
+  var MdLoadingCustomElement = exports.MdLoadingCustomElement = (_dec = (0, _aureliaFramework.bindable)('value'), _dec(_class = function () {
     function MdLoadingCustomElement() {
       _classCallCheck(this, MdLoadingCustomElement);
     }

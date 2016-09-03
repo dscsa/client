@@ -1,6 +1,6 @@
 import {bindable, bindingMode, inject} from 'aurelia-framework';
 
-@bindable({name:'value', defaultBindingMode: bindingMode.twoWay})
+@bindable('value')
 export class MdLoadingCustomElement {
 
   valueChanged(val) {
