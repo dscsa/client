@@ -1181,8 +1181,8 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
 
     drugs.prototype.selectDrug = function selectDrug(drug, autoselectGroup) {
       this.drug = drug || {
-        generics: this.drug.generics,
-        form: this.drug.form
+        generics: this.drug && this.drug.generics,
+        form: this.drug && this.drug.form
       };
 
       var url = this.drug ? 'drugs/' + this.drug._id : 'drugs';
@@ -1264,6 +1264,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
     drugs.prototype.importCSV = function importCSV() {
       var _this7 = this;
 
+      var start = Date.now();
       this.snackbar.show('Parsing csv file');
       function capitalize(text) {
         return text ? text.trim().toLowerCase().replace(/\b[a-z]/g, function (l) {

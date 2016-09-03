@@ -93,8 +93,8 @@ export class drugs {
   selectDrug(drug, autoselectGroup) {
     //Default is for Add Drug menu item in view
     this.drug = drug || {
-      generics:this.drug.generics,
-      form:this.drug.form
+      generics:this.drug && this.drug.generics,
+      form:this.drug && this.drug.form
     }
 
     let url = this.drug ? 'drugs/'+this.drug._id : 'drugs'
@@ -156,6 +156,7 @@ export class drugs {
   }
 
   importCSV() {
+    let start = Date.now()
     this.snackbar.show(`Parsing csv file`)
     function capitalize(text) {
       return text ? text.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()) : text
