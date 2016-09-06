@@ -28,8 +28,8 @@ export class login {
     })
     .catch(err => {
       this.disabled = false
-      console.log(err)
-      this.snackbar.show('Login failed: '+err.reason)
+      console.log('Login failed: ', err)
+      this.snackbar.show('Login failed: '+err.statusText)
     })
   }
 }

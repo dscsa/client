@@ -49,7 +49,7 @@ export class account {
     this.db.user.post(this.user).then(user => {
       this.users.unshift(user)
     }).catch(err => {
-      this.snackbar.show(err.reason)
+      this.snackbar.show(err.statusText)
     })
   }
 
@@ -62,7 +62,7 @@ export class account {
     })
     .catch(err => {
       console.log(err)
-      this.snackbar.show(err.reason)
+      this.snackbar.show(err.statusText)
     })
   }
 
@@ -86,6 +86,6 @@ export class account {
     this.db.user.session.delete().then(_ => {
       this.router.navigate('login', {trigger:true})
     })
-    .catch(err => console.log('Logout failed: '+err))
+    .catch(err => console.trace('Logout failed: '+err))
   }
 }
