@@ -34,21 +34,25 @@ ssh -i /path/to/private-key ubuntu@<elastic-ip>
 #mount volume
 sudo mkdir /dscsa
 lsblk                            #details http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
-sudo mount /dev/<volume> /dscsa
 sudo mkfs -t ext4 /dev/<volume>  #only make filesystem, if new empty volume.
+sudo mount /dev/<volume> /dscsa
 cd /dscsa
 sudo mkdir /dscsa/keys
 sudo nano  /dscsa/keys/dev.js
+#add server login
 
 #install couchdb
 sudo add-apt-repository ppa:couchdb/stable -y
 sudo apt-get update
 sudo apt-get install couchdb -y
 sudo nano /etc/couchdb/local.ini
-#change httpd.bind_address to 0.0.0.0,
-#add compactions._default as [{db_fragmentation, "40%"}, {view_fragmentation, "40%"}]
+#set [httpd] bind_address = 0.0.0.0,
+#add [compactions] _default = [{db_fragmentation, "40%"}, {view_fragmentation, "40%"}]
+#set [couch_httpd_auth]	allow_persistent_cookies = true
+#set [couch_httpd_auth] timeout = 31536000
 sudo service couchdb restart
-goto <elastic-ip>:5984/_utils and create server login
+goto <elastic-ip>:5984/_utils
+#create server login
 
 #install nodejs and application
 curl --silent --location https://deb.nodesource.com/setup_6.x | sudo bash -
