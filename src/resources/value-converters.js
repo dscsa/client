@@ -77,6 +77,9 @@ export class dateValueConverter {
     let sub = date.includes('-')
     let {month, year} = parseUserDate(date.replace(/\+|\-|\=/g, ''))
 
+    if (year.length > 2) //without this if user accidentally typed an extra character it would cause ongoing save error
+      year = year.slice(0, 2)
+
     if (add) month++
     if (sub) month--
 
@@ -91,7 +94,7 @@ export class dateValueConverter {
     }
 
     //Keep zerp padding in front of the month which is lost when month changes
-    this.view  = ("00"+month).slice(-2)+'/'+year
+    this.view = ("00"+month).slice(-2)+'/'+year
 
     return this.model = toJsonDate({month, year})
   }

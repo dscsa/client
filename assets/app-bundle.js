@@ -815,6 +815,8 @@ define('resources/value-converters',['exports', '../resources/helpers'], functio
       var year = _parseUserDate.year;
 
 
+      if (year.length > 2) year = year.slice(0, 2);
+
       if (add) month++;
       if (sub) month--;
 
@@ -2203,7 +2205,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
       var defaultQty = price > 1 ? 1 : 10;
       var aboveMinQty = qty >= (+order.minQty || defaultQty);
-      if (!aboveMinQty) console.log(qty, 'quantity is less than', +order.minQty || defaultQty);
+      if (!aboveMinQty) console.log('Ordered drug but qty', qty, 'is less than', +order.minQty || defaultQty);
       return qty >= (+order.minQty || defaultQty);
     };
 
@@ -2212,7 +2214,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       if (!exp) return !order.minDays;
       var minDays = order.minDays || 120;
       var aboveMinExp = new Date(exp) - Date.now() >= minDays * 24 * 60 * 60 * 1000;
-      if (!aboveMinExp) console.log(exp, 'expiration is before', minDays);
+      if (!aboveMinExp) console.log('Ordered drug but expiration', exp, 'is before', minDays);
       return aboveMinExp;
     };
 
@@ -2341,20 +2343,16 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       };
 
       this.term = '';
-      console.log('addTransaction', transaction);
       this.transactions.unshift(transaction);
       setTimeout(function (_) {
         return _this13.focusInput('#exp_0');
       }, 50);
-      var start = Date.now();
       return this.db.transaction.post(transaction).then(function (_) {
 
         var ordered = _this13.getOrder(transaction);
         var pharmerica = /pharmerica.*/i.test(_this13.shipment.account.from.name);
 
         if (!ordered && pharmerica) return _this13.snackbar.show('Destroy, record already exists');
-
-        console.log('ordered transaction added in', Date.now() - start);
       }).catch(function (err) {
         console.log(JSON.stringify(transaction), err);
         _this13.snackbar.show('Transaction could not be added: ' + err.name);
