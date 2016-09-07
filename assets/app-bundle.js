@@ -2243,7 +2243,6 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       var isChecked = transaction.isChecked;
       var order = this.getOrder(transaction);
 
-      console.log($index, transaction, order);
       if (this.isOrdered(order, transaction) == isChecked) return !isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order);
 
       if (isChecked) this.setDestroyedMessage(order);

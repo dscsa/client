@@ -239,6 +239,8 @@ export class shipments {
     if ( ! qty) return false
     let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
     let defaultQty = price > 1 ? 1 : 10 //keep expensive meds
+    let aboveMinQty = qty >= (+order.minQty || defaultQty)
+    if ( ! aboveMinQty) console.log(qty, 'quantity is less than', +order.minQty || defaultQty)
     return qty >= (+order.minQty || defaultQty)
   }
 
@@ -246,7 +248,9 @@ export class shipments {
     let exp = transaction.exp[this.role.account]
     if ( ! exp) return ! order.minDays
     let minDays = order.minDays || 120
-    return new Date(exp) - Date.now() >= minDays*24*60*60*1000
+    let aboveMinExp = new Date(exp) - Date.now() >= minDays*24*60*60*1000
+    if ( ! aboveMinExp) console.log(exp, 'expiration is before', minDays)
+    return aboveMinExp
   }
 
   getOrder(transaction) {
