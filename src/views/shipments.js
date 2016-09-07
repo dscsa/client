@@ -194,7 +194,8 @@ export class shipments {
       return this.focusInput(`#qty_${$index}`)
 
     //See if this transaction qualifies for autoCheck
-    this.autoCheck($index, true)
+    //Without setTimeout expiration date would not change on keydown if autocheck toggled
+    setTimeout(_ => this.autoCheck($index, true))
 
     return true
   }
