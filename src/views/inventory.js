@@ -102,7 +102,7 @@ export class inventory {
           this.group.transactions.splice(this.group.transactions.indexOf(transaction), 1)
         }).catch(err => {
           transaction.isChecked = ! transaction.isChecked
-          this.snackbar.show(`Error repacking: ${err.statusText}`)
+          this.snackbar.show(`Error repacking: ${err.reason || err.message}`)
         })
       }
     }

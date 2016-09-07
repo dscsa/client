@@ -1034,7 +1034,7 @@ define('views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aureli
       this.db.user.post(this.user).then(function (user) {
         _this3.users.unshift(user);
       }).catch(function (err) {
-        _this3.snackbar.show(err.statusText);
+        _this3.snackbar.show(err.reason || err.message);
       });
     };
 
@@ -1048,7 +1048,7 @@ define('views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aureli
         _this4.selectUser();
       }).catch(function (err) {
         console.log(err);
-        _this4.snackbar.show(err.statusText);
+        _this4.snackbar.show(err.reason || err.message);
       });
     };
 
@@ -1331,7 +1331,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
           return _this8.selectDrug(_this8.drug, true);
         }, 500);
       }).catch(function (err) {
-        return _this8.snackbar.show('Drug not added: ' + err.statusText);
+        return _this8.snackbar.show('Drug not added: ' + (err.reason || err.message));
       });
     };
 
@@ -1345,7 +1345,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
           return _this9.selectDrug(_this9.drug, true);
         }, 500);
       }).catch(function (err) {
-        return _this9.snackbar.show('Drug not saved: ' + err.statusText);
+        return _this9.snackbar.show('Drug not saved: ' + (err.reason || err.message));
       });
     };
 
@@ -1534,7 +1534,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
             _this4.group.transactions.splice(_this4.group.transactions.indexOf(transaction), 1);
           }).catch(function (err) {
             transaction.isChecked = !transaction.isChecked;
-            _this4.snackbar.show('Error repacking: ' + err.statusText);
+            _this4.snackbar.show('Error repacking: ' + (err.reason || err.message));
           });
         }
       };
@@ -1679,7 +1679,7 @@ define('views/join',['exports', 'aurelia-framework', 'aurelia-router', '../libs/
         console.log('join success', _);
         return _this.router.navigate('shipments');
       }).catch(function (err) {
-        _this.snackbar.show('Join failed: ' + err.statusText);
+        _this.snackbar.show('Join failed: ' + err.reason || err.message);
       });
     };
 
@@ -1727,7 +1727,7 @@ define('views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs
       }).catch(function (err) {
         _this.disabled = false;
         console.log('Login failed: ', err);
-        _this.snackbar.show('Login failed: ' + err.statusText);
+        _this.snackbar.show('Login failed: ' + err.reason || err.message);
       });
     };
 
@@ -2151,23 +2151,27 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.expShortcuts = function expShortcuts($event, $index) {
+      var _this6 = this;
+
       if ($event.which == 37 || $event.which == 39 || $event.which == 9) return true;
 
       if ($event.which == 13) return this.focusInput('#qty_' + $index);
 
-      this.autoCheck($index, true);
+      setTimeout(function (_) {
+        return _this6.autoCheck($index, true);
+      });
 
       return true;
     };
 
     shipments.prototype.qtyShortcuts = function qtyShortcuts($event, $index) {
-      var _this6 = this;
+      var _this7 = this;
 
       if ($event.which == 13) return this.focusInput('#box_' + $index, 'md-autocomplete');
 
       if ($event.which != 37 && $event.which != 39 && $event.which != 9) setTimeout(function (_) {
-        _this6.deleteTransactionIfQty0($index);
-        _this6.autoCheck($index);
+        _this7.deleteTransactionIfQty0($index);
+        _this7.autoCheck($index);
       });
 
       return true;
@@ -2184,12 +2188,12 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.setLocation = function setLocation(transaction) {
-      var _this7 = this;
+      var _this8 = this;
 
       if (this.getLocation(transaction) != transaction.location) this._location = transaction.location;
 
       this.saveTransaction(transaction).catch(function (err) {
-        _this7.snackbar.show('Error saving transaction: ' + err.statusText);
+        _this8.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
       });
     };
 
@@ -2198,6 +2202,8 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       if (!qty) return false;
       var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
       var defaultQty = price > 1 ? 1 : 10;
+      var aboveMinQty = qty >= (+order.minQty || defaultQty);
+      if (!aboveMinQty) console.log(qty, 'quantity is less than', +order.minQty || defaultQty);
       return qty >= (+order.minQty || defaultQty);
     };
 
@@ -2205,7 +2211,9 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       var exp = transaction.exp[this.role.account];
       if (!exp) return !order.minDays;
       var minDays = order.minDays || 120;
-      return new Date(exp) - Date.now() >= minDays * 24 * 60 * 60 * 1000;
+      var aboveMinExp = new Date(exp) - Date.now() >= minDays * 24 * 60 * 60 * 1000;
+      if (!aboveMinExp) console.log(exp, 'expiration is before', minDays);
+      return aboveMinExp;
     };
 
     shipments.prototype.getOrder = function getOrder(transaction) {
@@ -2217,11 +2225,11 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.setDestroyedMessage = function setDestroyedMessage(order) {
-      var _this8 = this;
+      var _this9 = this;
 
       if (order && order.destroyedMessage && !this.destroyedMessage) this.destroyedMessage = setTimeout(function (_) {
-        delete _this8.destroyedMessage;
-        _this8.snackbar.show(order.destroyedMessage);
+        delete _this9.destroyedMessage;
+        _this9.snackbar.show(order.destroyedMessage);
       }, 500);
     };
 
@@ -2235,6 +2243,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       var isChecked = transaction.isChecked;
       var order = this.getOrder(transaction);
 
+      console.log($index, transaction, order);
       if (this.isOrdered(order, transaction) == isChecked) return !isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order);
 
       if (isChecked) this.setDestroyedMessage(order);
@@ -2248,7 +2257,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.toggleVerified = function toggleVerified(transaction) {
-      var _this9 = this;
+      var _this10 = this;
 
       transaction.verifiedAt = transaction.verifiedAt ? null : new Date().toJSON();
 
@@ -2256,7 +2265,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       this.saveTransaction(transaction).catch(function (err) {
         transaction.isChecked = !transaction.isChecked;
-        _this9.snackbar.show('Error saving transaction: ' + err.statusText);
+        _this10.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
       });
     };
 
@@ -2274,24 +2283,24 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.search = function search() {
-      var _this10 = this;
+      var _this11 = this;
 
       this.drugSearch().then(function (drugs) {
-        _this10.drugs = drugs;
-        _this10.drug = drugs[0];
+        _this11.drugs = drugs;
+        _this11.drug = drugs[0];
       });
     };
 
     shipments.prototype.autocompleteShortcuts = function autocompleteShortcuts($event) {
-      var _this11 = this;
+      var _this12 = this;
 
       this.scrollSelect($event, this.drug, this.drugs, function (drug) {
-        return _this11.drug = drug;
+        return _this12.drug = drug;
       });
 
       if ($event.which == 13) {
         Promise.resolve(this._search).then(function (_) {
-          return _this11.addTransaction(_this11.drug);
+          return _this12.addTransaction(_this12.drug);
         });
         return false;
       }
@@ -2302,7 +2311,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.addTransaction = function addTransaction(drug, transaction) {
-      var _this12 = this;
+      var _this13 = this;
 
       if (!drug) return this.snackbar.show('Cannot find drug matching this search');
 
@@ -2336,26 +2345,26 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       console.log('addTransaction', transaction);
       this.transactions.unshift(transaction);
       setTimeout(function (_) {
-        return _this12.focusInput('#exp_0');
+        return _this13.focusInput('#exp_0');
       }, 50);
       var start = Date.now();
       return this.db.transaction.post(transaction).then(function (_) {
 
-        var ordered = _this12.getOrder(transaction);
-        var pharmerica = /pharmerica.*/i.test(_this12.shipment.account.from.name);
+        var ordered = _this13.getOrder(transaction);
+        var pharmerica = /pharmerica.*/i.test(_this13.shipment.account.from.name);
 
-        if (!ordered && pharmerica) return _this12.snackbar.show('Destroy, record already exists');
+        if (!ordered && pharmerica) return _this13.snackbar.show('Destroy, record already exists');
 
         console.log('ordered transaction added in', Date.now() - start);
       }).catch(function (err) {
         console.log(JSON.stringify(transaction), err);
-        _this12.snackbar.show('Transaction could not be added: ' + err.name);
-        _this12.transactions.shift();
+        _this13.snackbar.show('Transaction could not be added: ' + err.name);
+        _this13.transactions.shift();
       });
     };
 
     shipments.prototype.deleteTransactionIfQty0 = function deleteTransactionIfQty0($index) {
-      var _this13 = this;
+      var _this14 = this;
 
       var transaction = this.transactions[$index];
       var doneeDelete = !transaction.qty.from && transaction.qty.to === 0;
@@ -2364,14 +2373,14 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       if (donorDelete || doneeDelete) {
         this.drugs = [];
         this.db.transaction.delete(transaction).then(function (_) {
-          _this13.transactions.splice($index, 1);
+          _this14.transactions.splice($index, 1);
         });
         this.focusInput('md-autocomplete');
       }
     };
 
     shipments.prototype.exportCSV = function exportCSV() {
-      var _this14 = this;
+      var _this15 = this;
 
       var name = this.shipment._id ? 'Shipment ' + this.shipment._id + '.csv' : 'Inventory.csv';
       this.csv.unparse(name, this.transactions.map(function (transaction) {
@@ -2382,18 +2391,18 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
           'drug.generics': transaction.drug.generics.map(function (generic) {
             return generic.name + " " + generic.strength;
           }).join(';'),
-          shipment: _this14.shipment
+          shipment: _this15.shipment
         };
       }));
     };
 
     shipments.prototype.importCSV = function importCSV() {
-      var _this15 = this;
+      var _this16 = this;
 
       console.log('this.$file.value', this.$file.value);
       this.csv.parse(this.$file.files[0]).then(function (parsed) {
         return Promise.all(parsed.map(function (transaction) {
-          _this15.$file.value = '';
+          _this16.$file.value = '';
           transaction._id = undefined;
           transaction._rev = undefined;
           transaction.shipment._id = undefined;
@@ -2401,7 +2410,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
           transaction.exp.to = toJsonDate(parseUserDate(transaction.exp.to));
           transaction.exp.from = toJsonDate(parseUserDate(transaction.exp.from));
           transaction.verifiedAt = toJsonDate(parseUserDate(transaction.verifiedAt));
-          return _this15.db.drug.get({ _id: transaction.drug._id }).then(function (drugs) {
+          return _this16.db.drug.get({ _id: transaction.drug._id }).then(function (drugs) {
             if (drugs[0]) return { drug: drugs[0], transaction: transaction };
             throw 'Cannot find drug with _id ' + transaction.drug._id;
           });
@@ -2409,12 +2418,12 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       }).then(function (rows) {
         console.log('rows', rows);
         return Promise.all(rows.map(function (row) {
-          return _this15.addTransaction(row.drug, row.transaction);
+          return _this16.addTransaction(row.drug, row.transaction);
         }));
       }).then(function (_) {
-        return _this15.snackbar.show('All Transactions Imported');
+        return _this16.snackbar.show('All Transactions Imported');
       }).catch(function (err) {
-        return _this15.snackbar.show('Transactions not imported: ' + err);
+        return _this16.snackbar.show('Transactions not imported: ' + err);
       });
     };
 

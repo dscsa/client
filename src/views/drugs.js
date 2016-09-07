@@ -222,7 +222,7 @@ export class drugs {
       //Wait for the server POST to replicate back to client
       setTimeout(_ => this.selectDrug(this.drug, true), 500)
     })
-    .catch(err => this.snackbar.show(`Drug not added: ${err.statusText}`))
+    .catch(err => this.snackbar.show(`Drug not added: ${err.reason || err.message}`))
   }
 
   saveDrug() {
@@ -238,7 +238,7 @@ export class drugs {
       //Wait for the server PUT to replicate back to client
       setTimeout(_ => this.selectDrug(this.drug, true), 500)
     })
-    .catch(err => this.snackbar.show(`Drug not saved: ${err.statusText}`))
+    .catch(err => this.snackbar.show(`Drug not saved: ${err.reason || err.message}`))
   }
 
   deleteDrug() {

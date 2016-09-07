@@ -49,7 +49,7 @@ export class account {
     this.db.user.post(this.user).then(user => {
       this.users.unshift(user)
     }).catch(err => {
-      this.snackbar.show(err.statusText)
+      this.snackbar.show(err.reason || err.message)
     })
   }
 
@@ -62,7 +62,7 @@ export class account {
     })
     .catch(err => {
       console.log(err)
-      this.snackbar.show(err.statusText)
+      this.snackbar.show(err.reason || err.message)
     })
   }
 

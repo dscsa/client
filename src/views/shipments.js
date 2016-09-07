@@ -229,7 +229,7 @@ export class shipments {
       this._location = transaction.location //Only prepopulate non-default locations into next transaction
 
     this.saveTransaction(transaction).catch(err => {
-      this.snackbar.show(`Error saving transaction: ${err.statusText }`) //message is for pouchdb errors
+      this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`) //message is for pouchdb errors
     })
   }
 
@@ -301,7 +301,7 @@ export class shipments {
 
     this.saveTransaction(transaction).catch(err => {
       transaction.isChecked = ! transaction.isChecked
-      this.snackbar.show(`Error saving transaction: ${err.statusText }`)
+      this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`)
     })
   }
 

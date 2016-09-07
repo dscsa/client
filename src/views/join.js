@@ -52,7 +52,7 @@ export class join {
       return this.router.navigate('shipments')
     })
     .catch(err => {
-      this.snackbar.show('Join failed: '+err.statusText)
+      this.snackbar.show('Join failed: '+err.reason || err.message)
     })
   }
 }
