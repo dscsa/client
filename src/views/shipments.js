@@ -240,7 +240,7 @@ export class shipments {
     let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
     let defaultQty = price > 1 ? 1 : 10 //keep expensive meds
     let aboveMinQty = qty >= (+order.minQty || defaultQty)
-    if ( ! aboveMinQty) console.log(qty, 'quantity is less than', +order.minQty || defaultQty)
+    if ( ! aboveMinQty) console.log('Ordered drug but qty', qty, 'is less than', +order.minQty || defaultQty)
     return qty >= (+order.minQty || defaultQty)
   }
 
@@ -249,7 +249,7 @@ export class shipments {
     if ( ! exp) return ! order.minDays
     let minDays = order.minDays || 120
     let aboveMinExp = new Date(exp) - Date.now() >= minDays*24*60*60*1000
-    if ( ! aboveMinExp) console.log(exp, 'expiration is before', minDays)
+    if ( ! aboveMinExp) console.log('Ordered drug but expiration', exp, 'is before', minDays)
     return aboveMinExp
   }
 
@@ -389,10 +389,8 @@ export class shipments {
     this.term = '' //Reset search's auto-complete
 
     //Assume db query works.
-    console.log('addTransaction', transaction)
     this.transactions.unshift(transaction) //Add the drug to the view
     setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
-    let start = Date.now()
     return this.db.transaction.post(transaction).then(_ => {
 
       let ordered    = this.getOrder(transaction)
@@ -400,8 +398,6 @@ export class shipments {
 
       if ( !  ordered && pharmerica ) //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
         return this.snackbar.show(`Destroy, record already exists`)
-
-      console.log('ordered transaction added in', Date.now() - start)
     })
     .catch(err => {
       console.log(JSON.stringify(transaction), err)
