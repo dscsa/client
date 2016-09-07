@@ -149,7 +149,7 @@ export class inventory {
         this.$file.value = ''
         transaction._id          = undefined
         transaction._rev         = undefined
-        transaction.next         = JSON.parse(transaction.next)
+        transaction.next         = JSON.parse(transaction.next || "[]")
         return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
           //This will add drugs upto the point where a drug cannot be found rather than rejecting all
           if ( ! drugs[0])
@@ -166,6 +166,10 @@ export class inventory {
           }
 
           return transaction
+        })
+        .catch(drug => {
+          console.log(drug, transaction, transaction.drug._id)
+          throw drug
         })
       }))
     })
