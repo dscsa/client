@@ -146,7 +146,7 @@ export class inventory {
     console.log('this.$file.value', this.$file.value)
     this.csv.parse(this.$file.files[0]).then(parsed => {
       return Promise.all(parsed.map(transaction => {
-        this.$file.value = ''
+        this.$file.value = ''  //Change event only fires if filename changed.  Manually set to blank in case user re-uploads same file (name)
         transaction._id          = undefined
         transaction._rev         = undefined
         transaction.next         = JSON.parse(transaction.next || "[]")
