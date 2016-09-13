@@ -1023,20 +1023,17 @@ define('views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aureli
     };
 
     account.prototype.saveUser = function saveUser() {
-      if (this.user._id) {
-        console.log('saving', this.user);
-        this.db.user.put(this.user);
-      }
+      this.user._id && this.db.user.put(this.user);
       return true;
     };
 
     account.prototype.addUser = function addUser() {
       var _this3 = this;
 
-      this.db.user.post(this.user).then(function (user) {
-        _this3.users.unshift(user);
-      }).catch(function (err) {
-        _this3.snackbar.show(err.reason || err.message);
+      this.users.unshift(this.user);
+      this.db.user.post(this.user).catch(function (err) {
+        _this3.users.shift();
+        _this3.snackbar.show(err.message || err.reason);
       });
     };
 
@@ -1044,13 +1041,12 @@ define('views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aureli
       var _this4 = this;
 
       var index = this.users.indexOf(this.user);
-      console.log('deleting', this.user, this.users, index);
       this.db.user.delete(this.user).then(function (_) {
         _this4.users.splice(index, 1);
         _this4.selectUser();
       }).catch(function (err) {
         console.log(err);
-        _this4.snackbar.show(err.reason || err.message);
+        _this4.snackbar.show(err.message || err.reason);
       });
     };
 

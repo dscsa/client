@@ -38,31 +38,28 @@ export class account {
   }
 
   saveUser() {
-    if (this.user._id) {
-      console.log('saving', this.user)
-      this.db.user.put(this.user)
-    }
+    this.user._id && this.db.user.put(this.user)
     return true
   }
 
   addUser() {
-    this.db.user.post(this.user).then(user => {
-      this.users.unshift(user)
-    }).catch(err => {
-      this.snackbar.show(err.reason || err.message)
+    this.users.unshift(this.user)
+    this.db.user.post(this.user)
+    .catch(err => {
+      this.users.shift()
+      this.snackbar.show(err.message || err.reason)
     })
   }
 
   deleteUser() {
     let index = this.users.indexOf(this.user)
-    console.log('deleting', this.user, this.users, index)
     this.db.user.delete(this.user).then(_ => {
       this.users.splice(index, 1)
       this.selectUser()
     })
     .catch(err => {
       console.log(err)
-      this.snackbar.show(err.reason || err.message)
+      this.snackbar.show(err.message || err.reason)
     })
   }
 
