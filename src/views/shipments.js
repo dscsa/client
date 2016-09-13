@@ -426,7 +426,7 @@ export class shipments {
     this.csv.unparse(name, this.transactions.map(transaction => {
       return {
         '':transaction,
-        'next':JSON.stringify(row.next || []),
+        'next':JSON.stringify(transaction.next || []),
         'drug._id':" "+transaction.drug._id,
         'drug.generics':transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
         shipment:this.shipment
