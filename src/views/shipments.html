@@ -229,7 +229,8 @@
                 ${ transaction.exp[role.partner] | date}
                 <md-input
                   id.bind="'exp_'+$index"
-                  keydown.delegate="expShortcuts($event, $index)"
+                  keydown.delegate="expShortcutsKeydown($event, $index)"
+                  input.trigger="expShortcutsInput($index)"
                   disabled.bind="transaction.next.length"
                   pattern="(0?[1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp[role.account] | date"
@@ -243,7 +244,8 @@
                   <!-- keyup rather than keydown because we want the new quantity not the old one -->
                   <md-input
                     id.bind="'qty_'+$index"
-                    keydown.delegate="qtyShortcuts($event, $index)"
+                    keydown.delegate="qtyShortcutsKeydown($event, $index)"
+                    input.trigger="qtyShortcutsInput($event, $index)"
                     disabled.bind="transaction.next.length"
                     type="number"
                     value.bind="transaction.qty[role.account] | number"

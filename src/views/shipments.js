@@ -186,33 +186,48 @@ export class shipments {
     })
   }
 
-  expShortcuts($event, $index) {
-    if ($event.which == 37 || $event.which == 39 || $event.which == 9)
-      return true //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
-
-    if ($event.which == 13) //Enter should focus on quantity
-      return this.focusInput(`#qty_${$index}`)
-
-    //See if this transaction qualifies for autoCheck
-    //Without setTimeout expiration date would not change on keydown if autocheck toggled
-    setTimeout(_ => this.autoCheck($index, true))
-
-    return true
+  //Split functionality into Keydown and Input listeners because
+  //Don't put this code into input because enter (which == 13) does not trigger input event.
+  //Don't put input code here because would then need a setTimeout for the quantity to actually change
+  //and you would need to ignore non-input key values.  So it cleaner to just keep these listeners separate
+  expShortcutsKeydown($event, $index) {
+    //Enter should focus on quantity
+    return $event.which == 13 ? this.focusInput(`#qty_${$index}`) : true
   }
 
-  qtyShortcuts($event, $index) {
-    if ($event.which == 13) //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-      return this.focusInput(`#box_${$index}`, `md-autocomplete`)
-
-    //ignore left and right arrows and tabs to prevent unnecessary autochecks https://css-tricks.com/snippets/javascript/javascript-keycodes/
-    if ($event.which != 37 && $event.which != 39 && $event.which != 9)
-      setTimeout(_ => { //keydown means that input has not changed yet.  keyup can't be canceled, so we wait for value to change
-        this.deleteTransactionIfQty0($index)
-        this.autoCheck($index) //See if this transaction qualifies for autoCheck
-      })
-
-    return true
+  expShortcutsInput($index) {
+    this.autoCheck($index)
   }
+
+  //Split functionality into Keydown and Input listeners because
+  //Don't put this code into input because enter (which == 13) does not trigger input event.
+  //Don't put input code here because would then need a setTimeout for the quantity to actually change
+  //and you would need to ignore non-input key values.  So it cleaner to just keep these listeners separate
+  qtyShortcutsKeydown($event, $index) {
+    //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
+    return $event.which == 13 ? this.focusInput(`#box_${$index}`, `md-autocomplete`) : true
+  }
+
+  qtyShortcutsInput($event, $index) {
+    //Only run autocheck if the transaction was not deleted
+    this.deleteTransactionIfQty0($event, $index) && this.autoCheck($index)
+  }
+
+  deleteTransactionIfQty0($event, $index) {
+    //Delete an item in the qty is 0.  Instead of having a delete button
+    let transaction = this.transactions[$index]
+    let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
+    let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
+
+    if ( ! donorDelete && ! doneeDelete)
+      return true
+
+    this.drugs = [] //get rid of previous results since someone might press enter and accidentally readd the same drug
+    this.transactions.splice($index, 1) //Important to call splice before promise resolves since it will cancel the saveTransaction which would cause a conflict
+    this.db.transaction.delete(transaction)
+    this.focusInput(`md-autocomplete`)
+  }
+
 
   boxShortcuts($event, $index) {
     if ($event.which == 13)
@@ -404,21 +419,6 @@ export class shipments {
       this.snackbar.show(`Transaction could not be added: ${err.name}`)
       this.transactions.shift()
     })
-  }
-
-  deleteTransactionIfQty0($index) {
-    //Delete an item in the qty is 0.  Instead of having a delete button
-    let transaction = this.transactions[$index]
-    let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
-    let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
-
-    if (donorDelete || doneeDelete) {
-      this.drugs = [] //get rid of previous results since someone might press enter and accidentally readd the same drug
-      this.db.transaction.delete(transaction).then(_ =>  {
-        this.transactions.splice($index, 1)
-      })
-      this.focusInput(`md-autocomplete`)
-    }
   }
 
   exportCSV() {
