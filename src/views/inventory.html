@@ -94,6 +94,7 @@
               <tr>
                 <th style="width:15px"></th>
                 <th class="mdl-data-table__cell--non-numeric">Drug</th>
+                <th class="mdl-data-table__cell--non-numeric">Form</th>
                 <th class="mdl-data-table__cell--non-numeric">Ndc</th>
                 <th style="text-align:left; width:40px;">Exp</th>
                 <th style="text-align:left; width:40px;">Qty</th>
@@ -106,6 +107,7 @@
                 <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
               </td>
               <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.generic }</td>
+              <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
               <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>
               <td style="padding:0">
                 <md-input
