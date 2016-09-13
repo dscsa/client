@@ -11,6 +11,7 @@ export class inventory {
     this.db     = db
     this.router = router
     this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt'])
+    this.limit  = 100
 
     this.resetFilter()
 
@@ -36,10 +37,14 @@ export class inventory {
 
   selectGroup(group = {}) {
     group.inventory = true
-    this.db.transaction.get(group)
+    this.db.transaction.get(group, {limit:this.limit})
     .then(transactions => {
+      if (transactions.length == this.limit)
+        this.snackbar.show(`Displaying first 100 results`)
+
       if (group.generic)
         this.term  = group.generic
+
       this.group = group
       group.transactions = transactions.sort((a, b) => {
         let aExp = a.exp.to || a.exp.from || ''

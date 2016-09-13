@@ -405,9 +405,6 @@ define('resources/value-converters',['exports', '../resources/helpers'], functio
         return true;
       });
 
-      filter.exp = Object.assign({}, filter.exp);
-      filter.ndc = Object.assign({}, filter.ndc);
-
       return transactions;
     };
 
@@ -1396,6 +1393,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
       this.db = db;
       this.router = router;
       this.csv = new _csv.Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt']);
+      this.limit = 100;
 
       this.resetFilter();
 
@@ -1426,8 +1424,11 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
       var group = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
       group.inventory = true;
-      this.db.transaction.get(group).then(function (transactions) {
+      this.db.transaction.get(group, { limit: this.limit }).then(function (transactions) {
+        if (transactions.length == _this2.limit) _this2.snackbar.show('Displaying first 100 results');
+
         if (group.generic) _this2.term = group.generic;
+
         _this2.group = group;
         group.transactions = transactions.sort(function (a, b) {
           var aExp = a.exp.to || a.exp.from || '';

@@ -167,9 +167,6 @@ export class inventoryFilterValueConverter {
       return true
     })
 
-    filter.exp = Object.assign({}, filter.exp)
-    filter.ndc = Object.assign({}, filter.ndc)
-
     return transactions
   }
 }
