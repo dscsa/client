@@ -137,7 +137,7 @@ console.log('shipment', 10)
   }
 
   setTransactions(shipmentId) {
-  console.log('shipment', '13', shipmendId)
+  console.log('shipment', '13', shipmentId)
     this.diffs = [] //Newly checked or unchecked checkboxes. Used to disable buttons if user has not done anything yet
 console.log('shipment', 'B3')
     if ( ! shipmentId)

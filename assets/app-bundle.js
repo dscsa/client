@@ -2094,7 +2094,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     shipments.prototype.setTransactions = function setTransactions(shipmentId) {
       var _this2 = this;
 
-      console.log('shipment', '13', shipmendId);
+      console.log('shipment', '13', shipmentId);
       this.diffs = [];
       console.log('shipment', 'B3');
       if (!shipmentId) return this.transactions = [];
