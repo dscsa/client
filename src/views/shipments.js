@@ -33,9 +33,10 @@ export class shipments {
     return this.db.user.session.get()
     .then(session  => {
       this.user = session._id
-      console.log('shipment', 4, this.user)
+      console.log('shipment', 4, session)
       return this.db.account.get({_id:session.account._id})
     })
+    .catch(err => console.log('shipment 4 error', err))
     .then(accounts => {
       console.log('shipment', 5, accounts)
       this.account = {_id:accounts[0]._id, name:accounts[0].name}

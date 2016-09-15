@@ -1967,8 +1967,10 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       return this.db.user.session.get().then(function (session) {
         _this.user = session._id;
-        console.log('shipment', 4, _this.user);
+        console.log('shipment', 4, session);
         return _this.db.account.get({ _id: session.account._id });
+      }).catch(function (err) {
+        return console.log('shipment 4 error', err);
       }).then(function (accounts) {
         var _this$ordered;
 
@@ -2384,7 +2386,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       this.csv.unparse(name, this.transactions.map(function (transaction) {
         return {
           '': transaction,
-          'next': JSON.stringify(row.next || []),
+          'next': JSON.stringify(transaction.next || []),
           'drug._id': " " + transaction.drug._id,
           'drug.generics': transaction.drug.generics.map(function (generic) {
             return generic.name + " " + generic.strength;
