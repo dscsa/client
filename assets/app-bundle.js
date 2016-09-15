@@ -1942,6 +1942,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     function shipments(db, router, http) {
       _classCallCheck(this, shipments);
 
+      console.log('shipment', 1);
       this.csv = new _csv.Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt']);
       this.db = db;
       this.drugs = [];
@@ -1949,6 +1950,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       this.http = http;
       this.stati = ['pickup', 'shipped', 'received'];
       this.shipments = {};
+      console.log('shipment', 2);
 
       this.incrementBox = _helpers.incrementBox;
       this.saveTransaction = _helpers.saveTransaction;
@@ -1956,17 +1958,21 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       this.scrollSelect = _helpers.scrollSelect;
       this.toggleDrawer = _helpers.toggleDrawer;
       this.drugSearch = _helpers.drugSearch;
+      console.log('shipment', 3);
     }
 
     shipments.prototype.activate = function activate(params) {
-      var _this = this;
+      var _this = this,
+          _arguments = arguments;
 
       return this.db.user.session.get().then(function (session) {
         _this.user = session._id;
+        console.log('shipment', 4, _this.user);
         return _this.db.account.get({ _id: session.account._id });
       }).then(function (accounts) {
         var _this$ordered;
 
+        console.log('shipment', 5, accounts);
         _this.account = { _id: accounts[0]._id, name: accounts[0].name };
         _this.ordered = (_this$ordered = {}, _this$ordered[accounts[0]._id] = accounts[0].ordered, _this$ordered);
         return Promise.all([_this.db.account.get({ authorized: accounts[0]._id }), _this.db.account.get({ _id: { $gt: null, $in: accounts[0].authorized } }), _this.db.shipment.get({ 'account.from._id': accounts[0]._id }), _this.db.shipment.get({ 'account.to._id': accounts[0]._id })]);
@@ -1975,6 +1981,8 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         var toAccounts = _ref[1];
         var fromShipments = _ref[2];
         var toShipments = _ref[3];
+
+        console.log('shipment', 6, _arguments);
 
         var selected = void 0,
             fromMap = {},
@@ -2020,6 +2028,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
             return toMap[key];
           }))
         };
+        console.log('shipment', 7);
 
         var makeReference = function makeReference(shipment) {
           _this.setStatus(shipment);
@@ -2031,31 +2040,34 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
           if (params.id === shipment._id) selected = shipment;
         };
         fromShipments.forEach(makeReference);
-
+        console.log('shipment', 8);
         _this.role = selected ? { account: 'from', partner: 'to' } : { account: 'to', partner: 'from' };
 
         toShipments.forEach(makeReference);
 
         _this.shipments = { from: fromShipments, to: toShipments };
-
+        console.log('shipment', 9);
         _this.selectShipment(selected);
       });
     };
 
     shipments.prototype.selectShipment = function selectShipment(shipment, toggleDrawer) {
       if (toggleDrawer) this.toggleDrawer();
-
+      console.log('shipment', 10);
       if (!shipment) return this.emptyShipment();
       this.setUrl('/' + shipment._id);
       this.setShipment(shipment);
+      console.log('shipment', '11a');
       this.setTransactions(shipment._id);
     };
 
     shipments.prototype.emptyShipment = function emptyShipment() {
+      console.log('shipment', '11b');
       this.setUrl('');
       if (this.role.account == 'from') {
         this.setShipment({ account: { from: this.account, to: {} } });
         this.setTransactions(this.account._id);
+        console.log('shipment', '12');
       } else {
         this.setShipment({ account: { to: this.account, from: {} } });
         this.setTransactions();
@@ -2075,11 +2087,13 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     shipments.prototype.setTransactions = function setTransactions(shipmentId) {
       var _this2 = this;
 
+      console.log('shipment', '13', shipmendId);
       this.diffs = [];
 
       if (!shipmentId) return this.transactions = [];
 
       this.db.transaction.get({ 'shipment._id': shipmentId }).then(function (transactions) {
+        console.log('shipment', '14', transactions);
         _this2.transactions = transactions;
         _this2.setCheckboxes();
       }).catch(console.log);
@@ -2102,6 +2116,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
         transaction.isChecked = this.shipmentId == this.shipment._id ? transaction.verifiedAt : null;
       }
+      console.log('shipment', '15');
     };
 
     shipments.prototype.setStatus = function setStatus(shipment) {
