@@ -114,16 +114,21 @@ console.log('shipment', 10)
     if (this.role.account == 'from') {
       this.setShipment({account:{from:this.account, to:{}}})
       this.setTransactions(this.account._id)
-        console.log('shipment', '12')
+      console.log('shipment', '12')
     } else {
+      console.log('shipment', 'A')
       this.setShipment({account:{to:this.account, from:{}}})
+      console.log('shipment', 'B')
       this.setTransactions()
+      console.log('shipment', 'C')
     }
   }
 
   setShipment(shipment) {
+    console.log('shipment', 'B1')
     this.shipment     = shipment
     this.shipmentId   = shipment._id  //freeze this if user started playing with "move shipment" select
+    console.log('shipment', 'B2')
     this.attachment   = null
   }
 
@@ -134,10 +139,10 @@ console.log('shipment', 10)
   setTransactions(shipmentId) {
   console.log('shipment', '13', shipmendId)
     this.diffs = [] //Newly checked or unchecked checkboxes. Used to disable buttons if user has not done anything yet
-
+console.log('shipment', 'B3')
     if ( ! shipmentId)
       return this.transactions = []
-
+console.log('shipment', 'B4')
     this.db.transaction.get({'shipment._id':shipmentId}).then(transactions => {
         console.log('shipment', '14', transactions)
       this.transactions = transactions

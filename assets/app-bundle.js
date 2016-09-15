@@ -2071,14 +2071,19 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         this.setTransactions(this.account._id);
         console.log('shipment', '12');
       } else {
+        console.log('shipment', 'A');
         this.setShipment({ account: { to: this.account, from: {} } });
+        console.log('shipment', 'B');
         this.setTransactions();
+        console.log('shipment', 'C');
       }
     };
 
     shipments.prototype.setShipment = function setShipment(shipment) {
+      console.log('shipment', 'B1');
       this.shipment = shipment;
       this.shipmentId = shipment._id;
+      console.log('shipment', 'B2');
       this.attachment = null;
     };
 
@@ -2091,9 +2096,9 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       console.log('shipment', '13', shipmendId);
       this.diffs = [];
-
+      console.log('shipment', 'B3');
       if (!shipmentId) return this.transactions = [];
-
+      console.log('shipment', 'B4');
       this.db.transaction.get({ 'shipment._id': shipmentId }).then(function (transactions) {
         console.log('shipment', '14', transactions);
         _this2.transactions = transactions;
