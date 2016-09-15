@@ -10,7 +10,6 @@ import {incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, d
 export class shipments {
 
   constructor(db, router, http){
-    console.log('shipment', 1)
     this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt'])
     this.db     = db
     this.drugs  = []
@@ -18,7 +17,6 @@ export class shipments {
     this.http   = http
     this.stati  = ['pickup', 'shipped', 'received']
     this.shipments = {}
-    console.log('shipment', 2)
 
     this.incrementBox    = incrementBox
     this.saveTransaction = saveTransaction
@@ -26,19 +24,15 @@ export class shipments {
     this.scrollSelect    = scrollSelect
     this.toggleDrawer    = toggleDrawer
     this.drugSearch      = drugSearch
-    console.log('shipment', 3)
   }
 
   activate(params) {
     return this.db.user.session.get()
     .then(session  => {
       this.user = session._id
-      console.log('shipment', 4, session)
       return this.db.account.get({_id:session.account._id})
     })
-    .catch(err => console.log('shipment 4 error', err))
     .then(accounts => {
-      console.log('shipment', 5, accounts)
       this.account = {_id:accounts[0]._id, name:accounts[0].name}
       this.ordered = {[accounts[0]._id]:accounts[0].ordered}
       return Promise.all([
@@ -50,7 +44,6 @@ export class shipments {
       ])
     })
     .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
-      console.log('shipment', 6, arguments)
       //This abbreviated denormalized account information will be assigned to account.to/from
       let selected, fromMap = {}, toMap = {}
       let makeMap = (map, account) => {
@@ -65,7 +58,7 @@ export class shipments {
         from:['', ...Object.keys(fromMap).map(key => fromMap[key])],
         to:['', ...Object.keys(toMap).map(key => toMap[key])]
       }
-console.log('shipment', 7)
+
       //Selected account != shipment.account.to because they are not references
       let makeReference = shipment => {
         this.setStatus(shipment)
@@ -82,7 +75,7 @@ console.log('shipment', 7)
           selected = shipment  //Sneak this in since we are already making the loop
       }
       fromShipments.forEach(makeReference)
-console.log('shipment', 8)
+
       this.role = selected //switch default role depending on shipment selection
         ? {account:'from', partner:'to'}
         : {account:'to', partner:'from'}
@@ -91,7 +84,7 @@ console.log('shipment', 8)
 
       //console.log('this.accounts', this.accounts)
       this.shipments = {from:fromShipments, to:toShipments}
-console.log('shipment', 9)
+
       this.selectShipment(selected)
     })
   }
@@ -100,35 +93,27 @@ console.log('shipment', 9)
   selectShipment(shipment, toggleDrawer) {
     if (toggleDrawer)
       this.toggleDrawer()
-console.log('shipment', 10)
+
     if ( ! shipment) return this.emptyShipment()
     this.setUrl('/'+shipment._id)
     this.setShipment(shipment)
-    console.log('shipment', '11a')
     this.setTransactions(shipment._id)
   }
 
   emptyShipment() {
-      console.log('shipment', '11b')
     this.setUrl('')
     if (this.role.account == 'from') {
       this.setShipment({account:{from:this.account, to:{}}})
       this.setTransactions(this.account._id)
-      console.log('shipment', '12')
     } else {
-      console.log('shipment', 'A')
       this.setShipment({account:{to:this.account, from:{}}})
-      console.log('shipment', 'B')
       this.setTransactions()
-      console.log('shipment', 'C')
     }
   }
 
   setShipment(shipment) {
-    console.log('shipment', 'B1')
     this.shipment     = shipment
     this.shipmentId   = shipment._id  //freeze this if user started playing with "move shipment" select
-    console.log('shipment', 'B2')
     this.attachment   = null
   }
 
@@ -137,14 +122,13 @@ console.log('shipment', 10)
   }
 
   setTransactions(shipmentId) {
-  console.log('shipment', '13', shipmentId)
+
     this.diffs = [] //Newly checked or unchecked checkboxes. Used to disable buttons if user has not done anything yet
-console.log('shipment', 'B3')
+
     if ( ! shipmentId)
       return this.transactions = []
-console.log('shipment', 'B4')
+
     this.db.transaction.get({'shipment._id':shipmentId}).then(transactions => {
-        console.log('shipment', '14', transactions)
       this.transactions = transactions
       this.setCheckboxes()
     })
@@ -155,7 +139,6 @@ console.log('shipment', 'B4')
     for (let transaction of this.transactions) {
       transaction.isChecked = this.shipmentId == this.shipment._id ? transaction.verifiedAt : null
     }
-      console.log('shipment', '15')
   }
 
   setStatus(shipment) {
@@ -443,7 +426,7 @@ console.log('shipment', 'B4')
     this.csv.unparse(name, this.transactions.map(transaction => {
       return {
         '':transaction,
-        'next':JSON.stringify(transaction.next || []),
+        'next':JSON.stringify(row.next || []),
         'drug._id':" "+transaction.drug._id,
         'drug.generics':transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
         shipment:this.shipment
