@@ -179,10 +179,14 @@ export class inventory {
       }))
     })
     .then(rows => {
-      console.log('rows', rows)
-      return Promise.all(rows.map(inventory => this.db.transaction.post(inventory)))
+      console.log('rows', rows.length)
+      let chain = Promise.resolve()
+      for (let row of rows)
+        chain = chain.then(_ => this.db.transaction.post(row))
+
+      return chain
     })
-    .then(inventory => this.snackbar.show(`Imported ${inventory.length} Inventory Items`))
+    .then(_ => this.snackbar.show(`Imported Inventory Items`))
     .catch(err => this.snackbar.show('Error Importing Inventory: '+err))
   }
 }

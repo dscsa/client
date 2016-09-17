@@ -9,408 +9,6 @@ define('environment',["exports"], function (exports) {
     testing: true
   };
 });
-define('libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.Csv = Csv;
-});
-define('libs/environment',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.default = {
-    debug: true,
-    testing: true
-  };
-});
-define('libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.Db = Db;
-});
-define('resources/helpers',['exports'], function (exports) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.incrementBox = incrementBox;
-  exports.saveTransaction = saveTransaction;
-  exports.scrollSelect = scrollSelect;
-  exports.focusInput = focusInput;
-  exports.toggleDrawer = toggleDrawer;
-  exports.drugSearch = drugSearch;
-  exports.parseUserDate = parseUserDate;
-  exports.toJsonDate = toJsonDate;
-  function incrementBox($event, transaction) {
-    if ($event.which == 107 || $event.which == 187) {
-      transaction.location = transaction.location[0] + (+transaction.location.slice(1) + 1);
-      return false;
-    }
-
-    if ($event.which == 109 || $event.which == 189) {
-      transaction.location = transaction.location[0] + (+transaction.location.slice(1) - 1);
-      return false;
-    }
-
-    return true;
-  }
-
-  function saveTransaction(transaction) {
-    var _this = this;
-
-    return Promise.resolve(this._saveTransaction).then(function (_) {
-      return _this._saveTransaction = _this.db.transaction.put(transaction);
-    });
-  }
-
-  function scrollSelect($event, curr) {
-    var list = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
-    var cb = arguments[3];
-
-
-    var index = list.indexOf(curr);
-    var last = list.length - 1;
-
-    if ($event.which == 38) cb.call(this, list[index > 0 ? index - 1 : last]);
-
-    if ($event.which == 40) cb.call(this, list[index < last ? index + 1 : 0]);
-  }
-
-  function focusInput(selector, fallback) {
-    var elem = document.querySelector(selector + ' input');
-
-    if (elem && !elem.disabled) elem.focus();else if (fallback) document.querySelector(fallback + ' input').focus();else console.log('Cannot find ' + selector + ' input');
-
-    return false;
-  }
-
-  function toggleDrawer() {
-    var drawer = document.querySelector('.mdl-layout__header');
-    drawer && drawer.firstChild.click();
-  }
-
-  function drugSearch() {
-    var term = (this.term || '').trim();
-
-    if (term.length < 3) {
-      return Promise.resolve(this._search = []);
-    }
-
-    if (/^[\d-]+$/.test(term)) {
-      this.regex = RegExp('(' + term + ')', 'gi');
-      this._search = this.db.drug.get({ ndc: term });
-    } else {
-      this.regex = RegExp('(' + term.replace(/ /g, '|') + ')', 'gi');
-      this._search = this.db.drug.get({ generic: term });
-    }
-
-    return this._search;
-  }
-
-  function parseUserDate(date) {
-    date = (date || "").split('/');
-    return {
-      year: date.pop(),
-      month: date.shift()
-    };
-  }
-
-  function toJsonDate(_ref) {
-    var month = _ref.month;
-    var year = _ref.year;
-
-    var date = new Date('20' + year, month, 1);
-    date.setDate(0);
-    return date.toJSON();
-  }
-});
-define('resources/value-converters',['exports', '../resources/helpers'], function (exports, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.inventoryFilterValueConverter = exports.toArrayValueConverter = exports.dateValueConverter = exports.boldValueConverter = exports.valueValueConverter = exports.userFilterValueConverter = exports.recordFilterValueConverter = exports.shipmentFilterValueConverter = exports.numberValueConverter = exports.jsonValueConverter = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var jsonValueConverter = exports.jsonValueConverter = function () {
-    function jsonValueConverter() {
-      _classCallCheck(this, jsonValueConverter);
-    }
-
-    jsonValueConverter.prototype.toView = function toView() {
-      var object = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-
-      return JSON.stringify(object, null, " ");
-    };
-
-    return jsonValueConverter;
-  }();
-
-  var numberValueConverter = exports.numberValueConverter = function () {
-    function numberValueConverter() {
-      _classCallCheck(this, numberValueConverter);
-    }
-
-    numberValueConverter.prototype.fromView = function fromView(str, decimals) {
-      return str != null && str !== '' ? +str : null;
-    };
-
-    numberValueConverter.prototype.toView = function toView(str, decimals) {
-      return str != null && decimals ? (+str).toFixed(decimals) : str;
-    };
-
-    return numberValueConverter;
-  }();
-
-  var shipmentFilterValueConverter = exports.shipmentFilterValueConverter = function () {
-    function shipmentFilterValueConverter() {
-      _classCallCheck(this, shipmentFilterValueConverter);
-    }
-
-    shipmentFilterValueConverter.prototype.toView = function toView() {
-      var shipments = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-      var filter = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-
-      filter = filter.toLowerCase();
-      return shipments.filter(function (shipment) {
-        return ~(shipment.account.from.name + ' ' + shipment.account.to.name + ' ' + shipment.tracking + ' ' + shipment.status + ' ' + shipment.createdAt.slice(0, 10)).toLowerCase().indexOf(filter);
-      });
-    };
-
-    return shipmentFilterValueConverter;
-  }();
-
-  var recordFilterValueConverter = exports.recordFilterValueConverter = function () {
-    function recordFilterValueConverter() {
-      _classCallCheck(this, recordFilterValueConverter);
-    }
-
-    recordFilterValueConverter.prototype.toView = function toView() {
-      var days = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-      var filter = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-
-      return days.filter(function (day) {
-        return ~day.indexOf(filter);
-      });
-    };
-
-    return recordFilterValueConverter;
-  }();
-
-  var userFilterValueConverter = exports.userFilterValueConverter = function () {
-    function userFilterValueConverter() {
-      _classCallCheck(this, userFilterValueConverter);
-    }
-
-    userFilterValueConverter.prototype.toView = function toView() {
-      var users = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-      var filter = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-
-      filter = filter.toLowerCase();
-      return users.filter(function (user) {
-        return ~(user.name.first + ' ' + user.name.last).toLowerCase().indexOf(filter);
-      });
-    };
-
-    return userFilterValueConverter;
-  }();
-
-  var valueValueConverter = exports.valueValueConverter = function () {
-    function valueValueConverter() {
-      _classCallCheck(this, valueValueConverter);
-    }
-
-    valueValueConverter.prototype.toView = function toView() {
-      var transactions = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-      var decimals = arguments[1];
-      var trigger = arguments[2];
-
-      transactions = Array.isArray(transactions) ? transactions : [transactions];
-
-      return transactions.reduce(function (total, transaction) {
-        if (!transaction.drug.price || !transaction.qty) return 0;
-        var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
-        var qty = transaction.qty.to || transaction.qty.from || 0;
-        return total + qty * price;
-      }, 0).toFixed(decimals);
-    };
-
-    return valueValueConverter;
-  }();
-
-  var boldValueConverter = exports.boldValueConverter = function () {
-    function boldValueConverter() {
-      _classCallCheck(this, boldValueConverter);
-    }
-
-    boldValueConverter.prototype.toView = function toView(text, bold) {
-      if (!bold || !text) return text;
-      bold = RegExp('(' + bold.replace(/ /g, '|') + ')', 'gi');
-      return text.replace(bold, '<strong>$1</strong>');
-    };
-
-    return boldValueConverter;
-  }();
-
-  var dateValueConverter = exports.dateValueConverter = function () {
-    function dateValueConverter() {
-      _classCallCheck(this, dateValueConverter);
-    }
-
-    dateValueConverter.prototype.toView = function toView(date) {
-      if (!date) return '';
-      return date != this.model ? date.slice(5, 7) + '/' + date.slice(2, 4) : this.view;
-    };
-
-    dateValueConverter.prototype.fromView = function fromView(date) {
-      var add = date.includes('+') || date.includes('=');
-      var sub = date.includes('-');
-
-      var _parseUserDate = (0, _helpers.parseUserDate)(date.replace(/\+|\-|\=/g, ''));
-
-      var month = _parseUserDate.month;
-      var year = _parseUserDate.year;
-
-
-      if (year.length > 2) year = year.slice(0, 2);
-
-      if (add) month++;
-      if (sub) month--;
-
-      if (month == 0) {
-        month = 12;
-        year--;
-      }
-
-      if (month == 13) {
-        month = 1;
-        year++;
-      }
-
-      this.view = ("00" + month).slice(-2) + '/' + year;
-
-      return this.model = (0, _helpers.toJsonDate)({ month: month, year: year });
-    };
-
-    return dateValueConverter;
-  }();
-
-  var toArrayValueConverter = exports.toArrayValueConverter = function () {
-    function toArrayValueConverter() {
-      _classCallCheck(this, toArrayValueConverter);
-    }
-
-    toArrayValueConverter.prototype.toView = function toView() {
-      var obj = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-      var sort = arguments[1];
-
-
-      var arr = Object.keys(obj);
-
-      if (sort) arr.sort();
-
-      return arr.map(function (key) {
-        return { key: key, val: obj[key] };
-      });
-    };
-
-    return toArrayValueConverter;
-  }();
-
-  var inventoryFilterValueConverter = exports.inventoryFilterValueConverter = function () {
-    function inventoryFilterValueConverter() {
-      _classCallCheck(this, inventoryFilterValueConverter);
-    }
-
-    inventoryFilterValueConverter.prototype.toView = function toView() {
-      var transactions = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-      var filter = arguments[1];
-
-      for (var _iterator = transactions, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-        var _ref;
-
-        if (_isArray) {
-          if (_i >= _iterator.length) break;
-          _ref = _iterator[_i++];
-        } else {
-          _i = _iterator.next();
-          if (_i.done) break;
-          _ref = _i.value;
-        }
-
-        var transaction = _ref;
-
-        var exp = transaction.exp.to || transaction.exp.from;
-        var ndc = transaction.drug._id;
-        var form = transaction.drug.form;
-        filter.exp[exp].count = 0;
-        filter.exp[exp].qty = 0;
-        filter.ndc[ndc].count = 0;
-        filter.ndc[ndc].qty = 0;
-        filter.form[form].count = 0;
-        filter.form[form].qty = 0;
-      }
-
-      transactions = transactions.filter(function (transaction) {
-
-        var qty = transaction.qty.to || transaction.qty.from;
-        var exp = transaction.exp.to || transaction.exp.from;
-        var ndc = transaction.drug._id;
-        var form = transaction.drug.form;
-
-        if (!filter.exp[exp].isChecked) {
-          if (filter.ndc[ndc].isChecked && filter.form[form].isChecked) {
-            filter.exp[exp].count++;
-            filter.exp[exp].qty += qty;
-          }
-          return false;
-        }
-        if (!filter.ndc[ndc].isChecked) {
-          if (filter.exp[exp].isChecked && filter.form[form].isChecked) {
-            filter.ndc[ndc].count++;
-            filter.ndc[ndc].qty += qty;
-          }
-          return false;
-        }
-
-        if (!filter.form[form].isChecked) {
-          if (filter.exp[exp].isChecked && filter.ndc[ndc].isChecked) {
-            filter.form[form].count++;
-            filter.form[form].qty += qty;
-          }
-          return false;
-        }
-
-        filter.exp[exp].count++;
-        filter.ndc[ndc].count++;
-        filter.form[form].count++;
-        filter.exp[exp].qty += qty;
-        filter.ndc[ndc].qty += qty;
-        filter.form[form].qty += qty;
-        return true;
-      });
-
-      return transactions;
-    };
-
-    return inventoryFilterValueConverter;
-  }();
-});
 define('elems/md-autocomplete',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';
 
@@ -965,6 +563,408 @@ define('elems/md-table',["exports", "aurelia-framework"], function (exports, _au
 
     return MdTableCustomAttribute;
   }()) || _class);
+});
+define('libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Csv = Csv;
+});
+define('libs/environment',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = {
+    debug: true,
+    testing: true
+  };
+});
+define('libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Db = Db;
+});
+define('resources/helpers',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.incrementBox = incrementBox;
+  exports.saveTransaction = saveTransaction;
+  exports.scrollSelect = scrollSelect;
+  exports.focusInput = focusInput;
+  exports.toggleDrawer = toggleDrawer;
+  exports.drugSearch = drugSearch;
+  exports.parseUserDate = parseUserDate;
+  exports.toJsonDate = toJsonDate;
+  function incrementBox($event, transaction) {
+    if ($event.which == 107 || $event.which == 187) {
+      transaction.location = transaction.location[0] + (+transaction.location.slice(1) + 1);
+      return false;
+    }
+
+    if ($event.which == 109 || $event.which == 189) {
+      transaction.location = transaction.location[0] + (+transaction.location.slice(1) - 1);
+      return false;
+    }
+
+    return true;
+  }
+
+  function saveTransaction(transaction) {
+    var _this = this;
+
+    return Promise.resolve(this._saveTransaction).then(function (_) {
+      return _this._saveTransaction = _this.db.transaction.put(transaction);
+    });
+  }
+
+  function scrollSelect($event, curr) {
+    var list = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+    var cb = arguments[3];
+
+
+    var index = list.indexOf(curr);
+    var last = list.length - 1;
+
+    if ($event.which == 38) cb.call(this, list[index > 0 ? index - 1 : last]);
+
+    if ($event.which == 40) cb.call(this, list[index < last ? index + 1 : 0]);
+  }
+
+  function focusInput(selector, fallback) {
+    var elem = document.querySelector(selector + ' input');
+
+    if (elem && !elem.disabled) elem.focus();else if (fallback) document.querySelector(fallback + ' input').focus();else console.log('Cannot find ' + selector + ' input');
+
+    return false;
+  }
+
+  function toggleDrawer() {
+    var drawer = document.querySelector('.mdl-layout__header');
+    drawer && drawer.firstChild.click();
+  }
+
+  function drugSearch() {
+    var term = (this.term || '').trim();
+
+    if (term.length < 3) {
+      return Promise.resolve(this._search = []);
+    }
+
+    if (/^[\d-]+$/.test(term)) {
+      this.regex = RegExp('(' + term + ')', 'gi');
+      this._search = this.db.drug.get({ ndc: term });
+    } else {
+      this.regex = RegExp('(' + term.replace(/ /g, '|') + ')', 'gi');
+      this._search = this.db.drug.get({ generic: term });
+    }
+
+    return this._search;
+  }
+
+  function parseUserDate(date) {
+    date = (date || "").split('/');
+    return {
+      year: date.pop(),
+      month: date.shift()
+    };
+  }
+
+  function toJsonDate(_ref) {
+    var month = _ref.month;
+    var year = _ref.year;
+
+    var date = new Date('20' + year, month, 1);
+    date.setDate(0);
+    return date.toJSON();
+  }
+});
+define('resources/value-converters',['exports', '../resources/helpers'], function (exports, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.inventoryFilterValueConverter = exports.toArrayValueConverter = exports.dateValueConverter = exports.boldValueConverter = exports.valueValueConverter = exports.userFilterValueConverter = exports.recordFilterValueConverter = exports.shipmentFilterValueConverter = exports.numberValueConverter = exports.jsonValueConverter = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var jsonValueConverter = exports.jsonValueConverter = function () {
+    function jsonValueConverter() {
+      _classCallCheck(this, jsonValueConverter);
+    }
+
+    jsonValueConverter.prototype.toView = function toView() {
+      var object = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+
+      return JSON.stringify(object, null, " ");
+    };
+
+    return jsonValueConverter;
+  }();
+
+  var numberValueConverter = exports.numberValueConverter = function () {
+    function numberValueConverter() {
+      _classCallCheck(this, numberValueConverter);
+    }
+
+    numberValueConverter.prototype.fromView = function fromView(str, decimals) {
+      return str != null && str !== '' ? +str : null;
+    };
+
+    numberValueConverter.prototype.toView = function toView(str, decimals) {
+      return str != null && decimals ? (+str).toFixed(decimals) : str;
+    };
+
+    return numberValueConverter;
+  }();
+
+  var shipmentFilterValueConverter = exports.shipmentFilterValueConverter = function () {
+    function shipmentFilterValueConverter() {
+      _classCallCheck(this, shipmentFilterValueConverter);
+    }
+
+    shipmentFilterValueConverter.prototype.toView = function toView() {
+      var shipments = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+      var filter = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+
+      filter = filter.toLowerCase();
+      return shipments.filter(function (shipment) {
+        return ~(shipment.account.from.name + ' ' + shipment.account.to.name + ' ' + shipment.tracking + ' ' + shipment.status + ' ' + shipment.createdAt.slice(0, 10)).toLowerCase().indexOf(filter);
+      });
+    };
+
+    return shipmentFilterValueConverter;
+  }();
+
+  var recordFilterValueConverter = exports.recordFilterValueConverter = function () {
+    function recordFilterValueConverter() {
+      _classCallCheck(this, recordFilterValueConverter);
+    }
+
+    recordFilterValueConverter.prototype.toView = function toView() {
+      var days = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+      var filter = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+
+      return days.filter(function (day) {
+        return ~day.indexOf(filter);
+      });
+    };
+
+    return recordFilterValueConverter;
+  }();
+
+  var userFilterValueConverter = exports.userFilterValueConverter = function () {
+    function userFilterValueConverter() {
+      _classCallCheck(this, userFilterValueConverter);
+    }
+
+    userFilterValueConverter.prototype.toView = function toView() {
+      var users = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+      var filter = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+
+      filter = filter.toLowerCase();
+      return users.filter(function (user) {
+        return ~(user.name.first + ' ' + user.name.last).toLowerCase().indexOf(filter);
+      });
+    };
+
+    return userFilterValueConverter;
+  }();
+
+  var valueValueConverter = exports.valueValueConverter = function () {
+    function valueValueConverter() {
+      _classCallCheck(this, valueValueConverter);
+    }
+
+    valueValueConverter.prototype.toView = function toView() {
+      var transactions = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+      var decimals = arguments[1];
+      var trigger = arguments[2];
+
+      transactions = Array.isArray(transactions) ? transactions : [transactions];
+
+      return transactions.reduce(function (total, transaction) {
+        if (!transaction.drug.price || !transaction.qty) return 0;
+        var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
+        var qty = transaction.qty.to || transaction.qty.from || 0;
+        return total + qty * price;
+      }, 0).toFixed(decimals);
+    };
+
+    return valueValueConverter;
+  }();
+
+  var boldValueConverter = exports.boldValueConverter = function () {
+    function boldValueConverter() {
+      _classCallCheck(this, boldValueConverter);
+    }
+
+    boldValueConverter.prototype.toView = function toView(text, bold) {
+      if (!bold || !text) return text;
+      bold = RegExp('(' + bold.replace(/ /g, '|') + ')', 'gi');
+      return text.replace(bold, '<strong>$1</strong>');
+    };
+
+    return boldValueConverter;
+  }();
+
+  var dateValueConverter = exports.dateValueConverter = function () {
+    function dateValueConverter() {
+      _classCallCheck(this, dateValueConverter);
+    }
+
+    dateValueConverter.prototype.toView = function toView(date) {
+      if (!date) return '';
+      return date != this.model ? date.slice(5, 7) + '/' + date.slice(2, 4) : this.view;
+    };
+
+    dateValueConverter.prototype.fromView = function fromView(date) {
+      var add = date.includes('+') || date.includes('=');
+      var sub = date.includes('-');
+
+      var _parseUserDate = (0, _helpers.parseUserDate)(date.replace(/\+|\-|\=/g, ''));
+
+      var month = _parseUserDate.month;
+      var year = _parseUserDate.year;
+
+
+      if (year.length > 2) year = year.slice(0, 2);
+
+      if (add) month++;
+      if (sub) month--;
+
+      if (month == 0) {
+        month = 12;
+        year--;
+      }
+
+      if (month == 13) {
+        month = 1;
+        year++;
+      }
+
+      this.view = ("00" + month).slice(-2) + '/' + year;
+
+      return this.model = (0, _helpers.toJsonDate)({ month: month, year: year });
+    };
+
+    return dateValueConverter;
+  }();
+
+  var toArrayValueConverter = exports.toArrayValueConverter = function () {
+    function toArrayValueConverter() {
+      _classCallCheck(this, toArrayValueConverter);
+    }
+
+    toArrayValueConverter.prototype.toView = function toView() {
+      var obj = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+      var sort = arguments[1];
+
+
+      var arr = Object.keys(obj);
+
+      if (sort) arr.sort();
+
+      return arr.map(function (key) {
+        return { key: key, val: obj[key] };
+      });
+    };
+
+    return toArrayValueConverter;
+  }();
+
+  var inventoryFilterValueConverter = exports.inventoryFilterValueConverter = function () {
+    function inventoryFilterValueConverter() {
+      _classCallCheck(this, inventoryFilterValueConverter);
+    }
+
+    inventoryFilterValueConverter.prototype.toView = function toView() {
+      var transactions = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+      var filter = arguments[1];
+
+      for (var _iterator = transactions, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref = _i.value;
+        }
+
+        var transaction = _ref;
+
+        var exp = transaction.exp.to || transaction.exp.from;
+        var ndc = transaction.drug._id;
+        var form = transaction.drug.form;
+        filter.exp[exp].count = 0;
+        filter.exp[exp].qty = 0;
+        filter.ndc[ndc].count = 0;
+        filter.ndc[ndc].qty = 0;
+        filter.form[form].count = 0;
+        filter.form[form].qty = 0;
+      }
+
+      transactions = transactions.filter(function (transaction) {
+
+        var qty = transaction.qty.to || transaction.qty.from;
+        var exp = transaction.exp.to || transaction.exp.from;
+        var ndc = transaction.drug._id;
+        var form = transaction.drug.form;
+
+        if (!filter.exp[exp].isChecked) {
+          if (filter.ndc[ndc].isChecked && filter.form[form].isChecked) {
+            filter.exp[exp].count++;
+            filter.exp[exp].qty += qty;
+          }
+          return false;
+        }
+        if (!filter.ndc[ndc].isChecked) {
+          if (filter.exp[exp].isChecked && filter.form[form].isChecked) {
+            filter.ndc[ndc].count++;
+            filter.ndc[ndc].qty += qty;
+          }
+          return false;
+        }
+
+        if (!filter.form[form].isChecked) {
+          if (filter.exp[exp].isChecked && filter.ndc[ndc].isChecked) {
+            filter.form[form].count++;
+            filter.form[form].qty += qty;
+          }
+          return false;
+        }
+
+        filter.exp[exp].count++;
+        filter.ndc[ndc].count++;
+        filter.form[form].count++;
+        filter.exp[exp].qty += qty;
+        filter.ndc[ndc].qty += qty;
+        filter.form[form].qty += qty;
+        return true;
+      });
+
+      return transactions;
+    };
+
+    return inventoryFilterValueConverter;
+  }();
 });
 define('views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router'], function (exports, _aureliaFramework, _pouch, _aureliaRouter) {
   'use strict';
@@ -1607,12 +1607,35 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
           });
         }));
       }).then(function (rows) {
-        console.log('rows', rows);
-        return Promise.all(rows.map(function (inventory) {
-          return _this6.db.transaction.post(inventory);
-        }));
-      }).then(function (inventory) {
-        return _this6.snackbar.show('Imported ' + inventory.length + ' Inventory Items');
+        console.log('rows', rows.length);
+        var chain = Promise.resolve();
+
+        var _loop2 = function _loop2() {
+          if (_isArray4) {
+            if (_i4 >= _iterator4.length) return 'break';
+            _ref4 = _iterator4[_i4++];
+          } else {
+            _i4 = _iterator4.next();
+            if (_i4.done) return 'break';
+            _ref4 = _i4.value;
+          }
+
+          var row = _ref4;
+
+          chain = chain.then(function (_) {
+            return _this6.db.transaction.post(row);
+          });
+        };
+
+        for (var _iterator4 = rows, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+          var _ref4;
+
+          var _ret2 = _loop2();
+
+          if (_ret2 === 'break') break;
+        }return chain;
+      }).then(function (_) {
+        return _this6.snackbar.show('Imported Inventory Items');
       }).catch(function (err) {
         return _this6.snackbar.show('Error Importing Inventory: ' + err);
       });
