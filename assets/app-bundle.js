@@ -1610,7 +1610,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
         var chain = Promise.resolve();
 
         var _loop2 = function _loop2(i) {
-          var args = rows.slice(i, i + 36 * 18);
+          var args = rows.slice(i, i + 36 * 9);
           chain = chain.then(function (_) {
             return Promise.all(args.map(function (row) {
               return _this6.db.transaction.post(row);
@@ -1618,7 +1618,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
           });
         };
 
-        for (var i = 0; i < rows.length; i += 36 * 18) {
+        for (var i = 0; i < rows.length; i += 36 * 9) {
           _loop2(i);
         }
         return chain;
