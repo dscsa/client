@@ -1607,33 +1607,22 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
           });
         }));
       }).then(function (rows) {
-        console.log('rows', rows.length);
         var chain = Promise.resolve();
 
-        var _loop2 = function _loop2() {
-          if (_isArray4) {
-            if (_i4 >= _iterator4.length) return 'break';
-            _ref4 = _iterator4[_i4++];
-          } else {
-            _i4 = _iterator4.next();
-            if (_i4.done) return 'break';
-            _ref4 = _i4.value;
-          }
-
-          var row = _ref4;
-
-          chain = chain.then(function (_) {
+        var _loop2 = function _loop2(i) {
+          var args = rows.slice(i, i + 26 * 26);
+          args = args.map(function (row) {
             return _this6.db.transaction.post(row);
+          });
+          chain = chain.then(function (_) {
+            return Promise.all(args);
           });
         };
 
-        for (var _iterator4 = rows, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
-          var _ref4;
-
-          var _ret2 = _loop2();
-
-          if (_ret2 === 'break') break;
-        }return chain;
+        for (var i = 0; i < rows.length; i += 26 * 26) {
+          _loop2(i);
+        }
+        return chain;
       }).then(function (_) {
         return _this6.snackbar.show('Imported Inventory Items');
       }).catch(function (err) {

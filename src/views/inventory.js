@@ -179,11 +179,12 @@ export class inventory {
       }))
     })
     .then(rows => {
-      console.log('rows', rows.length)
       let chain = Promise.resolve()
-      for (let row of rows)
-        chain = chain.then(_ => this.db.transaction.post(row))
-
+      for (let i = 0; i < rows.length; i += 26*26) {
+        let args = rows.slice(i, i+26*26)
+        args = args.map(row => this.db.transaction.post(row))
+        chain = chain.then(_ => Promise.all(args))
+      }
       return chain
     })
     .then(_ => this.snackbar.show(`Imported Inventory Items`))
