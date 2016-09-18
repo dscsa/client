@@ -1602,7 +1602,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
             return transaction;
           }).catch(function (drug) {
-            console.log(drug, transaction, transaction.drug._id);
+            console.log('Missing drug', transaction.drug._id, transaction.drug);
             throw drug;
           });
         }));

@@ -173,7 +173,7 @@ export class inventory {
           return transaction
         })
         .catch(drug => {
-          console.log(drug, transaction, transaction.drug._id)
+          console.log('Missing drug', transaction.drug._id, transaction.drug)
           throw drug
         })
       }))
