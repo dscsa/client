@@ -180,8 +180,8 @@ export class inventory {
     })
     .then(rows => {
       let chain = Promise.resolve()
-      for (let i = 0; i < rows.length; i += 36*36) {
-        let args = rows.slice(i, i+36*36)
+      for (let i = 0; i < rows.length; i += 36) {
+        let args = rows.slice(i, i+36)
         chain = chain.then(_ => Promise.all(args.map(row => this.db.transaction.post(row))))
       }
       return chain
