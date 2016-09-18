@@ -1610,16 +1610,15 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
         var chain = Promise.resolve();
 
         var _loop2 = function _loop2(i) {
-          var args = rows.slice(i, i + 6);
-          args = args.map(function (row) {
-            return _this6.db.transaction.post(row);
-          });
+          var args = rows.slice(i, i + 36 * 36);
           chain = chain.then(function (_) {
-            return Promise.all(args);
+            return Promise.all(args.map(function (row) {
+              return _this6.db.transaction.post(row);
+            }));
           });
         };
 
-        for (var i = 0; i < rows.length; i += 6) {
+        for (var i = 0; i < rows.length; i += 36 * 36) {
           _loop2(i);
         }
         return chain;
