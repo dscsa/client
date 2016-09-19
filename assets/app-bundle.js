@@ -1610,22 +1610,28 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
         var chain = Promise.resolve();
 
         var _loop2 = function _loop2(i) {
-          var args = rows.slice(i, i + 36 * 9);
           chain = chain.then(function (_) {
-            return Promise.all(args.map(function (row) {
+            console.log('posting', i, i + 36 * 36);
+            var args = rows.slice(i, i + 36 * 36);
+            args = args.map(function (row) {
               return _this6.db.transaction.post(row);
+            });
+            args.push(new Promise(function (r) {
+              return setTimeout(r, 30000);
             }));
+            return Promise.all(args);
           });
         };
 
-        for (var i = 0; i < rows.length; i += 36 * 9) {
+        for (var i = 0; i < rows.length; i += 36 * 36) {
           _loop2(i);
         }
         return chain;
       }).then(function (_) {
         return _this6.snackbar.show('Imported Inventory Items');
       }).catch(function (err) {
-        return _this6.snackbar.show('Error Importing Inventory: ' + JSON.stringify(err));
+        console.log('importCSV error', err);
+        _this6.snackbar.show('Error Importing Inventory: ' + JSON.stringify(err));
       });
     };
 
