@@ -1616,7 +1616,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
               return _this6.db.transaction.post(row);
             });
             args.push(new Promise(function (r) {
-              return setTimeout(r, 48000);
+              return setTimeout(r, 60000);
             }));
             return Promise.all(args);
           }).catch(function (err) {
