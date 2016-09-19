@@ -182,19 +182,18 @@ export class inventory {
       let chain = Promise.resolve()
       for (let i = 0; i < rows.length; i += 36*36) {
         chain = chain.then(_ => {
-          console.log('posting', i, i+36*36)
           let args = rows.slice(i, i+36*36)
           args = args.map(row => this.db.transaction.post(row))
-          args.push(new Promise(r => setTimeout(r, 30000)))
+          args.push(new Promise(r => setTimeout(r, 48000)))
           return Promise.all(args)
+        })
+        .catch(err => {
+          console.log('importCSV error',  i, i+36*36, err)
+          this.snackbar.show('Error Importing Inventory: '+JSON.stringify(err))
         })
       }
       return chain
     })
     .then(_ => this.snackbar.show(`Imported Inventory Items`))
-    .catch(err => {
-      console.log('importCSV error', err)
-      this.snackbar.show('Error Importing Inventory: '+JSON.stringify(err))
-    })
   }
 }

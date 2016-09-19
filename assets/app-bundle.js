@@ -1611,15 +1611,17 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
         var _loop2 = function _loop2(i) {
           chain = chain.then(function (_) {
-            console.log('posting', i, i + 36 * 36);
             var args = rows.slice(i, i + 36 * 36);
             args = args.map(function (row) {
               return _this6.db.transaction.post(row);
             });
             args.push(new Promise(function (r) {
-              return setTimeout(r, 30000);
+              return setTimeout(r, 48000);
             }));
             return Promise.all(args);
+          }).catch(function (err) {
+            console.log('importCSV error', i, i + 36 * 36, err);
+            _this6.snackbar.show('Error Importing Inventory: ' + JSON.stringify(err));
           });
         };
 
@@ -1629,9 +1631,6 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
         return chain;
       }).then(function (_) {
         return _this6.snackbar.show('Imported Inventory Items');
-      }).catch(function (err) {
-        console.log('importCSV error', err);
-        _this6.snackbar.show('Error Importing Inventory: ' + JSON.stringify(err));
       });
     };
 
