@@ -2362,16 +2362,15 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       this.term = '';
       this.transactions.unshift(transaction);
-      setTimeout(function (_) {
+
+      var ordered = this.getOrder(transaction);
+      var pharmerica = /pharmerica.*/i.test(this.shipment.account.from.name);
+
+      !ordered && pharmerica ? this.snackbar.show('Destroy, record already exists') : setTimeout(function (_) {
         return _this11.focusInput('#exp_0');
       }, 50);
-      return this.db.transaction.post(transaction).then(function (_) {
 
-        var ordered = _this11.getOrder(transaction);
-        var pharmerica = /pharmerica.*/i.test(_this11.shipment.account.from.name);
-
-        if (!ordered && pharmerica) return _this11.snackbar.show('Destroy, record already exists');
-      }).catch(function (err) {
+      return this.db.transaction.post(transaction).catch(function (err) {
         console.log(JSON.stringify(transaction), err);
         _this11.snackbar.show('Transaction could not be added: ' + err.name);
         _this11.transactions.shift();

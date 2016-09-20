@@ -405,16 +405,15 @@ export class shipments {
 
     //Assume db query works.
     this.transactions.unshift(transaction) //Add the drug to the view
-    setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
-    return this.db.transaction.post(transaction).then(_ => {
 
-      let ordered    = this.getOrder(transaction)
-      let pharmerica = /pharmerica.*/i.test(this.shipment.account.from.name)
+    let ordered    = this.getOrder(transaction)
+    let pharmerica = /pharmerica.*/i.test(this.shipment.account.from.name)
 
-      if ( !  ordered && pharmerica ) //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
-        return this.snackbar.show(`Destroy, record already exists`)
-    })
-    .catch(err => {
+    ! ordered && pharmerica //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
+      ? this.snackbar.show(`Destroy, record already exists`)
+      : setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
+
+    return this.db.transaction.post(transaction).catch(err => {
       console.log(JSON.stringify(transaction), err)
       this.snackbar.show(`Transaction could not be added: ${err.name}`)
       this.transactions.shift()
