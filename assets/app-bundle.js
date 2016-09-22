@@ -2384,7 +2384,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       this.csv.unparse(name, this.transactions.map(function (transaction) {
         return {
           '': transaction,
-          'next': JSON.stringify(row.next || []),
+          'next': JSON.stringify(transaction.next || []),
           'drug._id': " " + transaction.drug._id,
           'drug.generics': transaction.drug.generics.map(function (generic) {
             return generic.name + " " + generic.strength;
