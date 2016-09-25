@@ -314,10 +314,13 @@ export class shipments {
 
   toggleVerified(transaction) {
 
-    transaction.verifiedAt = transaction.verifiedAt ? null : new Date().toJSON()
-
-    if (transaction.verifiedAt)
-      transaction.location = this.getLocation(transaction)
+    if (transaction.verifiedAt) {
+      transaction.verifiedAt = null
+      transaction.location   = null
+    } else {
+      transaction.verifiedAt = new Date().toJSON()
+      transaction.location   = this.getLocation(transaction)
+    }
 
     this.saveTransaction(transaction).catch(err => {
       transaction.isChecked = ! transaction.isChecked

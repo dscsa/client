@@ -25,8 +25,7 @@ export class join {
     this.user = {
       name:{first:'Guest',last:'User'},
       email:'',
-      phone:'650.488.7434',
-      password:'password'
+      phone:'650.488.7434'
     }
   }
 

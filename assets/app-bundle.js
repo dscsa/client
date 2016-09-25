@@ -1674,8 +1674,7 @@ define('views/join',['exports', 'aurelia-framework', 'aurelia-router', '../libs/
       this.user = {
         name: { first: 'Guest', last: 'User' },
         email: '',
-        phone: '650.488.7434',
-        password: 'password'
+        phone: '650.488.7434'
       };
     }
 
@@ -2278,9 +2277,13 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     shipments.prototype.toggleVerified = function toggleVerified(transaction) {
       var _this8 = this;
 
-      transaction.verifiedAt = transaction.verifiedAt ? null : new Date().toJSON();
-
-      if (transaction.verifiedAt) transaction.location = this.getLocation(transaction);
+      if (transaction.verifiedAt) {
+        transaction.verifiedAt = null;
+        transaction.location = null;
+      } else {
+        transaction.verifiedAt = new Date().toJSON();
+        transaction.location = this.getLocation(transaction);
+      }
 
       this.saveTransaction(transaction).catch(function (err) {
         transaction.isChecked = !transaction.isChecked;
