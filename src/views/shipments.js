@@ -268,12 +268,20 @@ export class shipments {
     return aboveMinExp
   }
 
+  belowMaxInventory(order, transaction) {
+    let newInventory = order.inventory + transaction.qty[this.role.account]
+    let maxInventory = order.maxInventory || 2000
+    let belowMaxInventory = newInventory < maxInventory
+    if ( ! belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory) //
+    return belowMaxInventory
+  }
+
   getOrder(transaction) {
     return this.ordered[this.shipment.account.to._id][transaction.drug.generic]
   }
 
-  isOrdered(order, transaction) {
-    return order ? this.aboveMinQty(order, transaction) && this.aboveMinExp(order, transaction) : false
+  isWanted(order, transaction) {
+    return order ? this.belowMaxInventory(order, transaction) && this.aboveMinQty(order, transaction) && this.aboveMinExp(order, transaction) : false
   }
 
   //If qty is 30 and user types "3" then destroyed message will display before user can type "0"
@@ -298,7 +306,7 @@ export class shipments {
     let isChecked   = transaction.isChecked
     let order       = this.getOrder(transaction)
 
-    if(this.isOrdered(order, transaction) == isChecked)
+    if(this.isWanted(order, transaction) == isChecked)
       return ! isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order) //isChecked may have never alternated for a destroyed drug so need to check
 
     if (isChecked)
@@ -409,10 +417,17 @@ export class shipments {
     //Assume db query works.
     this.transactions.unshift(transaction) //Add the drug to the view
 
-    let ordered    = this.getOrder(transaction)
-    let pharmerica = /pharmerica.*/i.test(this.shipment.account.from.name)
+    let order        = this.getOrder(transaction)
+    let isPharMerica = /pharmerica.*/i.test(this.shipment.account.from.name)
 
-    ! ordered && pharmerica //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
+    //We set current inventory when adding a new transaction.  This is a tradeoff of frequency vs accurracy.  This will be inaccurate
+    //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
+    //this is rare enough to be okay.  We also don't want to have to fetch current inventory on every input event.
+    order && this.db.transaction.get({generic:drug.generic, inventory:"sum"}).then(inventory => {
+      order.inventory = inventory[0]
+    })
+
+    isPharMerica && ! order //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
       ? this.snackbar.show(`Destroy, record already exists`)
       : setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
 
