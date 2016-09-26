@@ -13,8 +13,8 @@ export function incrementBox($event, transaction) {
 }
 
 export function saveTransaction(transaction) {
-  return Promise.resolve(this._saveTransaction).then(_ => {
-    return this._saveTransaction = this.db.transaction.put(transaction)
+  return this._saveTransaction = Promise.resolve(this._saveTransaction).then(_ => {
+    return this.db.transaction.put(transaction)
   })
 }
 

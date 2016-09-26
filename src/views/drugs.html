@@ -234,24 +234,22 @@
           </md-input>
           <!-- <md-input
             type="number"
+            value.bind="(account.ordered[group.name] || {}).maxInventory"
+            style="width:100%">
+            Max Inventory
+          </md-input> -->
+          <!--
+          <md-input
+            type="number"
+            value.bind="(account.ordered[group.name] || {}).minInventory"
+            style="width:100%">
+            Min Invntory
+          </md-input>
+          <md-input
+            type="number"
             value.bind="(account.ordered[group.name] || {}).maxPrice"
-            disabled.bind="true"
             style="width:100%">
             Max Price
-          </md-input>
-          <md-input
-            type="number"
-            value.bind="(account.ordered[group.name] || {}).reorderAt"
-            disabled.bind="true"
-            style="width:100%">
-            Reorder At
-          </md-input>
-          <md-input
-            type="number"
-            value.bind="(account.ordered[group.name] || {}).reorderTo"
-            disabled.bind="true"
-            style="width:100%">
-            Reorder To
           </md-input> -->
         </div>
       </div>
