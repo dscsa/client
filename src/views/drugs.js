@@ -198,6 +198,7 @@ export class drugs {
 
   removeGeneric() {
     this.drug.generics.pop()
+    setTimeout(_ => document.forms[0].dispatchEvent(new Event('change')))
     return true
   }
 

@@ -1308,6 +1308,9 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
 
     drugs.prototype.removeGeneric = function removeGeneric() {
       this.drug.generics.pop();
+      setTimeout(function (_) {
+        return document.forms[0].dispatchEvent(new Event('change'));
+      });
       return true;
     };
 

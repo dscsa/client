@@ -12,8 +12,6 @@ export class MdButtonCustomElement {
   constructor(element) {
     this.element = element
     this.change  = this.change.bind(this)
-
-
   }
 
   //click.trigger won't trigger when button is disabled, but delegate will
