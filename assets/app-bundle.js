@@ -597,9 +597,9 @@ define('resources/helpers',['exports'], function (exports) {
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.incrementBox = incrementBox;
   exports.expShortcuts = expShortcuts;
   exports.qtyShortcuts = qtyShortcuts;
+  exports.incrementBox = incrementBox;
   exports.saveTransaction = saveTransaction;
   exports.scrollSelect = scrollSelect;
   exports.focusInput = focusInput;
@@ -607,6 +607,18 @@ define('resources/helpers',['exports'], function (exports) {
   exports.drugSearch = drugSearch;
   exports.parseUserDate = parseUserDate;
   exports.toJsonDate = toJsonDate;
+  function expShortcuts($event, $index) {
+    if ($event.which == 13) return this.focusInput('#qty_' + $index);
+
+    return true;
+  }
+
+  function qtyShortcuts($event, $index) {
+    if ($event.which == 13) return this.focusInput('#box_' + $index, 'md-autocomplete');
+
+    return clearIfAsterick($event);
+  }
+
   function incrementBox($event, transaction) {
     if ($event.which == 107 || $event.which == 187) {
       transaction.location = transaction.location[0] + (+transaction.location.slice(1) + 1);
@@ -617,18 +629,6 @@ define('resources/helpers',['exports'], function (exports) {
       transaction.location = transaction.location[0] + (+transaction.location.slice(1) - 1);
       return false;
     }
-
-    return clearIfAsterick($event);
-  }
-
-  function expShortcuts($event, $index) {
-    if ($event.which == 13) return this.focusInput('#qty_' + $index);
-
-    return clearIfAsterick($event);
-  }
-
-  function qtyShortcuts($event, $index) {
-    if ($event.which == 13) return this.focusInput('#box_' + $index, 'md-autocomplete');
 
     return clearIfAsterick($event);
   }
@@ -851,6 +851,9 @@ define('resources/value-converters',['exports', '../resources/helpers'], functio
     };
 
     dateValueConverter.prototype.fromView = function fromView(date) {
+
+      if (date.includes('*')) return null;
+
       var add = date.includes('+') || date.includes('=');
       var sub = date.includes('-');
 

@@ -1,3 +1,20 @@
+
+export function expShortcuts($event, $index) {
+  //Enter should focus on quantity
+  if ($event.which == 13)
+    return this.focusInput(`#qty_${$index}`)
+
+  return true
+}
+
+export function qtyShortcuts($event, $index) {
+  //Enter should focus on rx_input, unless it is hidden
+  if ($event.which == 13)
+    return this.focusInput(`#box_${$index}`, `md-autocomplete`)
+
+  return clearIfAsterick($event)
+}
+
 export function incrementBox($event, transaction) {
   if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
     transaction.location = transaction.location[0]+(+transaction.location.slice(1)+1)
@@ -8,22 +25,6 @@ export function incrementBox($event, transaction) {
     transaction.location = transaction.location[0]+(+transaction.location.slice(1)-1)
     return false //don't actually add the -
   }
-
-  return clearIfAsterick($event)
-}
-
-export function expShortcuts($event, $index) {
-  //Enter should focus on quantity
-  if ($event.which == 13)
-    return this.focusInput(`#qty_${$index}`)
-
-  return clearIfAsterick($event)
-}
-
-export function qtyShortcuts($event, $index) {
-  //Enter should focus on rx_input, unless it is hidden
-  if ($event.which == 13)
-    return this.focusInput(`#box_${$index}`, `md-autocomplete`)
 
   return clearIfAsterick($event)
 }
