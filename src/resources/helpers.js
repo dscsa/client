@@ -29,7 +29,7 @@ export function qtyShortcuts($event, $index) {
 }
 
 function clearIfAsterick($event) {
-  return $event.which == 106 ? $event.target.value = "" : true
+  return $event.which == 106 || ($event.shiftKey && $event.which == 56) ? $event.target.value = "" : true
 }
 
 export function saveTransaction(transaction) {
