@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {Csv}    from '../libs/csv'
-import {incrementBox, saveTransaction, focusInput, scrollSelect, drugSearch} from '../resources/helpers'
+import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, drugSearch} from '../resources/helpers'
 
 @inject(Db, Router)
 export class inventory {
@@ -15,6 +15,8 @@ export class inventory {
 
     this.resetFilter()
 
+    this.expShortcuts    = expShortcuts
+    this.qtyShortcuts    = qtyShortcuts
     this.saveTransaction = saveTransaction
     this.incrementBox    = incrementBox
     this.focusInput      = focusInput
@@ -113,23 +115,6 @@ export class inventory {
     }
   }
 
-  //TODO same as shipment's method (without autocheck)
-  expShortcuts($event, $index) {
-    if ($event.which == 13) //Enter should focus on quantity
-      return this.focusInput(`#qty_${$index}`)
-
-    return true
-  }
-
-  //TODO same as shipment's method (without autocheck)
-  qtyShortcuts($event, $index) {
-    if ($event.which == 13) //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-      return this.focusInput(`#box_${$index}`)
-
-    return true
-  }
-
-  //TODO same as shipment's method
   boxShortcuts($event, $index) {
     if ($event.which == 13) //Enter should focus on next row's exp
       return this.focusInput(`#exp_${$index+1}`)

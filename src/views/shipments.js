@@ -3,7 +3,7 @@ import {Router}     from 'aurelia-router'
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {Csv}        from '../libs/csv'
-import {incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
+import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
@@ -18,6 +18,8 @@ export class shipments {
     this.stati  = ['pickup', 'shipped', 'received']
     this.shipments = {}
 
+    this.expShortcutsKeydown = expShortcuts
+    this.qtyShortcutsKeydown = qtyShortcuts
     this.incrementBox    = incrementBox
     this.saveTransaction = saveTransaction
     this.focusInput      = focusInput
@@ -186,28 +188,18 @@ export class shipments {
     })
   }
 
-  //Split functionality into Keydown and Input listeners because
+  //Split functionality into Keydown and Input listeners because (keydown is set in constructor)
   //Don't put this code into input because enter (which == 13) does not trigger input event.
   //Don't put input code here because would then need a setTimeout for the quantity to actually change
   //and you would need to ignore non-input key values.  So it cleaner to just keep these listeners separate
-  expShortcutsKeydown($event, $index) {
-    //Enter should focus on quantity
-    return $event.which == 13 ? this.focusInput(`#qty_${$index}`) : true
-  }
-
   expShortcutsInput($index) {
     this.autoCheck($index)
   }
 
-  //Split functionality into Keydown and Input listeners because
+  //Split functionality into Keydown and Input listeners because (keydown is set in constructor)
   //Don't put this code into input because enter (which == 13) does not trigger input event.
   //Don't put input code here because would then need a setTimeout for the quantity to actually change
   //and you would need to ignore non-input key values.  So it cleaner to just keep these listeners separate
-  qtyShortcutsKeydown($event, $index) {
-    //Enter should focus on rx_input, unless it is hidden http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-    return $event.which == 13 ? this.focusInput(`#box_${$index}`, `md-autocomplete`) : true
-  }
-
   qtyShortcutsInput($event, $index) {
     //Only run autocheck if the transaction was not deleted
     this.deleteTransactionIfQty0($event, $index) && this.autoCheck($index)
@@ -375,7 +367,7 @@ export class shipments {
       return false //Enter was also triggering exp to qty focus
     }
 
-    if ($event.which == 106) //* clearing autocomplete field with an asterick (to match exp date clearing and make numberpad compatible)
+    if ($event.which == 106 || $event.which == 56) //* clearing autocomplete field with an asterick (to match exp date clearing and make numberpad compatible)
       this.term = ""
 
     return true  //still allow typing into autocomplete

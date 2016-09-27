@@ -598,6 +598,8 @@ define('resources/helpers',['exports'], function (exports) {
     value: true
   });
   exports.incrementBox = incrementBox;
+  exports.expShortcuts = expShortcuts;
+  exports.qtyShortcuts = qtyShortcuts;
   exports.saveTransaction = saveTransaction;
   exports.scrollSelect = scrollSelect;
   exports.focusInput = focusInput;
@@ -616,7 +618,23 @@ define('resources/helpers',['exports'], function (exports) {
       return false;
     }
 
-    return true;
+    return clearIfAsterick($event);
+  }
+
+  function expShortcuts($event, $index) {
+    if ($event.which == 13) return this.focusInput('#qty_' + $index);
+
+    return clearIfAsterick($event);
+  }
+
+  function qtyShortcuts($event, $index) {
+    if ($event.which == 13) return this.focusInput('#box_' + $index, 'md-autocomplete');
+
+    return clearIfAsterick($event);
+  }
+
+  function clearIfAsterick($event) {
+    return $event.which == 106 || $event.which == 56 ? $event.target.value = "" : true;
   }
 
   function saveTransaction(transaction) {
@@ -1398,6 +1416,8 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
       this.resetFilter();
 
+      this.expShortcuts = _helpers.expShortcuts;
+      this.qtyShortcuts = _helpers.qtyShortcuts;
       this.saveTransaction = _helpers.saveTransaction;
       this.incrementBox = _helpers.incrementBox;
       this.focusInput = _helpers.focusInput;
@@ -1546,18 +1566,6 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
         if (_ret === 'break') break;
       }
-    };
-
-    inventory.prototype.expShortcuts = function expShortcuts($event, $index) {
-      if ($event.which == 13) return this.focusInput('#qty_' + $index);
-
-      return true;
-    };
-
-    inventory.prototype.qtyShortcuts = function qtyShortcuts($event, $index) {
-      if ($event.which == 13) return this.focusInput('#box_' + $index);
-
-      return true;
     };
 
     inventory.prototype.boxShortcuts = function boxShortcuts($event, $index) {
@@ -1966,6 +1974,8 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       this.stati = ['pickup', 'shipped', 'received'];
       this.shipments = {};
 
+      this.expShortcutsKeydown = _helpers.expShortcuts;
+      this.qtyShortcutsKeydown = _helpers.qtyShortcuts;
       this.incrementBox = _helpers.incrementBox;
       this.saveTransaction = _helpers.saveTransaction;
       this.focusInput = _helpers.focusInput;
@@ -2168,16 +2178,8 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       });
     };
 
-    shipments.prototype.expShortcutsKeydown = function expShortcutsKeydown($event, $index) {
-      return $event.which == 13 ? this.focusInput('#qty_' + $index) : true;
-    };
-
     shipments.prototype.expShortcutsInput = function expShortcutsInput($index) {
       this.autoCheck($index);
-    };
-
-    shipments.prototype.qtyShortcutsKeydown = function qtyShortcutsKeydown($event, $index) {
-      return $event.which == 13 ? this.focusInput('#box_' + $index, 'md-autocomplete') : true;
     };
 
     shipments.prototype.qtyShortcutsInput = function qtyShortcutsInput($event, $index) {
@@ -2336,7 +2338,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         return false;
       }
 
-      if ($event.which == 106) this.term = "";
+      if ($event.which == 106 || $event.which == 56) this.term = "";
 
       return true;
     };

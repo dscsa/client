@@ -75,6 +75,7 @@ export class dateValueConverter {
   fromView(date){
     let add = date.includes('+') || date.includes('=')
     let sub = date.includes('-')
+  
     let {month, year} = parseUserDate(date.replace(/\+|\-|\=/g, ''))
 
     if (year.length > 2) //without this if user accidentally typed an extra character it would cause ongoing save error
