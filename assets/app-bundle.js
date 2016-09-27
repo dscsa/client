@@ -1612,12 +1612,12 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
         var _loop2 = function _loop2(i) {
           chain = chain.then(function (_) {
-            var args = rows.slice(i, i + 36 * 36);
+            var args = rows.slice(i, i + 36 * 36 - 1);
             args = args.map(function (row) {
               return _this6.db.transaction.post(row);
             });
             args.push(new Promise(function (r) {
-              return setTimeout(r, 60000);
+              return setTimeout(r, 2000);
             }));
             return Promise.all(args);
           }).catch(function (err) {
@@ -1626,7 +1626,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
           });
         };
 
-        for (var i = 0; i < rows.length; i += 36 * 36) {
+        for (var i = 0; i < rows.length; i += 36 * 36 - 1) {
           _loop2(i);
         }
         return chain;
