@@ -2341,7 +2341,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         return false;
       }
 
-      if ($event.which == 106 || $event.which == 56) this.term = "";
+      if ($event.which == 106 || $event.shiftKey && $event.which == 56) this.term = "";
 
       return true;
     };

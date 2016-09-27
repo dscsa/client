@@ -367,7 +367,7 @@ export class shipments {
       return false //Enter was also triggering exp to qty focus
     }
 
-    if ($event.which == 106 || $event.which == 56) //* clearing autocomplete field with an asterick (to match exp date clearing and make numberpad compatible)
+    if ($event.which == 106 || ($event.shiftKey && $event.which == 56)) //* clearing autocomplete field with an asterick (to match exp date clearing and make numberpad compatible)
       this.term = ""
 
     return true  //still allow typing into autocomplete
