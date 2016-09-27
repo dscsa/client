@@ -271,7 +271,7 @@ export class shipments {
   belowMaxInventory(order, transaction) {
     let newInventory = order.inventory + transaction.qty[this.role.account]
     let maxInventory = order.maxInventory || 3000
-    let belowMaxInventory = newInventory < maxInventory
+    let belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory //in case of an inventory error let's keep the drug
     if ( ! belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory) //
     return belowMaxInventory
   }

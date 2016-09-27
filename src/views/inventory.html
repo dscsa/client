@@ -123,9 +123,11 @@
                 <md-input
                   id.bind="'qty_'+$index"
                   keydown.delegate="qtyShortcuts($event, $index)"
+                  disabled.bind="transaction.next.length"
                   type="number"
                   value.bind="transaction.qty.to | number"
                   style="width:40px; margin-bottom:-8px"
+                  max.bind="999"
                   placeholder>
                 </md-input>
               </td>
