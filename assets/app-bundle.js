@@ -634,7 +634,7 @@ define('resources/helpers',['exports'], function (exports) {
   }
 
   function clearIfAsterick($event) {
-    return $event.which == 106 || $event.which == 56 ? $event.target.value = "" : true;
+    return $event.which == 106 ? $event.target.value = "" : true;
   }
 
   function saveTransaction(transaction) {
