@@ -19,6 +19,12 @@ export class numberValueConverter {
   }
 }
 
+export class upperCaseValueConverter {
+  fromView(str) {
+    return str == null ? null : str.toUpperCase()
+  }
+}
+
 export class shipmentFilterValueConverter {
   toView(shipments = [], filter = ''){
     filter = filter.toLowerCase()

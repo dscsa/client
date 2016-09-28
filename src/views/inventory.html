@@ -144,7 +144,7 @@
                   keydown.delegate="boxShortcuts($event, $index)"
                   keyup.delegate="saveTransaction(transaction) & debounce:1000"
                   pattern="[A-Z]\d{3}"
-                  value.bind="transaction.location"
+                  value.bind="transaction.location | upperCase"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>
