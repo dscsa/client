@@ -126,9 +126,10 @@
         </md-button> -->
         <md-button color raised
           style="width:100%;"
+          disabled.bind="_savingDrug"
           click.delegate="drug._rev ? saveDrug() : addDrug()"
           form>
-          ${ drug._rev ? 'Save Drug' : 'Add Drug' }
+          ${ _savingDrug ? 'Saving Drug...' : (drug._rev ? 'Save Drug' : 'Add Drug') }
         </md-button>
       </div>
     </form>

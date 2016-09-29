@@ -218,15 +218,23 @@ export class drugs {
   }
 
   addDrug() {
+    this._savingDrug = true
     this.db.drug.post(this.drug)
     .then(res => {
       //Wait for the server POST to replicate back to client
-      setTimeout(_ => this.selectDrug(this.drug, true), 500)
+      setTimeout(_ => {
+        this._savingDrug = false
+        this.selectDrug(this.drug, true)
+      }, 1000)
     })
-    .catch(err => this.snackbar.show(`Drug not added: ${err.reason || err.message}`))
+    .catch(err => {
+      this._savingDrug = false
+      this.snackbar.show(`Drug not added: ${err.reason || err.message}`)
+    })
   }
 
   saveDrug() {
+    this._savingDrug = true
     this.db.drug.put(this.drug)
     .then(res => {
       //If we move the last drug out of the group, make sure we unorder it
@@ -237,9 +245,15 @@ export class drugs {
       ) this.order()
 
       //Wait for the server PUT to replicate back to client
-      setTimeout(_ => this.selectDrug(this.drug, true), 500)
+      setTimeout(_ => {
+        this._savingDrug = false
+        this.selectDrug(this.drug, true)
+      }, 1000)
     })
-    .catch(err => this.snackbar.show(`Drug not saved: ${err.reason || err.message}`))
+    .catch(err => {
+      this._savingDrug = false
+      this.snackbar.show(`Drug not saved: ${err.reason || err.message}`)
+    })
   }
 
   deleteDrug() {
