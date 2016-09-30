@@ -213,8 +213,9 @@ export class drugs {
   // }
 
   saveOrder() {
-    console.log('saving Order', this.account)
-    return this.db.account.put(this.account)
+    return this.db.account.put(this.account).catch(_ => {
+      this.snackbar.show(`Order could not be saved: ${err.reason || err.message}`)
+    })
   }
 
   addDrug() {

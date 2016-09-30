@@ -1348,39 +1348,42 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
     };
 
     drugs.prototype.saveOrder = function saveOrder() {
-      console.log('saving Order', this.account);
-      return this.db.account.put(this.account);
-    };
-
-    drugs.prototype.addDrug = function addDrug() {
       var _this8 = this;
 
-      this._savingDrug = true;
-      this.db.drug.post(this.drug).then(function (res) {
-        setTimeout(function (_) {
-          _this8._savingDrug = false;
-          _this8.selectDrug(_this8.drug, true);
-        }, 1000);
-      }).catch(function (err) {
-        _this8._savingDrug = false;
-        _this8.snackbar.show('Drug not added: ' + (err.reason || err.message));
+      return this.db.account.put(this.account).catch(function (_) {
+        _this8.snackbar.show('Order could not be saved: ' + (err.reason || err.message));
       });
     };
 
-    drugs.prototype.saveDrug = function saveDrug() {
+    drugs.prototype.addDrug = function addDrug() {
       var _this9 = this;
 
       this._savingDrug = true;
-      this.db.drug.put(this.drug).then(function (res) {
-        if (_this9.group.name != _this9.drug.generic && _this9.group.drugs.length == 1 && _this9.account.ordered[_this9.group.name]) _this9.order();
-
+      this.db.drug.post(this.drug).then(function (res) {
         setTimeout(function (_) {
           _this9._savingDrug = false;
           _this9.selectDrug(_this9.drug, true);
         }, 1000);
       }).catch(function (err) {
         _this9._savingDrug = false;
-        _this9.snackbar.show('Drug not saved: ' + (err.reason || err.message));
+        _this9.snackbar.show('Drug not added: ' + (err.reason || err.message));
+      });
+    };
+
+    drugs.prototype.saveDrug = function saveDrug() {
+      var _this10 = this;
+
+      this._savingDrug = true;
+      this.db.drug.put(this.drug).then(function (res) {
+        if (_this10.group.name != _this10.drug.generic && _this10.group.drugs.length == 1 && _this10.account.ordered[_this10.group.name]) _this10.order();
+
+        setTimeout(function (_) {
+          _this10._savingDrug = false;
+          _this10.selectDrug(_this10.drug, true);
+        }, 1000);
+      }).catch(function (err) {
+        _this10._savingDrug = false;
+        _this10.snackbar.show('Drug not saved: ' + (err.reason || err.message));
       });
     };
 
