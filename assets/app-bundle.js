@@ -1446,6 +1446,8 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
     inventory.prototype.activate = function activate(params) {
       var _this = this;
 
+      if (Object.keys(params).length) this.selectGroup(params);
+
       return this.db.user.session.get().then(function (session) {
         _this.account = session.account._id;
       });
@@ -1462,6 +1464,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
       var group = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
+      this.router.navigate('inventory?' + (0, _aureliaFramework.buildQueryString)(group));
       group.inventory = true;
       this.db.transaction.get(group, { limit: this.limit }).then(function (transactions) {
         if (transactions.length == _this2.limit) _this2.snackbar.show('Displaying first 100 results');
@@ -1537,9 +1540,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
           groups[drug.generic] = groups[drug.generic] || { generic: drug.generic };
         }
-        _this3.groups = Object.keys(groups).map(function (key) {
-          return groups[key];
-        });
+        _this3.groups = Object.values(groups);
       });
     };
 

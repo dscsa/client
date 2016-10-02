@@ -1,4 +1,4 @@
-import {inject} from 'aurelia-framework';
+import {inject, buildQueryString} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {Csv}    from '../libs/csv'
@@ -25,6 +25,10 @@ export class inventory {
   }
 
   activate(params) {
+
+    if (Object.keys(params).length)
+      this.selectGroup(params)
+
     return this.db.user.session.get().then(session => {
       this.account = session.account._id
     })
@@ -38,6 +42,7 @@ export class inventory {
   }
 
   selectGroup(group = {}) {
+    this.router.navigate('inventory?'+buildQueryString(group))
     group.inventory = true
     this.db.transaction.get(group, {limit:this.limit})
     .then(transactions => {
@@ -90,7 +95,7 @@ export class inventory {
       for (let drug of drugs) {
         groups[drug.generic] = groups[drug.generic] || {generic:drug.generic}
       }
-      this.groups = Object.keys(groups).map(key => groups[key])
+      this.groups = Object.values(groups)
     })
   }
 
