@@ -72,19 +72,10 @@ export function toggleDrawer() {
 export function drugSearch() {
   let term = (this.term || '').trim()
 
-  if (term.length < 3) {
-    return Promise.resolve(this._search = []) //always return a promise
-  }
-
-  if (/^[\d-]+$/.test(term)) {
-    this.regex = RegExp('('+term+')', 'gi')
-    this._search = this.db.drug.get({ndc:term})
-  } else {
-    this.regex = RegExp('('+term.replace(/ /g, '|')+')', 'gi')
-    this._search = this.db.drug.get({generic:term})
-  }
-
-  return this._search
+  //always do searches serially
+  return this._search = Promise.resolve(this._search).then(_ => {
+    return this.db.drug.get(/^[\d-]+$/.test(term) ? {ndc:term} : {generic:term})
+  })
 }
 
 //whether mm/yy or mm/dd/yy, month is always first and year is always last

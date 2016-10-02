@@ -424,8 +424,8 @@ export class shipments {
       : setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
 
     return this.db.transaction.post(transaction).catch(err => {
-      console.log(JSON.stringify(transaction), err)
-      this.snackbar.show(`Transaction could not be added: ${err.name}`)
+      console.error(err)
+      this.snackbar.show(`Transaction could not be added: ${err.reason}`)
       this.transactions.shift()
     })
   }
