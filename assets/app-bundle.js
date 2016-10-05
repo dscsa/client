@@ -1265,7 +1265,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
       var _this6 = this;
 
       this.snackbar.show('Exporting orders as csv. This may take a few minutes');
-
+      var csv = new _csv.Csv(['generic'], ['inventory', 'maxInventory', 'minQty', 'minDays', 'verifiedMessage', 'destroyedMessage', 'defaultLocation']);
       var orders = [];
 
       var _loop = function _loop(generic) {
@@ -1282,7 +1282,7 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
       }
 
       Promise.all(orders).then(function (orders) {
-        return _this6.csv.unparse('Orders.csv', orders);
+        return csv.unparse('Orders.csv', orders);
       });
     };
 

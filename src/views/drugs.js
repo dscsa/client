@@ -141,7 +141,7 @@ export class drugs {
 
   exportOrdered() {
     this.snackbar.show(`Exporting orders as csv. This may take a few minutes`)
-
+    let csv    = new Csv(['generic'], ['inventory', 'maxInventory', 'minQty', 'minDays', 'verifiedMessage', 'destroyedMessage', 'defaultLocation'])
     let orders = []
     for (let generic in this.account.ordered) {
       let order = this.account.ordered[generic]
@@ -152,7 +152,7 @@ export class drugs {
       }))
     }
 
-    Promise.all(orders).then(orders => this.csv.unparse('Orders.csv', orders))
+    Promise.all(orders).then(orders => csv.unparse('Orders.csv', orders))
   }
 
   exportDrugs() {
