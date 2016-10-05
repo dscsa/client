@@ -1315,7 +1315,8 @@ define('views/drugs',['exports', 'aurelia-framework', 'aurelia-router', '../libs
                 name: capitalize(name),
                 strength: trim(strength || '').toLowerCase().replace(/ /g, '')
               };
-            })
+            }),
+            price: drug.price
           };
         }));
       }).then(function (rows) {

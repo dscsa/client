@@ -179,7 +179,8 @@ export class drugs {
               name:capitalize(name),
               strength:trim(strength || '').toLowerCase().replace(/ /g, '')
             }
-          })
+          }),
+          price:drug.price
         }
       }))
     })
