@@ -93,7 +93,7 @@ export class inventory {
       for (let drug of drugs) {
         groups[drug.generic] = groups[drug.generic] || {generic:drug.generic}
       }
-      this.groups = Object.values(groups)
+      this.groups = Object.keys(groups).map(key => groups[key]) //Polyfill for Object.values
     })
   }
 

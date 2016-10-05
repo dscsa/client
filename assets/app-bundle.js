@@ -1563,7 +1563,9 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
           groups[drug.generic] = groups[drug.generic] || { generic: drug.generic };
         }
-        _this3.groups = Object.values(groups);
+        _this3.groups = Object.keys(groups).map(function (key) {
+          return groups[key];
+        });
       });
     };
 
