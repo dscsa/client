@@ -41,19 +41,17 @@ export class inventory {
       this.focusInput(`#exp_0`)
   }
 
-  selectGroup(group = {}) {
-    this.router.navigate('inventory?'+buildQueryString(group))
-    group.inventory = true
-    this.db.transaction.get(group, {limit:this.limit})
+  selectGroup(group) {
+    this.router.navigate('inventory?'+buildQueryString(group), {trigger:false})
+    this.db.transaction.get(Object.assign({inventory:true}, group), {limit:this.limit})
     .then(transactions => {
       if (transactions.length == this.limit)
         this.snackbar.show(`Displaying first 100 results`)
 
-      if (group.generic)
-        this.term  = group.generic
+      this.term  = group.generic || group.location || group.exp
 
       this.group = group
-      group.transactions = transactions.sort((a, b) => {
+      this.transactions = transactions.sort((a, b) => {
         let aExp = a.exp.to || a.exp.from || ''
         let bExp = b.exp.to || b.exp.from || ''
         let aQty = a.qty.to || a.qty.from || ''
@@ -71,7 +69,7 @@ export class inventory {
       })
 
       this.resetFilter()
-      for (let transaction of group.transactions) {
+      for (let transaction of this.transactions) {
         this.filter.exp[transaction.exp.to || transaction.exp.from] = {isChecked:true, count:0, qty:0}
         this.filter.ndc[transaction.drug._id]   = {isChecked:true, count:0, qty:0}
         this.filter.form[transaction.drug.form] = {isChecked:true, count:0, qty:0}
@@ -84,7 +82,7 @@ export class inventory {
   }
 
   search() {
-    if (/[A-Z][0-9]{1,3}/.test(this.term))
+    if (/[A-Z][0-9]{3}/.test(this.term))
       return this.selectGroup({location:this.term})
 
     if (/20\d\d-\d\d-?\d?\d?/.test(this.term))
@@ -106,12 +104,12 @@ export class inventory {
 
   repackInventory() {
     let repack = []
-    for (let transaction of this.group.transactions) {
+    for (let transaction of this.transactions) {
       if (transaction.isChecked) {
         transaction.next = transaction.next || []
         transaction.next.push({qty:transaction.qty.to || transaction.qty.from, dispensed:{}})
         this.db.transaction.put(transaction).then(_ => {
-          this.group.transactions.splice(this.group.transactions.indexOf(transaction), 1)
+          this.transactions.splice(this.transactions.indexOf(transaction), 1)
         }).catch(err => {
           transaction.isChecked = ! transaction.isChecked
           this.snackbar.show(`Error repacking: ${err.reason || err.message}`)
@@ -124,7 +122,7 @@ export class inventory {
     if ($event.which == 13) //Enter should focus on next row's exp
       return this.focusInput(`#exp_${$index+1}`)
 
-    return this.incrementBox($event, this.group.transactions[$index])
+    return this.incrementBox($event, this.transactions[$index])
   }
 
   exportCSV() {

@@ -45,12 +45,12 @@
           <div class="mdl-cell mdl-cell--2-col">${form.val.qty}</div>
           <div class="mdl-cell mdl-cell--2-col">${form.val.count}</div>
         </div>
-        <!-- <md-input show.bind="group.transactions.length" input.delegate="signalFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input> -->
+        <!-- <md-input show.bind="transactions.length" input.delegate="signalFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input> -->
       </div>
       <div class="mdl-card__actions">
         <md-button color raised
           style="width:100%"
-          disabled.bind=" ! group.transactions.length"
+          disabled.bind=" ! transactions.length"
           click.delegate="repackInventory()">
           ${'Repack Selected'}
         </md-button>
@@ -102,7 +102,7 @@
                 <th style="text-align:left; width:40px;">Box</th>
               </tr>
             </thead>
-            <tr repeat.for="transaction of group.transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
+            <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
               <td style="padding:0 0 0 8px">
                 <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
               </td>
