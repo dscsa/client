@@ -139,7 +139,23 @@ export class drugs {
     this.saveOrder()
   }
 
-  exportCSV() {
+  exportOrdered() {
+    this.snackbar.show(`Exporting orders as csv. This may take a few minutes`)
+
+    let orders = []
+    for (let generic in this.account.ordered) {
+      let order = this.account.ordered[generic]
+      orders.push(this.db.transaction.get({generic, inventory:"sum"}).then(inventory => {
+        order.generic   = generic
+        order.inventory = inventory[0]
+        return order
+      }))
+    }
+
+    Promise.all(orders).then(orders => this.csv.unparse('Orders.csv', orders))
+  }
+
+  exportDrugs() {
     this.snackbar.show(`Exporting drugs as csv. This may take a few minutes`)
     this.db.drug.get().then(drugs => {
       this.csv.unparse('Drugs.csv', drugs.map(drug => {
@@ -155,7 +171,7 @@ export class drugs {
     })
   }
 
-  importCSV() {
+  importDrugs() {
     let start = Date.now()
     this.snackbar.show(`Parsing csv file`)
     function capitalize(text) {
