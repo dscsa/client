@@ -261,7 +261,7 @@ export class shipments {
   }
 
   belowMaxInventory(order, transaction) {
-    let newInventory = order.inventory + transaction.qty[this.role.account]
+    let newInventory = +transaction.qty[this.role.account] + order.inventory
     let maxInventory = order.maxInventory || 3000
     let belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory //in case of an inventory error let's keep the drug
     if ( ! belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory) //
@@ -299,7 +299,7 @@ export class shipments {
     let order       = this.getOrder(transaction)
 
     if(this.isWanted(order, transaction) == isChecked)
-      return ! isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order) //isChecked may have never alternated for a destroyed drug so need to check
+      return ! isChecked && +transaction.qty.to > 0 && this.setDestroyedMessage(order) //isChecked may have never alternated for a destroyed drug so need to check
 
     if (isChecked)
       this.setDestroyedMessage(order)

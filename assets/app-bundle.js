@@ -2279,7 +2279,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.belowMaxInventory = function belowMaxInventory(order, transaction) {
-      var newInventory = order.inventory + transaction.qty[this.role.account];
+      var newInventory = +transaction.qty[this.role.account] + order.inventory;
       var maxInventory = order.maxInventory || 3000;
       var belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory;
       if (!belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory);
@@ -2313,7 +2313,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       var isChecked = transaction.isChecked;
       var order = this.getOrder(transaction);
 
-      if (this.isWanted(order, transaction) == isChecked) return !isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order);
+      if (this.isWanted(order, transaction) == isChecked) return !isChecked && +transaction.qty.to > 0 && this.setDestroyedMessage(order);
 
       if (isChecked) this.setDestroyedMessage(order);
 
