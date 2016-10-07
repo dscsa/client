@@ -208,8 +208,8 @@ export class shipments {
   deleteTransactionIfQty0($event, $index) {
     //Delete an item in the qty is 0.  Instead of having a delete button
     let transaction = this.transactions[$index]
-    let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
-    let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
+    let doneeDelete = ! transaction.qty.from && transaction.qty.to === '0'
+    let donorDelete = ! transaction.qty.to   && transaction.qty.from === '0'
 
     if ( ! donorDelete && ! doneeDelete)
       return true
@@ -423,10 +423,12 @@ export class shipments {
       ? this.snackbar.show(`Destroy, record already exists`)
       : setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
 
-    return this.db.transaction.post(transaction).catch(err => {
-      console.error(err)
-      this.snackbar.show(`Transaction could not be added: ${err.reason}`)
-      this.transactions.shift()
+    return this._saveTransaction = Promise.resolve(this._saveTransaction).then(_ => {
+      return this.db.transaction.post(transaction).catch(err => {
+        console.error(err)
+        this.snackbar.show(`Transaction could not be added: ${err.reason}`)
+        this.transactions.shift()
+      })
     })
   }
 

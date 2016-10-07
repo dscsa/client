@@ -732,7 +732,7 @@ define('resources/value-converters',['exports', '../resources/helpers'], functio
     }
 
     numberValueConverter.prototype.fromView = function fromView(str, decimals) {
-      return +(+str).toFixed(decimals);
+      return str ? (+str).toFixed(decimals) : '';
     };
 
     return numberValueConverter;
@@ -2228,8 +2228,8 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
     shipments.prototype.deleteTransactionIfQty0 = function deleteTransactionIfQty0($event, $index) {
       var transaction = this.transactions[$index];
-      var doneeDelete = !transaction.qty.from && transaction.qty.to === 0;
-      var donorDelete = !transaction.qty.to && transaction.qty.from === 0;
+      var doneeDelete = !transaction.qty.from && transaction.qty.to === '0';
+      var donorDelete = !transaction.qty.to && transaction.qty.from === '0';
 
       if (!donorDelete && !doneeDelete) return true;
 
@@ -2428,10 +2428,12 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         return _this11.focusInput('#exp_0');
       }, 50);
 
-      return this.db.transaction.post(transaction).catch(function (err) {
-        console.error(err);
-        _this11.snackbar.show('Transaction could not be added: ' + err.reason);
-        _this11.transactions.shift();
+      return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
+        return _this11.db.transaction.post(transaction).catch(function (err) {
+          console.error(err);
+          _this11.snackbar.show('Transaction could not be added: ' + err.reason);
+          _this11.transactions.shift();
+        });
       });
     };
 

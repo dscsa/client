@@ -10,7 +10,7 @@ export class jsonValueConverter {
 export class numberValueConverter {
   fromView(str, decimals){
     //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
-    return +((+str).toFixed(decimals))
+    return str ? (+str).toFixed(decimals) : ''
   }
 }
 
