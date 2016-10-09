@@ -450,9 +450,6 @@ export class shipments {
         transaction._rev         = undefined
         transaction.shipment._id = undefined
         transaction.next         = JSON.parse(transaction.next)
-        transaction.exp.to       = toJsonDate(parseUserDate(transaction.exp.to))
-        transaction.exp.from     = toJsonDate(parseUserDate(transaction.exp.from))
-        transaction.verifiedAt   = toJsonDate(parseUserDate(transaction.verifiedAt))
         return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
           //This will add drugs upto the point where a drug cannot be found rather than rejecting all
           if (drugs[0]) return {drug:drugs[0], transaction}

@@ -2464,9 +2464,6 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
           transaction._rev = undefined;
           transaction.shipment._id = undefined;
           transaction.next = JSON.parse(transaction.next);
-          transaction.exp.to = toJsonDate(parseUserDate(transaction.exp.to));
-          transaction.exp.from = toJsonDate(parseUserDate(transaction.exp.from));
-          transaction.verifiedAt = toJsonDate(parseUserDate(transaction.verifiedAt));
           return _this12.db.drug.get({ _id: transaction.drug._id }).then(function (drugs) {
             if (drugs[0]) return { drug: drugs[0], transaction: transaction };
             throw 'Cannot find drug with _id ' + transaction.drug._id;
