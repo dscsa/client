@@ -21,7 +21,10 @@ export class MdInputCustomElement {
   }
 
   disabledChanged() {
-    setTimeout(_ => this.div && this.div.MaterialTextfield && this.div.MaterialTextfield.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
+    setTimeout(_ => {
+      this.div && this.div.MaterialTextfield && this.div.MaterialTextfield.checkDisabled()
+      this.div && this.div.MaterialTextfield && this.div.MaterialTextfield.checkValidity()
+    }) //disabled hasn't actually been changed yet so wait for the change and then check
   }
 
   attached() {

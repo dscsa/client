@@ -112,6 +112,7 @@
               <td style="padding:0">
                 <md-input
                   id.bind="'exp_'+$index"
+                  required
                   keydown.delegate="expShortcuts($event, $index)"
                   pattern="(0?[1-9]|1[012])/\d{2}"
                   value.bind="transaction.exp.to | date"
@@ -122,6 +123,7 @@
               <td style="padding:0">
                 <md-input
                   id.bind="'qty_'+$index"
+                  required
                   keydown.delegate="qtyShortcuts($event, $index)"
                   disabled.bind="transaction.next.length"
                   type="number"
@@ -141,6 +143,7 @@
               <td style="padding:0">
                 <md-input
                   id.bind="'box_'+$index"
+                  required
                   keydown.delegate="boxShortcuts($event, $index)"
                   keyup.delegate="saveTransaction(transaction) & debounce:1000"
                   pattern="[A-Z]\d{3}"

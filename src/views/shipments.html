@@ -229,6 +229,7 @@
                 ${ transaction.exp[role.partner] | date}
                 <md-input
                   id.bind="'exp_'+$index"
+                  required
                   keydown.delegate="expShortcutsKeydown($event, $index)"
                   input.trigger="expShortcutsInput($index)"
                   disabled.bind="transaction.next.length"
@@ -244,6 +245,7 @@
                   <!-- keyup rather than keydown because we want the new quantity not the old one -->
                   <md-input
                     id.bind="'qty_'+$index"
+                    required
                     keydown.delegate="qtyShortcutsKeydown($event, $index)"
                     input.trigger="qtyShortcutsInput($event, $index)"
                     disabled.bind="transaction.next.length"
@@ -257,6 +259,7 @@
               <td style="padding:0">
                 <md-input
                   id.bind="'box_'+$index"
+                  required
                   disabled.bind=" ! transaction.verifiedAt || transaction.next.length"
                   keyup.delegate="setLocation(transaction) & debounce:1000"
                   keydown.delegate="boxShortcuts($event, $index)"

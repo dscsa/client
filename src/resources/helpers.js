@@ -18,11 +18,13 @@ export function qtyShortcuts($event, $index) {
 export function incrementBox($event, transaction) {
   if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
     transaction.location = transaction.location[0]+(+transaction.location.slice(1)+1)
+    saveTransaction.call(this, transaction)
     return false //don't actually add the +
   }
 
   if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
     transaction.location = transaction.location[0]+(+transaction.location.slice(1)-1)
+    saveTransaction.call(this, transaction)
     return false //don't actually add the -
   }
 
@@ -36,7 +38,7 @@ function clearIfAsterick($event) {
 export function saveTransaction(transaction) {
   return this._saveTransaction = Promise.resolve(this._saveTransaction).then(_ => {
     return this.db.transaction.put(transaction)
-  })
+  }).catch(_ => delete this._saveTransaction)
 }
 
 export function scrollSelect($event, curr, list = [], cb) {

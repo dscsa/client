@@ -235,10 +235,6 @@ export class shipments {
   setLocation(transaction) {
     if (this.getLocation(transaction) != transaction.location)
       this._location = transaction.location //Only prepopulate non-default locations into next transaction
-
-    this.saveTransaction(transaction).catch(err => {
-      this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`) //message is for pouchdb errors
-    })
   }
 
   aboveMinQty(order, transaction) {
