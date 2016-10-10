@@ -69,10 +69,13 @@
             click.delegate="selectGroup(group)"
             class="${ group.generic == $parent.group.generic && 'is-selected'}">
             <td
+              style="white-space:normal; max-width:70%"
               class="mdl-data-table__cell--non-numeric"
               innerHTML.bind="group.generic | bold:regex">
             </td>
-            <td>${ ordered[group.generic] ? 'Min Qty:'+(ordered[group.generic].minQty || 10) +', Min Days:'+(ordered[group.generic].minDays || 120) : ''}</td>
+            <td style="max-width:30%">
+              ${ ordered[group.generic] ? 'Min Qty:'+(ordered[group.generic].minQty || 10) +', Min Days:'+(ordered[group.generic].minDays || 120) : ''}
+            </td>
           </tr>
         </table>
       </md-autocomplete>
