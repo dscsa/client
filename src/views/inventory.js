@@ -29,8 +29,10 @@ export class inventory {
     if (Object.keys(params).length)
       this.selectGroup(params)
 
-    return this.db.user.session.get().then(session => {
-      this.account = session.account._id
+    this.db.user.session.get().then(session => {
+      return this.db.account.get({_id:session.account._id})
+    }).then(accounts => {
+      this.ordered = accounts[0].ordered
     })
   }
 

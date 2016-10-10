@@ -70,8 +70,9 @@
             class="${ group.generic == $parent.group.generic && 'is-selected'}">
             <td
               class="mdl-data-table__cell--non-numeric"
-              innerHTML.bind="group.generic.replace(regex, '<strong>$1</strong>')">
+              innerHTML.bind="group.generic | bold:regex">
             </td>
+            <td>${ ordered[group.generic] ? 'Min Qty:'+(ordered[group.generic].minQty || 10) +', Min Days:'+(ordered[group.generic].minDays || 120) : ''}</td>
           </tr>
         </table>
       </md-autocomplete>
