@@ -8,13 +8,8 @@ export class jsonValueConverter {
 }
 
 export class numberValueConverter {
-  toView(str) {
-    return this.view || str
-  }
-
-  fromView(str, decimals){
-    this.view = str
-    return str === '' ? null : +(+str).toFixed(decimals)
+  fromView(str){
+    return str === '' ? null : +str
   }
 }
 

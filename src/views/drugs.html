@@ -90,7 +90,7 @@
           Labeler
         </md-input>
         <md-input
-          value.bind="drug.price.nadac | number:3"
+          value.bind="drug.price.nadac | number"
           disabled.bind="! drug._rev"
           type="number"
           step=".001"
@@ -98,7 +98,7 @@
           Nadac Price
         </md-input>
         <md-input
-          value.bind="drug.price.goodrx | number:3"
+          value.bind="drug.price.goodrx | number"
           disabled.bind="! drug._rev"
           type="number"
           step=".001"
