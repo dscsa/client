@@ -18,6 +18,8 @@ export class shipments {
     this.stati  = ['pickup', 'shipped', 'received']
     this.shipments = {}
 
+    this.placeholder = "Please Wait While the Drug Database is Indexed"
+    this.drugsIndexed = true
     this.expShortcutsKeydown = expShortcuts
     this.qtyShortcutsKeydown = qtyShortcuts
     this.incrementBox    = incrementBox
@@ -88,7 +90,16 @@ export class shipments {
       this.shipments = {from:fromShipments, to:toShipments}
 
       this.selectShipment(selected)
+
+      this.waitForDrugsToIndex()
     })
+  }
+
+ waitForDrugsToIndex(){
+    setTimeout(()  => {
+      this.placeholder = "Add Drugs by Generic or NDC"
+      this.drugsIndexed = false
+    }, 5000)
   }
 
   //Activated by activate() and each time a shipment is selected from drawer
