@@ -155,7 +155,7 @@
         value.bind="term"
         input.delegate="search() & debounce:50"
         keydown.delegate="autocompleteShortcuts($event) & debounce:50"
-        disabled.bind="drugsIndexed || role.account == 'to' && ! shipment._rev"
+        disabled.bind="drugsNotIndexed || role.account == 'to' && ! shipment._rev"
         style="margin:0px 16px">
         <table md-table>
           <tr
