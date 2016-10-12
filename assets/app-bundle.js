@@ -1596,7 +1596,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
         if (transaction.isChecked) {
           transaction.next = transaction.next || [];
-          transaction.next.push({ qty: transaction.qty.to || transaction.qty.from, dispensed: {} });
+          transaction.next.push({ qty: transaction.qty.to || transaction.qty.from, dispensed: { dispensedAt: new Date().toJSON() } });
           _this4.db.transaction.put(transaction).then(function (_) {
             _this4.transactions.splice(_this4.transactions.indexOf(transaction), 1);
           }).catch(function (err) {

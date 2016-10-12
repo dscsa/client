@@ -109,7 +109,7 @@ export class inventory {
     for (let transaction of this.transactions) {
       if (transaction.isChecked) {
         transaction.next = transaction.next || []
-        transaction.next.push({qty:transaction.qty.to || transaction.qty.from, dispensed:{}})
+        transaction.next.push({qty:transaction.qty.to || transaction.qty.from, dispensed:{dispensedAt:new Date().toJSON()}})
         this.db.transaction.put(transaction).then(_ => {
           this.transactions.splice(this.transactions.indexOf(transaction), 1)
         }).catch(err => {
