@@ -742,7 +742,7 @@ define('resources/value-converters',['exports', '../resources/helpers'], functio
 
     numberValueConverter.prototype.fromView = function fromView(str, decimals) {
       this.view = str;
-      return +(+str).toFixed(decimals);
+      return str === '' ? null : +(+str).toFixed(decimals);
     };
 
     return numberValueConverter;
@@ -2239,9 +2239,10 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.deleteTransactionIfQty0 = function deleteTransactionIfQty0($event, $index) {
+
       var transaction = this.transactions[$index];
-      var doneeDelete = !transaction.qty.from && transaction.qty.to === '0';
-      var donorDelete = !transaction.qty.to && transaction.qty.from === '0';
+      var doneeDelete = !transaction.qty.from && transaction.qty.to === 0;
+      var donorDelete = !transaction.qty.to && transaction.qty.from === 0;
 
       if (!donorDelete && !doneeDelete) return true;
 
@@ -2266,7 +2267,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.aboveMinQty = function aboveMinQty(order, transaction) {
-      var qty = +transaction.qty[this.role.account];
+      var qty = transaction.qty[this.role.account];
       if (!qty) return false;
       var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
       var defaultQty = price > 1 ? 1 : 10;
@@ -2285,7 +2286,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.belowMaxInventory = function belowMaxInventory(order, transaction) {
-      var newInventory = +transaction.qty[this.role.account] + order.inventory;
+      var newInventory = transaction.qty[this.role.account] + order.inventory;
       var maxInventory = order.maxInventory || 3000;
       var belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory;
       if (!belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory);
@@ -2319,7 +2320,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       var isChecked = transaction.isChecked;
       var order = this.getOrder(transaction);
 
-      if (this.isWanted(order, transaction) == isChecked) return !isChecked && +transaction.qty.to > 0 && this.setDestroyedMessage(order);
+      if (this.isWanted(order, transaction) == isChecked) return !isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order);
 
       if (isChecked) this.setDestroyedMessage(order);
 

@@ -14,7 +14,7 @@ export class numberValueConverter {
 
   fromView(str, decimals){
     this.view = str
-    return +(+str).toFixed(decimals)
+    return str === '' ? null : +(+str).toFixed(decimals)
   }
 }
 

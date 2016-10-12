@@ -207,9 +207,10 @@ export class shipments {
 
   deleteTransactionIfQty0($event, $index) {
     //Delete an item in the qty is 0.  Instead of having a delete button
+
     let transaction = this.transactions[$index]
-    let doneeDelete = ! transaction.qty.from && transaction.qty.to === '0'
-    let donorDelete = ! transaction.qty.to   && transaction.qty.from === '0'
+    let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
+    let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
 
     if ( ! donorDelete && ! doneeDelete)
       return true
@@ -238,7 +239,7 @@ export class shipments {
   }
 
   aboveMinQty(order, transaction) {
-    let qty = +transaction.qty[this.role.account]
+    let qty = transaction.qty[this.role.account]
     if ( ! qty) return false
     let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
     let defaultQty = price > 1 ? 1 : 10 //keep expensive meds
@@ -257,7 +258,7 @@ export class shipments {
   }
 
   belowMaxInventory(order, transaction) {
-    let newInventory = +transaction.qty[this.role.account] + order.inventory
+    let newInventory = transaction.qty[this.role.account] + order.inventory
     let maxInventory = order.maxInventory || 3000
     let belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory //in case of an inventory error let's keep the drug
     if ( ! belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory) //
@@ -295,7 +296,7 @@ export class shipments {
     let order       = this.getOrder(transaction)
 
     if(this.isWanted(order, transaction) == isChecked)
-      return ! isChecked && +transaction.qty.to > 0 && this.setDestroyedMessage(order) //isChecked may have never alternated for a destroyed drug so need to check
+      return ! isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order) //isChecked may have never alternated for a destroyed drug so need to check
 
     if (isChecked)
       this.setDestroyedMessage(order)
