@@ -8,9 +8,13 @@ export class jsonValueConverter {
 }
 
 export class numberValueConverter {
+  toView(str) {
+    return this.view || str
+  }
+
   fromView(str, decimals){
-    //Match servers transaction.js default: Empty string -> null, string -> number, number -> number (including 0)
-    return str ? (+str).toFixed(decimals) : ''
+    this.view = str
+    return +(+str).toFixed(decimals)
   }
 }
 
