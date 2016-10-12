@@ -19,7 +19,8 @@ export class shipments {
     this.shipments = {}
 
     this.placeholder = "Please Wait While the Drug Database is Indexed"
-    this.drugsIndexed = true
+    this.drugsNotIndexed = true
+
     this.expShortcutsKeydown = expShortcuts
     this.qtyShortcutsKeydown = qtyShortcuts
     this.incrementBox    = incrementBox
@@ -96,10 +97,11 @@ export class shipments {
   }
 
  waitForDrugsToIndex(){
-    setTimeout(()  => {
-      this.placeholder = "Add Drugs by Generic or NDC"
-      this.drugsIndexed = false
-    }, 5000)
+   let resp = this.db.drug.get({ndc:"002"}).then(drugs =>{  //a dummy search, and once it's done, it will activate search
+     console.log(drugs)
+     this.placeholder = "Add Drugs by Generic or NDC"
+     this.drugsNotIndexed = false
+   })
   }
 
   //Activated by activate() and each time a shipment is selected from drawer
