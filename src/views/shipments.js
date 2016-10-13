@@ -91,17 +91,31 @@ export class shipments {
       this.shipments = {from:fromShipments, to:toShipments}
 
       this.selectShipment(selected)
-
       this.waitForDrugsToIndex()
     })
   }
 
  waitForDrugsToIndex(){
-   let resp = this.db.drug.get({ndc:"002"}).then(drugs =>{  //a dummy search, and once it's done, it will activate search
-     console.log(drugs)
-     this.placeholder = "Add Drugs by Generic or NDC"
-     this.drugsNotIndexed = false
-   })
+  // let dbConfirms = false
+   //console.log("start")
+   //while(! dbConfirms){
+   //this.drugsNotIndexed = false
+  let dbConfirms = this.db.drug.drugIsIndexed.get()
+  .then(result => {
+    console.log("Yo")
+    this.drugsNotIndexed = false
+    this.placeholder = "Add Drugs by Generic Name or NDC..."
+  })
+  console.log("BYE")
+  // }
+   //this.drugsNotIndexed = false
+
+   //let resp = this.db.drug.get({ndc:"002"}).then(drugs =>{  //a dummy search, and once it's done, it will activate search
+  //   console.log("I am Indexed!")
+//  this.placeholder = "Add Drugs by Generic Name or NDC..."
+  //   console.log("Second go around ,", this.db.drug.drugIsIndexed.get())
+     //this.drugsNotIndexed = false
+   //})
   }
 
   //Activated by activate() and each time a shipment is selected from drawer
