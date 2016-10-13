@@ -58,9 +58,10 @@
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
       <md-autocomplete
-        placeholder="Search Drugs by Generic Name..."
+        placeholder.bind="placeholder"
         value.bind="term"
         input.delegate="search()"
+        disabled.bind="drugsNotIndexed"
         keyup.delegate="scrollGroups($event)"
         style="margin:0px 16px; padding-right:15px">
         <table md-table>
