@@ -15,6 +15,9 @@ export class inventory {
 
     this.resetFilter()
 
+    this.placeholder = "Please Wait While the Drug Database is Indexed" //Put in while database syncs
+    this.drugsNotIndexed = true //Disables the search field while databse syncs
+
     this.expShortcuts    = expShortcuts
     this.qtyShortcuts    = qtyShortcuts
     this.saveTransaction = saveTransaction
@@ -25,8 +28,19 @@ export class inventory {
   }
 
   activate(params) {
+    this.waitForDrugsToIndex()
     return this.db.user.session.get().then(session => {
       this.account = session.account._id
+    })
+  }
+
+//Calls the direct query to pouch to wait on the drug database being synced. Then it
+//reopens the search field and changes the placeholder.
+  waitForDrugsToIndex(){
+    let dbConfirms = this.db.drug.drugIsIndexed.get()
+    .then(_ => {
+      this.drugsNotIndexed = false
+      this.placeholder = "Search Drugs By Generic Name..."
     })
   }
 
