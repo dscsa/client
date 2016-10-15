@@ -645,8 +645,10 @@ define('resources/helpers',['exports'], function (exports) {
 
     return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
       return _this.db.transaction.put(transaction);
-    }).catch(function (_) {
-      return delete _this._saveTransaction;
+    }).catch(function (err) {
+      delete _this._saveTransaction;
+      _this.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
+      throw err;
     });
   }
 
@@ -1595,14 +1597,17 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
         var transaction = _ref3;
 
         if (transaction.isChecked) {
-          transaction.next = transaction.next || [];
-          transaction.next.push({ qty: transaction.qty.to || transaction.qty.from, dispensed: { dispensedAt: new Date().toJSON() } });
-          _this4.db.transaction.put(transaction).then(function (_) {
-            _this4.transactions.splice(_this4.transactions.indexOf(transaction), 1);
-          }).catch(function (err) {
-            transaction.isChecked = !transaction.isChecked;
-            _this4.snackbar.show('Error repacking: ' + (err.reason || err.message));
-          });
+          (function () {
+            transaction.next = transaction.next || [];
+            transaction.next.push({ qty: transaction.qty.to || transaction.qty.from, dispensed: { dispensedAt: new Date().toJSON() } });
+            var index = _this4.transactions.indexOf(transaction);
+            _this4.transactions.splice(index, 1);
+            _this4.db.transaction.put(transaction).catch(function (err) {
+              transaction.next.pop();
+              _this4.transactions.splice(index, 0, transaction);
+              _this4.snackbar.show('Error repacking: ' + (err.reason || err.message));
+            });
+          })();
         }
       };
 
@@ -2328,9 +2333,11 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.toggleVerified = function toggleVerified(transaction) {
-      var _this7 = this;
 
-      if (transaction.verifiedAt) {
+      var verifiedAt = transaction.verifiedAt;
+      var location = transaction.location;
+
+      if (verifiedAt) {
         transaction.verifiedAt = null;
         transaction.location = null;
       } else {
@@ -2340,7 +2347,8 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
 
       this.saveTransaction(transaction).catch(function (err) {
         transaction.isChecked = !transaction.isChecked;
-        _this7.snackbar.show('Error saving transaction: ' + (err.reason || err.message));
+        transaction.verifiedAt = verifiedAt;
+        transaction.location = location;
       });
     };
 
@@ -2358,24 +2366,24 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.search = function search() {
-      var _this8 = this;
+      var _this7 = this;
 
       this.drugSearch().then(function (drugs) {
-        _this8.drugs = drugs;
-        _this8.drug = drugs[0];
+        _this7.drugs = drugs;
+        _this7.drug = drugs[0];
       });
     };
 
     shipments.prototype.autocompleteShortcuts = function autocompleteShortcuts($event) {
-      var _this9 = this;
+      var _this8 = this;
 
       this.scrollSelect($event, this.drug, this.drugs, function (drug) {
-        return _this9.drug = drug;
+        return _this8.drug = drug;
       });
 
       if ($event.which == 13) {
         Promise.resolve(this._search).then(function (_) {
-          return _this9.addTransaction(_this9.drug);
+          return _this8.addTransaction(_this8.drug);
         });
         return false;
       }
@@ -2386,7 +2394,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     };
 
     shipments.prototype.addTransaction = function addTransaction(drug, transaction) {
-      var _this10 = this;
+      var _this9 = this;
 
       if (!drug) return this.snackbar.show('Cannot find drug matching this search');
 
@@ -2427,20 +2435,20 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       });
 
       isPharMerica && !order ? this.snackbar.show('Destroy, record already exists') : setTimeout(function (_) {
-        return _this10.focusInput('#exp_0');
+        return _this9.focusInput('#exp_0');
       }, 50);
 
       return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
-        return _this10.db.transaction.post(transaction).catch(function (err) {
+        return _this9.db.transaction.post(transaction).catch(function (err) {
           console.error(err);
-          _this10.snackbar.show('Transaction could not be added: ' + err.reason);
-          _this10.transactions.shift();
+          _this9.snackbar.show('Transaction could not be added: ' + err.reason);
+          _this9.transactions.shift();
         });
       });
     };
 
     shipments.prototype.exportCSV = function exportCSV() {
-      var _this11 = this;
+      var _this10 = this;
 
       var name = this.shipment._id ? 'Shipment ' + this.shipment._id + '.csv' : 'Inventory.csv';
       this.csv.unparse(name, this.transactions.map(function (transaction) {
@@ -2451,23 +2459,23 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
           'drug.generics': transaction.drug.generics.map(function (generic) {
             return generic.name + " " + generic.strength;
           }).join(';'),
-          shipment: _this11.shipment
+          shipment: _this10.shipment
         };
       }));
     };
 
     shipments.prototype.importCSV = function importCSV() {
-      var _this12 = this;
+      var _this11 = this;
 
       console.log('this.$file.value', this.$file.value);
       this.csv.parse(this.$file.files[0]).then(function (parsed) {
         return Promise.all(parsed.map(function (transaction) {
-          _this12.$file.value = '';
+          _this11.$file.value = '';
           transaction._id = undefined;
           transaction._rev = undefined;
           transaction.shipment._id = undefined;
           transaction.next = JSON.parse(transaction.next);
-          return _this12.db.drug.get({ _id: transaction.drug._id }).then(function (drugs) {
+          return _this11.db.drug.get({ _id: transaction.drug._id }).then(function (drugs) {
             if (drugs[0]) return { drug: drugs[0], transaction: transaction };
             throw 'Cannot find drug with _id ' + transaction.drug._id;
           });
@@ -2475,12 +2483,12 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
       }).then(function (rows) {
         console.log('rows', rows);
         return Promise.all(rows.map(function (row) {
-          return _this12.addTransaction(row.drug, row.transaction);
+          return _this11.addTransaction(row.drug, row.transaction);
         }));
       }).then(function (_) {
-        return _this12.snackbar.show('All Transactions Imported');
+        return _this11.snackbar.show('All Transactions Imported');
       }).catch(function (err) {
-        return _this12.snackbar.show('Transactions not imported: ' + err);
+        return _this11.snackbar.show('Transactions not imported: ' + err);
       });
     };
 

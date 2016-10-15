@@ -38,7 +38,11 @@ function clearIfAsterick($event) {
 export function saveTransaction(transaction) {
   return this._saveTransaction = Promise.resolve(this._saveTransaction).then(_ => {
     return this.db.transaction.put(transaction)
-  }).catch(_ => delete this._saveTransaction)
+  }).catch(err => {
+    delete this._saveTransaction
+    this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`)
+    throw err
+  })
 }
 
 export function scrollSelect($event, curr, list = [], cb) {

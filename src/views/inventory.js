@@ -110,10 +110,11 @@ export class inventory {
       if (transaction.isChecked) {
         transaction.next = transaction.next || []
         transaction.next.push({qty:transaction.qty.to || transaction.qty.from, dispensed:{dispensedAt:new Date().toJSON()}})
-        this.db.transaction.put(transaction).then(_ => {
-          this.transactions.splice(this.transactions.indexOf(transaction), 1)
-        }).catch(err => {
-          transaction.isChecked = ! transaction.isChecked
+        let index = this.transactions.indexOf(transaction)
+        this.transactions.splice(index, 1)
+        this.db.transaction.put(transaction).catch(err => {
+          transaction.next.pop()
+          this.transactions.splice(index, 0, transaction)
           this.snackbar.show(`Error repacking: ${err.reason || err.message}`)
         })
       }

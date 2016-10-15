@@ -311,7 +311,10 @@ export class shipments {
 
   toggleVerified(transaction) {
 
-    if (transaction.verifiedAt) {
+    let verifiedAt = transaction.verifiedAt
+    let location   = transaction.location
+
+    if (verifiedAt) {
       transaction.verifiedAt = null
       transaction.location   = null
     } else {
@@ -320,8 +323,9 @@ export class shipments {
     }
 
     this.saveTransaction(transaction).catch(err => {
-      transaction.isChecked = ! transaction.isChecked
-      this.snackbar.show(`Error saving transaction: ${err.reason || err.message }`)
+      transaction.isChecked  = ! transaction.isChecked
+      transaction.verifiedAt = verifiedAt
+      transaction.location   = location
     })
   }
 
