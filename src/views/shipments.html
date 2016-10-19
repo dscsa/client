@@ -100,7 +100,7 @@
           style="width:64%; margin-top:20px"
           value.bind="shipment[shipment.status+'At']"
           disabled.bind="! shipment._rev"
-          input.delegate="saveShipment() & debounce:1000">
+          input.delegate="saveShipment() & debounce:1500">
         </md-input>
         <!-- <md-select
           style="width:100%"
@@ -205,7 +205,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr style="padding-top:7px;" repeat.for="transaction of transactions" input.delegate="saveTransaction(transaction) & debounce:1000">
+            <tr style="padding-top:7px;" repeat.for="transaction of transactions" input.delegate="saveTransaction(transaction) & debounce:1500">
               <td style="padding:0 0 0 8px">
                 <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->
                 <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->
@@ -261,7 +261,7 @@
                   id.bind="'box_'+$index"
                   required
                   disabled.bind=" ! transaction.verifiedAt || transaction.next.length"
-                  keyup.delegate="setLocation(transaction) & debounce:1000"
+                  keyup.delegate="setLocation(transaction) & debounce:1500"
                   keydown.delegate="boxShortcuts($event, $index)"
                   pattern="[A-Z]\d{3}"
                   value.bind="transaction.location | upperCase"
