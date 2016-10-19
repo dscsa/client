@@ -1584,39 +1584,22 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
       var repack = [];
 
-      var _loop = function _loop() {
-        if (_isArray3) {
-          if (_i3 >= _iterator3.length) return 'break';
-          _ref3 = _iterator3[_i3++];
-        } else {
-          _i3 = _iterator3.next();
-          if (_i3.done) return 'break';
-          _ref3 = _i3.value;
-        }
-
-        var transaction = _ref3;
-
+      var _loop = function _loop(i) {
+        var transaction = _this4.transactions[i];
         if (transaction.isChecked) {
-          (function () {
-            transaction.next = transaction.next || [];
-            transaction.next.push({ qty: transaction.qty.to || transaction.qty.from, dispensed: { dispensedAt: new Date().toJSON() } });
-            var index = _this4.transactions.indexOf(transaction);
-            _this4.transactions.splice(index, 1);
-            _this4.db.transaction.put(transaction).catch(function (err) {
-              transaction.next.pop();
-              _this4.transactions.splice(index, 0, transaction);
-              _this4.snackbar.show('Error repacking: ' + (err.reason || err.message));
-            });
-          })();
+          transaction.next = transaction.next || [];
+          transaction.next.push({ qty: transaction.qty.to || transaction.qty.from, dispensed: { dispensedAt: new Date().toJSON() } });
+          _this4.transactions.splice(i, 1);
+          _this4.db.transaction.put(transaction).catch(function (err) {
+            transaction.next.pop();
+            _this4.transactions.splice(i, 0, transaction);
+            _this4.snackbar.show('Error repacking: ' + (err.reason || err.message));
+          });
         }
       };
 
-      for (var _iterator3 = this.transactions, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-        var _ref3;
-
-        var _ret = _loop();
-
-        if (_ret === 'break') break;
+      for (var i = this.transactions.length - 1; i >= 0; i--) {
+        _loop(i);
       }
     };
 
