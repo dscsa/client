@@ -242,7 +242,7 @@ export class shipments {
     let qty = transaction.qty[this.role.account]
     if ( ! qty) return false
     let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
-    let defaultQty = price > 1 ? 1 : 10 //keep expensive meds
+    let defaultQty = price > 1 ? 1 : 1 //keep expensive meds
     let aboveMinQty = qty >= (+order.minQty || defaultQty)
     if ( ! aboveMinQty) console.log('Ordered drug but qty', qty, 'is less than', +order.minQty || defaultQty)
     return qty >= (+order.minQty || defaultQty)
