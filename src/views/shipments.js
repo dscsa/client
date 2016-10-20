@@ -251,7 +251,7 @@ export class shipments {
   aboveMinExp(order, transaction) {
     let exp = transaction.exp[this.role.account]
     if ( ! exp) return ! order.minDays
-    let minDays = order.minDays || 120
+    let minDays = order.minDays || 60
     let aboveMinExp = new Date(exp) - Date.now() >= minDays*24*60*60*1000
     if ( ! aboveMinExp) console.log('Ordered drug but expiration', exp, 'is before', minDays)
     return aboveMinExp
