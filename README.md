@@ -50,6 +50,8 @@ sudo nano /etc/couchdb/local.ini
 #add [compactions] _default = [{db_fragmentation, "40%"}, {view_fragmentation, "40%"}]
 #set [couch_httpd_auth]	allow_persistent_cookies = true
 #set [couch_httpd_auth] timeout = 31536000
+#set [couchdb] database_dir = /dscsa/couchdb
+#set [couchdb] view_index_dir = /dscsa/couchdb
 sudo service couchdb restart
 goto <elastic-ip>:5984/_utils
 #create server login

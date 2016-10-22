@@ -176,7 +176,7 @@ export class inventory {
         chain = chain.then(_ => {
           let args = rows.slice(i, i+36*36-1)
           args = args.map(row => this.db.transaction.post(row))
-          args.push(new Promise(r => setTimeout(r, 2000)))
+          args.push(new Promise(r => setTimeout(r, 3000)))
           return Promise.all(args)
         })
         .catch(err => {
