@@ -1655,7 +1655,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
         var _loop2 = function _loop2(i) {
           chain = chain.then(function (_) {
-            var args = rows.slice(i, i + 36 * 36 - 1);
+            var args = rows.slice(i, i + 36 * 30 - 1);
             args = args.map(function (row) {
               return _this6.db.transaction.post(row);
             });
@@ -1664,12 +1664,12 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
             }));
             return Promise.all(args);
           }).catch(function (err) {
-            console.log('importCSV error', i, i + 36 * 36 - 1, err);
+            console.log('importCSV error', i, i + 36 * 30 - 1, err);
             _this6.snackbar.show('Error Importing Inventory: ' + JSON.stringify(err));
           });
         };
 
-        for (var i = 0; i < rows.length; i += 36 * 36 - 1) {
+        for (var i = 0; i < rows.length; i += 36 * 30 - 1) {
           _loop2(i);
         }
         return chain;
