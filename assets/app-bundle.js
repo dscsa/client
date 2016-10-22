@@ -1660,11 +1660,11 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
               return _this6.db.transaction.post(row);
             });
             args.push(new Promise(function (r) {
-              return setTimeout(r, 3000);
+              return setTimeout(r, 4000);
             }));
             return Promise.all(args);
           }).catch(function (err) {
-            console.log('importCSV error', i, i + 36 * 36, err);
+            console.log('importCSV error', i, i + 36 * 36 - 1, err);
             _this6.snackbar.show('Error Importing Inventory: ' + JSON.stringify(err));
           });
         };
