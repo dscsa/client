@@ -306,7 +306,7 @@ export class shipments {
       this.clearDestroyedMessage()
     }
 
-    this.manualCheck($index)
+    //this.manualCheck($index)
   }
 
   toggleVerified(transaction) {
