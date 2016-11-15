@@ -2311,8 +2311,6 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
         this.snackbar.show(order.verifiedMessage || 'Drug is ordered');
         this.clearDestroyedMessage();
       }
-
-      this.manualCheck($index);
     };
 
     shipments.prototype.toggleVerified = function toggleVerified(transaction) {
