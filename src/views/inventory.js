@@ -15,9 +15,7 @@ export class inventory {
 
     this.resetFilter()
 
-    this.placeholder = "Please Wait While the Drug Database is Indexed" //Put in while database syncs
-    this.drugsNotIndexed = true //Disables the search field while databse syncs
-
+    this.placeholder     = "Please Wait While the Drug Database is Indexed" //Put in while database syncs
     this.expShortcuts    = expShortcuts
     this.qtyShortcuts    = qtyShortcuts
     this.saveTransaction = saveTransaction
@@ -39,7 +37,7 @@ export class inventory {
   waitForDrugsToIndex(){
     let dbConfirms = this.db.drug.drugIsIndexed.get()
     .then(_ => {
-      this.drugsNotIndexed = false
+      this.drugsIndexed = true
       this.placeholder = "Search Drugs By Generic Name..."
     })
   }
