@@ -3,7 +3,7 @@ import {Router}     from 'aurelia-router'
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {Csv}        from '../libs/csv'
-import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, toJsonDate, parseUserDate} from '../resources/helpers'
+import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
