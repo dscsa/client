@@ -90,7 +90,6 @@ export function drugSearch() {
 //whether mm/yy or mm/dd/yy, month is always first and year is always last
 export function parseUserDate(date) {
   date = (date || "").split('/') //can't do default arugment because can be null as well as undefined
-  date.pop() //to get rid of day and hour
   return {
     month:date.shift(),
     year:date.pop()
