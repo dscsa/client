@@ -89,17 +89,17 @@ export function drugSearch() {
 
 //whether mm/yy or mm/dd/yy, month is always first and year is always last
 export function parseUserDate(date) {
-  date = (date || "").split('-') //can't do default arugment because can be null as well as undefined
+  date = (date || "").split('/') //can't do default arugment because can be null as well as undefined
   date.pop() //to get rid of day and hour
   return {
-    month:date.pop(),
+    month:date.shift(),
     year:date.pop()
   }
 }
 
 //To get last day in month, set it to next month and subtract a day
 export function toJsonDate({month, year}) {
-  let date = new Date(year,month, 1)
+  let date = new Date('20'+year,month, 1)
   date.setDate(0)
   return date.toJSON()
 }
