@@ -151,11 +151,11 @@
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
       <!-- disabled.bind="! searchReady" -->
       <md-autocomplete
-        placeholder="Add Drugs by Generic Name or NDC..."
+        placeholder.bind="placeholder"
         value.bind="term"
         input.delegate="search() & debounce:50"
         keydown.delegate="autocompleteShortcuts($event) & debounce:50"
-        disabled.bind="role.account == 'to' && ! shipment._rev"
+        disabled.bind=" ! drugsIndexed || role.account == 'to' && ! shipment._rev"
         style="margin:0px 16px">
         <table md-table>
           <tr
@@ -264,6 +264,7 @@
                   keyup.delegate="setLocation(transaction) & debounce:1500"
                   keydown.delegate="boxShortcuts($event, $index)"
                   pattern="[A-Z]\d{3}"
+                  maxlength.bind="4"
                   value.bind="transaction.location | upperCase"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>

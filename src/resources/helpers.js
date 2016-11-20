@@ -99,3 +99,12 @@ export function toJsonDate({month, year}) {
   date.setDate(0)
   return date.toJSON()
 }
+
+//Calls the direct query to pouch to wait on the drug database being synced. Then it
+//reopens the search field and changes the placeholder.
+export function waitForDrugsToIndex(){
+  this.db.drug.drugIsIndexed.get().then(_ => {
+   this.drugsIndexed = true
+   this.placeholder = "Search Drugs By Generic Name..."
+  })
+}

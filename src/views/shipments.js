@@ -3,7 +3,7 @@ import {Router}     from 'aurelia-router'
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {Csv}        from '../libs/csv'
-import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
+import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
@@ -18,6 +18,8 @@ export class shipments {
     this.stati  = ['pickup', 'shipped', 'received']
     this.shipments = {}
 
+    this.placeholder     = "Please Wait While the Drug Database is Indexed" //Placeholder while database is indexing
+    this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcutsKeydown = expShortcuts
     this.qtyShortcutsKeydown = qtyShortcuts
     this.incrementBox    = incrementBox
@@ -88,6 +90,7 @@ export class shipments {
       this.shipments = {from:fromShipments, to:toShipments}
 
       this.selectShipment(selected)
+      this.waitForDrugsToIndex()
     })
   }
 

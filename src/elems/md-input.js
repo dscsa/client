@@ -10,6 +10,7 @@ import {inject, bindable, bindingMode} from 'aurelia-framework';
 @bindable('max')
 @bindable('required')
 @bindable('minlength')
+@bindable('maxlength')
 @bindable('autofocus')
 export class MdInputCustomElement {
 

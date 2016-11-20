@@ -2,7 +2,7 @@ import {inject, buildQueryString} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {Csv}    from '../libs/csv'
-import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, drugSearch} from '../resources/helpers'
+import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 @inject(Db, Router)
 export class inventory {
@@ -14,7 +14,8 @@ export class inventory {
     this.limit  = 100
 
     this.resetFilter()
-
+    this.placeholder     = "Please Wait While the Drug Database is Indexed" //Put in while database syncs
+    this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcuts    = expShortcuts
     this.qtyShortcuts    = qtyShortcuts
     this.saveTransaction = saveTransaction
@@ -25,6 +26,8 @@ export class inventory {
   }
 
   activate(params) {
+
+    this.waitForDrugsToIndex()
 
     if (Object.keys(params).length)
       this.selectGroup(params)
