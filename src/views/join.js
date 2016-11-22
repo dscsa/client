@@ -1,7 +1,8 @@
 import {inject}     from 'aurelia-framework'
 import {Router}     from 'aurelia-router'
 import {Db}         from '../libs/pouch'
-import {HttpClient} from 'aurelia-http-client';
+import {HttpClient} from 'aurelia-http-client'
+import {canActivate} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
@@ -27,6 +28,7 @@ export class join {
       email:'',
       phone:'650.488.7434'
     }
+    this.canActivate = canActivate
   }
 
   join() {

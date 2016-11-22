@@ -2,7 +2,7 @@ import {inject, buildQueryString} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {Csv}    from '../libs/csv'
-import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 @inject(Db, Router)
 export class inventory {
@@ -23,6 +23,7 @@ export class inventory {
     this.focusInput      = focusInput
     this.scrollSelect    = scrollSelect
     this.drugSearch      = drugSearch
+    this.canActivate     = canActivate
   }
 
   activate(params) {
@@ -80,6 +81,7 @@ export class inventory {
         this.filter.form[transaction.drug.form] = {isChecked:true, count:0, qty:0}
       }
     })
+    .catch(console.log)
   }
 
   resetFilter() {

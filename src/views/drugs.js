@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
 import {Db}     from '../libs/pouch'
 import {Csv}    from '../libs/csv'
-import {scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
+import {canActivate, scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
 
 
 //@pageState()
@@ -19,6 +19,7 @@ export class drugs {
     this.toggleDrawer = toggleDrawer
     this.scrollSelect = scrollSelect
     this.drugSearch   = drugSearch
+    this.canActivate = canActivate
   }
 
   deactivate() {

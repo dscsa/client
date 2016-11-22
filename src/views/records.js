@@ -6,7 +6,7 @@ import {inject}     from 'aurelia-framework';
 import {Router}     from 'aurelia-router';
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client';
-import {toggleDrawer} from '../resources/helpers'
+import {canActivate, toggleDrawer} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
@@ -20,6 +20,7 @@ export class records {
     this.days    = []
     this.scroll  = this.scroll.bind(this)
     this.toggleDrawer = toggleDrawer
+    this.canActivate = canActivate
 
     let today  = new Date();
     let start  = new Date(2016, 7, 1)

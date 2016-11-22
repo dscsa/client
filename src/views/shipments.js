@@ -3,7 +3,7 @@ import {Router}     from 'aurelia-router'
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {Csv}        from '../libs/csv'
-import {expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
@@ -28,6 +28,7 @@ export class shipments {
     this.scrollSelect    = scrollSelect
     this.toggleDrawer    = toggleDrawer
     this.drugSearch      = drugSearch
+    this.canActivate     = canActivate
   }
 
   activate(params) {
@@ -137,7 +138,7 @@ export class shipments {
       this.transactions = transactions
       this.setCheckboxes()
     })
-    .catch(console.log)
+    .catch(err => console.log('err', err))
   }
 
   setCheckboxes() {
@@ -421,6 +422,7 @@ export class shipments {
     //this is rare enough to be okay.  We also don't want to have to fetch current inventory on every input event.
     order && this.db.transaction.get({generic:drug.generic, inventory:"sum"}).then(inventory => {
       order.inventory = inventory[0]
+      order.inventory = inventory[0].qty
     })
 
     isPharMerica && ! order //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
