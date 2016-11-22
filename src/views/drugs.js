@@ -71,7 +71,7 @@ export class drugs {
     this.term = group.name
 
     this.db.transaction.get({generic:group.name, inventory:"sum"}).then(inventory => {
-      this.inventory = inventory[0]
+      this.inventory = inventory[0].qty
     })
 
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer

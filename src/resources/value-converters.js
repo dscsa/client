@@ -28,6 +28,14 @@ export class shipmentFilterValueConverter {
   }
 }
 
+export class drugFilterValueConverter {
+  toView(drugs = [], filter = ''){
+    filter = filter.replace('.', '\\.').split(/, |[, ]/g)
+    var regex = RegExp('(?=.*'+filter.join(')(?=.*( |0)')+')', 'i') //Use lookaheads to search for each word separately (no order).  Even the first term might be the 2nd generic
+    return drugs.filter(drug => regex.test(drug.generic))
+  }
+}
+
 export class recordFilterValueConverter {
   toView(days = [], filter = ''){
     return days.filter(day => ~ day.indexOf(filter))
