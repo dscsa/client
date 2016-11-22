@@ -7,8 +7,7 @@
         <!-- Add spacer, to align navigation to the right -->
         <div class="mdl-layout-spacer"></div>
         <nav class="mdl-navigation">
-          <!-- show.bind="row.isVisible"  -->
-          <a repeat.for="route of router.navigation" show.bind="route.isVisible" class="mdl-navigation__link ${route.isActive ? 'mdl-navigation__link--current' : ''}" href.bind="route.href" style="">
+          <a repeat.for="route of routes" show.bind="route.isVisible" class="mdl-navigation__link ${route.isActive ? 'mdl-navigation__link--current' : ''}" href.bind="route.href" style="">
             ${route.title}
           </a>
         </nav>
