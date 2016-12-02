@@ -3,7 +3,7 @@ import {Router}     from 'aurelia-router'
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {Csv}        from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 //@pageState()
 @inject(Db, Router, HttpClient)
@@ -22,7 +22,7 @@ export class shipments {
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcutsKeydown = expShortcuts
     this.qtyShortcutsKeydown = qtyShortcuts
-    this.incrementBox    = incrementBox
+    this.incrementBin    = incrementBin
     this.saveTransaction = saveTransaction
     this.focusInput      = focusInput
     this.scrollSelect    = scrollSelect
@@ -226,11 +226,11 @@ export class shipments {
   }
 
 
-  boxShortcuts($event, $index) {
+  binShortcuts($event, $index) {
     if ($event.which == 13)
       return this.focusInput(`md-autocomplete`)
 
-    return this.incrementBox($event, this.transactions[$index])
+    return this.incrementBin($event, this.transactions[$index])
   }
 
   getLocation(transaction) {

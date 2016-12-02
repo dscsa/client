@@ -2,7 +2,7 @@ import {inject, buildQueryString} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {Csv}    from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, incrementBox, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 @inject(Db, Router)
 export class inventory {
@@ -19,7 +19,7 @@ export class inventory {
     this.expShortcuts    = expShortcuts
     this.qtyShortcuts    = qtyShortcuts
     this.saveTransaction = saveTransaction
-    this.incrementBox    = incrementBox
+    this.incrementBin    = incrementBin
     this.focusInput      = focusInput
     this.scrollSelect    = scrollSelect
     this.drugSearch      = drugSearch
@@ -62,11 +62,11 @@ export class inventory {
         let bExp = b.exp.to || b.exp.from || ''
         let aQty = a.qty.to || a.qty.from || ''
         let bQty = b.qty.to || b.qty.from || ''
-        let aBox = a.location || ''
-        let bBox = b.location || ''
+        let aBin = a.location || ''
+        let bBin = b.location || ''
 
-        if (aBox > bBox) return -1
-        if (aBox < bBox) return 1
+        if (aBin > bBin) return -1
+        if (aBin < bBin) return 1
         if (aExp < bExp) return -1
         if (aExp > bExp) return 1
         if (aQty > bQty) return -1
@@ -127,11 +127,11 @@ export class inventory {
     }
   }
 
-  boxShortcuts($event, $index) {
+  binShortcuts($event, $index) {
     if ($event.which == 13) //Enter should focus on next row's exp
       return this.focusInput(`#exp_${$index+1}`)
 
-    return this.incrementBox($event, this.transactions[$index])
+    return this.incrementBin($event, this.transactions[$index])
   }
 
   exportCSV() {

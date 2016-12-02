@@ -10,12 +10,12 @@ export function expShortcuts($event, $index) {
 export function qtyShortcuts($event, $index) {
   //Enter should focus on rx_input, unless it is hidden
   if ($event.which == 13)
-    return this.focusInput(`#box_${$index}`, `md-autocomplete`)
+    return this.focusInput(`#bin_${$index}`, `md-autocomplete`)
 
   return clearIfAsterick($event)
 }
 
-export function incrementBox($event, transaction) {
+export function incrementBin($event, transaction) {
   if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
     transaction.location = transaction.location[0]+(+transaction.location.slice(1)+1)
     saveTransaction.call(this, transaction)

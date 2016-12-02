@@ -201,7 +201,7 @@
               <th style="width:40px; padding-left:0; padding-right:0px">Value</th>
               <th style="text-align:left; width:40px;">Exp</th>
               <th style="text-align:left; width:40px">Qty</th>
-              <th style="text-align:left; width:40px;">Box</th>
+              <th style="text-align:left; width:40px;">Bin</th>
             </tr>
           </thead>
           <tbody>
@@ -258,11 +258,11 @@
               </td>
               <td style="padding:0">
                 <md-input
-                  id.bind="'box_'+$index"
+                  id.bind="'bin_'+$index"
                   required
                   disabled.bind=" ! transaction.verifiedAt || transaction.next.length"
                   keyup.delegate="setLocation(transaction) & debounce:1500"
-                  keydown.delegate="boxShortcuts($event, $index)"
+                  keydown.delegate="binShortcuts($event, $index)"
                   pattern="[A-Z]\d{3}"
                   maxlength.bind="4"
                   value.bind="transaction.location | upperCase"
