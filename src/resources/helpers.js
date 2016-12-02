@@ -105,7 +105,7 @@ export function toJsonDate({month, year}) {
 export function waitForDrugsToIndex(){
   this.db.drug.drugIsIndexed.get().then(_ => {
    this.drugsIndexed = true
-   this.placeholder = "Search Drugs By Generic Name..."
+   this.placeholder = "Search Drugs By Generic Name Or NDC..."
   })
 }
 
