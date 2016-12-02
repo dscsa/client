@@ -59,14 +59,12 @@
             required
             style="width:75%"
             pattern="([A-Z][0-9a-z]*\s?)+\b"
-            disabled.bind=" ! drug._rev"
             value.bind="generic.name">
             ${ $index == 0 ? 'Generic Names & Strengths' : ''}
           </md-input>
           <md-input
             style="width:23%"
             pattern="[0-9][0-9a-z/.]+"
-            disabled.bind=" ! drug._rev"
             value.bind="generic.strength">
           </md-input>
         </div>
@@ -80,7 +78,6 @@
           required
           style="width:49%"
           pattern="([A-Z][a-z]+\s?)+\b"
-          disabled.bind=" ! drug._rev"
           value.bind="drug.form">
           Form
         </md-input>
@@ -91,7 +88,6 @@
         </md-input>
         <md-input
           value.bind="drug.price.nadac | number"
-          disabled.bind="! drug._rev"
           type="number"
           step=".0001"
           style="width:49%">
@@ -99,7 +95,6 @@
         </md-input>
         <md-input
           value.bind="drug.price.goodrx | number"
-          disabled.bind="! drug._rev"
           type="number"
           step=".0001"
           style="width:49%">
@@ -124,7 +119,7 @@
           click.delegate="deleteDrug()">
           Delete Drug
         </md-button> -->
-        <md-button color raised
+        <md-button color raised form
           style="width:100%;"
           disabled.bind="_savingDrug"
           click.delegate="drug._rev ? saveDrug() : addDrug()"
@@ -154,7 +149,10 @@
       </md-autocomplete>
       <md-menu style="position:absolute; z-index:2; top:10px; right:5px;">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
-        <li click.delegate="selectDrug()" class="mdl-menu__item">
+        <li if.bind="drug._rev" click.delegate="selectDrug()" class="mdl-menu__item">
+          Add Drug
+        </li>
+        <li if.bind=" ! drug._rev" disabled class="mdl-menu__item">
           Add Drug
         </li>
         <li click.delegate="exportDrugs()" class="mdl-menu__item">

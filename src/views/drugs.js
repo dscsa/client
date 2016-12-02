@@ -38,12 +38,15 @@ export class drugs {
         ordered:Object.keys(this.account.ordered).sort()
       }
 
-      if ( ! params.id)
-        return this.drawer.ordered[0] && this.selectDrawer(this.drawer.ordered[0])
+      if (params.id)
+        return this.db.drug.get({_id:params.id}).then(drugs => {
+          this.selectDrug(drugs[0], true)
+        })
 
-      return this.db.drug.get({_id:params.id}).then(drugs => {
-        this.selectDrug(drugs[0], true)
-      })
+      if (this.drawer.ordered[0])
+        return this.selectDrawer(this.drawer.ordered[0])
+
+      return this.selectDrug()
     })
   }
 
@@ -92,14 +95,15 @@ export class drugs {
   }
 
   selectDrug(drug, autoselectGroup) {
+    let url = this.drug ? 'drugs/'+this.drug._id : 'drugs'
+    this.router.navigate(url, { trigger: false })
+
     //Default is for Add Drug menu item in view
     this.drug = drug || {
-      generics:this.drug && this.drug.generics,
+      generics:this.drug ? this.drug.generics : [{name:'', strength:''}],
       form:this.drug && this.drug.form
     }
 
-    let url = this.drug ? 'drugs/'+this.drug._id : 'drugs'
-    this.router.navigate(url, { trigger: false })
 
     if (autoselectGroup)
       this.selectGroup({name:this.drug.generic || this.term})
