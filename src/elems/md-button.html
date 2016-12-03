@@ -2,7 +2,7 @@
   <button
     ref="button"
     type="button"
-    disabled.bind="disabledOrInvalid"
+    disabled.bind="disabled"
     click.delegate="click($event)"
     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
     style="width:100%; height:inherit; line-height:inherit">

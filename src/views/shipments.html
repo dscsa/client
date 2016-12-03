@@ -10,6 +10,7 @@
   <require from="elems/md-menu"></require>
   <require from="elems/md-autocomplete"></require>
   <require from="elems/md-snackbar"></require>
+  <require from="elems/form"></require>
   <md-drawer autofocus>
     <md-input
       value.bind="filter"
@@ -26,8 +27,8 @@
       if.bind=" ! filter"
       class="mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(null, true)">
-      <div class="mdl-typography--title">Create</div>
-      new shipment ${role.account} you
+      <div class="mdl-typography--title">New Shipment</div>
+      or add inventory
     </a>
     <a
       repeat.for="shipment of shipments[role.account] | shipmentFilter:filter"
@@ -155,7 +156,7 @@
         value.bind="term"
         input.delegate="search() & debounce:50"
         keydown.delegate="autocompleteShortcuts($event) & debounce:50"
-        disabled.bind=" ! drugsIndexed || role.account == 'to' && ! shipment._rev"
+        disabled.bind=" ! drugsIndexed"
         style="margin:0px 16px">
         <table md-table>
           <tr

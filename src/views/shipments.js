@@ -310,10 +310,20 @@ export class shipments {
       this.clearDestroyedMessage()
     }
 
-    //this.manualCheck($index)
+    this.manualCheck($index)
   }
 
-  toggleVerified(transaction) {
+  manualCheck($index) {
+    let transaction = this.transactions[$index]
+    transaction.isChecked = ! transaction.isChecked
+    //If user is not moving items, the shipment exists, and they are the recipient, then autosave their verificaton
+    //offsetParent is null when buttons are hidden.  This keeps us from duplicating the show logic of the buttons here
+    this.moveItemsButton.offsetParent
+      ? this.toggleSelectedCheck(transaction)
+      : this.toggleVerifiedCheck(transaction)
+  }
+
+  toggleVerifiedCheck(transaction) {
 
     let verifiedAt = transaction.verifiedAt
     let location   = transaction.location
@@ -333,24 +343,11 @@ export class shipments {
     })
   }
 
-  toggleDiff(transaction) {
+  toggleSelectedCheck(transaction) {
     let index = this.diffs.indexOf(transaction)
     ~ index
       ? this.diffs.splice(index, 1)
       : this.diffs.push(transaction)
-  }
-
-  manualCheck($index) {
-    let transaction = this.transactions[$index]
-
-    //If user is not moving items, the shipment exists, and they are the recipient, then autosave their verificaton
-    //offsetParent is null when buttons are hidden.  This keeps us from duplicating the show logic of the buttons here
-    if (this.moveItemsButton.offsetParent || this.newShipmentButton.offsetParent)
-      this.toggleDiff(transaction)
-    else
-      this.toggleVerified(transaction)
-
-    transaction.isChecked = ! transaction.isChecked
   }
 
   search() {
@@ -401,13 +398,8 @@ export class shipments {
       pkg:drug.pkg
     }
 
-    transaction.shipment = {
-      _id:this.shipment._id
-    }
-
-    transaction.user = {
-      _id:this.user
-    }
+    transaction.user       = {_id:this.user}
+    transaction.shipment   = {_id:this.shipment._id || this.account._id}
 
     this.term = '' //Reset search's auto-complete
 

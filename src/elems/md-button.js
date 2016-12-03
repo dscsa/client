@@ -19,7 +19,7 @@ export class MdButtonCustomElement {
   //so use delegate, but for some reason delegate stops bubbling even if we do
   //"return true" so we need to to refire the event.
   click($event) {
-    this.disabledOrInvalid && $event.stopPropagation()
+    this.disabled && $event.stopPropagation()
   }
 
   disabledChanged() {
@@ -27,17 +27,10 @@ export class MdButtonCustomElement {
   }
 
   change(input) {
-    this.disabledOrInvalid = this.disabled || this.disabled === '' || (this.formElement && ! this.formElement.checkValidity())
+    this.disabled = this.disabled || this.disabled === ''
   }
 
   attached() {
-    //TODO allow attribute value to specify the form by name.
-    //TODO a detached method.  Are these event listeners leaking?
-    if (this.form === '') {
-      this.formElement = this.element.closest('form')
-      this.formElement.addEventListener('change', this.change)
-      this.formElement.addEventListener('input', this.change)
-    }
 
     //When going "back" to "Create New Shipment" form.checkValidity() would return true
     //initially and then turn to false. setTimeout seems to eliminate this problem
