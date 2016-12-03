@@ -12,6 +12,7 @@
   <require from="elems/md-menu"></require>
   <require from="elems/form"></require>
   <style>
+    .mdl-button:hover { background-color:initial }
     .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}
     .mdl-textfield__label { color:black; font-size:1rem }
   </style>
@@ -21,7 +22,7 @@
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
       <div class="mdl-card__supporting-text" style="padding:0">
         <div repeat.for="ndc of filter.ndc | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-top:-8px">
-          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:16px 0 0 0; width:100%">
+          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:16px 8px 0 0; width:100%">
             <div class="mdl-cell mdl-cell--8-col">Ndc Filter</div>
             <div class="mdl-cell mdl-cell--2-col">Qty</div>
             <div class="mdl-cell mdl-cell--2-col">Count</div>

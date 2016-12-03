@@ -58,7 +58,7 @@ export class MdButtonCustomElement {
       this.button.style.height = "auto"
       this.button.style.padding = "16px 8px"
       this.button.style['line-height'] = "18px"
-      this.button.style['text-align'] = "left"
+      //this.button.style['text-align'] = "left"
     }
   }
 
