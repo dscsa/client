@@ -49,14 +49,6 @@
         </div>
         <!-- <md-input show.bind="transactions.length" input.delegate="signalFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input> -->
       </div>
-      <div class="mdl-card__actions">
-        <md-button color raised
-          style="width:100%"
-          disabled.bind=" ! transactions.length"
-          click.delegate="repackInventory()">
-          ${'Repack Selected'}
-        </md-button>
-      </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
       <md-autocomplete
@@ -85,10 +77,53 @@
       <md-menu style="position:absolute; z-index:2; top:10px; right:5px;">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
+          disabled.bind=" ! transactions.length"
+          click.delegate="pendInventory()">
+          (Un)pend Selected
+        </li>
+        <li
+          disabled.bind=" ! transactions.length"
+          click.delegate="dispenseInventory()">
+          Dispense Selected
+        </li>
+        <form>
+          <li form
+            click.delegate="repackInventory()">
+            Repack Selected
+          </li>
+          <li class="mdl-menu__item--full-bleed-divider">
+            <md-input
+              required
+              value.bind="repack.vials"
+              style="width:40px; margin-bottom:-8px"
+              placeholder="vials">
+            </md-input>
+            <md-input
+              required
+              value.bind="repack.qty"
+              style="width:40px; margin-bottom:-8px"
+              placeholder="qty">
+            </md-input>
+            <md-input
+              required
+              value.bind="repack.exp"
+              style="width:40px; margin-bottom:-8px"
+              placeholder="exp">
+            </md-input>
+            <md-input
+              required
+              value.bind="repack.bin"
+              style="width:40px; margin-bottom:-8px"
+              placeholder="bin">
+            </md-input>
+          </li>
+        </form>
+        <li
           click.delegate="exportCSV()">
           Export CSV
         </li>
         <li
+          class="mdl-menu__item--full-bleed-divider"
           click.delegate="$file.click()">
           Import CSV
         </li>

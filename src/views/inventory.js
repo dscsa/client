@@ -109,22 +109,37 @@ export class inventory {
     this.filter = Object.assign({}, this.filter)
   }
 
-  repackInventory() {
+  removeInventory(nextDescription) {
     let repack = []
     //since we are deleting as we go, loop backward
     for (let i = this.transactions.length - 1; i >= 0; i--)  {
       let transaction = this.transactions[i]
       if (transaction.isChecked) {
-        transaction.next = transaction.next || []
-        transaction.next.push({qty:transaction.qty.to || transaction.qty.from, dispensed:{dispensedAt:new Date().toJSON()}})
+        transaction.next    = transaction.next || []
+        nextDescription.qty = transaction.qty.to || transaction.qty.from
+        transaction.next.push(nextDescription)
         this.transactions.splice(i, 1)
         this.db.transaction.put(transaction).catch(err => {
           transaction.next.pop()
           this.transactions.splice(i, 0, transaction)
-          this.snackbar.show(`Error repacking: ${err.reason || err.message}`)
+          this.snackbar.show(`Error removing inventory: ${err.reason || err.message}`)
         })
       }
     }
+  }
+
+  pendInventory() {
+    this.removeInventory({pended:{pendedAt:new Date().toJSON()}})
+  }
+
+  dispenseInventory() {
+    this.removeInventory({dispensed:{dispensedAt:new Date().toJSON()}})
+  }
+
+  repackInventory() {
+    this.removeInventory({repacked:{repackedAt:new Date().toJSON()}})
+
+    //TODO how to add the correct number of bottles, qty, and expiration
   }
 
   binShortcuts($event, $index) {
