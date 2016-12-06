@@ -14,9 +14,20 @@
   <style>
     .mdl-button:hover { background-color:initial }
     .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}
-    .mdl-textfield__label { color:black; font-size:1rem }
   </style>
   <md-drawer>
+    <md-input
+      autoselect
+      style="padding:0 8px; width:auto">
+      Filter pending inventory
+    </md-input>
+    <a
+      repeat.for="group of pending | toArray"
+      class="mdl-navigation__link ${ pendingAt == group.key ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectPending(group.key)">
+      <div class="mdl-typography--title">${group.val[0].drug.generic}</div>
+      ${ group.key.slice(0, 16) }, ${ group.val.length } items
+    </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
@@ -79,7 +90,7 @@
         <li
           disabled.bind=" ! transactions.length"
           click.delegate="pendInventory()">
-          (Un)pend Selected
+          ${ pendingAt ? 'Unpend Selected' : 'Pend Selected' }
         </li>
         <li
           disabled.bind=" ! transactions.length"
@@ -95,26 +106,27 @@
             <md-input
               required
               value.bind="repack.vials"
-              style="width:40px; margin-bottom:-8px"
-              placeholder="vials">
+              style="width:40px;">
+              Vials
             </md-input>
             <md-input
               required
               value.bind="repack.qty"
-              style="width:40px; margin-bottom:-8px"
-              placeholder="qty">
+              input.delegate="setRepackVials()"
+              style="width:40px;">
+              Qty
             </md-input>
             <md-input
               required
               value.bind="repack.exp"
-              style="width:40px; margin-bottom:-8px"
-              placeholder="exp">
+              style="width:40px;">
+              Exp
             </md-input>
             <md-input
               required
               value.bind="repack.bin"
-              style="width:40px; margin-bottom:-8px"
-              placeholder="bin">
+              style="width:40px;">
+              Bin
             </md-input>
           </li>
         </form>
@@ -131,6 +143,7 @@
           Public View
         </a></li>
       </md-menu>
+      ${ qtySelected }
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div style="width:100%; height:100%; display:flex">
         <div style="overflow-y:scroll; margin:8px 0px 8px 16px; flex:1;">
@@ -149,7 +162,7 @@
             </thead>
             <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
               <td style="padding:0 0 0 8px">
-                <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
+                <md-checkbox click.delegate="check(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
               </td>
               <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.generic }</td>
               <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
