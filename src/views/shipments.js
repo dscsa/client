@@ -413,7 +413,7 @@ export class shipments {
     //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
     //this is rare enough to be okay.  We also don't want to have to fetch current inventory on every input event.
     order && this.db.transaction.get({generic:drug.generic, inventory:"sum"}).then(inventory => {
-      order.inventory = inventory[0].qty
+      order.inventory = inventory[0] ? inventory[0].qty : 0
     })
 
     isPharMerica && ! order //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
