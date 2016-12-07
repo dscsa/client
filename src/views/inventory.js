@@ -12,6 +12,7 @@ export class inventory {
     this.router = router
     this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt'])
     this.limit  = 100
+    this.repack = {size:30}
 
     this.resetFilter()
     this.placeholder     = "Please Wait While the Drug Database is Indexed" //Put in while database syncs
@@ -38,6 +39,15 @@ export class inventory {
     }).then(accounts => {
       this.ordered = accounts[0].ordered
     })
+
+    this.db.transaction.get({pending:true}).then(pending => {
+      this.pending = {}
+      for (let transaction of pending) {
+        let createdAt = transaction.next[0].createdAt
+        this.pending[createdAt] = this.pending[createdAt] || []
+        this.pending[createdAt].push(transaction)
+      }
+    })
   }
 
   scrollGroups($event) {
@@ -55,33 +65,44 @@ export class inventory {
         this.snackbar.show(`Displaying first 100 results`)
 
       this.term  = group.generic || group.location || group.exp
-
       this.group = group
-      this.transactions = transactions.sort((a, b) => {
-        let aExp = a.exp.to || a.exp.from || ''
-        let bExp = b.exp.to || b.exp.from || ''
-        let aQty = a.qty.to || a.qty.from || ''
-        let bQty = b.qty.to || b.qty.from || ''
-        let aBin = a.location || ''
-        let bBin = b.location || ''
-
-        if (aBin > bBin) return -1
-        if (aBin < bBin) return 1
-        if (aExp < bExp) return -1
-        if (aExp > bExp) return 1
-        if (aQty > bQty) return -1
-        if (aQty < bQty) return 1
-        return 0
-      })
-
-      this.resetFilter()
-      for (let transaction of this.transactions) {
-        this.filter.exp[transaction.exp.to || transaction.exp.from] = {isChecked:true, count:0, qty:0}
-        this.filter.ndc[transaction.drug._id]   = {isChecked:true, count:0, qty:0}
-        this.filter.form[transaction.drug.form] = {isChecked:true, count:0, qty:0}
-      }
+      this.pendingAt = null
+      this.setTransactions(transactions)
     })
     .catch(console.log)
+  }
+
+  selectPending(pendingAt) {
+    let transactions = this.pending[pendingAt]
+    this.setTransactions(transactions)
+    this.term = transactions[0].drug.generic
+    this.pendingAt = pendingAt
+  }
+
+  setTransactions(transactions) {
+    this.transactions = transactions.sort((a, b) => {
+      let aExp = a.exp.to || a.exp.from || ''
+      let bExp = b.exp.to || b.exp.from || ''
+      let aQty = a.qty.to || a.qty.from || ''
+      let bQty = b.qty.to || b.qty.from || ''
+      let aBin = a.location || ''
+      let bBin = b.location || ''
+
+      if (aBin > bBin) return -1
+      if (aBin < bBin) return 1
+      if (aExp < bExp) return -1
+      if (aExp > bExp) return 1
+      if (aQty > bQty) return -1
+      if (aQty < bQty) return 1
+      return 0
+    })
+
+    this.resetFilter()
+    for (let transaction of this.transactions) {
+      this.filter.exp[transaction.exp.to || transaction.exp.from] = {isChecked:true, count:0, qty:0}
+      this.filter.ndc[transaction.drug._id]   = {isChecked:true, count:0, qty:0}
+      this.filter.form[transaction.drug.form] = {isChecked:true, count:0, qty:0}
+    }
   }
 
   resetFilter() {
@@ -109,15 +130,12 @@ export class inventory {
     this.filter = Object.assign({}, this.filter)
   }
 
-  removeInventory(nextDescription) {
-    let repack = []
-    //since we are deleting as we go, loop backward
+  updateNext(updateFn) {
+    //since we may be deleting as we go, loop backward
     for (let i = this.transactions.length - 1; i >= 0; i--)  {
       let transaction = this.transactions[i]
       if (transaction.isChecked) {
-        transaction.next    = transaction.next || []
-        nextDescription.qty = transaction.qty.to || transaction.qty.from
-        transaction.next.push(nextDescription)
+        updateFn(transaction.next) //use array reference to change next's value
         this.transactions.splice(i, 1)
         this.db.transaction.put(transaction).catch(err => {
           transaction.next.pop()
@@ -128,18 +146,62 @@ export class inventory {
     }
   }
 
+  unpendInventory() {
+    this.updateNext(next => next.pop())
+  }
+
   pendInventory() {
-    this.removeInventory({pended:{pendedAt:new Date().toJSON()}})
+    let createdAt = new Date().toJSON() //must be exact same timestamp for group of pending items
+    this.updateNext(next => next.push({pending:{}, createdAt}))
   }
 
   dispenseInventory() {
-    this.removeInventory({dispensed:{dispensedAt:new Date().toJSON()}})
+    let createdAt = new Date().toJSON()
+    this.updateNext(next => next.push({dispensed:{}, createdAt}))
   }
 
+  //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
-    this.removeInventory({repacked:{repackedAt:new Date().toJSON()}})
+    let createdAt = new Date().toJSON()
+    
+    for (let i=0; i<this.repack.vials; i++) {
+      let transaction = {
+        verifiedAt:createdAt,
+        exp:{to:this.repack.exp, from:null},
+        qty:{to:this.repack.size, from:null},
+        location:this.repack.location,
+        drug:this.transactions[0].drug
+      }
+      this.transactions.unshift(transaction) //Add the drug to the view
+      this.db.transaction.post(transaction)
+      .then(transaction => this.updateNext(next => {
+        next.push({transaction:{_id:transaction._id}, createdAt})
+      }))
+      .catch(err => {
+        console.error(err)
+        this.snackbar.show(`Transaction could not be added: ${err.reason}`)
+        this.transactions.shift()
+      })
+    }
+  }
 
-    //TODO how to add the correct number of bottles, qty, and expiration
+  setRepackVials() {
+    this.repack.vials = +this.repack.size ? Math.floor(this.repack.qty / this.repack.size) : ''
+  }
+
+  openMenu($event) {
+    if ($event.target.tagName != 'I')
+      return //only calculate for the parent element, <i vertical menu icon>, and not children
+
+    this.repack.qty = 0,
+    this.repack.exp = '2099-01-01T00:00:00'
+    for (let transaction of this.transactions) {
+      if (transaction.isChecked) {
+        this.repack.qty += transaction.qty.to
+        this.repack.exp  = this.repack.exp < transaction.exp.to ? this.repack.exp : transaction.exp.to
+      }
+    }
+    this.setRepackVials()
   }
 
   binShortcuts($event, $index) {

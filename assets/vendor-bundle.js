@@ -3791,7 +3791,7 @@ K(require)||(w=require,require=void 0);g=requirejs=function(b,c,d,m){var r,q="_"
 0),importScripts(d),b.completeLoad(c)}catch(q){b.onError(F("importscripts","importScripts failed for "+c+" at "+d,q,[c]))}};E&&!w.skipDataMain&&X(document.getElementsByTagName("script"),function(b){C||(C=b.parentNode);if(O=b.getAttribute("data-main"))return u=O,w.baseUrl||-1!==u.indexOf("!")||(I=u.split("/"),u=I.pop(),T=I.length?I.join("/")+"/":"./",w.baseUrl=T),u=u.replace(U,""),g.jsExtRegExp.test(u)&&(u=O),w.deps=w.deps?w.deps.concat(u):[u],!0});define=function(b,c,d){var e,g;"string"!==typeof b&&
 (d=c,c=b,b=null);L(c)||(d=c,c=null);!c&&K(d)&&(c=[],d.length&&(d.toString().replace(qa,ka).replace(ra,function(b,d){c.push(d)}),c=(1===d.length?["require"]:["require","exports","module"]).concat(c)));S&&(e=P||pa())&&(b||(b=e.getAttribute("data-requiremodule")),g=J[e.getAttribute("data-requirecontext")]);g?(g.defQueue.push([b,c,d]),g.defQueueMap[b]=!0):V.push([b,c,d])};define.amd={jQuery:!0};g.exec=function(b){return eval(b)};g(w)}})(this);
 
-requirejs.config({"baseUrl":"src/","paths":{"text":"../aurelia_project/text","app-bundle":"../assets/app-bundle"},"packages":[{"name":"aurelia-http-client","location":"../../aurelia-http-client/dist/amd","main":"aurelia-http-client"},{"name":"aurelia-animator-css","location":"../../aurelia-animator-css/dist/amd","main":"aurelia-animator-css"},{"name":"aurelia-binding","location":"../../aurelia-binding/dist/amd","main":"aurelia-binding"},{"name":"aurelia-bootstrapper","location":"../../aurelia-bootstrapper/dist/amd","main":"aurelia-bootstrapper"},{"name":"aurelia-dependency-injection","location":"../../aurelia-dependency-injection/dist/amd","main":"aurelia-dependency-injection"},{"name":"aurelia-event-aggregator","location":"../../aurelia-event-aggregator/dist/amd","main":"aurelia-event-aggregator"},{"name":"aurelia-framework","location":"../../aurelia-framework/dist/amd","main":"aurelia-framework"},{"name":"aurelia-history","location":"../../aurelia-history/dist/amd","main":"aurelia-history"},{"name":"aurelia-history-browser","location":"../../aurelia-history-browser/dist/amd","main":"aurelia-history-browser"},{"name":"aurelia-loader","location":"../../aurelia-loader/dist/amd","main":"aurelia-loader"},{"name":"aurelia-loader-default","location":"../../aurelia-loader-default/dist/amd","main":"aurelia-loader-default"},{"name":"aurelia-logging","location":"../../aurelia-logging/dist/amd","main":"aurelia-logging"},{"name":"aurelia-logging-console","location":"../../aurelia-logging-console/dist/amd","main":"aurelia-logging-console"},{"name":"aurelia-metadata","location":"../../aurelia-metadata/dist/amd","main":"aurelia-metadata"},{"name":"aurelia-pal","location":"../../aurelia-pal/dist/amd","main":"aurelia-pal"},{"name":"aurelia-pal-browser","location":"../../aurelia-pal-browser/dist/amd","main":"aurelia-pal-browser"},{"name":"aurelia-path","location":"../../aurelia-path/dist/amd","main":"aurelia-path"},{"name":"aurelia-polyfills","location":"../../aurelia-polyfills/dist/amd","main":"aurelia-polyfills"},{"name":"aurelia-route-recognizer","location":"../../aurelia-route-recognizer/dist/amd","main":"aurelia-route-recognizer"},{"name":"aurelia-router","location":"../../aurelia-router/dist/amd","main":"aurelia-router"},{"name":"aurelia-task-queue","location":"../../aurelia-task-queue/dist/amd","main":"aurelia-task-queue"},{"name":"aurelia-templating","location":"../../aurelia-templating/dist/amd","main":"aurelia-templating"},{"name":"aurelia-templating-binding","location":"../../aurelia-templating-binding/dist/amd","main":"aurelia-templating-binding"},{"name":"aurelia-templating-resources","location":"../../aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"../../aurelia-templating-router/dist/amd","main":"aurelia-templating-router"},{"name":"aurelia-testing","location":"../../aurelia-testing/dist/amd","main":"aurelia-testing"}],"stubModules":["text"],"shim":{},"bundles":{"app-bundle":["environment","elems/md-autocomplete","elems/md-button","elems/md-checkbox","elems/md-drawer","elems/md-input","elems/md-loading","elems/md-menu","elems/md-select","elems/md-shadow","elems/md-snackbar","elems/md-switch","elems/md-table","libs/csv","libs/environment","libs/pouch","resources/helpers","resources/value-converters","views/account","views/drugs","views/index","views/inventory","views/join","views/login","views/public","views/records","views/routes","views/shipments"]}});
+requirejs.config({"baseUrl":"src/","paths":{"text":"../aurelia_project/text","app-bundle":"../assets/app-bundle"},"packages":[{"name":"aurelia-http-client","location":"../../aurelia-http-client/dist/amd","main":"aurelia-http-client"},{"name":"aurelia-animator-css","location":"../../aurelia-animator-css/dist/amd","main":"aurelia-animator-css"},{"name":"aurelia-binding","location":"../../aurelia-binding/dist/amd","main":"aurelia-binding"},{"name":"aurelia-bootstrapper","location":"../../aurelia-bootstrapper/dist/amd","main":"aurelia-bootstrapper"},{"name":"aurelia-dependency-injection","location":"../../aurelia-dependency-injection/dist/amd","main":"aurelia-dependency-injection"},{"name":"aurelia-event-aggregator","location":"../../aurelia-event-aggregator/dist/amd","main":"aurelia-event-aggregator"},{"name":"aurelia-framework","location":"../../aurelia-framework/dist/amd","main":"aurelia-framework"},{"name":"aurelia-history","location":"../../aurelia-history/dist/amd","main":"aurelia-history"},{"name":"aurelia-history-browser","location":"../../aurelia-history-browser/dist/amd","main":"aurelia-history-browser"},{"name":"aurelia-loader","location":"../../aurelia-loader/dist/amd","main":"aurelia-loader"},{"name":"aurelia-loader-default","location":"../../aurelia-loader-default/dist/amd","main":"aurelia-loader-default"},{"name":"aurelia-logging","location":"../../aurelia-logging/dist/amd","main":"aurelia-logging"},{"name":"aurelia-logging-console","location":"../../aurelia-logging-console/dist/amd","main":"aurelia-logging-console"},{"name":"aurelia-metadata","location":"../../aurelia-metadata/dist/amd","main":"aurelia-metadata"},{"name":"aurelia-pal","location":"../../aurelia-pal/dist/amd","main":"aurelia-pal"},{"name":"aurelia-pal-browser","location":"../../aurelia-pal-browser/dist/amd","main":"aurelia-pal-browser"},{"name":"aurelia-path","location":"../../aurelia-path/dist/amd","main":"aurelia-path"},{"name":"aurelia-polyfills","location":"../../aurelia-polyfills/dist/amd","main":"aurelia-polyfills"},{"name":"aurelia-route-recognizer","location":"../../aurelia-route-recognizer/dist/amd","main":"aurelia-route-recognizer"},{"name":"aurelia-router","location":"../../aurelia-router/dist/amd","main":"aurelia-router"},{"name":"aurelia-task-queue","location":"../../aurelia-task-queue/dist/amd","main":"aurelia-task-queue"},{"name":"aurelia-templating","location":"../../aurelia-templating/dist/amd","main":"aurelia-templating"},{"name":"aurelia-templating-binding","location":"../../aurelia-templating-binding/dist/amd","main":"aurelia-templating-binding"},{"name":"aurelia-templating-resources","location":"../../aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"../../aurelia-templating-router/dist/amd","main":"aurelia-templating-router"},{"name":"aurelia-testing","location":"../../aurelia-testing/dist/amd","main":"aurelia-testing"}],"stubModules":["text"],"shim":{},"bundles":{"app-bundle":["environment","elems/form","elems/md-autocomplete","elems/md-button","elems/md-checkbox","elems/md-drawer","elems/md-input","elems/md-loading","elems/md-menu","elems/md-select","elems/md-shadow","elems/md-snackbar","elems/md-switch","elems/md-table","resources/helpers","resources/value-converters","libs/csv","libs/environment","libs/pouch","views/account","views/drugs","views/index","views/inventory","views/join","views/login","views/public","views/records","views/routes","views/shipments"]}});
 define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'aurelia-pal'], function (exports, _aureliaPath, _aureliaPal) {
   'use strict';
 
@@ -11444,6 +11444,22 @@ define('aurelia-event-aggregator/aurelia-event-aggregator',['exports', 'aurelia-
     return Handler;
   }();
 
+  function invokeCallback(callback, data, event) {
+    try {
+      callback(data, event);
+    } catch (e) {
+      logger.error(e);
+    }
+  }
+
+  function invokeHandler(handler, data) {
+    try {
+      handler.handle(data);
+    } catch (e) {
+      logger.error(e);
+    }
+  }
+
   var EventAggregator = exports.EventAggregator = function () {
     function EventAggregator() {
       
@@ -11466,24 +11482,16 @@ define('aurelia-event-aggregator/aurelia-event-aggregator',['exports', 'aurelia-
           subscribers = subscribers.slice();
           i = subscribers.length;
 
-          try {
-            while (i--) {
-              subscribers[i](data, event);
-            }
-          } catch (e) {
-            logger.error(e);
+          while (i--) {
+            invokeCallback(subscribers[i], data, event);
           }
         }
       } else {
         subscribers = this.messageHandlers.slice();
         i = subscribers.length;
 
-        try {
-          while (i--) {
-            subscribers[i].handle(event);
-          }
-        } catch (e) {
-          logger.error(e);
+        while (i--) {
+          invokeHandler(subscribers[i], event);
         }
       }
     };
@@ -12896,6 +12904,7 @@ define('aurelia-logging/aurelia-logging',['exports'], function (exports) {
   exports.getLogger = getLogger;
   exports.addAppender = addAppender;
   exports.setLevel = setLevel;
+  exports.getLevel = getLevel;
 
   
 
@@ -12995,6 +13004,10 @@ define('aurelia-logging/aurelia-logging',['exports'], function (exports) {
     for (var key in loggers) {
       loggers[key].setLevel(level);
     }
+  }
+
+  function getLevel() {
+    return globalDefaultLevel;
   }
 
   var Logger = exports.Logger = function () {
@@ -15888,8 +15901,12 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     NavigationInstruction.prototype._buildTitle = function _buildTitle() {
       var separator = arguments.length <= 0 || arguments[0] === undefined ? ' | ' : arguments[0];
 
-      var title = this.config.navModel.title || '';
+      var title = '';
       var childTitles = [];
+
+      if (this.config.navModel.title) {
+        title = this.router.transformTitle(this.config.navModel.title);
+      }
 
       for (var viewPortName in this.viewPortInstructions) {
         var _viewPortInstruction = this.viewPortInstructions[viewPortName];
@@ -15907,7 +15924,7 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
       }
 
       if (this.router.title) {
-        title += (title ? separator : '') + this.router.title;
+        title += (title ? separator : '') + this.router.transformTitle(this.router.title);
       }
 
       return title;
@@ -16029,6 +16046,11 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
       return this.addPipelineStep('postRender', step);
     };
 
+    RouterConfiguration.prototype.fallbackRoute = function fallbackRoute(fragment) {
+      this._fallbackRoute = fragment;
+      return this;
+    };
+
     RouterConfiguration.prototype.map = function map(route) {
       if (Array.isArray(route)) {
         route.forEach(this.map.bind(this));
@@ -16084,6 +16106,10 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
 
       if (this.unknownRouteConfig) {
         router.handleUnknownRoutes(this.unknownRouteConfig);
+      }
+
+      if (this._fallbackRoute) {
+        router.fallbackRoute = this._fallbackRoute;
       }
 
       router.options = this.options;
@@ -16269,10 +16295,19 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
 
   var Router = exports.Router = function () {
     function Router(container, history) {
+      var _this2 = this;
+
       
 
       this.parent = null;
       this.options = {};
+
+      this.transformTitle = function (title) {
+        if (_this2.parent) {
+          return _this2.parent.transformTitle(title);
+        }
+        return title;
+      };
 
       this.container = container;
       this.history = history;
@@ -16280,7 +16315,7 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     }
 
     Router.prototype.reset = function reset() {
-      var _this2 = this;
+      var _this3 = this;
 
       this.viewPorts = {};
       this.routes = [];
@@ -16293,7 +16328,7 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
       this._recognizer = new _aureliaRouteRecognizer.RouteRecognizer();
       this._childRecognizer = new _aureliaRouteRecognizer.RouteRecognizer();
       this._configuredPromise = new Promise(function (resolve) {
-        _this2._resolveConfiguredPromise = resolve;
+        _this3._resolveConfiguredPromise = resolve;
       });
     };
 
@@ -16307,7 +16342,7 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     };
 
     Router.prototype.configure = function configure(callbackOrConfig) {
-      var _this3 = this;
+      var _this4 = this;
 
       this.isConfigured = true;
 
@@ -16323,9 +16358,9 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
           config = c;
         }
 
-        config.exportToRouter(_this3);
-        _this3.isConfigured = true;
-        _this3._resolveConfiguredPromise();
+        config.exportToRouter(_this4);
+        _this4.isConfigured = true;
+        _this4._resolveConfiguredPromise();
       });
     };
 
@@ -16450,14 +16485,14 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     };
 
     Router.prototype.handleUnknownRoutes = function handleUnknownRoutes(config) {
-      var _this4 = this;
+      var _this5 = this;
 
       if (!config) {
         throw new Error('Invalid unknown route handler');
       }
 
       this.catchAllHandler = function (instruction) {
-        return _this4._createRouteConfig(config, instruction).then(function (c) {
+        return _this5._createRouteConfig(config, instruction).then(function (c) {
           instruction.config = c;
           return instruction;
         });
@@ -16551,7 +16586,7 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     };
 
     Router.prototype._createRouteConfig = function _createRouteConfig(config, instruction) {
-      var _this5 = this;
+      var _this6 = this;
 
       return Promise.resolve(config).then(function (c) {
         if (typeof c === 'string') {
@@ -16565,10 +16600,10 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
         return typeof c === 'string' ? { moduleId: c } : c;
       }).then(function (c) {
         c.route = instruction.params.path;
-        validateRouteConfig(c, _this5.routes);
+        validateRouteConfig(c, _this6.routes);
 
         if (!c.navModel) {
-          c.navModel = _this5.createNavModel(c);
+          c.navModel = _this6.createNavModel(c);
         }
 
         return c;
@@ -17031,10 +17066,10 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     }
 
     PipelineSlot.prototype.getSteps = function getSteps() {
-      var _this6 = this;
+      var _this7 = this;
 
       return this.steps.map(function (x) {
-        return _this6.container.get(x);
+        return _this7.container.get(x);
       });
     };
 
@@ -17054,11 +17089,11 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     }
 
     PipelineProvider.prototype.createPipeline = function createPipeline() {
-      var _this7 = this;
+      var _this8 = this;
 
       var pipeline = new Pipeline();
       this.steps.forEach(function (step) {
-        return pipeline.addStep(_this7.container.get(step));
+        return pipeline.addStep(_this8.container.get(step));
       });
       return pipeline;
     };
@@ -17122,11 +17157,11 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     function AppRouter(container, history, pipelineProvider, events) {
       
 
-      var _this8 = _possibleConstructorReturn(this, _Router.call(this, container, history));
+      var _this9 = _possibleConstructorReturn(this, _Router.call(this, container, history));
 
-      _this8.pipelineProvider = pipelineProvider;
-      _this8.events = events;
-      return _this8;
+      _this9.pipelineProvider = pipelineProvider;
+      _this9.events = events;
+      return _this9;
     }
 
     AppRouter.prototype.reset = function reset() {
@@ -17140,35 +17175,35 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     };
 
     AppRouter.prototype.loadUrl = function loadUrl(url) {
-      var _this9 = this;
+      var _this10 = this;
 
       return this._createNavigationInstruction(url).then(function (instruction) {
-        return _this9._queueInstruction(instruction);
+        return _this10._queueInstruction(instruction);
       }).catch(function (error) {
         logger.error(error);
-        restorePreviousLocation(_this9);
+        restorePreviousLocation(_this10);
       });
     };
 
     AppRouter.prototype.registerViewPort = function registerViewPort(viewPort, name) {
-      var _this10 = this;
+      var _this11 = this;
 
       _Router.prototype.registerViewPort.call(this, viewPort, name);
 
       if (!this.isActive) {
         var _ret6 = function () {
-          var viewModel = _this10._findViewModel(viewPort);
+          var viewModel = _this11._findViewModel(viewPort);
           if ('configureRouter' in viewModel) {
-            if (!_this10.isConfigured) {
+            if (!_this11.isConfigured) {
               var _ret7 = function () {
-                var resolveConfiguredPromise = _this10._resolveConfiguredPromise;
-                _this10._resolveConfiguredPromise = function () {};
+                var resolveConfiguredPromise = _this11._resolveConfiguredPromise;
+                _this11._resolveConfiguredPromise = function () {};
                 return {
                   v: {
-                    v: _this10.configure(function (config) {
-                      return viewModel.configureRouter(config, _this10);
+                    v: _this11.configure(function (config) {
+                      return viewModel.configureRouter(config, _this11);
                     }).then(function () {
-                      _this10.activate();
+                      _this11.activate();
                       resolveConfiguredPromise();
                     })
                   }
@@ -17178,7 +17213,7 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
               if ((typeof _ret7 === 'undefined' ? 'undefined' : _typeof(_ret7)) === "object") return _ret7.v;
             }
           } else {
-            _this10.activate();
+            _this11.activate();
           }
         }();
 
@@ -17207,53 +17242,53 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     };
 
     AppRouter.prototype._queueInstruction = function _queueInstruction(instruction) {
-      var _this11 = this;
+      var _this12 = this;
 
       return new Promise(function (resolve) {
         instruction.resolve = resolve;
-        _this11._queue.unshift(instruction);
-        _this11._dequeueInstruction();
+        _this12._queue.unshift(instruction);
+        _this12._dequeueInstruction();
       });
     };
 
     AppRouter.prototype._dequeueInstruction = function _dequeueInstruction() {
-      var _this12 = this;
+      var _this13 = this;
 
       var instructionCount = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
 
       return Promise.resolve().then(function () {
-        if (_this12.isNavigating && !instructionCount) {
+        if (_this13.isNavigating && !instructionCount) {
           return undefined;
         }
 
-        var instruction = _this12._queue.shift();
-        _this12._queue.length = 0;
+        var instruction = _this13._queue.shift();
+        _this13._queue.length = 0;
 
         if (!instruction) {
           return undefined;
         }
 
-        _this12.isNavigating = true;
-        instruction.previousInstruction = _this12.currentInstruction;
+        _this13.isNavigating = true;
+        instruction.previousInstruction = _this13.currentInstruction;
 
         if (!instructionCount) {
-          _this12.events.publish('router:navigation:processing', { instruction: instruction });
-        } else if (instructionCount === _this12.maxInstructionCount - 1) {
+          _this13.events.publish('router:navigation:processing', { instruction: instruction });
+        } else if (instructionCount === _this13.maxInstructionCount - 1) {
           logger.error(instructionCount + 1 + ' navigation instructions have been attempted without success. Restoring last known good location.');
-          restorePreviousLocation(_this12);
-          return _this12._dequeueInstruction(instructionCount + 1);
-        } else if (instructionCount > _this12.maxInstructionCount) {
+          restorePreviousLocation(_this13);
+          return _this13._dequeueInstruction(instructionCount + 1);
+        } else if (instructionCount > _this13.maxInstructionCount) {
           throw new Error('Maximum navigation attempts exceeded. Giving up.');
         }
 
-        var pipeline = _this12.pipelineProvider.createPipeline();
+        var pipeline = _this13.pipelineProvider.createPipeline();
 
         return pipeline.run(instruction).then(function (result) {
-          return processResult(instruction, result, instructionCount, _this12);
+          return processResult(instruction, result, instructionCount, _this13);
         }).catch(function (error) {
           return { output: error instanceof Error ? error : new Error(error) };
         }).then(function (result) {
-          return resolveInstruction(instruction, result, !!instructionCount, _this12);
+          return resolveInstruction(instruction, result, !!instructionCount, _this13);
         });
       });
     };
@@ -17337,8 +17372,10 @@ define('aurelia-router/aurelia-router',['exports', 'aurelia-logging', 'aurelia-r
     var previousLocation = router.history.previousLocation;
     if (previousLocation) {
       router.navigate(router.history.previousLocation, { trigger: false, replace: true });
+    } else if (router.fallbackRoute) {
+      router.navigate(router.fallbackRoute, { trigger: true, replace: true });
     } else {
-      logger.error('Router navigation failed, and no previous location could be restored.');
+      logger.error('Router navigation failed, and no previous location or fallbackRoute could be restored.');
     }
   }
 });;define('aurelia-router', ['aurelia-router/aurelia-router'], function (main) { return main; });
@@ -19963,7 +20000,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     var value = element.getAttribute('class');
     var auTargetID = getNextAUTargetID();
 
-    element.setAttribute('class', value ? value += ' au-target' : 'au-target');
+    element.setAttribute('class', value ? value + ' au-target' : 'au-target');
     element.setAttribute('au-target-id', auTargetID);
 
     return auTargetID;
@@ -20032,7 +20069,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
         if (targetId) {
           var ins = instructions[targetId];
 
-          if (ins.shadowSlot || ins.lifting) {
+          if (ins.shadowSlot || ins.lifting || ins.elementInstruction && !ins.elementInstruction.anchorIsContainer) {
             content.insertBefore(_aureliaPal.DOM.createComment('view'), firstChild);
           }
         }
@@ -25433,7 +25470,7 @@ define('aurelia-templating-router/route-loader',['exports', 'aurelia-dependency-
     return TemplatingRouteLoader;
   }(_aureliaRouter.RouteLoader)) || _class);
 });
-define('aurelia-templating-router/router-view',['exports', 'aurelia-dependency-injection', 'aurelia-templating', 'aurelia-router', 'aurelia-metadata', 'aurelia-pal'], function (exports, _aureliaDependencyInjection, _aureliaTemplating, _aureliaRouter, _aureliaMetadata, _aureliaPal) {
+define('aurelia-templating-router/router-view',['exports', 'aurelia-dependency-injection', 'aurelia-binding', 'aurelia-templating', 'aurelia-router', 'aurelia-metadata', 'aurelia-pal'], function (exports, _aureliaDependencyInjection, _aureliaBinding, _aureliaTemplating, _aureliaRouter, _aureliaMetadata, _aureliaPal) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -25607,49 +25644,55 @@ define('aurelia-templating-router/router-view',['exports', 'aurelia-dependency-i
     RouterView.prototype.swap = function swap(viewPortInstruction) {
       var _this2 = this;
 
+      var layoutInstruction = viewPortInstruction.layoutInstruction;
+
       var work = function work() {
         var previousView = _this2.view;
         var swapStrategy = void 0;
         var viewSlot = _this2.viewSlot;
-        var layoutInstruction = viewPortInstruction.layoutInstruction;
 
         swapStrategy = _this2.swapOrder in swapStrategies ? swapStrategies[_this2.swapOrder] : swapStrategies.after;
 
         swapStrategy(viewSlot, previousView, function () {
-          var waitForView = void 0;
-
-          if (layoutInstruction) {
-            if (!layoutInstruction.viewModel) {
-              layoutInstruction.viewModel = {};
-            }
-
-            waitForView = _this2.compositionEngine.createController(layoutInstruction).then(function (layout) {
-              _aureliaTemplating.ShadowDOM.distributeView(viewPortInstruction.controller.view, layout.slots || layout.view.slots);
-              return layout.view || layout;
-            });
-          } else {
-            waitForView = Promise.resolve(viewPortInstruction.controller.view);
-          }
-
-          return waitForView.then(function (newView) {
-            _this2.view = newView;
-            return viewSlot.add(newView);
+          return Promise.resolve().then(function () {
+            return viewSlot.add(_this2.view);
           }).then(function () {
             _this2._notify();
           });
         });
       };
 
-      viewPortInstruction.controller.automate(this.overrideContext, this.owningView);
+      var ready = function ready(owningView) {
+        viewPortInstruction.controller.automate(_this2.overrideContext, owningView);
+        if (_this2.compositionTransactionOwnershipToken) {
+          return _this2.compositionTransactionOwnershipToken.waitForCompositionComplete().then(function () {
+            _this2.compositionTransactionOwnershipToken = null;
+            return work();
+          });
+        }
 
-      if (this.compositionTransactionOwnershipToken) {
-        return this.compositionTransactionOwnershipToken.waitForCompositionComplete().then(function () {
-          _this2.compositionTransactionOwnershipToken = null;
-          return work();
+        return work();
+      };
+
+      if (layoutInstruction) {
+        if (!layoutInstruction.viewModel) {
+          layoutInstruction.viewModel = {};
+        }
+
+        return this.compositionEngine.createController(layoutInstruction).then(function (controller) {
+          _aureliaTemplating.ShadowDOM.distributeView(viewPortInstruction.controller.view, controller.slots || controller.view.slots);
+          controller.automate((0, _aureliaBinding.createOverrideContext)(layoutInstruction.viewModel), _this2.owningView);
+          controller.view.children.push(viewPortInstruction.controller.view);
+          return controller.view || controller;
+        }).then(function (newView) {
+          _this2.view = newView;
+          return ready(newView);
         });
       }
 
-      return work();
+      this.view = viewPortInstruction.controller.view;
+
+      return ready(this.owningView);
     };
 
     RouterView.prototype._notify = function _notify() {
@@ -25741,7 +25784,13 @@ define('aurelia-templating-router/route-href',['exports', 'aurelia-templating', 
         }
 
         var href = _this.router.generate(_this.route, _this.params);
-        _this.element.setAttribute(_this.attribute, href);
+
+        if (_this.element.au.controller) {
+          _this.element.au.controller.viewModel[_this.attribute] = href;
+        } else {
+          _this.element.setAttribute(_this.attribute, href);
+        }
+
         return null;
       }).catch(function (reason) {
         logger.error(reason);

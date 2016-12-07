@@ -85,11 +85,11 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu style="position:absolute; z-index:2; top:10px; right:5px;">
+      <md-menu click.trigger="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
           disabled.bind=" ! transactions.length"
-          click.delegate="pendInventory()">
+          click.delegate="pendingAt ? unpendInventory() : pendInventory()">
           ${ pendingAt ? 'Unpend Selected' : 'Pend Selected' }
         </li>
         <li
@@ -105,26 +105,26 @@
           <li class="mdl-menu__item--full-bleed-divider">
             <md-input
               required
-              value.bind="repack.vials"
+              value.bind="repack.vials | number"
               style="width:40px;">
               Vials
             </md-input>
             <md-input
               required
-              value.bind="repack.qty"
+              value.bind="repack.size | number"
               input.delegate="setRepackVials()"
               style="width:40px;">
               Qty
             </md-input>
             <md-input
               required
-              value.bind="repack.exp"
+              value.bind="repack.exp | date"
               style="width:40px;">
               Exp
             </md-input>
             <md-input
               required
-              value.bind="repack.bin"
+              value.bind="repack.location"
               style="width:40px;">
               Bin
             </md-input>
@@ -143,7 +143,6 @@
           Public View
         </a></li>
       </md-menu>
-      ${ qtySelected }
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div style="width:100%; height:100%; display:flex">
         <div style="overflow-y:scroll; margin:8px 0px 8px 16px; flex:1;">
@@ -162,7 +161,7 @@
             </thead>
             <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
               <td style="padding:0 0 0 8px">
-                <md-checkbox click.delegate="check(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
+                <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
               </td>
               <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.generic }</td>
               <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
