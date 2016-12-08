@@ -85,7 +85,7 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu click.trigger="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
+      <md-menu click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
           disabled.bind=" ! transactions.length"

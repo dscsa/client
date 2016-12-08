@@ -13,6 +13,7 @@ export class inventory {
     this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt'])
     this.limit  = 100
     this.repack = {size:30}
+    this.transactions = []
 
     this.resetFilter()
     this.placeholder     = "Please Wait While the Drug Database is Indexed" //Put in while database syncs
@@ -185,7 +186,7 @@ export class inventory {
 
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
-    let all = []
+    let all = [], createdAt = new Date().toJSON()
 
     //Create the new (repacked) transactions
     for (let i=0; i<this.repack.vials; i++)
@@ -194,7 +195,8 @@ export class inventory {
         exp:{to:this.repack.exp, from:null},
         qty:{to:this.repack.size, from:null},
         location:this.repack.location,
-        drug:this.transactions[0].drug
+        drug:this.transactions[0].drug,
+        next:this.pendingIndex >= 0 ? [{pending:{}, createdAt}] : [] //Keep it pending if we are on pending screen
       }))
 
     //Once we have the new _ids insert them into the next property of the checked transactions
@@ -215,7 +217,7 @@ export class inventory {
 
   openMenu($event) {
     if ($event.target.tagName != 'I')
-      return //only calculate for the parent element, <i vertical menu icon>, and not children
+      return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
     this.repack.qty = 0,
     this.repack.exp = '2099-01-01T00:00:00'
