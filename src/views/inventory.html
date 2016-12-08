@@ -22,11 +22,11 @@
       Filter pending inventory
     </md-input>
     <a
-      repeat.for="group of pending | toArray"
-      class="mdl-navigation__link ${ pendingAt == group.key ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectPending(group.key)">
-      <div class="mdl-typography--title">${group.val[0].drug.generic}</div>
-      ${ group.key.slice(0, 16) }, ${ group.val.length } items
+      repeat.for="group of pending"
+      class="mdl-navigation__link ${ $parent.pendingIndex === $index ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectPending($index)">
+      <div class="mdl-typography--title">${group[0].drug.generic}</div>
+      ${ group[0].next[0].createdAt.slice(0, 16) }, ${ group.length } items
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
@@ -89,8 +89,8 @@
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
           disabled.bind=" ! transactions.length"
-          click.delegate="pendingAt ? unpendInventory() : pendInventory()">
-          ${ pendingAt ? 'Unpend Selected' : 'Pend Selected' }
+          click.delegate="pendingIndex >= 0 ? unpendInventory() : pendInventory()">
+          ${ pendingIndex >= 0 ? 'Unpend Selected' : 'Pend Selected' }
         </li>
         <li
           disabled.bind=" ! transactions.length"

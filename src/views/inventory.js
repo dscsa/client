@@ -40,13 +40,16 @@ export class inventory {
       this.ordered = accounts[0].ordered
     })
 
-    this.db.transaction.get({pending:true}).then(pending => {
-      this.pending = {}
-      for (let transaction of pending) {
+    this.db.transaction.get({pending:true}).then(transactions => {
+      let pending = {}
+      transactions = this.sortTransactions(transactions)
+      for (let transaction of transactions) {
+        transaction.isChecked = true //checked by default
         let createdAt = transaction.next[0].createdAt
-        this.pending[createdAt] = this.pending[createdAt] || []
-        this.pending[createdAt].push(transaction)
+        pending[createdAt] = pending[createdAt] || []
+        pending[createdAt].push(transaction)
       }
+      this.pending = Object.keys(pending).map(key => pending[key])
     })
   }
 
@@ -66,21 +69,22 @@ export class inventory {
 
       this.term  = group.generic || group.location || group.exp
       this.group = group
-      this.pendingAt = null
+      this.pendingIndex = null
+      transactions = this.sortTransactions(transactions)
       this.setTransactions(transactions)
     })
     .catch(console.log)
   }
 
-  selectPending(pendingAt) {
-    let transactions = this.pending[pendingAt]
-    this.setTransactions(transactions)
+  selectPending($index) {
+    let transactions = this.pending[$index]
     this.term = transactions[0].drug.generic
-    this.pendingAt = pendingAt
+    this.pendingIndex = $index
+    this.setTransactions(transactions)
   }
 
-  setTransactions(transactions) {
-    this.transactions = transactions.sort((a, b) => {
+  sortTransactions(transactions) {
+    return transactions.sort((a, b) => {
       let aExp = a.exp.to || a.exp.from || ''
       let bExp = b.exp.to || b.exp.from || ''
       let aQty = a.qty.to || a.qty.from || ''
@@ -96,6 +100,10 @@ export class inventory {
       if (aQty < bQty) return 1
       return 0
     })
+  }
+
+  setTransactions(transactions) {
+    this.transactions = transactions
 
     this.resetFilter()
     for (let transaction of this.transactions) {
@@ -130,59 +138,75 @@ export class inventory {
     this.filter = Object.assign({}, this.filter)
   }
 
-  updateNext(updateFn) {
+  updateNextOfSelected(updateFn) {
+    let createdAt = new Date().toJSON() //must be exact same timestamp for group of pending items
+    let length    = this.transactions.length
+    let checked   = []
     //since we may be deleting as we go, loop backward
-    for (let i = this.transactions.length - 1; i >= 0; i--)  {
+    for (let i = length - 1; i >= 0; i--)  {
       let transaction = this.transactions[i]
-      if (transaction.isChecked) {
-        updateFn(transaction.next) //use array reference to change next's value
-        this.transactions.splice(i, 1)
-        this.db.transaction.put(transaction).catch(err => {
-          transaction.next.pop()
-          this.transactions.splice(i, 0, transaction)
-          this.snackbar.show(`Error removing inventory: ${err.reason || err.message}`)
-        })
-      }
+
+      if ( ! transaction.isChecked) continue
+
+      checked.push(transaction)
+
+      transaction.next = updateFn(transaction)
+      for (let val of transaction.next)
+        val.createdAt = createdAt
+
+      this.transactions.splice(i, 1)
+      this.db.transaction.put(transaction).catch(err => {
+        transaction.next.pop()
+        this.transactions.splice(i, 0, transaction)
+        this.snackbar.show(`Error removing inventory: ${err.reason || err.message}`)
+      })
     }
+
+    if (this.pendingIndex >= 0 && checked.length == length) {
+      this.pending.splice(this.pendingIndex, 1)
+      this.pendingIndex = null
+    }
+
+    return checked
   }
 
   unpendInventory() {
-    this.updateNext(next => next.pop())
+    this.updateNextOfSelected(_ => [])
   }
 
   pendInventory() {
-    let createdAt = new Date().toJSON() //must be exact same timestamp for group of pending items
-    this.updateNext(next => next.push({pending:{}, createdAt}))
+    let selectedTransactions = this.updateNextOfSelected(_ => [{pending:{}}])
+    this.pending.unshift(selectedTransactions)
   }
 
   dispenseInventory() {
-    let createdAt = new Date().toJSON()
-    this.updateNext(next => next.push({dispensed:{}, createdAt}))
+    this.updateNextOfSelected(_ => [{dispensed:{}}])
   }
 
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
-    let createdAt = new Date().toJSON()
-    
-    for (let i=0; i<this.repack.vials; i++) {
-      let transaction = {
-        verifiedAt:createdAt,
+    let all = []
+
+    //Create the new (repacked) transactions
+    for (let i=0; i<this.repack.vials; i++)
+      all.push(this.db.transaction.post({
+        verifiedAt:new Date().toJSON(),
         exp:{to:this.repack.exp, from:null},
         qty:{to:this.repack.size, from:null},
         location:this.repack.location,
         drug:this.transactions[0].drug
-      }
-      this.transactions.unshift(transaction) //Add the drug to the view
-      this.db.transaction.post(transaction)
-      .then(transaction => this.updateNext(next => {
-        next.push({transaction:{_id:transaction._id}, createdAt})
       }))
-      .catch(err => {
-        console.error(err)
-        this.snackbar.show(`Transaction could not be added: ${err.reason}`)
-        this.transactions.shift()
-      })
-    }
+
+    //Once we have the new _ids insert them into the next property of the checked transactions
+    Promise.all(all).then(all => {
+      this.transactions.unshift(...all) //Add the drugs to the view
+      this.updateNextOfSelected(_ => all.map(val => {
+        return {transaction:{_id:val._id}}
+      }))
+    }).catch(err => {
+      console.error(err)
+      this.snackbar.show(`Transactions could not repackaged: ${err.reason}`)
+    })
   }
 
   setRepackVials() {

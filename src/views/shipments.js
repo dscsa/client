@@ -221,6 +221,7 @@ export class shipments {
 
     this.drugs = [] //get rid of previous results since someone might press enter and accidentally readd the same drug
     this.transactions.splice($index, 1) //Important to call splice before promise resolves since it will cancel the saveTransaction which would cause a conflict
+    //TODO get rid of this.diff as well in case this transaction was selected
     this.db.transaction.delete(transaction)
     this.focusInput(`md-autocomplete`)
   }
