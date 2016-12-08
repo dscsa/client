@@ -36,7 +36,8 @@ export class inventory {
       this.selectGroup(params)
 
     this.db.user.session.get().then(session => {
-      return this.db.account.get({_id:session.account._id})
+      this.account = session.account._id
+      return this.db.account.get({_id:this.account})
     }).then(accounts => {
       this.ordered = accounts[0].ordered
     })
