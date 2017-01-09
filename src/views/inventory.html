@@ -125,6 +125,7 @@
             <md-input
               required
               value.bind="repack.location"
+              pattern="[A-Z]\d{2}"
               style="width:40px;">
               Bin
             </md-input>
@@ -157,6 +158,7 @@
                 <th style="text-align:left; width:40px;">Qty</th>
                 <!-- <th style="text-align:left; width:40px;">Rx</th> -->
                 <th style="text-align:left; width:40px;">Bin</th>
+                <th></th>
               </tr>
             </thead>
             <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
@@ -203,12 +205,15 @@
                   required
                   keydown.delegate="binShortcuts($event, $index)"
                   keyup.delegate="saveTransaction(transaction) & debounce:1000"
-                  pattern="[A-Z]\d{3}"
+                  pattern="[A-Z]\d{2,3}"
                   value.bind="transaction.location | upperCase"
                   style="width:40px; margin-bottom:-8px"
                   maxlength.bind="4"
                   placeholder>
                 </md-input>
+              </td>
+              <td style="padding:0; width:40px">
+                <i show.bind="transaction.shipment._id.indexOf('.') == -1" class="material-icons">delete_sweep</i>
               </td>
             </tr>
           </table>
