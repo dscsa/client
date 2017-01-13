@@ -14,6 +14,7 @@ cd /path/to/repos && sudo ln -s /path/to/install/keys keys             #create a
 
 sudo npm install dscsa/client --prefix='/path/to/install'              #install the app
 sudo npm install dscsa/development --prefix='/path/to/install'         #install the development environment
+ #Running npm install might bring up some errors because there is no package.json folder in dscsa/client or server. You can ignore these.
 cd node_modules && sudo ln -s path/to/install/node_modules/* ./        #does making aliases here first help?
 
 sudo rm client && sudo git clone https://github.com/dscsa/client
@@ -22,10 +23,27 @@ sudo rm db && sudo git clone https://github.com/dscsa/pouch
 sudo rm csv && sudo git clone https://github.com/dscsa/csv
 
 sudo mv pouch db
+
+ #Make sure couchDB is running on your local computer
 sudo node server                                                       #run the server api
 cd client && sudo au run —-watch                                       #start dev environment
 ```
 Test that both http://localhost and http://localhost:9000 now serve the app
+
+#Your local directory should look like this:
+- install
+    - keys
+    - node_modules
+    - etc (you may or may not have this depending on which version of node you use)
+- repos
+    - node_modules
+        - a bunch of symlinks to node_modules in install folder
+        - client
+        - server
+        - csv
+        - db
+    - keys (a symlink to where keys folder in install)
+
 
 ## install production (ubuntu)
 ```
