@@ -30,7 +30,8 @@ cd client && sudo au run —-watch                                       #start 
 ```
 Test that both http://localhost and http://localhost:9000 now serve the app
 
-#Your local directory should look like this:
+##Your local directory should look like this:
+```
 - install
     - keys
     - node_modules
@@ -43,6 +44,7 @@ Test that both http://localhost and http://localhost:9000 now serve the app
         - csv
         - db
     - keys (a symlink to where keys folder in install)
+```
 
 
 ## install production (ubuntu)
