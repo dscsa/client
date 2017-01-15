@@ -166,7 +166,7 @@
                 <th style="text-align:left; width:40px;">Qty</th>
                 <!-- <th style="text-align:left; width:40px;">Rx</th> -->
                 <th style="text-align:left; width:40px;">Bin</th>
-                <th></th>
+                <th style="padding:8px 5px 0"></th>
               </tr>
             </thead>
             <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
@@ -220,7 +220,7 @@
                   placeholder>
                 </md-input>
               </td>
-              <td style="padding:0; width:40px">
+              <td style="padding:8px 5px 0">
                 <i show.bind="isRepacked(transaction)" class="material-icons" style="font-size:20px">delete_sweep</i>
               </td>
             </tr>

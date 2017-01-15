@@ -136,20 +136,11 @@ export class inventoryFilterValueConverter {
   }
   toView(transactions = [], filter){
     for (let transaction of transactions) {
-      let exp    = transaction.exp.to || transaction.exp.from
-      let ndc    = transaction.drug._id
-      let form   = transaction.drug.form
-      let repack = this.isRepacked(transaction)
-      if ( ! filter.exp[exp]) console.log('exp', filter)
-      if ( ! filter.repack[repack]) console.log('repack', filter)
-      filter.exp[exp].count       = 0
-      filter.exp[exp].qty         = 0
-      filter.ndc[ndc].count       = 0
-      filter.ndc[ndc].qty         = 0
-      filter.form[form].count     = 0
-      filter.form[form].qty       = 0
-      filter.repack[repack].count = 0
-      filter.repack[repack].qty   = 0
+      filter.repack[this.isRepacked(transaction)] =
+      filter.form[transaction.drug.form] =
+      filter.ndc[transaction.drug._id] =
+      filter.exp[transaction.exp.to || transaction.exp.from] =
+      {count:0, qty:0}
     }
 
     transactions = transactions.filter(transaction => {
