@@ -50,6 +50,14 @@
           <div class="mdl-cell mdl-cell--2-col">${exp.val.qty}</div>
           <div class="mdl-cell mdl-cell--2-col">${exp.val.count}</div>
         </div>
+        <div repeat.for="repack of filter.repack | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-bottom:-8px">
+          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:0; width:100%">
+            <div class="mdl-cell mdl-cell--8-col">Repack Filter</div>
+          </div>
+          <md-checkbox class="mdl-cell mdl-cell--8-col" click.delegate="signalFilter(repack)" checked.bind="repack.val.isChecked">${repack.key}</md-checkbox>
+          <div class="mdl-cell mdl-cell--2-col">${repack.val.qty}</div>
+          <div class="mdl-cell mdl-cell--2-col">${repack.val.count}</div>
+        </div>
         <div repeat.for="form of filter.form | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-bottom:-8px">
           <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:0; width:100%">
             <div class="mdl-cell mdl-cell--8-col">Form Filter</div>
@@ -213,7 +221,7 @@
                 </md-input>
               </td>
               <td style="padding:0; width:40px">
-                <i show.bind="transaction.shipment._id.indexOf('.') == -1" class="material-icons">delete_sweep</i>
+                <i show.bind="isRepacked(transaction)" class="material-icons">delete_sweep</i>
               </td>
             </tr>
           </table>

@@ -131,35 +131,42 @@ export class toArrayValueConverter {
 
 //ADDED step of converting object to array
 export class inventoryFilterValueConverter {
+  isRepacked(transaction) {
+    return transaction.shipment._id.indexOf('.') == -1 ? 'Repacked' : 'Inventory'
+  }
   toView(transactions = [], filter){
     for (let transaction of transactions) {
-      let exp  = transaction.exp.to || transaction.exp.from
-      let ndc  = transaction.drug._id
-      let form = transaction.drug.form
+      let exp    = transaction.exp.to || transaction.exp.from
+      let ndc    = transaction.drug._id
+      let form   = transaction.drug.form
+      let repack = this.isRepacked(transaction)
       filter.exp[exp].count = 0
       filter.exp[exp].qty = 0
       filter.ndc[ndc].count = 0
       filter.ndc[ndc].qty = 0
       filter.form[form].count = 0
       filter.form[form].qty = 0
+      filter.repack[repack].count = 0
+      filter.repack[repack].qty = 0
     }
 
     transactions = transactions.filter(transaction => {
 
-      let qty  = transaction.qty.to || transaction.qty.from
-      let exp  = transaction.exp.to || transaction.exp.from
-      let ndc  = transaction.drug._id
-      let form = transaction.drug.form
+      let qty    = transaction.qty.to || transaction.qty.from
+      let exp    = transaction.exp.to || transaction.exp.from
+      let ndc    = transaction.drug._id
+      let form   = transaction.drug.form
+      let repack = this.isRepacked(transaction)
 
       if ( ! filter.exp[exp].isChecked) {
-        if (filter.ndc[ndc].isChecked && filter.form[form].isChecked) {
+        if (filter.ndc[ndc].isChecked && filter.form[form].isChecked && filter.repack[repack].isChecked) {
           filter.exp[exp].count++
           filter.exp[exp].qty += qty
         }
         return false
       }
       if ( ! filter.ndc[ndc].isChecked) {
-        if (filter.exp[exp].isChecked && filter.form[form].isChecked) {
+        if (filter.exp[exp].isChecked && filter.form[form].isChecked && filter.repack[repack].isChecked) {
           filter.ndc[ndc].count++
           filter.ndc[ndc].qty += qty
         }
@@ -167,9 +174,17 @@ export class inventoryFilterValueConverter {
       }
 
       if ( ! filter.form[form].isChecked) {
-        if (filter.exp[exp].isChecked && filter.ndc[ndc].isChecked) {
+        if (filter.exp[exp].isChecked && filter.ndc[ndc].isChecked && filter.repack[repack].isChecked) {
           filter.form[form].count++
           filter.form[form].qty += qty
+        }
+        return false
+      }
+
+      if ( ! filter.repack[repack].isChecked) {
+        if (filter.exp[exp].isChecked && filter.ndc[ndc].isChecked && filter.form[form].isChecked) {
+          filter.repack[repack].count++
+          filter.repack[repack].qty += qty
         }
         return false
       }
@@ -177,9 +192,12 @@ export class inventoryFilterValueConverter {
       filter.exp[exp].count++
       filter.ndc[ndc].count++
       filter.form[form].count++
+      filter.repack[repack].count++
       filter.exp[exp].qty   += qty
       filter.ndc[ndc].qty   += qty
       filter.form[form].qty += qty
+      filter.repack[repack].qty += qty
+
       return true
     })
 

@@ -87,14 +87,14 @@ export class inventory {
 
   sortTransactions(transactions) {
     return transactions.sort((a, b) => {
-      let aExp = a.exp.to || a.exp.from || ''
-      let bExp = b.exp.to || b.exp.from || ''
-      let aQty = a.qty.to || a.qty.from || ''
-      let bQty = b.qty.to || b.qty.from || ''
-      let aBin = a.location || ''
-      let bBin = b.location || ''
-      let aPack = a.shipment._id.indexOf('.') == -1
-      let bPack = b.shipment._id.indexOf('.') == -1
+      let aExp  = a.exp.to || a.exp.from || ''
+      let bExp  = b.exp.to || b.exp.from || ''
+      let aQty  = a.qty.to || a.qty.from || ''
+      let bQty  = b.qty.to || b.qty.from || ''
+      let aBin  = a.location || ''
+      let bBin  = b.location || ''
+      let aPack = this.isRepacked(a)
+      let bPack = this.isRepacked(b)
 
       if (aPack > bPack) return -1
       if (aPack < bPack) return 1
@@ -108,6 +108,10 @@ export class inventory {
     })
   }
 
+  isRepacked(transaction) {
+    return transaction.shipment._id.indexOf('.') == -1
+  }
+
   setTransactions(transactions) {
     this.transactions = transactions
 
@@ -116,11 +120,12 @@ export class inventory {
       this.filter.exp[transaction.exp.to || transaction.exp.from] = {isChecked:true, count:0, qty:0}
       this.filter.ndc[transaction.drug._id]   = {isChecked:true, count:0, qty:0}
       this.filter.form[transaction.drug.form] = {isChecked:true, count:0, qty:0}
+      this.filter.repack[this.isRepacked(transaction) ? 'Repacked' : 'Inventory'] = {isChecked:true, count:0, qty:0}
     }
   }
 
   resetFilter() {
-    this.filter = {exp:{},ndc:{},form:{}}
+    this.filter = {exp:{},ndc:{},form:{},repack:{}}
   }
 
   search() {
