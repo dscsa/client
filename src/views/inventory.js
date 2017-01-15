@@ -164,7 +164,7 @@ export class inventory {
       })
     }
 
-    if (this.pendingIndex >= 0 && checked.length == length) {
+    if (this.pendingIndex != null && checked.length == length) {
       this.pending.splice(this.pendingIndex, 1)
       this.pendingIndex = null
     }
@@ -197,7 +197,7 @@ export class inventory {
         qty:{to:this.repack.size, from:null},
         location:this.repack.location,
         drug:this.transactions[0].drug,
-        next:this.pendingIndex >= 0 ? [{pending:{}, createdAt}] : [] //Keep it pending if we are on pending screen
+        next:this.pendingIndex != null ? [{pending:{}, createdAt}] : [] //Keep it pending if we are on pending screen
       }))
 
     //Once we have the new _ids insert them into the next property of the checked transactions
