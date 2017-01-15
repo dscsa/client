@@ -140,14 +140,16 @@ export class inventoryFilterValueConverter {
       let ndc    = transaction.drug._id
       let form   = transaction.drug.form
       let repack = this.isRepacked(transaction)
-      filter.exp[exp].count = 0
-      filter.exp[exp].qty = 0
-      filter.ndc[ndc].count = 0
-      filter.ndc[ndc].qty = 0
-      filter.form[form].count = 0
-      filter.form[form].qty = 0
+      if ( ! filter.exp[exp]) console.log('exp', filter)
+      if ( ! filter.repack[repack]) console.log('repack', filter)
+      filter.exp[exp].count       = 0
+      filter.exp[exp].qty         = 0
+      filter.ndc[ndc].count       = 0
+      filter.ndc[ndc].qty         = 0
+      filter.form[form].count     = 0
+      filter.form[form].qty       = 0
       filter.repack[repack].count = 0
-      filter.repack[repack].qty = 0
+      filter.repack[repack].qty   = 0
     }
 
     transactions = transactions.filter(transaction => {
@@ -190,12 +192,15 @@ export class inventoryFilterValueConverter {
       }
 
       filter.exp[exp].count++
+      filter.exp[exp].qty += qty
+
       filter.ndc[ndc].count++
+      filter.ndc[ndc].qty += qty
+
       filter.form[form].count++
-      filter.repack[repack].count++
-      filter.exp[exp].qty   += qty
-      filter.ndc[ndc].qty   += qty
       filter.form[form].qty += qty
+
+      filter.repack[repack].count++
       filter.repack[repack].qty += qty
 
       return true
