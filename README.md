@@ -82,7 +82,7 @@ sudo apt-get install nodejs -y
 sudo apt-get install git-core
 sudo npm install dscsa/client
 sudo npm install forever -g
-forever start /dscsa/node_modules/server
+sudo forever start /dscsa/node_modules/server  #forever list, forever stop
 ```
 
 ## tests
