@@ -93,7 +93,11 @@ export class inventory {
       let bQty = b.qty.to || b.qty.from || ''
       let aBin = a.location || ''
       let bBin = b.location || ''
+      let aPack = a.shipment._id.indexOf('.') == -1
+      let bPack = b.shipment._id.indexOf('.') == -1
 
+      if (aPack > bPack) return -1
+      if (aPack < bPack) return 1
       if (aBin > bBin) return -1
       if (aBin < bBin) return 1
       if (aExp < bExp) return -1
