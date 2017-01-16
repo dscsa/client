@@ -15,7 +15,6 @@ export class inventory {
     this.repack = {size:30}
     this.transactions = []
 
-    this.resetFilter()
     this.placeholder     = "Please Wait While the Drug Database is Indexed" //Put in while database syncs
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcuts    = expShortcuts
@@ -114,18 +113,7 @@ export class inventory {
 
   setTransactions(transactions) {
     this.transactions = transactions
-
-    this.resetFilter()
-    for (let transaction of this.transactions) {
-      this.filter.exp[transaction.exp.to || transaction.exp.from] = {isChecked:true, count:0, qty:0}
-      this.filter.ndc[transaction.drug._id]   = {isChecked:true, count:0, qty:0}
-      this.filter.form[transaction.drug.form] = {isChecked:true, count:0, qty:0}
-      this.filter.repack[this.isRepacked(transaction) ? 'Repacked' : 'Inventory'] = {isChecked:true, count:0, qty:0}
-    }
-  }
-
-  resetFilter() {
-    this.filter = {exp:{},ndc:{},form:{},repack:{}}
+    this.signalFilter() //inventerFilterValueConverter sets the filter object, we need to make sure this triggers aurelia
   }
 
   search() {

@@ -1047,7 +1047,7 @@ define('resources/value-converters',['exports', '../resources/helpers'], functio
       var _this = this;
 
       var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var filter = arguments[1];
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       for (var _iterator = transactions, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
         var _ref;
@@ -1063,11 +1063,23 @@ define('resources/value-converters',['exports', '../resources/helpers'], functio
 
         var transaction = _ref;
 
-        filter.repack[this.isRepacked(transaction)] = filter.form[transaction.drug.form] = filter.ndc[transaction.drug._id] = filter.exp[transaction.exp.to || transaction.exp.from] = { count: 0, qty: 0 };
+        var keys = {
+          exp: transaction.exp.to || transaction.exp.from,
+          ndc: transaction.drug._id,
+          form: transaction.drug.form,
+          repack: this.isRepacked(transaction)
+        };
+
+        for (var i in keys) {
+          var key = keys[i];
+          filter[i] = filter[i] || {};
+          filter[i][key] = filter[i][key] || { isChecked: true };
+          filter[i][key].count = 0;
+          filter[i][key].qty = 0;
+        }
       }
 
       transactions = transactions.filter(function (transaction) {
-
         var qty = transaction.qty.to || transaction.qty.from;
         var exp = transaction.exp.to || transaction.exp.from;
         var ndc = transaction.drug._id;
@@ -1596,7 +1608,6 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
       this.repack = { size: 30 };
       this.transactions = [];
 
-      this.resetFilter();
       this.placeholder = "Please Wait While the Drug Database is Indexed";
       this.waitForDrugsToIndex = _helpers.waitForDrugsToIndex;
       this.expShortcuts = _helpers.expShortcuts;
@@ -1710,31 +1721,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
     inventory.prototype.setTransactions = function setTransactions(transactions) {
       this.transactions = transactions;
-
-      this.resetFilter();
-      for (var _iterator2 = this.transactions, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-        var _ref2;
-
-        if (_isArray2) {
-          if (_i2 >= _iterator2.length) break;
-          _ref2 = _iterator2[_i2++];
-        } else {
-          _i2 = _iterator2.next();
-          if (_i2.done) break;
-          _ref2 = _i2.value;
-        }
-
-        var transaction = _ref2;
-
-        this.filter.exp[transaction.exp.to || transaction.exp.from] = { isChecked: true, count: 0, qty: 0 };
-        this.filter.ndc[transaction.drug._id] = { isChecked: true, count: 0, qty: 0 };
-        this.filter.form[transaction.drug.form] = { isChecked: true, count: 0, qty: 0 };
-        this.filter.repack[this.isRepacked(transaction) ? 'Repacked' : 'Inventory'] = { isChecked: true, count: 0, qty: 0 };
-      }
-    };
-
-    inventory.prototype.resetFilter = function resetFilter() {
-      this.filter = { exp: {}, ndc: {}, form: {}, repack: {} };
+      this.signalFilter();
     };
 
     inventory.prototype.search = function search() {
@@ -1746,19 +1733,19 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
       this.drugSearch().then(function (drugs) {
         var groups = {};
-        for (var _iterator3 = drugs, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-          var _ref3;
+        for (var _iterator2 = drugs, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+          var _ref2;
 
-          if (_isArray3) {
-            if (_i3 >= _iterator3.length) break;
-            _ref3 = _iterator3[_i3++];
+          if (_isArray2) {
+            if (_i2 >= _iterator2.length) break;
+            _ref2 = _iterator2[_i2++];
           } else {
-            _i3 = _iterator3.next();
-            if (_i3.done) break;
-            _ref3 = _i3.value;
+            _i2 = _iterator2.next();
+            if (_i2.done) break;
+            _ref2 = _i2.value;
           }
 
-          var drug = _ref3;
+          var drug = _ref2;
 
           groups[drug.generic] = groups[drug.generic] || { generic: drug.generic };
         }
@@ -1788,19 +1775,19 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
         checked.push(transaction);
 
         transaction.next = updateFn(transaction);
-        for (var _iterator4 = transaction.next, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
-          var _ref4;
+        for (var _iterator3 = transaction.next, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+          var _ref3;
 
-          if (_isArray4) {
-            if (_i4 >= _iterator4.length) break;
-            _ref4 = _iterator4[_i4++];
+          if (_isArray3) {
+            if (_i3 >= _iterator3.length) break;
+            _ref3 = _iterator3[_i3++];
           } else {
-            _i4 = _iterator4.next();
-            if (_i4.done) break;
-            _ref4 = _i4.value;
+            _i3 = _iterator3.next();
+            if (_i3.done) break;
+            _ref3 = _i3.value;
           }
 
-          var val = _ref4;
+          var val = _ref3;
 
           val.createdAt = createdAt;
         }_this5.transactions.splice(i, 1);
@@ -1882,19 +1869,19 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
       if ($event.target.tagName != 'I') return true;
 
       this.repack.qty = 0, this.repack.exp = '2099-01-01T00:00:00';
-      for (var _iterator5 = this.transactions, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
-        var _ref5;
+      for (var _iterator4 = this.transactions, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+        var _ref4;
 
-        if (_isArray5) {
-          if (_i5 >= _iterator5.length) break;
-          _ref5 = _iterator5[_i5++];
+        if (_isArray4) {
+          if (_i4 >= _iterator4.length) break;
+          _ref4 = _iterator4[_i4++];
         } else {
-          _i5 = _iterator5.next();
-          if (_i5.done) break;
-          _ref5 = _i5.value;
+          _i4 = _iterator4.next();
+          if (_i4.done) break;
+          _ref4 = _i4.value;
         }
 
-        var _transaction = _ref5;
+        var _transaction = _ref4;
 
         if (_transaction.isChecked) {
           this.repack.qty += _transaction.qty.to;
