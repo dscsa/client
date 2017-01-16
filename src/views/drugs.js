@@ -73,8 +73,8 @@ export class drugs {
   selectGroup(group, autoselectDrug) {
     this.term = group.name
 
-    this.db.transaction.get({generic:group.name, inventory:"sum"}).then(inventory => {
-      this.inventory = inventory[0].qty
+    this.db.transaction.get({generic:group.name, inventory:true}).then(inventory => {
+      this.inventory = inventory[0] && inventory[0].qty
     })
 
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
