@@ -16,8 +16,8 @@
     /*use flex instead of height:100% because latter was causing the parent md-card to have a scroll bar */
     [md-table]  { width:100%; flex:1;}
     /* want hover shadow to be 100% of width, so need to do padding within the tr (which needs this hack) rather than in table-wrap */
-    [md-table] td:first-child { padding-left:16px !important}
-    [md-table] td:last-child  { padding-right:16px !important}
+    [md-table] td:first-child { padding-left:24px !important}
+    [md-table] td:last-child  { padding-right:24px !important}
 
     /*give spacing for the header and the top and bottom gullies */
     .full-height { height:calc(100vh - 96px); overflow-y:auto}
@@ -31,7 +31,7 @@
     .mdl-layout__header-row .mdl-navigation__link { border-top:solid 3px white; }
     .mdl-layout__header-row .mdl-navigation__link--current { font-weight:600;  border-top-color:red;}
 
-    .mdl-data-table th { height:32px }
+    .mdl-data-table th { height:auto; padding-top:8px; padding-bottom:0; }
     .mdl-data-table tbody tr { height:auto }
     .mdl-data-table td { border:none; padding-top:8px; padding-bottom:8px; height:auto }
 
