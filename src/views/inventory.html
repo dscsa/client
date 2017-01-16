@@ -149,79 +149,77 @@
         </li>
       </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
-      <div style="width:100%; height:100%; display:flex">
-        <div style="overflow-y:scroll; margin:8px 0px 8px 16px; flex:1;">
-          <table md-table style="width:calc(100% - 16px);">
-            <thead>
-              <tr>
-                <th style="width:15px"></th>
-                <th class="mdl-data-table__cell--non-numeric">Drug</th>
-                <th class="mdl-data-table__cell--non-numeric">Form</th>
-                <th class="mdl-data-table__cell--non-numeric">Ndc</th>
-                <th style="text-align:left; width:40px;">Exp</th>
-                <th style="text-align:left; width:40px;">Qty</th>
-                <!-- <th style="text-align:left; width:40px;">Rx</th> -->
-                <th style="text-align:left; width:40px;">Bin</th>
-                <th style="padding:8px 5px 0"></th>
-              </tr>
-            </thead>
-            <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
-              <td style="padding:0 0 0 8px">
-                <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
-              </td>
-              <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.generic }</td>
-              <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
-              <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>
-              <td style="padding:0">
-                <md-input
-                  id.bind="'exp_'+$index"
-                  required
-                  keydown.delegate="expShortcuts($event, $index)"
-                  pattern="(0?[1-9]|1[012])/\d{2}"
-                  value.bind="transaction.exp.to | date"
-                  style="width:40px; margin-bottom:-8px"
-                  placeholder>
-                </md-input>
-              </td>
-              <td style="padding:0">
-                <md-input
-                  id.bind="'qty_'+$index"
-                  required
-                  keydown.delegate="qtyShortcuts($event, $index)"
-                  disabled.bind="transaction.next.length"
-                  type="number"
-                  value.bind="transaction.qty.to | number"
-                  style="width:40px; margin-bottom:-8px"
-                  max.bind="999"
-                  placeholder>
-                </md-input>
-              </td>
-              <!-- <td style="padding:0">
-                <md-input
-                  value.bind="transaction.rx.from"
-                  style="width:40px; margin-bottom:-8px"
-                  placeholder>
-                </md-input>
-              </td> -->
-              <td style="padding:0">
-                <md-input
-                  id.bind="'bin_'+$index"
-                  required
-                  keydown.delegate="binShortcuts($event, $index)"
-                  keyup.delegate="saveTransaction(transaction) & debounce:1000"
-                  pattern="[A-Z]\d{2,3}"
-                  value.bind="transaction.location | upperCase"
-                  style="width:40px; margin-bottom:-8px"
-                  maxlength.bind="4"
-                  placeholder>
-                </md-input>
-              </td>
-              <td style="padding:8px 5px 0">
-                <i show.bind="isRepacked(transaction)" class="material-icons" style="font-size:20px">delete_sweep</i>
-              </td>
+      <div class="table-wrap">
+        <table md-table>
+          <thead>
+            <tr>
+              <th style="width:15px"></th>
+              <th class="mdl-data-table__cell--non-numeric">Drug</th>
+              <th class="mdl-data-table__cell--non-numeric">Form</th>
+              <th class="mdl-data-table__cell--non-numeric">Ndc</th>
+              <th style="text-align:left; width:40px;">Exp</th>
+              <th style="text-align:left; width:40px;">Qty</th>
+              <!-- <th style="text-align:left; width:40px;">Rx</th> -->
+              <th style="text-align:left; width:40px;">Bin</th>
+              <th style="padding:8px 5px 0"></th>
             </tr>
-          </table>
-        </div>
+          </thead>
+          <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
+            <td style="padding:0">
+              <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
+            </td>
+            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.generic }</td>
+            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
+            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>
+            <td style="padding:0">
+              <md-input
+                id.bind="'exp_'+$index"
+                required
+                keydown.delegate="expShortcuts($event, $index)"
+                pattern="(0?[1-9]|1[012])/\d{2}"
+                value.bind="transaction.exp.to | date"
+                style="width:40px; margin-bottom:-8px"
+                placeholder>
+              </md-input>
+            </td>
+            <td style="padding:0">
+              <md-input
+                id.bind="'qty_'+$index"
+                required
+                keydown.delegate="qtyShortcuts($event, $index)"
+                disabled.bind="transaction.next.length"
+                type="number"
+                value.bind="transaction.qty.to | number"
+                style="width:40px; margin-bottom:-8px"
+                max.bind="999"
+                placeholder>
+              </md-input>
+            </td>
+            <!-- <td style="padding:0">
+              <md-input
+                value.bind="transaction.rx.from"
+                style="width:40px; margin-bottom:-8px"
+                placeholder>
+              </md-input>
+            </td> -->
+            <td style="padding:0">
+              <md-input
+                id.bind="'bin_'+$index"
+                required
+                keydown.delegate="binShortcuts($event, $index)"
+                keyup.delegate="saveTransaction(transaction) & debounce:1000"
+                pattern="[A-Z]\d{2,3}"
+                value.bind="transaction.location | upperCase"
+                style="width:40px; margin-bottom:-8px"
+                maxlength.bind="4"
+                placeholder>
+              </md-input>
+            </td>
+            <td style="padding:8px 5px 0">
+              <i show.bind="isRepacked(transaction)" class="material-icons" style="font-size:20px">delete_sweep</i>
+            </td>
+          </tr>
+        </table>
       </div>
     </div>
     <md-snackbar ref="snackbar"></md-snackbar>

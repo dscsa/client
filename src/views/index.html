@@ -11,6 +11,11 @@
     body { background:#eee }
     a { color:rgb(0,88,123); text-decoration:none }
 
+    /*table-wrap needed because overflow:scroll doesn't work directly on table.  Also it is a conveneint place to do display:flex */
+    .table-wrap { overflow-y:scroll; height:100%; display:flex}
+    [md-table]  { width:100%; flex:1;}
+    [md-table] td:first-child { padding-left:16px !important}
+    [md-table] td:last-child  { padding-right:16px !important}
     .full-height { height:calc(100vh - 96px); overflow-y:auto}
 
     .mdl-layout__header { background:white;}
@@ -60,13 +65,17 @@
       -webkit-animation:slideLeft .5s;
       animation:slideLeft .5s;
     }*/
-
     </style>
     <style media="print">
       .hide-when-printed { display:none; }
+
+      /* Start multi-page printing */
+      .table-wrap { overflow-y:visible}
       .mdl-card { overflow:visible; }
-      .mdl-layout__container { position:static }
+      .mdl-layout__container { position:static}
       .mdl-data-table td { padding-top:4px; padding-bottom:4px; }
+      .full-height { height:100%; overflow-y:visible}
+      /* End multi-page printing */
 
     </style>
   </head>

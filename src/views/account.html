@@ -44,41 +44,43 @@
       </div>
     </form>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
-      <table md-table style="margin:8px 16px; width:calc(100% - 32px)">
-        <thead>
-          <tr>
-            <th class="mdl-data-table__cell--non-numeric">Authorized</th>
-            <th class="mdl-data-table__cell--non-numeric">
-              <md-select
-                value.bind="type"
-                options.bind="['From', 'To']"
-                style="width:50px; font-weight:bold; margin-bottom:-26px">
-              </md-select>
-            </th>
-            <th class="mdl-data-table__cell--non-numeric">License</th>
-            <th class="mdl-data-table__cell--non-numeric">Joined</th>
-            <th class="mdl-data-table__cell--non-numeric">Location</th>
+      <div class="table-wrap" style="padding-top:16px">
+        <table md-table>
+          <thead>
+            <tr>
+              <th class="mdl-data-table__cell--non-numeric">Authorized</th>
+              <th class="mdl-data-table__cell--non-numeric">
+                <md-select
+                  value.bind="type"
+                  options.bind="['From', 'To']"
+                  style="width:50px; font-weight:bold; margin-bottom:-26px">
+                </md-select>
+              </th>
+              <th class="mdl-data-table__cell--non-numeric">License</th>
+              <th class="mdl-data-table__cell--non-numeric">Joined</th>
+              <th class="mdl-data-table__cell--non-numeric">Location</th>
+            </tr>
+          </thead>
+          <tr repeat.for="account of accounts" if.bind="account != $parent.account">
+            <td class="mdl-data-table__cell--non-numeric">
+              <md-checkbox
+                if.bind="type != 'To'"
+                checked.one-time="$parent.account.authorized.indexOf(account._id) != -1"
+                click.delegate="authorize(account._id)">
+              </md-checkbox>
+              <md-checkbox
+                if.bind="type == 'To'"
+                checked.one-time="account.authorized.indexOf($parent.account._id) != -1"
+                disabled.bind="true">
+              </md-checkbox>
+            </td>
+            <td class="mdl-data-table__cell--non-numeric">${ account.name }</td>
+            <td class="mdl-data-table__cell--non-numeric">${ account.license }</td>
+            <td class="mdl-data-table__cell--non-numeric">${ account.createdAt | date }</td>
+            <td class="mdl-data-table__cell--non-numeric">${ account.city+', '+account.state }</td>
           </tr>
-        </thead>
-        <tr repeat.for="account of accounts" if.bind="account != $parent.account">
-          <td class="mdl-data-table__cell--non-numeric">
-            <md-checkbox
-              if.bind="type != 'To'"
-              checked.one-time="$parent.account.authorized.indexOf(account._id) != -1"
-              click.delegate="authorize(account._id)">
-            </md-checkbox>
-            <md-checkbox
-              if.bind="type == 'To'"
-              checked.one-time="account.authorized.indexOf($parent.account._id) != -1"
-              disabled.bind="true">
-            </md-checkbox>
-          </td>
-          <td class="mdl-data-table__cell--non-numeric">${ account.name }</td>
-          <td class="mdl-data-table__cell--non-numeric">${ account.license }</td>
-          <td class="mdl-data-table__cell--non-numeric">${ account.createdAt | date }</td>
-          <td class="mdl-data-table__cell--non-numeric">${ account.city+', '+account.state }</td>
-        </tr>
-      </table>
+        </table>
+      </div>
     </div>
   </section>
   <md-snackbar ref="snackbar"></md-snackbar>
