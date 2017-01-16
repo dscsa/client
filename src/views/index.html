@@ -13,9 +13,13 @@
 
     /*table-wrap needed because overflow:scroll doesn't work directly on table.  Also it is a conveneint place to do display:flex */
     .table-wrap { overflow-y:scroll; height:100%; display:flex}
+    /*use flex instead of height:100% because latter was causing the parent md-card to have a scroll bar */
     [md-table]  { width:100%; flex:1;}
+    /* want hover shadow to be 100% of width, so need to do padding within the tr (which needs this hack) rather than in table-wrap */
     [md-table] td:first-child { padding-left:16px !important}
     [md-table] td:last-child  { padding-right:16px !important}
+
+    /*give spacing for the header and the top and bottom gullies */
     .full-height { height:calc(100vh - 96px); overflow-y:auto}
 
     .mdl-layout__header { background:white;}
@@ -67,13 +71,13 @@
     }*/
     </style>
     <style media="print">
+      .mdl-data-table td { padding-top:4px; padding-bottom:4px; }
       .hide-when-printed { display:none; }
 
       /* Start multi-page printing */
       .table-wrap { overflow-y:visible}
       .mdl-card { overflow:visible; }
       .mdl-layout__container { position:static}
-      .mdl-data-table td { padding-top:4px; padding-bottom:4px; }
       .full-height { height:100%; overflow-y:visible}
       /* End multi-page printing */
 
