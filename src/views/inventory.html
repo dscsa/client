@@ -31,40 +31,40 @@
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
-      <div class="mdl-card__supporting-text" style="padding:0">
-        <div repeat.for="ndc of filter.ndc | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-top:-8px">
-          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:16px 8px 0 0; width:100%">
-            <div class="mdl-cell mdl-cell--8-col">Ndc Filter</div>
-            <div class="mdl-cell mdl-cell--2-col">Qty</div>
-            <div class="mdl-cell mdl-cell--2-col">Count</div>
+      <div class="mdl-card__supporting-text" style="padding-left:24px; white-space:nowrap">
+        <div repeat.for="ndc of filter.ndc | toArray:true">
+          <div if.bind="$index == 0" class="mdl-card__title" style="padding:4px 0 8px 0">
+            <div style="width:60%">Ndc Filter</div>
+            <div style="width:20%">Qty</div>
+            <div style="width:20%">Count</div>
           </div>
-          <md-checkbox class="mdl-cell mdl-cell--8-col" click.delegate="signalFilter(ndc)" checked.bind="ndc.val.isChecked">${ndc.key}</md-checkbox>
-          <div class="mdl-cell mdl-cell--2-col">${ndc.val.qty}</div>
-          <div class="mdl-cell mdl-cell--2-col">${ndc.val.count}</div>
+          <md-checkbox style="width:60%; margin-bottom:3px" click.delegate="signalFilter(ndc)" checked.bind="ndc.val.isChecked">${ndc.key}</md-checkbox>
+          <div style="width:18%; display:inline-block; vertical-align:top">${ndc.val.qty}</div>
+          <div style="width:18%; display:inline-block; vertical-align:top">${ndc.val.count}</div>
         </div>
-        <div repeat.for="exp of filter.exp | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-bottom:-8px">
-          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:0; width:100%">
-            <div class="mdl-cell mdl-cell--8-col">Exp Filter</div>
+        <div repeat.for="exp of filter.exp | toArray:true" style="padding:0">
+          <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
+            <div style="width:60%">Exp Filter</div>
           </div>
-          <md-checkbox class="mdl-cell mdl-cell--8-col" click.delegate="signalFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
-          <div class="mdl-cell mdl-cell--2-col">${exp.val.qty}</div>
-          <div class="mdl-cell mdl-cell--2-col">${exp.val.count}</div>
+          <md-checkbox style="width:60%; margin-bottom:3px" click.delegate="signalFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
+          <div style="width:18%; display:inline-block; vertical-align:top">${exp.val.qty}</div>
+          <div style="width:18%; display:inline-block; vertical-align:top">${exp.val.count}</div>
         </div>
-        <div repeat.for="repack of filter.repack | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-bottom:-8px">
-          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:0; width:100%">
-            <div class="mdl-cell mdl-cell--8-col">Repack Filter</div>
+        <div repeat.for="repack of filter.repack | toArray:true" style="padding:0">
+          <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
+            <div style="width:60%">Repack Filter</div>
           </div>
-          <md-checkbox class="mdl-cell mdl-cell--8-col" click.delegate="signalFilter(repack)" checked.bind="repack.val.isChecked">${repack.key}</md-checkbox>
-          <div class="mdl-cell mdl-cell--2-col">${repack.val.qty}</div>
-          <div class="mdl-cell mdl-cell--2-col">${repack.val.count}</div>
+          <md-checkbox style="width:60%; margin-bottom:3px" click.delegate="signalFilter(repack)" checked.bind="repack.val.isChecked">${repack.key}</md-checkbox>
+          <div style="width:18%; display:inline-block; vertical-align:top">${repack.val.qty}</div>
+          <div style="width:18%; display:inline-block; vertical-align:top">${repack.val.count}</div>
         </div>
-        <div repeat.for="form of filter.form | toArray:true" class="mdl-grid" style="padding:0 0 0 8px; margin-bottom:-8px">
-          <div if.bind="$index == 0" class="mdl-card__title mdl-grid" style="padding:0; width:100%">
-            <div class="mdl-cell mdl-cell--8-col">Form Filter</div>
+        <div repeat.for="form of filter.form | toArray:true" style="padding:0">
+          <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
+            <div style="width:60%">Form Filter</div>
           </div>
-          <md-checkbox class="mdl-cell mdl-cell--8-col" click.delegate="signalFilter(form)" checked.bind="form.val.isChecked">${form.key}</md-checkbox>
-          <div class="mdl-cell mdl-cell--2-col">${form.val.qty}</div>
-          <div class="mdl-cell mdl-cell--2-col">${form.val.count}</div>
+          <md-checkbox style="width:60%; margin-bottom:3px" click.delegate="signalFilter(form)" checked.bind="form.val.isChecked">${form.key}</md-checkbox>
+          <div style="width:18%; display:inline-block; vertical-align:top">${form.val.qty}</div>
+          <div style="width:18%; display:inline-block; vertical-align:top">${form.val.count}</div>
         </div>
         <!-- <md-input show.bind="transactions.length" input.delegate="signalFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input> -->
       </div>
@@ -96,9 +96,17 @@
       <md-menu click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
+          click.delegate="exportCSV()">
+          Export CSV
+        </li>
+        <li class="mdl-menu__item--full-bleed-divider"
+          click.delegate="$file.click()">
+          Import CSV
+        </li>
+        <li
           disabled.bind=" ! transactions.length"
           click.delegate="pendingIndex >= 0 ? unpendInventory() : pendInventory()">
-          ${ pendingIndex >= 0 ? 'Unpend Selected' : 'Pend Selected' }
+          ${ pendingIndex == null ? 'Pend Selected' : 'Unpend Selected' }
         </li>
         <li
           disabled.bind=" ! transactions.length"
@@ -110,19 +118,19 @@
             click.delegate="repackInventory()">
             Repack Selected
           </li>
-          <li class="mdl-menu__item--full-bleed-divider">
-            <md-input
-              required
-              value.bind="repack.vials | number"
-              style="width:40px;">
-              Vials
-            </md-input>
+          <li>
             <md-input
               required
               value.bind="repack.size | number"
               input.delegate="setRepackVials()"
               style="width:40px;">
               Qty
+            </md-input>
+            <md-input
+              required
+              value.bind="repack.vials | number"
+              style="width:40px;">
+              Vials
             </md-input>
             <md-input
               required
@@ -139,14 +147,6 @@
             </md-input>
           </li>
         </form>
-        <li
-          click.delegate="exportCSV()">
-          Export CSV
-        </li>
-        <li
-          click.delegate="$file.click()">
-          Import CSV
-        </li>
       </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div class="table-wrap">
@@ -154,21 +154,21 @@
           <thead>
             <tr>
               <th style="width:15px"></th>
-              <th class="mdl-data-table__cell--non-numeric">Drug</th>
+              <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
               <th class="mdl-data-table__cell--non-numeric">Form</th>
               <th class="mdl-data-table__cell--non-numeric">Ndc</th>
               <th style="text-align:left; width:40px;">Exp</th>
               <th style="text-align:left; width:40px;">Qty</th>
               <!-- <th style="text-align:left; width:40px;">Rx</th> -->
               <th style="text-align:left; width:40px;">Bin</th>
-              <th style="padding:8px 5px 0"></th>
+              <th style="width:60px"></th>
             </tr>
           </thead>
           <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
             <td style="padding:0">
               <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
             </td>
-            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.generic }</td>
+            <td class="mdl-data-table__cell--non-numeric" style="padding-left:0">${ transaction.drug.generic }</td>
             <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
             <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>
             <td style="padding:0">
@@ -215,7 +215,7 @@
                 placeholder>
               </md-input>
             </td>
-            <td style="padding:8px 5px 0">
+            <td style="padding:0 0 0 16px">
               <i show.bind="isRepacked(transaction)" class="material-icons" style="font-size:20px">delete_sweep</i>
             </td>
           </tr>
