@@ -144,13 +144,9 @@
           Export CSV
         </li>
         <li
-          class="mdl-menu__item--full-bleed-divider"
           click.delegate="$file.click()">
           Import CSV
         </li>
-        <li><a href="/#/inventory/${account}">
-          Public View
-        </a></li>
       </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div style="width:100%; height:100%; display:flex">

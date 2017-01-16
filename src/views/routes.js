@@ -5,7 +5,6 @@ export class App {
     this.routes  = router.navigation
     config.title = 'SIRUM'
     config.map([
-      { route: 'inventory/:id',                    moduleId: 'views/public',    title:'Inventory'},
       { route: 'login',                            moduleId: 'views/login',     title:'Login',     nav:true},
       { route: 'join',                             moduleId: 'views/join',      title:'Join',      nav:true},
       { route: 'inventory',                        moduleId: 'views/inventory', title:'Inventory', nav:true, roles:["user"]},
