@@ -31,7 +31,7 @@
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
-      <div class="mdl-card__supporting-text" style="padding-left:24px; white-space:nowrap">
+      <div show.bind="transactions.length" class="mdl-card__supporting-text" style="padding-left:24px; white-space:nowrap">
         <div repeat.for="ndc of filter.ndc | toArray:true">
           <div if.bind="$index == 0" class="mdl-card__title" style="padding:4px 0 8px 0">
             <div style="width:60%">Ndc Filter</div>

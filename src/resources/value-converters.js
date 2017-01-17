@@ -135,6 +135,7 @@ export class inventoryFilterValueConverter {
     return transaction.shipment._id.indexOf('.') == -1 ? 'Repacked' : 'Inventory'
   }
   toView(transactions = [], filter = {}){
+  
     for (let transaction of transactions) {
       let keys = {
            exp:transaction.exp.to || transaction.exp.from,
