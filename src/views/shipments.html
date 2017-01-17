@@ -196,13 +196,14 @@
         <table md-table>
           <thead>
             <tr>
-              <th style="width:15px"></th>
-              <th class="mdl-data-table__cell--non-numeric" style="max-width:400px;padding-left:0">Drug</th>
-              <th class="mdl-data-table__cell--non-numeric" style="width:90px;padding-left:0">Ndc</th>
+              <th style="width:56px"></th>
+              <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
+              <th class="mdl-data-table__cell--non-numeric">Ndc</th>
               <th style="width:40px; padding-left:0; padding-right:0px">Value</th>
-              <th style="text-align:left; width:40px;">Exp</th>
-              <th style="text-align:left; width:40px">Qty</th>
-              <th style="text-align:left; width:40px;">Bin</th>
+              <th style="text-align:left; width:60px;">Exp</th>
+              <th style="text-align:left; width:60px">Qty</th>
+              <!-- 84px account for the 24px of padding-right on index.html's css td:last-child -->
+              <th style="text-align:left; width:84px;">Bin</th>
             </tr>
           </thead>
           <tbody>
@@ -217,7 +218,7 @@
                   checked.bind="transaction.isChecked">
                 </md-checkbox>
               </td>
-              <td click.delegate="focusInput('#exp_'+$index)" class="mdl-data-table__cell--non-numeric" style="white-space:normal; padding-left:0">
+              <td click.delegate="focusInput('#exp_'+$index)" class="mdl-data-table__cell--non-numeric" style="padding-left:0">
                 ${ transaction.drug.generic }
               </td>
               <td click.delegate="focusInput('#exp_'+$index)" class="mdl-data-table__cell--non-numeric" style="padding:0">
