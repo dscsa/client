@@ -153,7 +153,9 @@
         <table md-table>
           <thead>
             <tr>
-              <th style="width:56px"></th>
+              <th style="width:50px; padding:0">
+                <md-checkbox click.delegate="checkAllTransactions()" checked.bind="allChecked"></md-checkbox>
+              </th>
               <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
               <th class="mdl-data-table__cell--non-numeric">Form</th>
               <th class="mdl-data-table__cell--non-numeric">Ndc</th>
@@ -165,7 +167,7 @@
           </thead>
           <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
             <td style="padding:0">
-              <md-checkbox checked.bind="transaction.isChecked"></md-checkbox>
+              <md-checkbox click.delegate="checkTransaction(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
             </td>
             <td class="mdl-data-table__cell--non-numeric" style="padding-left:0">${ transaction.drug.generic }</td>
             <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>

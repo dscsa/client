@@ -107,6 +107,18 @@ export class inventory {
     })
   }
 
+  checkTransaction(transaction) {
+    if (transaction.isChecked)
+      this.allChecked = false
+    transaction.isChecked = ! transaction.isChecked
+  }
+
+  checkAllTransactions() {
+    this.allChecked = ! this.allChecked
+    for (let transaction of this.transactions)
+      transaction.isChecked = this.allChecked
+  }
+
   isRepacked(transaction) {
     return transaction.shipment._id.indexOf('.') == -1
   }

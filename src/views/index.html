@@ -16,6 +16,7 @@
     /*use flex instead of height:100% because latter was causing the parent md-card to have a scroll bar */
     [md-table]  { width:100%; flex:1;}
     /* want hover shadow to be 100% of width, so need to do padding within the tr (which needs this hack) rather than in table-wrap */
+    [md-table] th:first-child { padding-left:24px !important}
     [md-table] td:first-child { padding-left:24px !important}
     [md-table] td:last-child  { padding-right:24px !important}
 
