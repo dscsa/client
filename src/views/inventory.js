@@ -200,6 +200,23 @@ export class inventory {
     //Once we have the new _ids insert them into the next property of the checked transactions
     Promise.all(all).then(all => {
       this.transactions.unshift(...all) //Add the drugs to the view
+
+      let label = [
+        `<p style="page-break-after:always;">`,
+        `<strong>${this.transactions[0].drug.generic+' '+this.transactions[0].drug.form}</strong>`,
+        `Ndc ${this.transactions[0].drug._id}`,
+        `Exp ${this.repack.exp.slice(0, 10)}`,
+        `Bin ${this.repack.location}`,
+        `Qty ${this.repack.size}`,
+        `Pharmacist ________________`,
+        `</p>`
+      ]
+
+      let win = window.open()
+      win.document.write(label.join('<br>').repeat(this.repack.vials))
+      win.print()
+      win.close()
+
       this.updateNextOfSelected(_ => all.map(val => {
         return {transaction:{_id:val._id}}
       }))
