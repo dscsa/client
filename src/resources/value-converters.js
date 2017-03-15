@@ -23,7 +23,7 @@ export class shipmentFilterValueConverter {
   toView(shipments = [], filter = ''){
     filter = filter.toLowerCase()
     return shipments.filter(shipment => {
-      return ~ `${shipment.account.from.name} ${shipment.account.to.name} ${shipment.tracking} ${shipment.status} ${shipment.createdAt.slice(0, 10)}`.toLowerCase().indexOf(filter)
+      return ~ `${shipment.account.from.name} ${shipment.account.to.name} ${shipment.tracking} ${shipment.status} ${shipment._id && shipment._id.slice(0, 10)}`.toLowerCase().indexOf(filter)
     })
   }
 }
@@ -46,14 +46,21 @@ export class recordFilterValueConverter {
 export class userFilterValueConverter {
   toView(users = [], filter = ''){
     filter = filter.toLowerCase()
-    return users.filter(user => {
-      return ~ `${user.name.first} ${user.name.last}`.toLowerCase().indexOf(filter)
+    let res = users.filter(user => {
+      try {
+        return ~ `${user.name.first} ${user.name.last}`.toLowerCase().indexOf(filter)
+      }
+      catch (err) {
+        console.log('filter err', user, err)
+      }
     })
+    return res
   }
 }
 
 export class valueValueConverter {
   toView(transactions = [], decimals, trigger) {
+
     transactions = Array.isArray(transactions) ? transactions : [transactions]
 
     return transactions.reduce((total, transaction) => {
@@ -135,30 +142,32 @@ export class inventoryFilterValueConverter {
     return transaction.shipment._id.indexOf('.') == -1 ? 'Repacked' : 'Inventory'
   }
   toView(transactions = [], filter = {}){
-  
-    for (let transaction of transactions) {
-      let keys = {
-           exp:transaction.exp.to || transaction.exp.from,
-           ndc:transaction.drug._id,
-          form:transaction.drug.form,
-        repack:this.isRepacked(transaction)
-      }
 
-      for (let i in keys) {
-        let key = keys[i]
-        filter[i] = filter[i] || {}
-        filter[i][key] = filter[i][key] || {isChecked:true}
-        filter[i][key].count = 0
-        filter[i][key].qty   = 0
-      }
-    }
+    filter.ndc    = {}
+    filter.exp    = {}
+    filter.repack = {}
+    filter.form   = {}
 
     transactions = transactions.filter(transaction => {
+
+      //TODO we could reduce code by making this a loop of keys.  Lot's of redundancy here
       let qty    = transaction.qty.to || transaction.qty.from
       let exp    = transaction.exp.to || transaction.exp.from
       let ndc    = transaction.drug._id
       let form   = transaction.drug.form
       let repack = this.isRepacked(transaction)
+
+      if ( ! filter.exp[exp])
+        filter.exp[exp] = {isChecked:true, count:0, qty:0}
+
+      if ( ! filter.ndc[ndc])
+        filter.ndc[ndc] = {isChecked:true, count:0, qty:0}
+
+      if ( ! filter.form[form])
+        filter.form[form] = {isChecked:true, count:0, qty:0}
+
+      if ( ! filter.repack[repack])
+        filter.repack[repack] = {isChecked:true, count:0, qty:0}
 
       if ( ! filter.exp[exp].isChecked) {
         if (filter.ndc[ndc].isChecked && filter.form[form].isChecked && filter.repack[repack].isChecked) {

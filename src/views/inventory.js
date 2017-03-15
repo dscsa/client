@@ -15,7 +15,7 @@ export class inventory {
     this.repack = {size:30}
     this.transactions = []
 
-    this.placeholder     = "Please Wait While the Drug Database is Indexed" //Put in while database syncs
+    this.placeholder     = "Search by generic name, ndc, exp, or bin" //Put in while database syncs
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcuts    = expShortcuts
     this.qtyShortcuts    = qtyShortcuts
@@ -29,21 +29,21 @@ export class inventory {
 
   activate(params) {
 
-    this.waitForDrugsToIndex()
-
-    if (Object.keys(params).length)
-      this.selectGroup(params)
+    let keys = Object.keys(params)
+    if (keys[0])
+      this.selectGroup(keys[0], params[keys[0]])
 
     this.db.user.session.get().then(session => {
       this.account = session.account._id
-      return this.db.account.get({_id:this.account})
-    }).then(accounts => {
-      this.ordered = accounts[0].ordered
+      return this.db.account.get(this.account)
+    }).then(account => {
+      this.ordered = account.ordered
     })
 
-    this.db.transaction.get({pending:true}).then(transactions => {
+    this.db.transaction.query('inventory.pendingAt', {include_docs:true})
+    .then(res => {
       let pending = {}
-      transactions = this.sortTransactions(transactions)
+      let transactions = this.sortTransactions(res.rows.map(row => row.doc))
       for (let transaction of transactions) {
         transaction.isChecked = true //checked by default
         let createdAt = transaction.next[0].createdAt
@@ -59,22 +59,6 @@ export class inventory {
 
     if ($event.which == 13)//Enter get rid of the results
       this.focusInput(`#exp_0`)
-  }
-
-  selectGroup(group) {
-    this.router.navigate('inventory?'+buildQueryString(group), {trigger:false})
-    this.db.transaction.get(Object.assign({inventory:true}, group), {limit:this.limit})
-    .then(transactions => {
-      if (transactions.length == this.limit)
-        this.snackbar.show(`Displaying first 100 results`)
-
-      this.term  = group.generic || group.location || group.exp
-      this.group = group
-      this.pendingIndex = null
-      transactions = this.sortTransactions(transactions)
-      this.setTransactions(transactions)
-    })
-    .catch(console.log)
   }
 
   selectPending($index) {
@@ -108,9 +92,10 @@ export class inventory {
   }
 
   checkTransaction(transaction) {
-    if (transaction.isChecked)
-      this.allChecked = false
     transaction.isChecked = ! transaction.isChecked
+
+    if ( ! transaction.isChecked)
+      this.allChecked = false
   }
 
   checkAllTransactions() {
@@ -124,24 +109,39 @@ export class inventory {
   }
 
   setTransactions(transactions) {
-    this.transactions = transactions
+    if (transactions.length == this.limit)
+      this.snackbar.show(`Displaying first 100 results`)
+
+    this.pendingIndex = null
+    this.transactions = this.sortTransactions(transactions)
     this.signalFilter() //inventerFilterValueConverter sets the filter object, we need to make sure this triggers aurelia
   }
 
   search() {
-    if (/[A-Z][0-9]{3}/.test(this.term))
-      return this.selectGroup({location:this.term})
+    if (/[A-Z][0-9]{2,3}/.test(this.term))
+      return this.selectGroup('location', this.term)
 
     if (/20\d\d-\d\d-?\d?\d?/.test(this.term))
-      return this.selectGroup({exp:this.term})
+      return this.selectGroup('exp', this.term, true)
 
+    //Drug search is by NDC and we want to group by generic
     this.drugSearch().then(drugs => {
-      let groups = {}
-      for (let drug of drugs) {
-        groups[drug.generic] = groups[drug.generic] || {generic:drug.generic}
-      }
-      this.groups = Object.keys(groups).map(key => groups[key]) //Polyfill for Object.values
+      this.groups = drugs.map(drug => drug.generic).filter((generic, index, generics) => generics.indexOf(generic) == index);
     })
+  }
+
+  selectGroup(type, key) {
+    this.term = key
+    this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
+    let opts = {include_docs:true, limit:this.limit}
+    if (type != 'generic') {
+      opts.startkey = key
+      opts.endkey   = key+'\uffff'
+    } else {
+      opts.key = key
+    }
+    const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc))
+    this.db.transaction.query('inventory.'+type, opts).then(setTransactions)
   }
 
   signalFilter(obj) {

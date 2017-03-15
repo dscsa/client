@@ -16,7 +16,7 @@
       value.bind="filter"
       autoselect
       style="padding:0 8px; width:auto">
-      Filter shipments ${ role.account } you
+      Filter shipments ${ role.accounts } you
     </md-input>
     <!-- <md-switch
       checked.one-way="role.account == 'to'"
@@ -31,18 +31,18 @@
       or add inventory
     </a>
     <a
-      repeat.for="shipment of shipments[role.account] | shipmentFilter:filter"
+      repeat.for="shipment of shipments[role.shipments] | shipmentFilter:filter"
       class="mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(shipment, true)">
-      <div class="mdl-typography--title" innerHtml.bind="shipment.account[role.partner].name | bold:filter"></div>
-      <div style="font-size:12px" innerHtml.bind="shipment.createdAt.slice(0, 10)+', '+(shipment.tracking.slice(-6) || shipment.tracking) | bold:filter"></div>
+      <div class="mdl-typography--title" innerHtml.bind="shipment.account[role.accounts].name | bold:filter"></div>
+      <div style="font-size:12px" innerHtml.bind="shipment._id.slice(11, 21)+', '+(shipment.tracking.slice(-6) || shipment.tracking) | bold:filter"></div>
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height">
       <div class="mdl-card__title" style="display:block;">
         <div class="mdl-card__title-text" style="text-transform:capitalize">
-          ${ shipment._rev ? 'Shipment '+(shipment.tracking.slice(-6) || shipment.tracking) : 'New Shipment '+role.account+' You' }
+          ${ shipment._rev ? 'Shipment '+(shipment.tracking.slice(-6) || shipment.tracking) : 'New Shipment '+role.accounts+' You' }
         </div>
         <div style="margin-top:3px; margin-bottom:-25px">
           <strong>${transactions.length}</strong> items worth
@@ -51,41 +51,42 @@
       </div>
       <div class="mdl-card__supporting-text" style="font-size:16px;">
         <md-select
-          if.bind="role.account == 'from' || shipment._rev"
+          if.bind="role.shipments == 'from' || shipment._rev"
           change.delegate="setCheckboxes()"
           style="width:100%"
           value.bind="shipment"
           default.bind="{tracking:'New Tracking #', account:{from:account, to:account}}"
-          options.bind="shipments[role.account]"
+          options.bind="shipments[role.shipments]"
           property="tracking">
           Tracking #
         </md-select>
         <md-input
-          if.bind="role.account == 'to' && ! shipment._rev"
+          if.bind="role.shipments == 'to' && ! shipment._rev"
           focusin.delegate="setCheckboxes()"
           autofocus
           required
           style="width:100%"
+          pattern="[a-zA-Z\d]{6,}"
           value.bind="shipment.tracking">
           Tracking #
         </md-input>
         <md-select
           style="width:100%;"
           value.bind="shipment.account.from"
-          options.bind="(role.account == 'from' || shipment._rev) ? [shipment.account.from] : accounts[role.account]"
+          options.bind="(role.accounts == 'to' || shipment._rev) ? [shipment.account.from] : accounts[role.accounts]"
           property="name"
           required
-          disabled.bind="role.account == 'from'">
+          disabled.bind="role.accounts == 'to'">
           <!-- disabled is for highlighting the current role -->
           From
         </md-select>
         <md-select
           style="width:100%;"
           value.bind="shipment.account.to"
-          options.bind="(role.account == 'to' || shipment._rev) ? [shipment.account.to] : accounts[role.account]"
+          options.bind="(role.accounts == 'from' || shipment._rev) ? [shipment.account.to] : accounts[role.accounts]"
           property="name"
           required
-          disabled.bind="role.account == 'to'">
+          disabled.bind="role.accounts == 'from'">
           <!-- disabled is for highlighting the current role -->
           To
         </md-select>
@@ -152,11 +153,9 @@
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
       <!-- disabled.bind="! searchReady" -->
       <md-autocomplete
-        placeholder.bind="placeholder"
         value.bind="term"
         input.delegate="search() & debounce:50"
         keydown.delegate="autocompleteShortcuts($event) & debounce:50"
-        disabled.bind=" ! drugsIndexed"
         style="margin:0px 24px">
         <table md-table>
           <tr
@@ -181,12 +180,12 @@
           Export CSV
         </li>
         <li
-          show.bind="role.account != 'to' || shipment._rev"
+          show.bind="role.accounts != 'to' || shipment._rev"
           click.delegate="$file.click()">
           Import CSV
         </li>
         <li
-          show.bind="role.account == 'to' && ! shipment._rev"
+          show.bind="role.accounts == 'to' && ! shipment._rev"
           disabled>
           Import CSV
         </li>
@@ -225,10 +224,10 @@
                 ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }
               </td>
               <td style="padding:0">
-                ${ transaction | value:2:transaction.qty[role.account] }
+                ${ transaction | value:2:transaction.qty[role.shipments] }
               </td>
               <td style="padding:0">
-                ${ transaction.exp[role.partner] | date}
+                ${ transaction.exp[role.accounts] | date}
                 <md-input
                   id.bind="'exp_'+$index"
                   required
@@ -236,13 +235,13 @@
                   input.trigger="expShortcutsInput($index)"
                   disabled.bind="transaction.next.length"
                   pattern="(0?[1-9]|1[012])/\d{2}"
-                  value.bind="transaction.exp[role.account] | date"
+                  value.bind="transaction.exp[role.shipments] | date"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>
               </td>
               <td style="padding:0">
-                ${ transaction.qty[role.partner] }
+                ${ transaction.qty[role.accounts] }
                   <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->
                   <!-- keyup rather than keydown because we want the new quantity not the old one -->
                   <md-input
@@ -252,7 +251,7 @@
                     input.trigger="qtyShortcutsInput($event, $index)"
                     disabled.bind="transaction.next.length"
                     type="number"
-                    value.bind="transaction.qty[role.account] | number"
+                    value.bind="transaction.qty[role.shipments] | number"
                     style="width:40px; margin-bottom:-8px"
                     max.bind="999"
                     placeholder>

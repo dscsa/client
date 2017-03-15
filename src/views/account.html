@@ -65,12 +65,12 @@
             <td class="mdl-data-table__cell--non-numeric">
               <md-checkbox
                 if.bind="type != 'To'"
-                checked.one-time="$parent.account.authorized.indexOf(account._id) != -1"
+                checked.one-way="$parent.account.authorized.indexOf(account._id) != -1"
                 click.delegate="authorize(account._id)">
               </md-checkbox>
               <md-checkbox
                 if.bind="type == 'To'"
-                checked.one-time="account.authorized.indexOf($parent.account._id) != -1"
+                checked.one-way="account.authorized.indexOf($parent.account._id) != -1"
                 disabled.bind="true">
               </md-checkbox>
             </td>

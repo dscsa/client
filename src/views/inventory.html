@@ -74,21 +74,20 @@
         placeholder.bind="placeholder"
         value.bind="term"
         input.delegate="search()"
-        disabled.bind=" ! drugsIndexed"
         keyup.delegate="scrollGroups($event)"
         style="margin:0px 24px; padding-right:15px">
         <table md-table>
           <tr
             repeat.for="group of groups"
-            click.delegate="selectGroup(group)"
-            class="${ group.generic == $parent.group.generic && 'is-selected'}">
+            click.delegate="selectGroup('drug.generic', group)"
+            class="${ group == $parent.term && 'is-selected'}">
             <td
               style="white-space:normal; max-width:70%"
               class="mdl-data-table__cell--non-numeric"
-              innerHTML.bind="group.generic | bold:regex">
+              innerHTML.bind="group | bold:regex">
             </td>
             <td style="max-width:30%">
-              ${ ordered[group.generic] ? 'Min Qty:'+(ordered[group.generic].minQty || 10) +', Min Days:'+(ordered[group.generic].minDays || 120) : ''}
+              ${ ordered[group] ? 'Min Qty:'+(ordered[group].minQty || 10) +', Min Days:'+(ordered[group].minDays || 120) : ''}
             </td>
           </tr>
         </table>

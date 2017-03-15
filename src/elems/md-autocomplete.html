@@ -7,7 +7,7 @@
     <input class="md-input mdl-textfield__input"
       value.bind="value"
       disabled.bind="disabled"
-      placeholder.bind="placeholder"
+      placeholder.bind="placeholder || ''"
       focus.trigger="toggleResults()"
       focusout.delegate="toggleResults($event)"
       style="font-size:20px;">

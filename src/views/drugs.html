@@ -13,7 +13,7 @@
   <md-drawer>
     <md-select
       options.bind="['Ordered', 'Inventory < ReorderAt', 'Inventory > ReorderTo', 'Inventory Expiring before Min Days', 'Missing Retail Price', 'Missing Wholesale Price', 'Missing Image']"
-      style="padding:0 8px; margin-bottom:-20px"
+      style="padding:0 8px;"
       disabled.bind="true">
       Quick Search
     </md-select>
@@ -174,7 +174,7 @@
         click.delegate="order()">
       </md-switch>
       <div class="table-wrap">
-        <table md-table>
+        <table md-table style="width:calc(100% - 216px)">
           <thead>
             <tr>
               <th class="mdl-data-table__cell--non-numeric">Ndc</th>
@@ -194,66 +194,66 @@
             <td style="padding:0; text-align:left">${ drug.price.goodrx | number:3 }</td>
           </tr>
         </table>
-      </div>
-      <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="overflow:hidden; width:200px; margin-top:10px; margin-right:16px">
-        Ordered
-        <md-input
-          disabled
-          type="number"
-          value.bind="inventory"
-          style="width:100%">
-          Inventory
-        </md-input>
-        <md-input
-          type="number"
-          value.bind="(account.ordered[group.name] || {}).maxInventory"
-          placeholder="3000"
-          style="width:100%">
-          Max Inventory
-        </md-input>
-        <md-input
-          type="number"
-          value.bind="(account.ordered[group.name] || {}).minQty"
-          placeholder="1"
-          style="width:100%">
-          Min Qty
-        </md-input>
-        <md-input
-          type="number"
-          value.bind="(account.ordered[group.name] || {}).minDays"
-          placeholder="60"
-          style="width:100%">
-          Min Days
-        </md-input>
-        <md-input
-          value.bind="(account.ordered[group.name] || {}).verifiedMessage"
-          style="width:100%; font-size:12px">
-          Verified Message
-        </md-input>
-        <md-input
-          value.bind="(account.ordered[group.name] || {}).destroyedMessage"
-          style="width:100%; font-size:12px">
-          Destroyed Message
-        </md-input>
-        <md-input
-          pattern="\w{1,4}"
-          value.bind="(account.ordered[group.name] || {}).defaultLocation"
-          style="width:100%">
-          Default Box
-        </md-input>
-        <!--
-        <md-input
-          type="number"
-          value.bind="(account.ordered[group.name] || {}).minInventory"
-          style="width:100%">
-          Min Invntory
-        </md-input>
-        <md-input
-          type="number"
-          value.bind="(account.ordered[group.name] || {}).maxPrice"
-          style="width:100%">
-          Max Price
-        </md-input> -->
+        <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="width:200px; overflow:hidden; margin-top:10px; margin-right:16px">
+          Ordered
+          <md-input
+            disabled
+            type="number"
+            value.bind="inventory"
+            style="width:100%">
+            Inventory
+          </md-input>
+          <md-input
+            type="number"
+            value.bind="(account.ordered[group.name] || {}).maxInventory"
+            placeholder="3000"
+            style="width:100%">
+            Max Inventory
+          </md-input>
+          <md-input
+            type="number"
+            value.bind="(account.ordered[group.name] || {}).minQty"
+            placeholder="1"
+            style="width:100%">
+            Min Qty
+          </md-input>
+          <md-input
+            type="number"
+            value.bind="(account.ordered[group.name] || {}).minDays"
+            placeholder="60"
+            style="width:100%">
+            Min Days
+          </md-input>
+          <md-input
+            value.bind="(account.ordered[group.name] || {}).verifiedMessage"
+            style="width:100%; font-size:12px">
+            Verified Message
+          </md-input>
+          <md-input
+            value.bind="(account.ordered[group.name] || {}).destroyedMessage"
+            style="width:100%; font-size:12px">
+            Destroyed Message
+          </md-input>
+          <md-input
+            pattern="\w{1,4}"
+            value.bind="(account.ordered[group.name] || {}).defaultLocation"
+            style="width:100%">
+            Default Box
+          </md-input>
+          <!--
+          <md-input
+            type="number"
+            value.bind="(account.ordered[group.name] || {}).minInventory"
+            style="width:100%">
+            Min Invntory
+          </md-input>
+          <md-input
+            type="number"
+            value.bind="(account.ordered[group.name] || {}).maxPrice"
+            style="width:100%">
+            Max Price
+          </md-input> -->
+        </div>
       </div>
     </div>
     <md-snackbar ref="snackbar"></md-snackbar>

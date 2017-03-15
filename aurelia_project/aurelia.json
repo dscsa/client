@@ -44,7 +44,7 @@
   "paths": {
     "root": "src",
     "/": "views",
-    "/assets/db": "../../db",
+     "/assets/db": "../../db",
     "/assets/csv": "../../csv",
     "/assets/server": "../../server"
   },

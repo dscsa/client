@@ -27,20 +27,21 @@ export class drugs {
   }
 
   activate(params) {
+
     addEventListener('keyup', this.scrollDrugs)
     return this.db.user.session.get()
     .then(session => {
-      return this.db.account.get({_id:session.account._id})
+      return this.db.account.get(session.account._id)
     })
-    .then(accounts => {
-      this.account = accounts[0]
+    .then(account => {
+      this.account = account
       this.drawer  = {
         ordered:Object.keys(this.account.ordered).sort()
       }
 
       if (params.id)
-        return this.db.drug.get({_id:params.id}).then(drugs => {
-          this.selectDrug(drugs[0], true)
+        return this.db.drug.get(params.id).then(drug => {
+          this.selectDrug(drug, true)
         })
 
       if (this.drawer.ordered[0])
@@ -72,9 +73,8 @@ export class drugs {
   //3) selectDrug and we need to find the group with that particular generic name
   selectGroup(group, autoselectDrug) {
     this.term = group.name
-
-    this.db.transaction.get({generic:group.name, inventory:true}).then(inventory => {
-      this.inventory = inventory[0] && inventory[0].qty
+    this.db.transaction.query('inventory.drug.generic', {key:group.name, include_docs:true}).then(inventory => {
+      this.inventory = inventory.rows[0] && inventory.rows[0].qty
     })
 
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
@@ -95,15 +95,14 @@ export class drugs {
   }
 
   selectDrug(drug, autoselectGroup) {
-    let url = this.drug ? 'drugs/'+this.drug._id : 'drugs'
-    this.router.navigate(url, { trigger: false })
-
     //Default is for Add Drug menu item in view
     this.drug = drug || {
       generics:this.drug ? this.drug.generics : [{name:'', strength:''}],
       form:this.drug && this.drug.form
     }
 
+    let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
+    this.router.navigate(url, { trigger: false })
 
     if (autoselectGroup)
       this.selectGroup({name:this.drug.generic || this.term})
@@ -150,9 +149,10 @@ export class drugs {
     let orders = []
     for (let generic in this.account.ordered) {
       let order = this.account.ordered[generic]
-      orders.push(this.db.transaction.get({generic, inventory:"sum"}).then(inventory => {
+
+      orders.push(this.db.transaction.query('inventory', {key:generic, include_docs:true}).then(inventory => {
         order.generic   = generic
-        order.inventory = inventory[0]
+        order.inventory = inventory.rows[0]
         return order
       }))
     }
@@ -162,7 +162,7 @@ export class drugs {
 
   exportDrugs() {
     this.snackbar.show(`Exporting drugs as csv. This may take a few minutes`)
-    this.db.drug.get().then(drugs => {
+    this.db.drug.allDocs({include_docs:true, endkey:'_design'}).then(drugs => {
       this.csv.unparse('Drugs.csv', drugs.map(drug => {
         return {
           '':drug,
@@ -244,15 +244,14 @@ export class drugs {
     this._savingDrug = true
     this.db.drug.post(this.drug)
     .then(res => {
-      //Wait for the server POST to replicate back to client
-      setTimeout(_ => {
-        this._savingDrug = false
-        this.selectDrug(this.drug, true)
-      }, 1000)
+      this.drug._rev = res.rev
+      this.selectDrug(this.drug, true)
+      this._savingDrug = false
     })
     .catch(err => {
       this._savingDrug = false
-      this.snackbar.show(`Drug not added: ${err.reason || err.message}`)
+      console.log(err)
+      this.snackbar.show(`Drug not added: ${err.reason || err.message || JSON.stringify(err.errors)}`)
     })
   }
 
@@ -268,10 +267,8 @@ export class drugs {
       ) this.order()
 
       //Wait for the server PUT to replicate back to client
-      setTimeout(_ => {
-        this._savingDrug = false
-        this.selectDrug(this.drug, true)
-      }, 1000)
+      this.selectDrug(this.drug, true)
+      this._savingDrug = false
     })
     .catch(err => {
       this._savingDrug = false

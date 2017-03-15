@@ -16,5 +16,15 @@ export class MdSnackbarCustomElement {
 
       this.element.MaterialSnackbar.showSnackbar(opts)
     }
+    this.element.error = (msg, err) => {
+      if ( ! err) {
+        err = msg
+        msg = ''
+      }
+      msg = `${msg} ${err.message}`
+      this.element.show(msg)
+      console.error(msg, err)
+      return err
+    }
   }
 }

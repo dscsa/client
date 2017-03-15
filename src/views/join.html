@@ -18,6 +18,7 @@
         </div>
         <md-input value.bind="account.name" required>Facility</md-input>
         <md-input value.bind="account.license" required>License</md-input>
+        <md-input value.bind="account.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Facility Phone</md-input>
         <md-input value.bind="account.street" required>Street</md-input>
         <div class="mdl-grid" style="padding:0; margin:0 -8px">
           <md-input value.bind="account.city" class="mdl-cell mdl-cell--7-col" required>City</md-input>
@@ -32,9 +33,9 @@
           <md-input value.bind="user.name.last" class="mdl-cell mdl-cell--6-col" required>Last Name</md-input>
         </div>
         <md-input value.bind="user.email" type="email" pattern="[\w._]{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>
-        <md-input value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
+        <md-input value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Personal Phone</md-input>
         <md-input value.bind="user.password" required>Password</md-input>
-        <md-checkbox checked.bind="accept" style="margin:8px 0 24px" required>I accept the terms of use</md-checkbox>
+        <md-checkbox checked.bind="accept" style="margin:20px 0 28px" required>I accept the terms of use</md-checkbox>
         <md-button raised color form disabled.bind="disabled" click.delegate="join()">Install</md-button>
         <md-loading value.bind="progress.last_seq/progress.update_seq * 100"></md-loading>
       </div>

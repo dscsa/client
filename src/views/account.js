@@ -20,16 +20,16 @@ export class account {
       this.session = session
 
       //TODO allow a valueConverter for each state or do a new search
-      this.db.account.get().then(accounts => {
-        this.accounts = accounts.filter(account => {
+      this.db.account.allDocs({include_docs:true, endkey:'_design'}).then(accounts => {
+        this.accounts = accounts.rows.map(account => account.doc).filter(account => {
           if (account._id != session.account._id)
             return true
           this.account = account
         })
       })
 
-      return this.db.user.get().then(users => {
-        this.users = users
+      return this.db.user.allDocs({include_docs:true, endkey:'_design'}).then(users => {
+        this.users = users.rows.map(user => user.doc)
         this.selectUser()
       })
     })
@@ -70,13 +70,9 @@ export class account {
   //which means isAuthorized isn't updated yet for the since click
   authorize(_id) {
     console.log('account.authorize', _id, this.account.authorized)
-    let index = this.account.authorized.indexOf(_id)
-    let auth  = this.db.account.authorized
-    ~ index
-      ? auth.delete({_id}).then(_ => this.account.authorized.splice(index, 1))
-      : auth.post({_id}).then(_ => this.account.authorized.push(_id))
-
-      return true
+    let index  = this.account.authorized.indexOf(_id)
+    let method = ~ index ? 'delete' : 'post'
+    this.db.account.authorized[method](_id).then(res => this.account.authorized = res.authorized)
     //TODO reset checkbox and show snackbar if change not made
   }
 

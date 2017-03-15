@@ -17,8 +17,8 @@ export class shipments {
     this.http   = http
     this.stati  = ['pickup', 'shipped', 'received']
     this.shipments = {}
+    this.term  = ''
 
-    this.placeholder     = "Please Wait While the Drug Database is Indexed" //Placeholder while database is indexing
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcutsKeydown = expShortcuts
     this.qtyShortcutsKeydown = qtyShortcuts
@@ -35,64 +35,87 @@ export class shipments {
     return this.db.user.session.get()
     .then(session  => {
       this.user = session._id
-      return this.db.account.get({_id:session.account._id})
+      return this.db.account.get(session.account._id)
     })
-    .then(accounts => {
-      this.account = {_id:accounts[0]._id, name:accounts[0].name}
-      this.ordered = {[accounts[0]._id]:accounts[0].ordered}
-      return Promise.all([
-        //Start all of our async tasks
-        this.db.account.get({authorized:accounts[0]._id}),
-        this.db.account.get({_id:{$gt:null, $in:accounts[0].authorized}}),
-        this.db.shipment.get({'account.from._id':accounts[0]._id}), //TODO this should be duplicative with _security doc.  We should be able to do _all_docs or no selector
-        this.db.shipment.get({'account.to._id':accounts[0]._id})
-      ])
+    .then(account => {
+      this.account = {_id:account._id, name:account.name}
+      this.ordered = {[account._id]:account.ordered}
+
+      //TODO From View
+      //Get all accounts that this account has authorized
+      //let doneeAccounts = this.db.account.allDocs({keys:account.authorized, include_docs:true})
+      //let shipmentsSent = this.db.shipment.query({'account.from._id':account._id})
+
+      let senderAccounts    = this.db.account.query('authorized', {key:account._id, include_docs:true}) //Get all accounts that have authorized this account
+      let shipmentsReceived = this.db.shipment.allDocs({startkey:account._id+'\uffff', endkey:account._id, descending:true, include_docs:true}) //Get all shipments to this account
+      return Promise.all([senderAccounts, shipmentsReceived]).then(all => {
+
+        [{rows:senderAccounts}, {rows:shipmentsReceived}] = all
+
+        //This abbreviated denormalized account information will be assigned to account.to/from
+        let selected, map = {to:{},from:{}}
+
+        this.accounts  = {
+          from:[''].concat(senderAccounts.map(({doc}) => {
+            this.ordered[doc._id] = doc.ordered
+            return map.from[doc._id] = {_id:doc._id, name:doc.name}
+          }))
+        }
+
+        //for (let account of recipientAccounts) makeMap(recipientMap, account)
+        //to:['', ...Object.keys(toMap).map(key => toMap[key])]
+
+        //Selected account != shipment.account.to because they are not references
+        this.shipment = {}
+        //, sent:shipmentsSent}
+        //shipmentsSent.forEach(makeReference)
+        //console.log('this.accounts', this.accounts)
+        //Sneak this in since we are already making the loop
+        let accountRef = role => {
+         return ({doc}) => {
+           this.setStatus(doc)
+
+           if (map[role][doc.account[role]._id])
+             doc.account[role] = map[role][doc.account[role]._id]
+
+           // if (toMap[doc.account.from._id])
+           //   doc.account.from = toMap[doc.account.from._id]
+           if (params.id === doc._id)
+             selected = doc
+
+           return doc
+         }
+        }
+
+        //Sent shipments get references to toAccount (since fromAccount will always be us)
+        //this.shipments.from = shipmentsSent.map(accountRef('to'))
+
+
+        this.role = selected //switch default role depending on shipment selection
+        ? {accounts:'to', shipments:'from'}
+        : {accounts:'from', shipments:'to'}
+
+        //Received shipments get references to fromAccount (since toAccount will always be us)
+        this.shipments.to = shipmentsReceived.map(accountRef('from'))
+
+        this.selectShipment(selected)
+        //this.waitForDrugsToIndex()
+      })
+      .catch(err => console.log('promise all err', err))
+
+
+      //this.db.account.find({selector:{authorized:account._id}})
+      // return Promise.all([
+      //   //Start all of our async tasks
+      //   this.db.account.get({authorized:accounts[0]._id}),
+      //   this.db.account.get({_id:{$gt:null, $in:accounts[0].authorized}}),
+      //   this.db.shipment.get({'account.from._id':accounts[0]._id}), //TODO this should be duplicative with _security doc.  We should be able to do _all_docs or no selector
+      //   this.db.shipment.get({'account.to._id':accounts[0]._id})
+      // ])
     })
-    .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
-      //This abbreviated denormalized account information will be assigned to account.to/from
-      let selected, fromMap = {}, toMap = {}
-      let makeMap = (map, account) => {
-        map[account._id] = {_id:account._id, name:account.name}
-        this.ordered[account._id] = account.ordered
-      }
-
-      for (let account of fromAccounts) makeMap(fromMap, account)
-      for (let account of toAccounts) makeMap(toMap, account)
-
-      this.accounts  = {
-        from:['', ...Object.keys(fromMap).map(key => fromMap[key])],
-        to:['', ...Object.keys(toMap).map(key => toMap[key])]
-      }
-
-      //Selected account != shipment.account.to because they are not references
-      let makeReference = shipment => {
-        this.setStatus(shipment)
-
-        //3 scenarios - from an approved partner, the current facility, from a previous approved partner
-        //TODO this code seems bulks is there a more elegant way to handle these three scenarios
-        if (toMap[shipment.account.from._id])
-          shipment.account.from = toMap[shipment.account.from._id]
-
-        if (fromMap[shipment.account.to._id])
-          shipment.account.to = fromMap[shipment.account.to._id]
-
-        if (params.id === shipment._id)
-          selected = shipment  //Sneak this in since we are already making the loop
-      }
-      fromShipments.forEach(makeReference)
-
-      this.role = selected //switch default role depending on shipment selection
-        ? {account:'from', partner:'to'}
-        : {account:'to', partner:'from'}
-
-      toShipments.forEach(makeReference)
-
-      //console.log('this.accounts', this.accounts)
-      this.shipments = {from:fromShipments, to:toShipments}
-
-      this.selectShipment(selected)
-      this.waitForDrugsToIndex()
-    })
+    // .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
+    //
+    // })
   }
 
   //Activated by activate() and each time a shipment is selected from drawer
@@ -108,12 +131,13 @@ export class shipments {
 
   emptyShipment() {
     this.setUrl('')
-    if (this.role.account == 'from') {
-      this.setShipment({account:{from:this.account, to:{}}})
-      this.setTransactions(this.account._id)
-    } else {
+
+    if (this.role.shipments == 'to') {  //shipments received
       this.setShipment({account:{to:this.account, from:{}}})
       this.setTransactions()
+    } else { //shipments sent
+      this.setShipment({account:{from:this.account, to:{}}})
+      this.setTransactions(this.account._id)
     }
   }
 
@@ -134,8 +158,8 @@ export class shipments {
     if ( ! shipmentId)
       return this.transactions = []
 
-    this.db.transaction.get({'shipment._id':shipmentId}).then(transactions => {
-      this.transactions = transactions
+    this.db.transaction.query('shipment._id', {key:shipmentId, include_docs:true, descending:true}).then(res => {
+      this.transactions = res.rows.map(row => row.doc)
       this.setCheckboxes()
     })
     .catch(err => console.log('err', err))
@@ -152,7 +176,7 @@ export class shipments {
   }
 
   swapRole() { //Swap donor-donee roles
-    [this.role.account, this.role.partner] = [this.role.partner, this.role.account]
+    [this.role.accounts, this.role.shipments] = [this.role.shipments, this.role.accounts]
     this.selectShipment()
     return true
   }
@@ -185,11 +209,14 @@ export class shipments {
     if (this.shipment.tracking == 'New Tracking #')
       delete this.shipment.tracking
 
-    this.db.shipment.post(this.shipment).then(res => {
-      this.setStatus(this.shipment)
-      this.shipments[this.role.account].unshift(this.shipment)
-      this.moveTransactionsToShipment(this.shipment)
-    })
+    //For some reason if you move this unshift() later, into the .then(), it will clear out the shipment
+    //TODO investigate why this is true?  Is it the filter function that causes problems?
+    this.shipments[this.role.shipments].unshift(this.shipment)
+    this.setStatus(this.shipment)
+
+    this.db.shipment.post(this.shipment)
+    .then(res => this.moveTransactionsToShipment(this.shipment)) //_id is needed for move but has not been set until now
+    .catch(err => console.error('createShipment error', err, this.shipment))
   }
 
   //Split functionality into Keydown and Input listeners because (keydown is set in constructor)
@@ -206,10 +233,10 @@ export class shipments {
   //and you would need to ignore non-input key values.  So it cleaner to just keep these listeners separate
   qtyShortcutsInput($event, $index) {
     //Only run autocheck if the transaction was not deleted
-    this.deleteTransactionIfQty0($event, $index) && this.autoCheck($index)
+    this.removeTransactionIfQty0($event, $index) && this.autoCheck($index)
   }
 
-  deleteTransactionIfQty0($event, $index) {
+  removeTransactionIfQty0($event, $index) {
     //Delete an item in the qty is 0.  Instead of having a delete button
 
     let transaction = this.transactions[$index]
@@ -222,7 +249,7 @@ export class shipments {
     this.drugs = [] //get rid of previous results since someone might press enter and accidentally readd the same drug
     this.transactions.splice($index, 1) //Important to call splice before promise resolves since it will cancel the saveTransaction which would cause a conflict
     //TODO get rid of this.diff as well in case this transaction was selected
-    this.db.transaction.delete(transaction)
+    this.db.transaction.remove(transaction)
     this.focusInput(`md-autocomplete`)
   }
 
@@ -244,8 +271,9 @@ export class shipments {
   }
 
   aboveMinQty(order, transaction) {
-    let qty = transaction.qty[this.role.account]
+    let qty = transaction.qty[this.role.shipments]
     if ( ! qty) return false
+    console.log('aboveMinQty', transaction)
     let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
     let defaultQty = price > 1 ? 1 : 1 //keep expensive meds
     let aboveMinQty = qty >= (+order.minQty || defaultQty)
@@ -254,7 +282,7 @@ export class shipments {
   }
 
   aboveMinExp(order, transaction) {
-    let exp = transaction.exp[this.role.account]
+    let exp = transaction.exp[this.role.shipments]
     if ( ! exp) return ! order.minDays
     let minDays = order.minDays || 60
     let aboveMinExp = new Date(exp) - Date.now() >= minDays*24*60*60*1000
@@ -263,7 +291,7 @@ export class shipments {
   }
 
   belowMaxInventory(order, transaction) {
-    let newInventory = transaction.qty[this.role.account] + order.inventory
+    let newInventory = transaction.qty[this.role.shipments] + order.inventory
     let maxInventory = order.maxInventory || 3000
     let belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory //in case of an inventory error let's keep the drug
     if ( ! belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory) //
@@ -413,8 +441,9 @@ export class shipments {
     //We set current inventory when adding a new transaction.  This is a tradeoff of frequency vs accurracy.  This will be inaccurate
     //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
     //this is rare enough to be okay.  We also don't want to have to fetch current inventory on every input event.
-    order && this.db.transaction.get({generic:drug.generic, inventory:"sum"}).then(inventory => {
-      order.inventory = inventory[0] ? inventory[0].qty : 0
+    order && this.db.transaction.query('inventory', {key:drug.generic}).then(inventory => {
+      console.log('inventory query', inventory)
+      //order.inventory = inventory[0] ? inventory[0].qty : 0
     })
 
     isPharMerica && ! order //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
@@ -422,7 +451,12 @@ export class shipments {
       : setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
 
     return this._saveTransaction = Promise.resolve(this._saveTransaction).then(_ => {
-      return this.db.transaction.post(transaction).catch(err => {
+      return this.db.transaction.post(transaction)
+      .then(_ => {
+        console.log('this.transactions[0]',  transaction._id, this.transactions[0])
+        return _
+      })
+      .catch(err => {
         console.error(err)
         this.snackbar.show(`Transaction could not be added: ${err.reason}`)
         this.transactions.shift()

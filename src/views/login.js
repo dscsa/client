@@ -10,13 +10,14 @@ export class login {
   constructor(db, router){
     this.db          = db
     this.router      = router
-    this.email       = 'oregon@sirum.org'
+    this.phone       = '1234567890'
     this.password    = ''
-    this.canActivate = canActivate
+    //this.canActivate = canActivate
+    console.log('here?')
   }
 
   login() {
-    this.db.user.session.post({email:this.email, password:this.password})
+    this.db.user.session.post({phone:this.phone, password:this.password})
     .then(loading => {
       this.disabled = true
 

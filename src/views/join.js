@@ -25,20 +25,27 @@ export class join {
 
     this.user = {
       name:{first:'Guest',last:'User'},
-      email:'',
       phone:'650.488.7434'
     }
-    this.canActivate = canActivate
+    this.db.account.query('authorized', {include_docs:true}).then(console.log)
+    //this.canActivate = canActivate
   }
 
   join() {
+    console.log('this.account.phone', this.account.phone)
     this.db.account.post(this.account)
-    .then(account => {
-      this.user.account = {_id:account._id}
+    .then(res => {
+      this.user.account = {_id:res.id}
+      console.log('this.user.phone', this.user.phone)
       return this.db.user.post(this.user)
     })
     .then(_ => {
-      return this.db.user.session.post({email:this.user.email, password:this.user.password})
+      //local user is created but now replicator must call bulk docs which then triggers creation of a
+      //_user login. Since, we don't know exactly how long this will take so we must do a timeout here
+      return new Promise(resolve => setTimeout(resolve, 1000))
+    })
+    .then(_ => {
+      return this.db.user.session.post()
     })
     .then(loading => {
       //wait for all resources except 'drugs' to sync .filter(r => r.name != 'drugs')
@@ -53,6 +60,7 @@ export class join {
       return this.router.navigate('shipments')
     })
     .catch(err => {
+      console.log('err', err)
       this.snackbar.show('Join failed: '+err.reason || err.message)
     })
   }
