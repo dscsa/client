@@ -1,1 +1,1 @@
-export {Csv}
+export let csv = {toJSON, fromJSON}

@@ -1,7 +1,7 @@
 import {inject, buildQueryString} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
-import {Csv}    from '../libs/csv'
+import {csv}    from '../libs/csv'
 import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 @inject(Db, Router)
@@ -10,7 +10,7 @@ export class inventory {
   constructor(db, router){
     this.db     = db
     this.router = router
-    this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt'])
+    this.csv    = csv
     this.limit  = 100
     this.repack = {size:30}
     this.transactions = []

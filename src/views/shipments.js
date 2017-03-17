@@ -2,7 +2,7 @@ import {inject}     from 'aurelia-framework'
 import {Router}     from 'aurelia-router'
 import {Db}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
-import {Csv}        from '../libs/csv'
+import {csv}        from '../libs/csv'
 import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 //@pageState()
@@ -10,7 +10,7 @@ import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, 
 export class shipments {
 
   constructor(db, router, http){
-    this.csv    = new Csv(['drug._id'], ['qty.from', 'qty.to', 'exp.from', 'exp.to', 'location', 'verifiedAt'])
+    this.csv    = csv
     this.db     = db
     this.drugs  = []
     this.router = router
