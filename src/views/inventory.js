@@ -28,29 +28,28 @@ export class inventory {
   }
 
   activate(params) {
-
-    let keys = Object.keys(params)
-    if (keys[0])
-      this.selectGroup(keys[0], params[keys[0]])
-
+    //TODO replace this with page state library
     this.db.user.session.get().then(session => {
+      this.user    = session._id
       this.account = session.account._id
       return this.db.account.get(this.account)
-    }).then(account => {
-      this.ordered = account.ordered
-    })
+    }).then(account => this.ordered = account.ordered)
 
     this.db.transaction.query('inventory.pendingAt', {include_docs:true})
     .then(res => {
-      let pending = {}
-      let transactions = this.sortTransactions(res.rows.map(row => row.doc))
-      for (let transaction of transactions) {
+      this.pending = this.sortTransactions(res.rows.map(row => row.doc))
+      .reduce((pending, transaction) => {
         transaction.isChecked = true //checked by default
         let createdAt = transaction.next[0].createdAt
         pending[createdAt] = pending[createdAt] || []
         pending[createdAt].push(transaction)
-      }
-      this.pending = Object.keys(pending).map(key => pending[key])
+        return pending
+      }, {})
+    })
+    .then(_ => {
+      let keys = Object.keys(params)
+      if (keys[0])
+        this.selectGroup(keys[0], params[keys[0]])
     })
   }
 
@@ -59,13 +58,6 @@ export class inventory {
 
     if ($event.which == 13)//Enter get rid of the results
       this.focusInput(`#exp_0`)
-  }
-
-  selectPending($index) {
-    let transactions = this.pending[$index]
-    this.term = transactions[0].drug.generic
-    this.pendingIndex = $index
-    this.setTransactions(transactions)
   }
 
   sortTransactions(transactions) {
@@ -112,7 +104,6 @@ export class inventory {
     if (transactions.length == this.limit)
       this.snackbar.show(`Displaying first 100 results`)
 
-    this.pendingIndex = null
     this.transactions = this.sortTransactions(transactions)
     this.signalFilter() //inventerFilterValueConverter sets the filter object, we need to make sure this triggers aurelia
   }
@@ -130,9 +121,22 @@ export class inventory {
     })
   }
 
+  selectPending(pendingAt) {
+    this.term = 'Pending '+pendingAt
+    this.allChecked = true
+    this.setTransactions(this.pending[pendingAt])
+  }
+
   selectGroup(type, key) {
-    this.term = key
+
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
+
+    if (type == 'pending')
+      return this.selectPending(key)
+
+    this.term = key
+    this.allChecked = false
+
     let opts = {include_docs:true, limit:this.limit}
     if (type != 'generic') {
       opts.startkey = key
@@ -173,9 +177,11 @@ export class inventory {
       })
     }
 
-    if (this.pendingIndex != null && checked.length == length) {
-      this.pending.splice(this.pendingIndex, 1)
-      this.pendingIndex = null
+    if (this.term.slice(0,7) == 'Pending' && checked.length == length) {
+      delete this.pending[this.term.slice(8)]
+      this.term = ''
+      this.allChecked = false
+      this.router.navigate(`inventory`, {trigger:false}) //don't accidentally go back here on reload
     }
 
     return checked
@@ -186,8 +192,11 @@ export class inventory {
   }
 
   pendInventory() {
-    let selectedTransactions = this.updateNextOfSelected(_ => [{pending:{}}])
-    this.pending.unshift(selectedTransactions)
+    let next = [{pending:{}}]
+    let selectedTransactions = this.updateNextOfSelected(_ => next)
+    //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
+    //to trigger and update using Object.assign rather than just adding a property
+    this.pending = Object.assign({[next[0].createdAt]:selectedTransactions}, this.pending)
   }
 
   dispenseInventory() {
@@ -199,19 +208,23 @@ export class inventory {
     let all = [], createdAt = new Date().toJSON()
 
     //Create the new (repacked) transactions
-    for (let i=0; i<this.repack.vials; i++)
-      all.push(this.db.transaction.post({
+    for (let i=0; i<this.repack.vials; i++) {
+      this.transactions.unshift({
         verifiedAt:new Date().toJSON(),
         exp:{to:this.repack.exp, from:null},
         qty:{to:this.repack.size, from:null},
+        user:{_id:this.user},
+        shipment:{_id:this.account},
         location:this.repack.location,
         drug:this.transactions[0].drug,
         next:this.pendingIndex != null ? [{pending:{}, createdAt}] : [] //Keep it pending if we are on pending screen
-      }))
+      })
+
+      all.push(this.db.transaction.post(this.transactions[0]))
+    }
 
     //Once we have the new _ids insert them into the next property of the checked transactions
-    Promise.all(all).then(all => {
-      this.transactions.unshift(...all) //Add the drugs to the view
+    Promise.all(all).then(_ => {
 
       let label = [
         `<p style="page-break-after:always;">`,
@@ -265,13 +278,37 @@ export class inventory {
   }
 
   exportCSV() {
-    let name = 'Inventory.csv'
-    this.db.transaction.get({inventory:true}).then(inventory => {
-      this.csv.unparse(name, inventory.map(row => {
-        row.next = JSON.stringify(row.next || [])
-        return row
+    this.db.transaction.query('inventory.drug.generic', {include_docs:true})
+    .then(res => {
+      return res.rows.map(row => {
+        row.doc.next = JSON.stringify(row.doc.next)
+        return row.doc
+      })
+    })
+    .then(rows => this.csv.fromJSON(`Inventory ${new Date().toJSON()}.csv`, rows))
+  }
+
+  importCSV() {
+    this.csv.toJSON(this.$file.files[0], parsed => {
+      this.$file.value = ''
+      return Promise.all(parsed.map(transaction => {
+        transaction._err        = undefined
+        transaction._id          = undefined
+        transaction._rev         = undefined
+        transaction.shipment._id = this.shipment._id
+        transaction.next         = JSON.parse(transaction.next)
+        //This will add drugs upto the point where a drug cannot be found rather than rejecting all
+        return this.db.drug.get(transaction.drug._id)
+        .then(drug => this.addTransaction(drug, transaction))
+        .then(_ => undefined) //do not download successes
+        .catch(err => {
+          transaction._err = 'Upload Error: '+JSON.stringify(err)
+          return transaction //do download errors
+        })
       }))
     })
+    .then(rows => this.snackbar.show('Import Succesful'))
+    .catch(err => this.snackbar.error('Import Error', err))
   }
 
   importCSV() {
