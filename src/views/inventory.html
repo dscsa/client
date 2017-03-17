@@ -22,11 +22,11 @@
       Filter pending inventory
     </md-input>
     <a
-      repeat.for="group of pending"
-      class="mdl-navigation__link ${ $parent.pendingIndex === $index ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectPending($index)">
-      <div class="mdl-typography--title">${group[0].drug.generic}</div>
-      ${ group[0].next[0].createdAt.slice(0, 16) }, ${ group.length } items
+      repeat.for="group of pending | toArray:term"
+      class="mdl-navigation__link ${ term == 'Pending '+group.key ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectGroup('pending', group.key)">
+      <div class="mdl-typography--title">${group.val[0].drug.generic}</div>
+      ${ group.key.slice(0, 16) }, ${ group.val.length } items
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
@@ -104,8 +104,8 @@
         </li>
         <li
           disabled.bind=" ! transactions.length"
-          click.delegate="pendingIndex >= 0 ? unpendInventory() : pendInventory()">
-          ${ pendingIndex == null ? 'Pend Selected' : 'Unpend Selected' }
+          click.delegate="term.slice(0,7) == 'Pending' ? unpendInventory() : pendInventory()">
+          ${ term.slice(0,7) == 'Pending' ? 'Unpend Selected' : 'Pend Selected'}
         </li>
         <li
           disabled.bind=" ! transactions.length"
