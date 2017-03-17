@@ -128,7 +128,7 @@ export class toArrayValueConverter {
 
     let arr = Object.keys(obj)
 
-    if (sort) arr.sort()
+    if (sort) arr.sort().reverse()
 
     return arr.map(key => {
       return {key, val:obj[key]}
@@ -143,77 +143,86 @@ export class inventoryFilterValueConverter {
   }
   toView(transactions = [], filter = {}){
 
-    filter.ndc    = {}
-    filter.exp    = {}
-    filter.repack = {}
-    filter.form   = {}
-
+    //let old = Object.assign({}, this.filter)
+console.log(1)
+    //restart filter on transaction changes but keep checks
+    //where they are if user is just modifying the filter
+    let ndcFilter    = {}
+    let expFilter    = {}
+    let repackFilter = {}
+    let formFilter   = {}
+console.log(1)
     transactions = transactions.filter(transaction => {
-
+console.log(2)
       //TODO we could reduce code by making this a loop of keys.  Lot's of redundancy here
       let qty    = transaction.qty.to || transaction.qty.from
       let exp    = transaction.exp.to || transaction.exp.from
       let ndc    = transaction.drug._id
       let form   = transaction.drug.form
       let repack = this.isRepacked(transaction)
+console.log(3)
+      if ( ! expFilter[exp])
+        expFilter[exp] = {isChecked:filter.exp ? filter.exp[exp].isChecked : true, count:0, qty:0}
 
-      if ( ! filter.exp[exp])
-        filter.exp[exp] = {isChecked:true, count:0, qty:0}
+      if ( ! ndcFilter[ndc])
+        ndcFilter[ndc] = {isChecked:filter.ndc ? filter.ndc[ndc].isChecked : true, count:0, qty:0}
 
-      if ( ! filter.ndc[ndc])
-        filter.ndc[ndc] = {isChecked:true, count:0, qty:0}
+      if ( ! formFilter[form])
+        formFilter[form] = {isChecked:filter.form ? filter.form[form].isChecked : true, count:0, qty:0}
 
-      if ( ! filter.form[form])
-        filter.form[form] = {isChecked:true, count:0, qty:0}
+      if ( ! repackFilter[repack])
+        repackFilter[repack] = {isChecked:filter.form ? filter.repack[repack].isChecked : true, count:0, qty:0}
 
-      if ( ! filter.repack[repack])
-        filter.repack[repack] = {isChecked:true, count:0, qty:0}
-
-      if ( ! filter.exp[exp].isChecked) {
-        if (filter.ndc[ndc].isChecked && filter.form[form].isChecked && filter.repack[repack].isChecked) {
-          filter.exp[exp].count++
-          filter.exp[exp].qty += qty
+      if ( ! expFilter[exp].isChecked) {
+        if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+          expFilter[exp].count++
+          expFilter[exp].qty += qty
         }
         return false
       }
-      if ( ! filter.ndc[ndc].isChecked) {
-        if (filter.exp[exp].isChecked && filter.form[form].isChecked && filter.repack[repack].isChecked) {
-          filter.ndc[ndc].count++
-          filter.ndc[ndc].qty += qty
-        }
-        return false
-      }
-
-      if ( ! filter.form[form].isChecked) {
-        if (filter.exp[exp].isChecked && filter.ndc[ndc].isChecked && filter.repack[repack].isChecked) {
-          filter.form[form].count++
-          filter.form[form].qty += qty
+      if ( ! ndcFilter[ndc].isChecked) {
+        if (expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+          ndcFilter[ndc].count++
+          ndcFilter[ndc].qty += qty
         }
         return false
       }
 
-      if ( ! filter.repack[repack].isChecked) {
-        if (filter.exp[exp].isChecked && filter.ndc[ndc].isChecked && filter.form[form].isChecked) {
-          filter.repack[repack].count++
-          filter.repack[repack].qty += qty
+      if ( ! formFilter[form].isChecked) {
+        if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && repackFilter[repack].isChecked) {
+          formFilter[form].count++
+          formFilter[form].qty += qty
         }
         return false
       }
 
-      filter.exp[exp].count++
-      filter.exp[exp].qty += qty
+      if ( ! repackFilter[repack].isChecked) {
+        if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked) {
+          repackFilter[repack].count++
+          repackFilter[repack].qty += qty
+        }
+        return false
+      }
 
-      filter.ndc[ndc].count++
-      filter.ndc[ndc].qty += qty
+      expFilter[exp].count++
+      expFilter[exp].qty += qty
 
-      filter.form[form].count++
-      filter.form[form].qty += qty
+      ndcFilter[ndc].count++
+      ndcFilter[ndc].qty += qty
 
-      filter.repack[repack].count++
-      filter.repack[repack].qty += qty
+      formFilter[form].count++
+      formFilter[form].qty += qty
+
+      repackFilter[repack].count++
+      repackFilter[repack].qty += qty
 
       return true
     })
+
+    filter.exp    = expFilter
+    filter.ndc    = ndcFilter
+    filter.form   = formFilter
+    filter.repack = repackFilter
 
     return transactions
   }
