@@ -441,9 +441,10 @@ export class shipments {
     //We set current inventory when adding a new transaction.  This is a tradeoff of frequency vs accurracy.  This will be inaccurate
     //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
     //this is rare enough to be okay.  We also don't want to have to fetch current inventory on every input event.
-    order && this.db.transaction.query('inventory', {key:drug.generic}).then(inventory => {
-      console.log('inventory query', inventory)
-      //order.inventory = inventory[0] ? inventory[0].qty : 0
+    order && this.db.transaction.query('inventory', {key:drug.generic})
+    .then(inventory => {
+      order.inventory = inventory.rows[0] ? inventory.rows[0].value.total : 0
+      console.log('order.inventory', order.inventory)
     })
 
     isPharMerica && ! order //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
@@ -452,21 +453,16 @@ export class shipments {
 
     return this._saveTransaction = Promise.resolve(this._saveTransaction).then(_ => {
       return this.db.transaction.post(transaction)
-      .then(_ => {
-        console.log('this.transactions[0]',  transaction._id, this.transactions[0])
-        return _
-      })
       .catch(err => {
-        console.error(err)
-        this.snackbar.show(`Transaction could not be added: ${err.reason}`)
+        this.snackbar.error(`Transaction could not be added: `, err)
         this.transactions.shift()
       })
     })
   }
 
   exportCSV() {
-    let name = this.shipment._id ? 'Shipment '+this.shipment._id+'.csv' : 'Inventory.csv'
-    this.csv.unparse(name, this.transactions.map(transaction => {
+    let name = 'Shipment '+this.shipment._id+'.csv'
+    this.csv.fromJSON(name, this.transactions.map(transaction => {
       return {
         '':transaction,
         'next':JSON.stringify(transaction.next || []),
@@ -478,27 +474,26 @@ export class shipments {
   }
 
   importCSV() {
-    console.log('this.$file.value', this.$file.value)
-    this.csv.parse(this.$file.files[0]).then(parsed => {
+    this.csv.toJSON(this.$file.files[0], parsed => {
+      this.$file.value = ''
       return Promise.all(parsed.map(transaction => {
-        this.$file.value = ''
+        transaction._err        = undefined
         transaction._id          = undefined
         transaction._rev         = undefined
-        transaction.shipment._id = undefined
+        transaction.shipment._id = this.shipment._id
         transaction.next         = JSON.parse(transaction.next)
-        return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
-          //This will add drugs upto the point where a drug cannot be found rather than rejecting all
-          if (drugs[0]) return {drug:drugs[0], transaction}
-          throw 'Cannot find drug with _id '+transaction.drug._id
+        //This will add drugs upto the point where a drug cannot be found rather than rejecting all
+        return this.db.drug.get(transaction.drug._id)
+        .then(drug => this.addTransaction(drug, transaction))
+        .then(_ => undefined) //do not download successes
+        .catch(err => {
+          transaction._err = 'Upload Error: '+JSON.stringify(err)
+          return transaction //do download errors
         })
       }))
     })
-    .then(rows => {
-      console.log('rows', rows)
-      return Promise.all(rows.map(row => this.addTransaction(row.drug, row.transaction)))
-    })
-    .then(_ => this.snackbar.show('All Transactions Imported'))
-    .catch(err => this.snackbar.show('Transactions not imported: '+err))
+    .then(rows => this.snackbar.show('Import Succesful'))
+    .catch(err => this.snackbar.error('Import Error', err))
   }
 
   // setAttachment(attachment) {
