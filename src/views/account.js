@@ -28,7 +28,8 @@ export class account {
         })
       })
 
-      return this.db.user.allDocs({include_docs:true, endkey:'_design'}).then(users => {
+      return this.db.user.query('account._id', { key:session.account._id, include_docs:true})
+      .then(users => {
         this.users = users.rows.map(user => user.doc)
         this.selectUser()
       })
@@ -81,6 +82,6 @@ export class account {
     this.db.user.session.delete().then(_ => {
       this.router.navigate('login', {trigger:true})
     })
-    .catch(err => console.trace('Logout failed: '+err))
+    .catch(err => console.trace('Logout failed:',err))
   }
 }
