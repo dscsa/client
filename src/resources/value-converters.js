@@ -143,35 +143,33 @@ export class inventoryFilterValueConverter {
   }
   toView(transactions = [], filter = {}){
 
-    //let old = Object.assign({}, this.filter)
-console.log(1)
     //restart filter on transaction changes but keep checks
     //where they are if user is just modifying the filter
     let ndcFilter    = {}
     let expFilter    = {}
     let repackFilter = {}
     let formFilter   = {}
-console.log(1)
+
     transactions = transactions.filter(transaction => {
-console.log(2)
+
       //TODO we could reduce code by making this a loop of keys.  Lot's of redundancy here
       let qty    = transaction.qty.to || transaction.qty.from
       let exp    = transaction.exp.to || transaction.exp.from
       let ndc    = transaction.drug._id
       let form   = transaction.drug.form
       let repack = this.isRepacked(transaction)
-console.log(3)
+
       if ( ! expFilter[exp])
-        expFilter[exp] = {isChecked:filter.exp ? filter.exp[exp].isChecked : true, count:0, qty:0}
+        expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : true, count:0, qty:0}
 
       if ( ! ndcFilter[ndc])
-        ndcFilter[ndc] = {isChecked:filter.ndc ? filter.ndc[ndc].isChecked : true, count:0, qty:0}
+        ndcFilter[ndc] = {isChecked:filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : true, count:0, qty:0}
 
       if ( ! formFilter[form])
-        formFilter[form] = {isChecked:filter.form ? filter.form[form].isChecked : true, count:0, qty:0}
+        formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : true, count:0, qty:0}
 
       if ( ! repackFilter[repack])
-        repackFilter[repack] = {isChecked:filter.form ? filter.repack[repack].isChecked : true, count:0, qty:0}
+        repackFilter[repack] = {isChecked:filter.form && filter.repack[repack] ? filter.repack[repack].isChecked : true, count:0, qty:0}
 
       if ( ! expFilter[exp].isChecked) {
         if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
