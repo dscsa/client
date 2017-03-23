@@ -16,7 +16,7 @@
         Login
       </md-button>
       <md-loading value.bind="progress.last_seq/progress.update_seq * 100"></md-loading>
-      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading }</p>
+      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading ? Math.floor(progress.last_seq/progress.update_seq * 100)+'% - ' + loading : '' }</p>
     </form>
   </section>
   <md-snackbar ref="snackbar"></md-snackbar>

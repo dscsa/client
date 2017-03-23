@@ -441,8 +441,9 @@ export class shipments {
     //We set current inventory when adding a new transaction.  This is a tradeoff of frequency vs accurracy.  This will be inaccurate
     //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
     //this is rare enough to be okay.  We also don't want to have to fetch current inventory on every input event.
-    order && this.db.transaction.query('inventory', {key:drug.generic})
+    order && this.db.transaction.query('inventory', {startkey:[drug.generic], endkey:[drug.generic+'\uffff']})
     .then(inventory => {
+      console.log('inventory', inventory)
       order.inventory = inventory.rows[0] ? inventory.rows[0].value.total : 0
       console.log('order.inventory', order.inventory)
     })

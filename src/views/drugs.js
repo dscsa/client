@@ -1,16 +1,16 @@
 import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
 import {Db}     from '../libs/pouch'
-import {Csv}    from '../libs/csv'
+import {csv}    from '../libs/csv'
 import {canActivate, scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
 
 
 //@pageState()
 @inject(Db, Router)
 export class drugs {
-  //constructor(HttpClient = 'aurelia-http-client', Db = './pouch'){
   constructor(db, router){
-    this.csv    = new Csv(['_id', 'generics', 'form'], ['brand', 'labeler', 'image'])
+    console.log(1)
+    this.csv    = csv
     this.db     = db
     this.router = router
     this.term   = ''
@@ -143,41 +143,27 @@ export class drugs {
     this.saveOrder()
   }
 
-  exportOrdered() {
-    this.snackbar.show(`Exporting orders as csv. This may take a few minutes`)
-    let csv    = new Csv(['generic'], ['inventory', 'maxInventory', 'minQty', 'minDays', 'verifiedMessage', 'destroyedMessage', 'defaultLocation'])
-    let orders = []
-    for (let generic in this.account.ordered) {
-      let order = this.account.ordered[generic]
-
-      orders.push(this.db.transaction.query('inventory', {key:generic, include_docs:true}).then(inventory => {
-        order.generic   = generic
-        order.inventory = inventory.rows[0]
-        return order
-      }))
-    }
-
-    Promise.all(orders).then(orders => csv.unparse('Orders.csv', orders))
-  }
-
-  exportDrugs() {
-    this.snackbar.show(`Exporting drugs as csv. This may take a few minutes`)
-    this.db.drug.allDocs({include_docs:true, endkey:'_design'}).then(drugs => {
-      this.csv.unparse('Drugs.csv', drugs.map(drug => {
-        return {
-          '':drug,
-          _id:" "+drug._id,
-          upc:"UPC "+drug.upc,
-          ndc9:"NDC9 "+drug.ndc9,
-          generics:drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
-          ordered:this.account.ordered[drug.generic]
-        }
+  exportCSV(generic) {
+    this.db.drug.allDocs({include_docs:true, endkey:'_design'})
+    .then(res => {
+      return Promise.all(res.rows.map(row => {
+        return this.db.transaction.query('inventory', {key:[row.doc.generic, row.doc._id]})
+        .then(inventory => {
+          return {
+            order:this.account.ordered[row.doc.generic],
+            '':row.doc,
+            upc:"UPC "+row.doc.upc,
+            ndc9:"NDC9 "+row.doc.ndc9,
+            generics:row.doc.generics.map(generic => generic.name+" "+generic.strength).join(';'),
+            inventory:inventory.rows[0] && inventory.rows[0].value
+          }
+        })
       }))
     })
+    .then(rows => this.csv.fromJSON(`Drugs ${new Date().toJSON()}.csv`, rows))
   }
 
-  importDrugs() {
-    let start = Date.now()
+  importCSV() {
     this.snackbar.show(`Parsing csv file`)
     function capitalize(text) {
       return text ? text.trim().toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase()) : text
@@ -185,32 +171,49 @@ export class drugs {
     function trim(text) {
       return text ? text.trim() : text
     }
-    this.csv.parse(this.$file.files[0]).then(parsed => {
+
+    this.csv.toJSON(this.$file.files[0], drugs => {
       this.$file.value = ''
-      return Promise.all(parsed.map(drug => {
-        return {
-          _id:trim(drug._id),
-          brand:trim(drug.brand),
-          form:capitalize(drug.form),
-          image:trim(drug.image),
-          labeler:capitalize(drug.labeler),
-          generics:drug.generics.split(";").filter(v => v).map(generic => {
-            let [name, strength] = generic.split(/(?= [\d.]+)/)
-            return {
-              name:capitalize(name),
-              strength:trim(strength || '').toLowerCase().replace(/ /g, '')
-            }
-          }),
-          price:drug.price
-        }
-      }))
+      let errs  = []
+      let chain = Promise.resolve()
+
+      for (let i in drugs) {
+        chain = chain
+        .then(_ => {
+          let drug = drugs[i]
+
+          drug = {
+            _id:trim(drug._id),
+            brand:trim(drug.brand),
+            form:capitalize(drug.form),
+            image:trim(drug.image),
+            labeler:capitalize(drug.labeler),
+            generics:drug.generics.split(";").filter(v => v).map(generic => {
+              let [name, strength] = generic.split(/(?= [\d.]+)/)
+              return {
+                name:capitalize(name),
+                strength:trim(strength || '').toLowerCase().replace(/ /g, '')
+              }
+            }),
+            price:drug.price
+          }
+
+          return this.db.drug.post(drug)
+          .catch(err => {
+            drug._err = 'Upload Error: '+JSON.stringify(err)
+            errs.push(drug)
+          })
+          .then(_ => {
+            if (+i && (i % 100 == 0))
+              this.snackbar.show(`Imported ${i} of ${drugs.length}`)
+          })
+        })
+      }
+
+      return chain.then(_ => errs)  //return something so we do download errors
     })
-    .then(rows => {
-      this.snackbar.show(`Parsed ${rows.length} rows. Uploading to server`)
-      return this.db.drug.post(rows)
-    })
-    .then(_ => this.snackbar.show(`Drugs import completed in ${Date.now() - start}ms`))
-    .catch(err => this.snackbar.show('Drugs not imported: '+err))
+    .then(rows => this.snackbar.show('Import Succesful'))
+    .catch(err => this.snackbar.error('Import Error', err))
   }
 
   addGeneric() {

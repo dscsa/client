@@ -1,4 +1,4 @@
-import {inject, buildQueryString} from 'aurelia-framework';
+import {inject} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
@@ -35,7 +35,7 @@ export class inventory {
       return this.db.account.get(this.account)
     }).then(account => this.ordered = account.ordered)
 
-    this.db.transaction.query('inventory.pendingAt', {include_docs:true})
+    this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
     .then(res => {
       this.pending = this.sortTransactions(res.rows.map(row => row.doc))
       .reduce((pending, transaction) => {
@@ -124,7 +124,7 @@ export class inventory {
   selectPending(pendingAt) {
     this.term = 'Pending '+pendingAt
     this.allChecked = true
-    this.setTransactions(this.pending[pendingAt])
+    this.setTransactions(this.pending[pendingAt] || [])
   }
 
   selectGroup(type, key) {
@@ -139,10 +139,10 @@ export class inventory {
 
     let opts = {include_docs:true, limit:this.limit}
     if (type != 'generic') {
-      opts.startkey = key
-      opts.endkey   = key+'\uffff'
+      opts.startkey = [this.account, key]
+      opts.endkey   = [this.account, key+'\uffff']
     } else {
-      opts.key = key
+      opts.key = [this.account, key]
     }
     const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc))
     this.db.transaction.query('inventory.'+type, opts).then(setTransactions)
@@ -170,10 +170,13 @@ export class inventory {
         val.createdAt = createdAt
 
       this.transactions.splice(i, 1)
-      this.db.transaction.put(transaction).catch(err => {
+      console.log(transaction)
+      this.db.transaction.put(transaction)
+      .then(_ => console.log('next saved', _))
+      .catch(err => {
         transaction.next.pop()
         this.transactions.splice(i, 0, transaction)
-        this.snackbar.show(`Error removing inventory: ${err.reason || err.message}`)
+        this.snackbar.error('Error removing inventory', err)
       })
     }
 
@@ -223,8 +226,22 @@ export class inventory {
       all.push(this.db.transaction.post(this.transactions[0]))
     }
 
+    //Keep record of any excess that is implicitly destroyed
+    let excess = this.repack.qty - (this.repack.size * this.repack.vials)
+    if (excess > 0)
+    {
+      all.push(this.db.transaction.post({
+        exp:{to:this.repack.exp, from:null},
+        qty:{to:excess, from:null},
+        user:{_id:this.user},
+        shipment:{_id:this.account},
+        drug:this.transactions[0].drug,
+        next:[] //Keep it pending if we are on pending screen
+      }))
+    }
+
     //Once we have the new _ids insert them into the next property of the checked transactions
-    Promise.all(all).then(_ => {
+    Promise.all(all).then(all => {
 
       let label = [
         `<p style="page-break-after:always;">`,
@@ -243,8 +260,9 @@ export class inventory {
       win.close()
 
       this.updateNextOfSelected(_ => all.map(val => {
-        return {transaction:{_id:val._id}}
+        return {transaction:{_id:val.id}}
       }))
+
     }).catch(err => {
       console.error(err)
       this.snackbar.show(`Transactions could not repackaged: ${err.reason}`)
@@ -278,7 +296,7 @@ export class inventory {
   }
 
   exportCSV() {
-    this.db.transaction.query('inventory.drug.generic', {include_docs:true})
+    this.db.transaction.query('inventory.drug.generic', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
     .then(res => {
       return res.rows.map(row => {
         row.doc.next = JSON.stringify(row.doc.next)
@@ -288,76 +306,141 @@ export class inventory {
     .then(rows => this.csv.fromJSON(`Inventory ${new Date().toJSON()}.csv`, rows))
   }
 
+  // importCSV() {
+  //   this.csv.toJSON(this.$file.files[0], parsed => {
+  //     this.$file.value = ''
+  //     return Promise.all(parsed.map(transaction => {
+  //       transaction._err        = undefined
+  //       transaction._id          = undefined
+  //       transaction._rev         = undefined
+  //       transaction.next         = JSON.parse(transaction.next)
+  //       //This will add drugs upto the point where a drug cannot be found rather than rejecting all
+  //       return this.db.drug.get(transaction.drug._id)
+  //       .then(drug => {
+  //         transaction.drug = {
+  //           _id:drug._id,
+  //           brand:drug.brand,
+  //           generic:drug.generic,
+  //           generics:drug.generics,
+  //           form:drug.form,
+  //           price:drug.price,
+  //           pkg:drug.pkg
+  //         }
+  //
+  //         return this.db.transaction.post(transaction)
+  //       })
+  //       .then(_ => { //do not return anything so we don't download successes
+  //         this.transactions.unshift(transaction)
+  //       })
+  //       .catch(err => {
+  //         transaction._err = 'Upload Error: '+JSON.stringify(err)
+  //         return transaction //return something so we do download errors
+  //       })
+  //     }))
+  //   })
+  //   .then(rows => this.snackbar.show('Import Succesful'))
+  //   .catch(err => this.snackbar.error('Import Error', err))
+  // }
+
   importCSV() {
-    this.csv.toJSON(this.$file.files[0], parsed => {
+    this.snackbar.show(`Parsing csv file`)
+console.log(1)
+    this.csv.toJSON(this.$file.files[0], transactions => {
       this.$file.value = ''
-      return Promise.all(parsed.map(transaction => {
-        transaction._err        = undefined
-        transaction._id          = undefined
-        transaction._rev         = undefined
-        transaction.shipment._id = this.shipment._id
-        transaction.next         = JSON.parse(transaction.next)
-        //This will add drugs upto the point where a drug cannot be found rather than rejecting all
-        return this.db.drug.get(transaction.drug._id)
-        .then(drug => this.addTransaction(drug, transaction))
-        .then(_ => undefined) //do not download successes
-        .catch(err => {
-          transaction._err = 'Upload Error: '+JSON.stringify(err)
-          return transaction //do download errors
+      let errs  = []
+      let chain = Promise.resolve()
+console.log(2)
+      for (let i in transactions) {
+        chain = chain
+        .then(_ => {
+          let transaction = transactions[i]
+console.log(3)
+          transaction._err = undefined
+          transaction._id  = undefined
+          transaction._rev = undefined
+          transaction.next = JSON.parse(transaction.next)
+          //This will add drugs upto the point where a drug cannot be found rather than rejecting all
+          return this.db.drug.get(transaction.drug._id)
+          .then(drug => {
+            console.log(4)
+            transaction.drug = {
+              _id:drug._id,
+              brand:drug.brand,
+              generic:drug.generic,
+              generics:drug.generics,
+              form:drug.form,
+              price:drug.price,
+              pkg:drug.pkg
+            }
+
+            return this.db.transaction.post(transaction)
+          })
+          .catch(err => {
+            console.log(5)
+            transaction._err = 'Upload Error: '+JSON.stringify(err)
+            errs.push(transaction)
+          })
+          .then(_ => {
+            console.log(6)
+            if (+i && (i % 100 == 0))
+              this.snackbar.show(`Imported ${i} of ${transactions.length}`)
+          })
         })
-      }))
+      }
+
+      return chain.then(_ => errs)  //return something so we do download errors
     })
     .then(rows => this.snackbar.show('Import Succesful'))
     .catch(err => this.snackbar.error('Import Error', err))
   }
 
-  importCSV() {
-    console.log('this.$file.value', this.$file.value)
-    this.csv.parse(this.$file.files[0]).then(parsed => {
-      return Promise.all(parsed.map(transaction => {
-        this.$file.value = ''  //Change event only fires if filename changed.  Manually set to blank in case user re-uploads same file (name)
-        transaction._id          = undefined
-        transaction._rev         = undefined
-        transaction.next         = JSON.parse(transaction.next || "[]")
-        return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
-          //This will add drugs upto the point where a drug cannot be found rather than rejecting all
-          if ( ! drugs[0])
-            throw 'Cannot find drug with _id '+transaction.drug._id
-
-          transaction.drug = {
-            _id:drugs[0]._id,
-            brand:drugs[0].brand,
-            generic:drugs[0].generic,
-            generics:drugs[0].generics,
-            form:drugs[0].form,
-            price:drugs[0].price,
-            pkg:drugs[0].pkg
-          }
-
-          return transaction
-        })
-        .catch(drug => {
-          console.log('Missing drug', transaction.drug._id, transaction.drug)
-          throw drug
-        })
-      }))
-    })
-    .then(rows => {
-      let chain = Promise.resolve()
-      for (let i = 0; i < rows.length; i += 36*30-1) {
-        chain = chain.then(_ => {
-          let args = rows.slice(i, i+36*30-1)
-          args = args.map(row => this.db.transaction.post(row))
-          args.push(new Promise(r => setTimeout(r, 4000)))
-          return Promise.all(args)
-        })
-        .catch(err => {
-          console.log('importCSV error',  i, i+36*30-1, err)
-          this.snackbar.show('Error Importing Inventory: '+JSON.stringify(err))
-        })
-      }
-      return chain
-    })
-    .then(_ => this.snackbar.show(`Imported Inventory Items`))
-  }
+  // importCSV() {
+  //   console.log('this.$file.value', this.$file.value)
+  //   this.csv.parse(this.$file.files[0]).then(parsed => {
+  //     return Promise.all(parsed.map(transaction => {
+  //       this.$file.value = ''  //Change event only fires if filename changed.  Manually set to blank in case user re-uploads same file (name)
+  //       transaction._id          = undefined
+  //       transaction._rev         = undefined
+  //       transaction.next         = JSON.parse(transaction.next || "[]")
+  //       return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
+  //         //This will add drugs upto the point where a drug cannot be found rather than rejecting all
+  //         if ( ! drugs[0])
+  //           throw 'Cannot find drug with _id '+transaction.drug._id
+  //
+  //         transaction.drug = {
+  //           _id:drugs[0]._id,
+  //           brand:drugs[0].brand,
+  //           generic:drugs[0].generic,
+  //           generics:drugs[0].generics,
+  //           form:drugs[0].form,
+  //           price:drugs[0].price,
+  //           pkg:drugs[0].pkg
+  //         }
+  //
+  //         return transaction
+  //       })
+  //       .catch(drug => {
+  //         console.log('Missing drug', transaction.drug._id, transaction.drug)
+  //         throw drug
+  //       })
+  //     }))
+  //   })
+  //   .then(rows => {
+  //     let chain = Promise.resolve()
+  //     for (let i = 0; i < rows.length; i += 36*30-1) {
+  //       chain = chain.then(_ => {
+  //         let args = rows.slice(i, i+36*30-1)
+  //         args = args.map(row => this.db.transaction.post(row))
+  //         args.push(new Promise(r => setTimeout(r, 4000)))
+  //         return Promise.all(args)
+  //       })
+  //       .catch(err => {
+  //         console.log('importCSV error',  i, i+36*30-1, err)
+  //         this.snackbar.show('Error Importing Inventory: '+JSON.stringify(err))
+  //       })
+  //     }
+  //     return chain
+  //   })
+  //   .then(_ => this.snackbar.show(`Imported Inventory Items`))
+  // }
 }

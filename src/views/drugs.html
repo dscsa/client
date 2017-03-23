@@ -156,17 +156,14 @@
         <li if.bind=" ! drug._rev" disabled class="mdl-menu__item">
           Add Drug
         </li>
-        <li click.delegate="exportDrugs()" class="mdl-menu__item">
-          Export Drugs
+        <li click.delegate="exportCSV()" class="mdl-menu__item">
+          Export CSV
         </li>
         <li click.delegate="$file.click()" class="mdl-menu__item">
-          Import Drugs
-        </li>
-        <li click.delegate="exportOrdered()" class="mdl-menu__item">
-          Export Ordered
+          Import CSV
         </li>
       </md-menu>
-      <input ref="$file" change.delegate="importDrugs()" style="display:none" type="file" />
+      <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <md-switch
         style="position:absolute; right:25px; top:47px; z-index:1"
         checked.one-way="account.ordered[group.name]"
