@@ -45,6 +45,7 @@ export function saveTransaction(transaction) {
   })
 }
 
+//Callback must take the selected item as its first argument
 export function scrollSelect($event, curr, list = [], cb) {
 
   let index = list.indexOf(curr)

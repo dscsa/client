@@ -158,7 +158,7 @@ export class shipments {
     if ( ! shipmentId)
       return this.transactions = []
 
-    this.db.transaction.query('shipment._id', {key:shipmentId, include_docs:true, descending:true}).then(res => {
+    this.db.transaction.query('shipment._id', {key:[this.account._id, shipmentId], include_docs:true, descending:true}).then(res => {
       this.transactions = res.rows.map(row => row.doc)
       this.setCheckboxes()
     })

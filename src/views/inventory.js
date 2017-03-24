@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 import {Db}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex, toggleDrawer} from '../resources/helpers'
 
 @inject(Db, Router)
 export class inventory {
@@ -25,36 +25,53 @@ export class inventory {
     this.scrollSelect    = scrollSelect
     this.drugSearch      = drugSearch
     this.canActivate     = canActivate
+    this.toggleDrawer    = toggleDrawer
+    this.reset           = $event => {
+      if ($event.newURL.slice(-9) == 'inventory') {
+        this.term = ''
+        this.allChecked = false
+        this.setTransactions([])
+      }
+    }
+  }
+
+  deactivate() {
+    window.removeEventListener("hashchange", this.reset)
   }
 
   activate(params) {
+    //TODO find a more elegant way to accomplish this
+    window.addEventListener("hashchange", this.reset)
+
     //TODO replace this with page state library
     this.db.user.session.get().then(session => {
+
       this.user    = session._id
       this.account = session.account._id
+
+      this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
+      .then(res => {
+        this.pending = this.sortTransactions(res.rows.map(row => row.doc))
+        .reduce((pending, transaction) => {
+          transaction.isChecked = true //checked by default
+          let createdAt = transaction.next[0].createdAt
+          pending[createdAt] = pending[createdAt] || []
+          pending[createdAt].push(transaction)
+          return pending
+        }, {})
+      })
+      .then(_ => {
+        let keys = Object.keys(params)
+        if (keys[0])
+          this.selectTerm(keys[0], params[keys[0]])
+      })
+
       return this.db.account.get(this.account)
     }).then(account => this.ordered = account.ordered)
-
-    this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
-    .then(res => {
-      this.pending = this.sortTransactions(res.rows.map(row => row.doc))
-      .reduce((pending, transaction) => {
-        transaction.isChecked = true //checked by default
-        let createdAt = transaction.next[0].createdAt
-        pending[createdAt] = pending[createdAt] || []
-        pending[createdAt].push(transaction)
-        return pending
-      }, {})
-    })
-    .then(_ => {
-      let keys = Object.keys(params)
-      if (keys[0])
-        this.selectGroup(keys[0], params[keys[0]])
-    })
   }
 
-  scrollGroups($event) {
-    this.scrollSelect($event, this.group, this.groups, this.selectGroup)
+  scrollTerms($event) {
+    this.scrollSelect($event, this.term, this.terms, term => this.selectTerm('drug.generic', term))
 
     if ($event.which == 13)//Enter get rid of the results
       this.focusInput(`#exp_0`)
@@ -110,14 +127,14 @@ export class inventory {
 
   search() {
     if (/[A-Z][0-9]{2,3}/.test(this.term))
-      return this.selectGroup('location', this.term)
+      return this.selectTerm('location', this.term)
 
     if (/20\d\d-\d\d-?\d?\d?/.test(this.term))
-      return this.selectGroup('exp', this.term, true)
+      return this.selectTerm('exp', this.term, true)
 
     //Drug search is by NDC and we want to group by generic
     this.drugSearch().then(drugs => {
-      this.groups = drugs.map(drug => drug.generic).filter((generic, index, generics) => generics.indexOf(generic) == index);
+      this.terms = drugs.map(drug => drug.generic).filter((generic, index, generics) => generics.indexOf(generic) == index);
     })
   }
 
@@ -125,9 +142,10 @@ export class inventory {
     this.term = 'Pending '+pendingAt
     this.allChecked = true
     this.setTransactions(this.pending[pendingAt] || [])
+    this.toggleDrawer()
   }
 
-  selectGroup(type, key) {
+  selectTerm(type, key) {
 
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
 
@@ -170,9 +188,7 @@ export class inventory {
         val.createdAt = createdAt
 
       this.transactions.splice(i, 1)
-      console.log(transaction)
       this.db.transaction.put(transaction)
-      .then(_ => console.log('next saved', _))
       .catch(err => {
         transaction.next.pop()
         this.transactions.splice(i, 0, transaction)

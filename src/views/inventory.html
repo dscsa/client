@@ -22,11 +22,11 @@
       Filter pending inventory
     </md-input>
     <a
-      repeat.for="group of pending | toArray:term"
-      class="mdl-navigation__link ${ term == 'Pending '+group.key ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectGroup('pending', group.key)">
-      <div class="mdl-typography--title">${group.val[0].drug.generic}</div>
-      ${ group.key.slice(0, 16) }, ${ group.val.length } items
+      repeat.for="term of pending | toArray:term"
+      class="mdl-navigation__link ${ term == 'Pending '+term.key ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectTerm('pending', term.key)">
+      <div class="mdl-typography--title">${term.val[0].drug.generic}</div>
+      ${ term.key.slice(0, 16) }, ${ term.val.length } items
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
@@ -74,20 +74,20 @@
         placeholder.bind="placeholder"
         value.bind="term"
         input.delegate="search()"
-        keyup.delegate="scrollGroups($event)"
+        keyup.delegate="scrollTerms($event)"
         style="margin:0px 24px; padding-right:15px">
         <table md-table>
           <tr
-            repeat.for="group of groups"
-            click.delegate="selectGroup('drug.generic', group)"
-            class="${ group == $parent.term && 'is-selected'}">
+            repeat.for="term of terms"
+            click.delegate="selectTerm('drug.generic', term)"
+            class="${ term == $parent.term && 'is-selected'}">
             <td
               style="white-space:normal; max-width:70%"
               class="mdl-data-table__cell--non-numeric"
-              innerHTML.bind="group | bold:regex">
+              innerHTML.bind="term | bold:$parent.term">
             </td>
             <td style="max-width:30%">
-              ${ ordered[group] ? 'Min Qty:'+(ordered[group].minQty || 10) +', Min Days:'+(ordered[group].minDays || 120) : ''}
+              ${ ordered[term] ? 'Min Qty:'+(ordered[term].minQty || 10) +', Min Days:'+(ordered[term].minDays || 120) : ''}
             </td>
           </tr>
         </table>
