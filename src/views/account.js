@@ -56,7 +56,7 @@ export class account {
 
   deleteUser() {
     let index = this.users.indexOf(this.user)
-    this.db.user.delete(this.user).then(_ => {
+    this.db.user.remove(this.user).then(_ => {
       this.users.splice(index, 1)
       this.selectUser()
     })

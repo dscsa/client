@@ -1360,7 +1360,7 @@ define('views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aureli
       var _this4 = this;
 
       var index = this.users.indexOf(this.user);
-      this.db.user.delete(this.user).then(function (_) {
+      this.db.user.remove(this.user).then(function (_) {
         _this4.users.splice(index, 1);
         _this4.selectUser();
       }).catch(function (err) {
