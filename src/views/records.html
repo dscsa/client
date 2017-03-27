@@ -1,22 +1,54 @@
 <template>
+  <style>
+    .mdl-layout__drawer {
+      width:450px;
+      transform: translateX(-550px);
+      transition-duration: 0.5s;
+    }
+    .mdl-navigation__link--current a:hover {
+      color:rgb(66, 66, 66) !important;
+      font-weight:600;
+    }
+  </style>
   <require from='elems/md-shadow'></require>
   <require from='elems/md-drawer'></require>
   <require from='elems/md-table'></require>
   <require from="elems/md-input"></require>
   <require from="elems/md-checkbox"></require>
+  <require from="elems/md-select"></require>
   <md-drawer>
-    <md-input
-      value.bind="filter"
-      autoselect
-      style="padding:0 8px; width:auto">
-      Filter
-    </md-input>
-    <a
-      repeat.for="day of days | recordFilter:filter"
-      class="mdl-navigation__link ${ day == $parent.day ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectDay(day, true)">
-      <div class="mdl-typography--title">${ day }</div>
-    </a>
+    <md-select
+      style="padding:11px 8px 0; width:auto; font-size:16px; margin-bottom:0"
+      value.bind="record"
+      property="label"
+      options.bind="recordTypes">
+    </md-select>
+    <div style="padding-left:16px;">
+      <div style="width:52px; display:inline-block;">Month/Day</div>
+      <div style="width:90px; display:inline-block; text-align:right">Count</div>
+      <div style="width:90px; display:inline-block; text-align:right">RXs</div>
+      <div style="width:110px; display:inline-block; text-align:right">Value</div>
+    </div>
+    <div
+      repeat.for="month of months"
+      click.delegate="selectMonth(month)"
+      class="mdl-navigation__link ${ month == $parent.month ? 'mdl-navigation__link--current' : ''}">
+      <div style="width:52px; display:inline-block">${ month.date.slice(0, 7) }</div>
+      <div style="width:90px; display:inline-block; text-align:right">${month.count[record.value].toFixed(0)}</div>
+      <div style="width:90px; display:inline-block; text-align:right">${month.rxs[record.value].toFixed(0)}</div>
+      <div style="width:110px; display:inline-block; text-align:right">${month.value[record.value].toFixed(0)}</div>
+      <a
+        class="mdl-navigation__link"
+        style="padding:0;"
+        if.bind="month == $parent.month"
+        repeat.for="day of days"
+        click.delegate="selectDay(day.date, $event)">
+        <div style="width:52px; display:inline-block; text-align:right">${ day.date.slice(-2) }</div>
+        <div style="width:90px; display:inline-block; text-align:right">${day.count[record.value].toFixed(0)}</div>
+        <div style="width:90px; display:inline-block; text-align:right">${day.rxs[record.value].toFixed(0)}</div>
+        <div style="width:110px; display:inline-block; text-align:right">${day.value[record.value].toFixed(0)}</div>
+      </a>
+    </div>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell full-height" style="width:424px">

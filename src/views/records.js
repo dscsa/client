@@ -21,14 +21,12 @@ export class records {
     this.scroll  = this.scroll.bind(this)
     this.toggleDrawer = toggleDrawer
     this.canActivate = canActivate
-
-    let today  = new Date();
-    let start  = new Date(2016, 7, 1)
-
-    while (today > start) {
-      this.days.push(today.toJSON().slice(0, 10))
-      today.setHours(-24)
-    }
+    this.recordTypes = [
+      {label:'Received', value:'received'},
+      {label:'Accepted', value:'verified'},
+      {label:'Dispensed', value:'dispensed'},
+      {label:'Disposed', value:'disposed'}
+    ]
   }
 
   deactivate() {
@@ -37,28 +35,67 @@ export class records {
 
   activate(params) {
     addEventListener('keyup', this.scroll)
-    this.db.user.session.get().then(session => {
+    return this.db.user.session.get().then(session => {
       this.account = session.account //this is not a full account, just an _id
-      this.selectDay(params.id) //TODO save day in parameter for browser reloads
+      let opts = {group_level:3, startkey:[this.account._id], endkey:[this.account._id, {}]}
+      return Promise.all([
+        this.db.transaction.query('count', opts),
+        this.db.transaction.query('rxs', opts),
+        this.db.transaction.query('value', opts)
+      ])
+      .then(all => this.months = this.collate(all, true))
     })
   }
 
-  selectDay(day, toggleDrawer) {
-    this.day = day || this.days[0]
-    this.router.navigate('records/'+this.day, { trigger: false })
-    toggleDrawer && this.toggleDrawer()
+  collate([count, rxs, value], reverse) {
+    let arr = count.rows.map((count, i) => {
+      return {
+        date:count.key.slice(1).join('-'),
+        key:count.key,
+        count:count.value,
+        rxs:rxs.rows[i].value,
+        value:value.rows[i].value
+      }
+    })
+    console.log('collate', arr)
+    return reverse ? arr.reverse() : arr
+  }
+
+  selectMonth(month) {
+    this.month = month
+    let opts = {group_level:4, startkey:month.key, endkey:month.key.concat({})}
+    return Promise.all([
+      this.db.transaction.query('count', opts),
+      this.db.transaction.query('rxs', opts),
+      this.db.transaction.query('value', opts)
+    ])
+    .then(all => this.days = this.collate(all))
+  }
+
+  selectDay(date, $event) {
+    this.month = null
+    this.days = []
+
+    if ($event) {
+      this.toggleDrawer()
+      $event.stopPropagation() //prevent select month from firing
+    }
 
     //Just in case the user inverts the to & from dates.
     // let from = fromDate <= toDate ? fromDate : toDate
     // let to   = fromDate > toDate ? fromDate : toDate
-    let to = new Date(this.day)
+    let to = new Date(date)
     to.setHours(24*2)
 
     //Do not show inventory $eq, $lt, $gt,
-    let query = {createdAt:{$gte:this.day, $lte:to.toJSON().slice(0, 10)}}
+    let opts = {
+      startkey:[this.account._id, date],
+      endkey:[this.account._id, to.toJSON().slice(0, 10)],
+      include_docs:true
+    }
 
-    return this.db.transaction.get(query).then(transactions => {
-      this.transactions = transactions
+    this.db.transaction.query('createdAt', opts).then(transactions => {
+      this.transactions = transactions.rows.map(row => row.doc)
       return this.selectTransaction()
     })
   }
@@ -73,14 +110,14 @@ export class records {
     if ($event.which == 40) //keydown
       this.selectTransaction(this.transactions[index < last ? index+1 : 0])
   }
-//this.http.get('//localhost:3000/transactions/'+transaction._id+'/history')
+
   //Activated from constructor and each time a transaction is selected
   selectTransaction(transaction) {
     this.transaction = transaction || this.transactions[0]
 
     if ( ! this.transaction) return
 
-    this.db.transaction.get({_id:this.transaction._id}, {history:true})
+    this.db.transaction.history.get(this.transaction._id)
     .then(history => {
       //TODO move this to /history?text=true. Other formatting options?
       function id(k,o) {
@@ -103,7 +140,7 @@ export class records {
             let href   = '/#/shipments/'+v.shipment._id
 
             return pad('From: '+v.shipment.account.from.name)+pad('To: '+v.shipment.account.to.name)+"<a href='"+href+"'>"+v.type+" <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a><br>"+
-                   pad(v.shipment.account.from.street)+pad(v.shipment.account.to.street)+'Date '+v.createdAt.slice(2, 10)+'<br>'+
+                   pad(v.shipment.account.from.street)+pad(v.shipment.account.to.street)+'Date '+v._id.slice(2, 10)+'<br>'+
                    pad(v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip)+pad(v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip)+'Quantity '+(v.qty.to || v.qty.from)
         },
         "   "

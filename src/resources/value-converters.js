@@ -36,12 +36,6 @@ export class drugFilterValueConverter {
   }
 }
 
-export class recordFilterValueConverter {
-  toView(days = [], filter = ''){
-    return days.filter(day => ~ day.indexOf(filter))
-  }
-}
-
 //TODO make this work with added items
 export class userFilterValueConverter {
   toView(users = [], filter = ''){
