@@ -12,8 +12,7 @@ export class login {
     this.router      = router
     this.phone       = '1234567890'
     this.password    = ''
-    //this.canActivate = canActivate
-    console.log('here?')
+    this.canActivate = canActivate
   }
 
   login() {
