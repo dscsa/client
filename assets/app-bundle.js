@@ -1863,7 +1863,7 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
     inventory.prototype.search = function search() {
       var _this5 = this;
 
-      if (/[A-Z][0-9]{2,3}/.test(this.term)) return this.selectTerm('location', this.term);
+      if (/[A-Z][0-9]{3}/.test(this.term)) return this.selectTerm('location', this.term);
 
       if (/20\d\d-\d\d-?\d?\d?/.test(this.term)) return this.selectTerm('exp', this.term, true);
 
