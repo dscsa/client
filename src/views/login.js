@@ -10,7 +10,7 @@ export class login {
   constructor(db, router){
     this.db          = db
     this.router      = router
-    this.phone       = '1234567890'
+    this.phone       = '650.488.7434'
     this.password    = ''
     this.canActivate = canActivate
   }
@@ -31,7 +31,6 @@ export class login {
     })
     .catch(err => {
       this.disabled = false
-      console.log('Login failed: ', err)
       this.snackbar.error('Login failed', err)
     })
   }

@@ -27,8 +27,7 @@ export class join {
       name:{first:'Guest',last:'User'},
       phone:'650.488.7434'
     }
-    this.db.account.query('authorized', {include_docs:true}).then(console.log)
-    //this.canActivate = canActivate
+    this.canActivate = canActivate
   }
 
   join() {

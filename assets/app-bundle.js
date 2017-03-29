@@ -9,44 +9,6 @@ define('environment',["exports"], function (exports) {
     testing: true
   };
 });
-define('libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
-});
-define('libs/environment',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.default = {
-    debug: true,
-    testing: true
-  };
-});
-define('libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Db = exports.Db = function Db() {
-    _classCallCheck(this, Db);
-
-    return pouchdbClient;
-  };
-});
 define('resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
   'use strict';
 
@@ -640,6 +602,669 @@ define('resources/value-converters',['exports', '../resources/helpers'], functio
 
     return inventoryFilterValueConverter;
   }();
+});
+define('libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
+});
+define('libs/environment',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = {
+    debug: true,
+    testing: true
+  };
+});
+define('libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Db = exports.Db = function Db() {
+    _classCallCheck(this, Db);
+
+    return pouchdbClient;
+  };
+});
+define('elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.FormCustomAttribute = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var FormCustomAttribute = exports.FormCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
+    function FormCustomAttribute(element) {
+      _classCallCheck(this, FormCustomAttribute);
+
+      this.element = element;
+      this.change = this.change.bind(this);
+    }
+
+    FormCustomAttribute.prototype.change = function change() {
+      this.inputElement.disabled = this.formElement && !this.formElement.checkValidity();
+
+      this.inputElement.disabled ? this.inputElement.setAttribute('disabled', true) : this.inputElement.removeAttribute('disabled');
+    };
+
+    FormCustomAttribute.prototype.attached = function attached() {
+      this.formElement = this.element.closest('form');
+      this.formElement.addEventListener('change', this.change);
+      this.formElement.addEventListener('input', this.change);
+
+      this.inputElement = this.element.querySelector('input,button,select') || this.element;
+
+      setTimeout(this.change);
+    };
+
+    return FormCustomAttribute;
+  }()) || _class);
+});
+define('elems/md-autocomplete',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdAutocompleteCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _class;
+
+  var MdAutocompleteCustomElement = exports.MdAutocompleteCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('placeholder'), _dec(_class = _dec2(_class = _dec3(_class = function () {
+    function MdAutocompleteCustomElement() {
+      _classCallCheck(this, MdAutocompleteCustomElement);
+    }
+
+    MdAutocompleteCustomElement.prototype.toggleResults = function toggleResults($event) {
+      var _this = this;
+
+      setTimeout(function () {
+        return _this.showResults = !_this.showResults;
+      }, 200);
+    };
+
+    return MdAutocompleteCustomElement;
+  }()) || _class) || _class) || _class);
+});
+define('elems/md-button',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdButtonCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
+
+  var MdButtonCustomElement = exports.MdButtonCustomElement = (_dec = (0, _aureliaFramework.bindable)('form'), _dec2 = (0, _aureliaFramework.bindable)('class'), _dec3 = (0, _aureliaFramework.bindable)('raised'), _dec4 = (0, _aureliaFramework.bindable)('fab'), _dec5 = (0, _aureliaFramework.bindable)('disabled'), _dec6 = (0, _aureliaFramework.bindable)('color'), _dec7 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
+    function MdButtonCustomElement(element) {
+      _classCallCheck(this, MdButtonCustomElement);
+
+      this.element = element;
+      this.change = this.change.bind(this);
+    }
+
+    MdButtonCustomElement.prototype.click = function click($event) {
+      this.disabled && $event.stopPropagation();
+    };
+
+    MdButtonCustomElement.prototype.disabledChanged = function disabledChanged() {
+      this.button && this.change();
+    };
+
+    MdButtonCustomElement.prototype.change = function change(input) {
+      this.disabled = this.disabled || this.disabled === '';
+    };
+
+    MdButtonCustomElement.prototype.attached = function attached() {
+      var _button$classList;
+
+      setTimeout(this.change);
+
+      this.class && (_button$classList = this.button.classList).add.apply(_button$classList, this.class.split(' '));
+
+      if (typeof this.color == 'string' && this.color.slice(0, 4) != 'mdl-') {
+        this.color = 'mdl-button--' + (this.color || 'colored');
+      }
+
+      if (this.fab > 0) {
+        this.button.classList.add('mdl-button--fab');
+        this.button.style.height = this.fab + 'px';
+        this.button.style.width = this.fab + 'px';
+        this.button.style['min-width'] = this.button.style.width;
+        this.button.style['font-size'] = this.fab * .75 + 'px';
+        this.button.style['line-height'] = this.fab + 'px';
+      }
+
+      if (this.element.parentElement.tagName == 'MD-DRAWER') {
+        this.button.style.width = "100%";
+        this.button.style.height = "auto";
+        this.button.style.padding = "16px 8px";
+        this.button.style['line-height'] = "18px";
+      }
+    };
+
+    return MdButtonCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+});
+define('elems/md-checkbox',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdCheckboxCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _class;
+
+  var MdCheckboxCustomElement = exports.MdCheckboxCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
+    function MdCheckboxCustomElement(element) {
+      var _this = this;
+
+      _classCallCheck(this, MdCheckboxCustomElement);
+
+      this.tabindex = element.tabIndex;
+
+      element.addEventListener('click', function (e) {
+        return _this.disabled && e.stopPropagation();
+      });
+    }
+
+    MdCheckboxCustomElement.prototype.stopPropogation = function stopPropogation() {
+      return true;
+    };
+
+    MdCheckboxCustomElement.prototype.checkedChanged = function checkedChanged() {
+      var _this2 = this;
+
+      this.checked = !!this.checked;
+      setTimeout(function (_) {
+        return _this2.label && _this2.label.MaterialCheckbox && _this2.label.MaterialCheckbox.checkToggleState();
+      });
+    };
+
+    MdCheckboxCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this3 = this;
+
+      setTimeout(function (_) {
+        return _this3.label && _this3.label.MaterialCheckbox.checkDisabled();
+      });
+    };
+
+    MdCheckboxCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeAllRegistered();
+      this.checkedChanged();
+      this.disabledChanged();
+    };
+
+    return MdCheckboxCustomElement;
+  }()) || _class) || _class) || _class) || _class);
+});
+define('elems/md-drawer',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdDrawerCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var drawer = document.createElement('nav');
+  drawer.classList.add("mdl-layout__drawer");
+  var MdDrawerCustomElement = exports.MdDrawerCustomElement = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
+    function MdDrawerCustomElement(element) {
+      _classCallCheck(this, MdDrawerCustomElement);
+
+      element.classList.add("mdl-navigation");
+      element.style['padding-top'] = '6px';
+
+      this.autofocus = element.hasAttribute('autofocus');
+
+      drawer.appendChild(element);
+    }
+
+    MdDrawerCustomElement.prototype.attached = function attached() {
+      this.header = document.querySelector('.mdl-layout__header');
+      this.header.parentNode.insertBefore(drawer, this.header.nextSibling);
+
+      componentHandler.upgradeAllRegistered();
+
+
+      this.button = document.querySelector('.mdl-layout__drawer-button');
+
+      if (this.button) this.button.style.display = 'block';
+
+      if (this.autofocus && this.header.firstChild) this.header.firstChild.click();
+    };
+
+    MdDrawerCustomElement.prototype.detached = function detached() {
+      if (drawer.children.length == 1 && this.button) this.button.style.display = 'none';
+
+      drawer.removeChild(drawer.firstChild);
+    };
+
+    return MdDrawerCustomElement;
+  }()) || _class);
+});
+define('elems/md-input',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdInputCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _class;
+
+  var MdInputCustomElement = exports.MdInputCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('pattern'), _dec4 = (0, _aureliaFramework.bindable)('step'), _dec5 = (0, _aureliaFramework.bindable)('type'), _dec6 = (0, _aureliaFramework.bindable)('placeholder'), _dec7 = (0, _aureliaFramework.bindable)('input'), _dec8 = (0, _aureliaFramework.bindable)('max'), _dec9 = (0, _aureliaFramework.bindable)('required'), _dec10 = (0, _aureliaFramework.bindable)('minlength'), _dec11 = (0, _aureliaFramework.bindable)('maxlength'), _dec12 = (0, _aureliaFramework.bindable)('autofocus'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = _dec8(_class = _dec9(_class = _dec10(_class = _dec11(_class = _dec12(_class = function () {
+    function MdInputCustomElement() {
+      _classCallCheck(this, MdInputCustomElement);
+    }
+
+    MdInputCustomElement.prototype.valueChanged = function valueChanged() {
+      var _this = this;
+
+      setTimeout(function (_) {
+        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDirty();
+        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkValidity();
+      });
+    };
+
+    MdInputCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this2 = this;
+
+      setTimeout(function (_) {
+        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDisabled();
+        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkValidity();
+      });
+    };
+
+    MdInputCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+
+      if (!this.placeholder) this.div.classList.remove('has-placeholder');
+
+      if (this.autofocus || this.autofocus === '') this.div.MaterialTextfield.input_.focus();
+    };
+
+    return MdInputCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+});
+define('elems/md-loading',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdLoadingCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdLoadingCustomElement = exports.MdLoadingCustomElement = (_dec = (0, _aureliaFramework.bindable)('value'), _dec(_class = function () {
+    function MdLoadingCustomElement() {
+      _classCallCheck(this, MdLoadingCustomElement);
+    }
+
+    MdLoadingCustomElement.prototype.valueChanged = function valueChanged(val) {
+      var _this = this;
+
+      setTimeout(function (_) {
+        return _this.div && _this.div.MaterialProgress.setProgress(Math.min(val, 100));
+      });
+    };
+
+    MdLoadingCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+    };
+
+    return MdLoadingCustomElement;
+  }()) || _class);
+});
+define('elems/md-menu',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdMenuCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdMenuCustomElement = exports.MdMenuCustomElement = (_dec = (0, _aureliaFramework.inject)(_aureliaFramework.ObserverLocator, Element), _dec(_class = function () {
+    function MdMenuCustomElement(observer, element) {
+      _classCallCheck(this, MdMenuCustomElement);
+
+      this.id = 'id' + Date.now();
+      this.element = element;
+      this.observer = observer;
+    }
+
+    MdMenuCustomElement.prototype.click = function click($event) {
+      if ($event.target.tagName == 'INPUT' || $event.target.disabled) $event.stopImmediatePropagation();
+
+      return true;
+    };
+
+    MdMenuCustomElement.prototype.setDisabled = function setDisabled(li, disabled) {
+      disabled ? li.setAttribute('disabled', '') : li.removeAttribute('disabled');
+    };
+
+    MdMenuCustomElement.prototype.attached = function attached() {
+      var _this = this;
+
+      var _loop = function _loop() {
+        if (_isArray) {
+          if (_i >= _iterator.length) return 'break';
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) return 'break';
+          _ref = _i.value;
+        }
+
+        var li = _ref;
+
+        li.classList.add('mdl-menu__item');
+        _this.setDisabled(li, li.disabled);
+        _this.observer.getObserver(li, 'disabled').subscribe(function (disabled) {
+          _this.setDisabled(li, disabled);
+        });
+      };
+
+      for (var _iterator = this.element.querySelectorAll('li'), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        var _ret = _loop();
+
+        if (_ret === 'break') break;
+      }
+    };
+
+    return MdMenuCustomElement;
+  }()) || _class);
+});
+define('elems/md-select',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdSelectCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
+
+  var MdSelectCustomElement = exports.MdSelectCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('style'), _dec3 = (0, _aureliaFramework.bindable)('options'), _dec4 = (0, _aureliaFramework.bindable)('disabled'), _dec5 = (0, _aureliaFramework.bindable)('default'), _dec6 = (0, _aureliaFramework.bindable)('required'), _dec7 = (0, _aureliaFramework.bindable)('property'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
+    function MdSelectCustomElement() {
+      _classCallCheck(this, MdSelectCustomElement);
+    }
+
+    MdSelectCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this = this;
+
+      setTimeout(function (_) {
+        return _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDisabled();
+      });
+    };
+
+    MdSelectCustomElement.prototype.valueChanged = function valueChanged() {
+      var _this2 = this;
+
+      setTimeout(function (_) {
+        return _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDirty();
+      });
+    };
+
+    MdSelectCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+    };
+
+    return MdSelectCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+});
+define('elems/md-shadow',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdShadowCustomAttribute = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdShadowCustomAttribute = exports.MdShadowCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function MdShadowCustomAttribute(element) {
+    _classCallCheck(this, MdShadowCustomAttribute);
+
+    element.classList.add("mdl-shadow--" + element.getAttribute('md-shadow') + "dp");
+  }) || _class);
+});
+define('elems/md-snackbar',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdSnackbarCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _class;
+
+  var MdSnackbarCustomElement = exports.MdSnackbarCustomElement = (_dec = (0, _aureliaFramework.bindable)('show'), _dec2 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = function () {
+    function MdSnackbarCustomElement(element) {
+      _classCallCheck(this, MdSnackbarCustomElement);
+
+      this.element = element;
+    }
+
+    MdSnackbarCustomElement.prototype.attached = function attached() {
+      var _this = this;
+
+      componentHandler.upgradeElement(this.element);
+      this.element.show = function (opts) {
+        if (typeof opts == 'string') opts = { message: opts, timeout: 5000 };
+
+        _this.element.MaterialSnackbar.showSnackbar(opts);
+      };
+      this.element.error = function (msg, err) {
+        if (!err) {
+          err = msg;
+          msg = '';
+        }
+        msg = msg + ' ' + err.message;
+        _this.element.show(msg);
+        console.error(msg, err);
+        return err;
+      };
+    };
+
+    return MdSnackbarCustomElement;
+  }()) || _class) || _class);
+});
+define('elems/md-switch',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdSwitchCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _class;
+
+  var MdSwitchCustomElement = exports.MdSwitchCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
+    function MdSwitchCustomElement(elem) {
+      var _this = this;
+
+      _classCallCheck(this, MdSwitchCustomElement);
+
+      elem.addEventListener('click', function (e) {
+        return _this.disabled && e.stopPropagation();
+      });
+    }
+
+    MdSwitchCustomElement.prototype.stopPropogation = function stopPropogation() {
+      return true;
+    };
+
+    MdSwitchCustomElement.prototype.checkedChanged = function checkedChanged() {
+      var _this2 = this;
+
+      this.checked = !!this.checked;
+      setTimeout(function (_) {
+        return _this2.label && _this2.label.MaterialSwitch.checkToggleState();
+      });
+    };
+
+    MdSwitchCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this3 = this;
+
+      setTimeout(function (_) {
+        return _this3.label && _this3.label.MaterialSwitch.checkDisabled();
+      });
+    };
+
+    MdSwitchCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.label);
+      this.checkedChanged();
+      this.disabledChanged();
+    };
+
+    return MdSwitchCustomElement;
+  }()) || _class) || _class) || _class) || _class);
+});
+define('elems/md-table',["exports", "aurelia-framework"], function (exports, _aureliaFramework) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdTableCustomAttribute = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdTableCustomAttribute = exports.MdTableCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
+    function MdTableCustomAttribute(element) {
+      _classCallCheck(this, MdTableCustomAttribute);
+
+      element.classList.add("mdl-data-table");
+      element.classList.add("mdl-js-data-table");
+      element.style.border = "none";
+
+      if (element.getAttribute('md-table')) element.classList.add("mdl-data-table--selectable");
+
+      this.element = element;
+    }
+
+    MdTableCustomAttribute.prototype.valueChanged = function valueChanged(selectable) {
+
+      var checkboxes = this.element.querySelectorAll('input[type="checkbox"]');
+
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].disabled = selectable == 'false';
+      }
+    };
+
+    MdTableCustomAttribute.prototype.attached = function attached() {
+
+      componentHandler.upgradeAllRegistered();
+    };
+
+    return MdTableCustomAttribute;
+  }()) || _class);
 });
 define('views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _helpers) {
   'use strict';
@@ -1400,16 +2025,18 @@ define('views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aure
 
         var label = ['<p style="page-break-after:always;">', '<strong>' + (_this8.transactions[0].drug.generic + ' ' + _this8.transactions[0].drug.form) + '</strong>', 'Ndc ' + _this8.transactions[0].drug._id, 'Exp ' + _this8.repack.exp.slice(0, 10), 'Bin ' + _this8.repack.location, 'Qty ' + _this8.repack.size, 'Pharmacist ________________', '</p>'];
 
-        var win = window.open();
-        win.document.write(label.join('<br>').repeat(_this8.repack.vials));
-        win.print();
-        win.close();
-
         _this8.updateNextOfSelected(function (_) {
           return all.map(function (val) {
             return { transaction: { _id: val.id } };
           });
         });
+
+        var win = window.open();
+        if (!win) return _this8.snackbar.show('Enable browser pop-ups to print repack labels');
+
+        win.document.write(label.join('<br>').repeat(_this8.repack.vials));
+        win.print();
+        win.close();
       }).catch(function (err) {
         console.error(err);
         _this8.snackbar.show('Transactions could not repackaged: ' + err.reason);
@@ -1564,7 +2191,7 @@ define('views/join',['exports', 'aurelia-framework', 'aurelia-router', '../libs/
         name: { first: 'Guest', last: 'User' },
         phone: '650.488.7434'
       };
-      this.db.account.query('authorized', { include_docs: true }).then(console.log);
+      this.canActivate = _helpers.canActivate;
     }
 
     join.prototype.join = function join() {
@@ -1628,7 +2255,7 @@ define('views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs
 
       this.db = db;
       this.router = router;
-      this.phone = '1234567890';
+      this.phone = '650.488.7434';
       this.password = '';
       this.canActivate = _helpers.canActivate;
     }
@@ -1647,7 +2274,6 @@ define('views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs
         _this.router.navigate('shipments');
       }).catch(function (err) {
         _this.disabled = false;
-        console.log('Login failed: ', err);
         _this.snackbar.error('Login failed', err);
       });
     };
@@ -2355,631 +2981,6 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
     return shipments;
   }()) || _class);
 });
-define('elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.FormCustomAttribute = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var FormCustomAttribute = exports.FormCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
-    function FormCustomAttribute(element) {
-      _classCallCheck(this, FormCustomAttribute);
-
-      this.element = element;
-      this.change = this.change.bind(this);
-    }
-
-    FormCustomAttribute.prototype.change = function change() {
-      this.inputElement.disabled = this.formElement && !this.formElement.checkValidity();
-
-      this.inputElement.disabled ? this.inputElement.setAttribute('disabled', true) : this.inputElement.removeAttribute('disabled');
-    };
-
-    FormCustomAttribute.prototype.attached = function attached() {
-      this.formElement = this.element.closest('form');
-      this.formElement.addEventListener('change', this.change);
-      this.formElement.addEventListener('input', this.change);
-
-      this.inputElement = this.element.querySelector('input,button,select') || this.element;
-
-      setTimeout(this.change);
-    };
-
-    return FormCustomAttribute;
-  }()) || _class);
-});
-define('elems/md-autocomplete',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdAutocompleteCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _class;
-
-  var MdAutocompleteCustomElement = exports.MdAutocompleteCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('placeholder'), _dec(_class = _dec2(_class = _dec3(_class = function () {
-    function MdAutocompleteCustomElement() {
-      _classCallCheck(this, MdAutocompleteCustomElement);
-    }
-
-    MdAutocompleteCustomElement.prototype.toggleResults = function toggleResults($event) {
-      var _this = this;
-
-      setTimeout(function () {
-        return _this.showResults = !_this.showResults;
-      }, 200);
-    };
-
-    return MdAutocompleteCustomElement;
-  }()) || _class) || _class) || _class);
-});
-define('elems/md-button',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdButtonCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
-
-  var MdButtonCustomElement = exports.MdButtonCustomElement = (_dec = (0, _aureliaFramework.bindable)('form'), _dec2 = (0, _aureliaFramework.bindable)('class'), _dec3 = (0, _aureliaFramework.bindable)('raised'), _dec4 = (0, _aureliaFramework.bindable)('fab'), _dec5 = (0, _aureliaFramework.bindable)('disabled'), _dec6 = (0, _aureliaFramework.bindable)('color'), _dec7 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
-    function MdButtonCustomElement(element) {
-      _classCallCheck(this, MdButtonCustomElement);
-
-      this.element = element;
-      this.change = this.change.bind(this);
-    }
-
-    MdButtonCustomElement.prototype.click = function click($event) {
-      this.disabled && $event.stopPropagation();
-    };
-
-    MdButtonCustomElement.prototype.disabledChanged = function disabledChanged() {
-      this.button && this.change();
-    };
-
-    MdButtonCustomElement.prototype.change = function change(input) {
-      this.disabled = this.disabled || this.disabled === '';
-    };
-
-    MdButtonCustomElement.prototype.attached = function attached() {
-      var _button$classList;
-
-      setTimeout(this.change);
-
-      this.class && (_button$classList = this.button.classList).add.apply(_button$classList, this.class.split(' '));
-
-      if (typeof this.color == 'string' && this.color.slice(0, 4) != 'mdl-') {
-        this.color = 'mdl-button--' + (this.color || 'colored');
-      }
-
-      if (this.fab > 0) {
-        this.button.classList.add('mdl-button--fab');
-        this.button.style.height = this.fab + 'px';
-        this.button.style.width = this.fab + 'px';
-        this.button.style['min-width'] = this.button.style.width;
-        this.button.style['font-size'] = this.fab * .75 + 'px';
-        this.button.style['line-height'] = this.fab + 'px';
-      }
-
-      if (this.element.parentElement.tagName == 'MD-DRAWER') {
-        this.button.style.width = "100%";
-        this.button.style.height = "auto";
-        this.button.style.padding = "16px 8px";
-        this.button.style['line-height'] = "18px";
-      }
-    };
-
-    return MdButtonCustomElement;
-  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
-});
-define('elems/md-checkbox',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdCheckboxCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _class;
-
-  var MdCheckboxCustomElement = exports.MdCheckboxCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
-    function MdCheckboxCustomElement(element) {
-      var _this = this;
-
-      _classCallCheck(this, MdCheckboxCustomElement);
-
-      this.tabindex = element.tabIndex;
-
-      element.addEventListener('click', function (e) {
-        return _this.disabled && e.stopPropagation();
-      });
-    }
-
-    MdCheckboxCustomElement.prototype.stopPropogation = function stopPropogation() {
-      return true;
-    };
-
-    MdCheckboxCustomElement.prototype.checkedChanged = function checkedChanged() {
-      var _this2 = this;
-
-      this.checked = !!this.checked;
-      setTimeout(function (_) {
-        return _this2.label && _this2.label.MaterialCheckbox && _this2.label.MaterialCheckbox.checkToggleState();
-      });
-    };
-
-    MdCheckboxCustomElement.prototype.disabledChanged = function disabledChanged() {
-      var _this3 = this;
-
-      setTimeout(function (_) {
-        return _this3.label && _this3.label.MaterialCheckbox.checkDisabled();
-      });
-    };
-
-    MdCheckboxCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeAllRegistered();
-      this.checkedChanged();
-      this.disabledChanged();
-    };
-
-    return MdCheckboxCustomElement;
-  }()) || _class) || _class) || _class) || _class);
-});
-define('elems/md-drawer',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdDrawerCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var drawer = document.createElement('nav');
-  drawer.classList.add("mdl-layout__drawer");
-  var MdDrawerCustomElement = exports.MdDrawerCustomElement = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
-    function MdDrawerCustomElement(element) {
-      _classCallCheck(this, MdDrawerCustomElement);
-
-      element.classList.add("mdl-navigation");
-      element.style['padding-top'] = '6px';
-
-      this.autofocus = element.hasAttribute('autofocus');
-
-      drawer.appendChild(element);
-    }
-
-    MdDrawerCustomElement.prototype.attached = function attached() {
-      this.header = document.querySelector('.mdl-layout__header');
-      this.header.parentNode.insertBefore(drawer, this.header.nextSibling);
-
-      componentHandler.upgradeAllRegistered();
-
-
-      this.button = document.querySelector('.mdl-layout__drawer-button');
-
-      if (this.button) this.button.style.display = 'block';
-
-      if (this.autofocus && this.header.firstChild) this.header.firstChild.click();
-    };
-
-    MdDrawerCustomElement.prototype.detached = function detached() {
-      if (drawer.children.length == 1 && this.button) this.button.style.display = 'none';
-
-      drawer.removeChild(drawer.firstChild);
-    };
-
-    return MdDrawerCustomElement;
-  }()) || _class);
-});
-define('elems/md-input',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdInputCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _class;
-
-  var MdInputCustomElement = exports.MdInputCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('pattern'), _dec4 = (0, _aureliaFramework.bindable)('step'), _dec5 = (0, _aureliaFramework.bindable)('type'), _dec6 = (0, _aureliaFramework.bindable)('placeholder'), _dec7 = (0, _aureliaFramework.bindable)('input'), _dec8 = (0, _aureliaFramework.bindable)('max'), _dec9 = (0, _aureliaFramework.bindable)('required'), _dec10 = (0, _aureliaFramework.bindable)('minlength'), _dec11 = (0, _aureliaFramework.bindable)('maxlength'), _dec12 = (0, _aureliaFramework.bindable)('autofocus'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = _dec8(_class = _dec9(_class = _dec10(_class = _dec11(_class = _dec12(_class = function () {
-    function MdInputCustomElement() {
-      _classCallCheck(this, MdInputCustomElement);
-    }
-
-    MdInputCustomElement.prototype.valueChanged = function valueChanged() {
-      var _this = this;
-
-      setTimeout(function (_) {
-        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDirty();
-        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkValidity();
-      });
-    };
-
-    MdInputCustomElement.prototype.disabledChanged = function disabledChanged() {
-      var _this2 = this;
-
-      setTimeout(function (_) {
-        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDisabled();
-        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkValidity();
-      });
-    };
-
-    MdInputCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.div);
-
-      if (!this.placeholder) this.div.classList.remove('has-placeholder');
-
-      if (this.autofocus || this.autofocus === '') this.div.MaterialTextfield.input_.focus();
-    };
-
-    return MdInputCustomElement;
-  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
-});
-define('elems/md-loading',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdLoadingCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var MdLoadingCustomElement = exports.MdLoadingCustomElement = (_dec = (0, _aureliaFramework.bindable)('value'), _dec(_class = function () {
-    function MdLoadingCustomElement() {
-      _classCallCheck(this, MdLoadingCustomElement);
-    }
-
-    MdLoadingCustomElement.prototype.valueChanged = function valueChanged(val) {
-      var _this = this;
-
-      setTimeout(function (_) {
-        return _this.div && _this.div.MaterialProgress.setProgress(Math.min(val, 100));
-      });
-    };
-
-    MdLoadingCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.div);
-    };
-
-    return MdLoadingCustomElement;
-  }()) || _class);
-});
-define('elems/md-menu',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdMenuCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var MdMenuCustomElement = exports.MdMenuCustomElement = (_dec = (0, _aureliaFramework.inject)(_aureliaFramework.ObserverLocator, Element), _dec(_class = function () {
-    function MdMenuCustomElement(observer, element) {
-      _classCallCheck(this, MdMenuCustomElement);
-
-      this.id = 'id' + Date.now();
-      this.element = element;
-      this.observer = observer;
-    }
-
-    MdMenuCustomElement.prototype.click = function click($event) {
-      if ($event.target.tagName == 'INPUT' || $event.target.disabled) $event.stopImmediatePropagation();
-
-      return true;
-    };
-
-    MdMenuCustomElement.prototype.setDisabled = function setDisabled(li, disabled) {
-      disabled ? li.setAttribute('disabled', '') : li.removeAttribute('disabled');
-    };
-
-    MdMenuCustomElement.prototype.attached = function attached() {
-      var _this = this;
-
-      var _loop = function _loop() {
-        if (_isArray) {
-          if (_i >= _iterator.length) return 'break';
-          _ref = _iterator[_i++];
-        } else {
-          _i = _iterator.next();
-          if (_i.done) return 'break';
-          _ref = _i.value;
-        }
-
-        var li = _ref;
-
-        li.classList.add('mdl-menu__item');
-        _this.setDisabled(li, li.disabled);
-        _this.observer.getObserver(li, 'disabled').subscribe(function (disabled) {
-          _this.setDisabled(li, disabled);
-        });
-      };
-
-      for (var _iterator = this.element.querySelectorAll('li'), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-        var _ref;
-
-        var _ret = _loop();
-
-        if (_ret === 'break') break;
-      }
-    };
-
-    return MdMenuCustomElement;
-  }()) || _class);
-});
-define('elems/md-select',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdSelectCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
-
-  var MdSelectCustomElement = exports.MdSelectCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('style'), _dec3 = (0, _aureliaFramework.bindable)('options'), _dec4 = (0, _aureliaFramework.bindable)('disabled'), _dec5 = (0, _aureliaFramework.bindable)('default'), _dec6 = (0, _aureliaFramework.bindable)('required'), _dec7 = (0, _aureliaFramework.bindable)('property'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
-    function MdSelectCustomElement() {
-      _classCallCheck(this, MdSelectCustomElement);
-    }
-
-    MdSelectCustomElement.prototype.disabledChanged = function disabledChanged() {
-      var _this = this;
-
-      setTimeout(function (_) {
-        return _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDisabled();
-      });
-    };
-
-    MdSelectCustomElement.prototype.valueChanged = function valueChanged() {
-      var _this2 = this;
-
-      setTimeout(function (_) {
-        return _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDirty();
-      });
-    };
-
-    MdSelectCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.div);
-    };
-
-    return MdSelectCustomElement;
-  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
-});
-define('elems/md-shadow',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdShadowCustomAttribute = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var MdShadowCustomAttribute = exports.MdShadowCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function MdShadowCustomAttribute(element) {
-    _classCallCheck(this, MdShadowCustomAttribute);
-
-    element.classList.add("mdl-shadow--" + element.getAttribute('md-shadow') + "dp");
-  }) || _class);
-});
-define('elems/md-snackbar',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdSnackbarCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _class;
-
-  var MdSnackbarCustomElement = exports.MdSnackbarCustomElement = (_dec = (0, _aureliaFramework.bindable)('show'), _dec2 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = function () {
-    function MdSnackbarCustomElement(element) {
-      _classCallCheck(this, MdSnackbarCustomElement);
-
-      this.element = element;
-    }
-
-    MdSnackbarCustomElement.prototype.attached = function attached() {
-      var _this = this;
-
-      componentHandler.upgradeElement(this.element);
-      this.element.show = function (opts) {
-        if (typeof opts == 'string') opts = { message: opts, timeout: 5000 };
-
-        _this.element.MaterialSnackbar.showSnackbar(opts);
-      };
-      this.element.error = function (msg, err) {
-        if (!err) {
-          err = msg;
-          msg = '';
-        }
-        msg = msg + ' ' + err.message;
-        _this.element.show(msg);
-        console.error(msg, err);
-        return err;
-      };
-    };
-
-    return MdSnackbarCustomElement;
-  }()) || _class) || _class);
-});
-define('elems/md-switch',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdSwitchCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _class;
-
-  var MdSwitchCustomElement = exports.MdSwitchCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
-    function MdSwitchCustomElement(elem) {
-      var _this = this;
-
-      _classCallCheck(this, MdSwitchCustomElement);
-
-      elem.addEventListener('click', function (e) {
-        return _this.disabled && e.stopPropagation();
-      });
-    }
-
-    MdSwitchCustomElement.prototype.stopPropogation = function stopPropogation() {
-      return true;
-    };
-
-    MdSwitchCustomElement.prototype.checkedChanged = function checkedChanged() {
-      var _this2 = this;
-
-      this.checked = !!this.checked;
-      setTimeout(function (_) {
-        return _this2.label && _this2.label.MaterialSwitch.checkToggleState();
-      });
-    };
-
-    MdSwitchCustomElement.prototype.disabledChanged = function disabledChanged() {
-      var _this3 = this;
-
-      setTimeout(function (_) {
-        return _this3.label && _this3.label.MaterialSwitch.checkDisabled();
-      });
-    };
-
-    MdSwitchCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.label);
-      this.checkedChanged();
-      this.disabledChanged();
-    };
-
-    return MdSwitchCustomElement;
-  }()) || _class) || _class) || _class) || _class);
-});
-define('elems/md-table',["exports", "aurelia-framework"], function (exports, _aureliaFramework) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdTableCustomAttribute = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var MdTableCustomAttribute = exports.MdTableCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
-    function MdTableCustomAttribute(element) {
-      _classCallCheck(this, MdTableCustomAttribute);
-
-      element.classList.add("mdl-data-table");
-      element.classList.add("mdl-js-data-table");
-      element.style.border = "none";
-
-      if (element.getAttribute('md-table')) element.classList.add("mdl-data-table--selectable");
-
-      this.element = element;
-    }
-
-    MdTableCustomAttribute.prototype.valueChanged = function valueChanged(selectable) {
-
-      var checkboxes = this.element.querySelectorAll('input[type="checkbox"]');
-
-      for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].disabled = selectable == 'false';
-      }
-    };
-
-    MdTableCustomAttribute.prototype.attached = function attached() {
-
-      componentHandler.upgradeAllRegistered();
-    };
-
-    return MdTableCustomAttribute;
-  }()) || _class);
-});
 define('text!elems/md-autocomplete.html', ['module'], function(module) { module.exports = "<template style=\"box-shadow:none\">\n  <!-- z-index of 2 is > than checkboxes which have z-index of 1 -->\n  <md-autocomplete-wrap\n    ref=\"form\"\n    class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\"\n    style=\"z-index:2; width:100%; padding-top:10px\">\n    <input class=\"md-input mdl-textfield__input\"\n      value.bind=\"value\"\n      disabled.bind=\"disabled\"\n      placeholder.bind=\"placeholder || ''\"\n      focus.trigger=\"toggleResults()\"\n      focusout.delegate=\"toggleResults($event)\"\n      style=\"font-size:20px;\">\n    <div show.bind=\"showResults\"\n      tabindex=\"-1\"\n      style=\"width:100%; overflow-y:scroll; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); max-height: 400px !important;\"\n      class=\"md-autocomplete-suggestions\">\n      <slot></slot>\n    </div>\n  </md-autocomplete-wrap>\n  <style>\n  @-webkit-keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @-webkit-keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  @keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  md-autocomplete {\n    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);\n    border-radius: 2px;\n    display: block;\n    height: 40px;\n    position: relative;\n    overflow: visible;\n    min-width: 190px; }\n    md-autocomplete[md-floating-label] {\n      padding-bottom: 26px;\n      box-shadow: none;\n      border-radius: 0;\n      background: transparent;\n      height: auto; }\n      md-autocomplete[md-floating-label] md-input-container {\n        padding-bottom: 0; }\n      md-autocomplete[md-floating-label] md-autocomplete-wrap {\n        height: auto; }\n      md-autocomplete[md-floating-label] button {\n        top: auto;\n        bottom: 5px; }\n    md-autocomplete md-autocomplete-wrap {\n      display: block;\n      position: relative;\n      overflow: visible;\n      height: 40px; }\n      md-autocomplete md-autocomplete-wrap md-progress-linear {\n        position: absolute;\n        bottom: 0;\n        left: 0;\n        width: 100%;\n        height: 3px;\n        transition: none; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear .md-container {\n          transition: none;\n          top: auto;\n          height: 3px; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter.ng-enter-active {\n            opacity: 1; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave.ng-leave-active {\n            opacity: 0; }\n    md-autocomplete input:not(.md-input) {\n      position: absolute;\n      left: 0;\n      top: 0;\n      width: 100%;\n      box-sizing: border-box;\n      border: none;\n      box-shadow: none;\n      padding: 0 15px;\n      font-size: 14px;\n      line-height: 40px;\n      height: 40px;\n      outline: none;\n      background: transparent; }\n      md-autocomplete input:not(.md-input)::-ms-clear {\n        display: none; }\n    md-autocomplete button {\n      position: absolute;\n      top: 10px;\n      right: 10px;\n      line-height: 20px;\n      text-align: center;\n      width: 20px;\n      height: 20px;\n      cursor: pointer;\n      border: none;\n      border-radius: 50%;\n      padding: 0;\n      font-size: 12px;\n      background: transparent; }\n      md-autocomplete button:after {\n        content: '';\n        position: absolute;\n        top: -6px;\n        right: -6px;\n        bottom: -6px;\n        left: -6px;\n        border-radius: 50%;\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        opacity: 0;\n        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }\n      md-autocomplete button:focus {\n        outline: none; }\n        md-autocomplete button:focus:after {\n          -webkit-transform: scale(1);\n                  transform: scale(1);\n          opacity: 1; }\n      md-autocomplete button md-icon {\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        -webkit-transform: translate3d(-50%, -50%, 0) scale(0.9);\n                transform: translate3d(-50%, -50%, 0) scale(0.9); }\n        md-autocomplete button md-icon path {\n          stroke-width: 0; }\n      md-autocomplete button.ng-enter {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-enter.ng-enter-active {\n          -webkit-transform: scale(1);\n                  transform: scale(1); }\n      md-autocomplete button.ng-leave {\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-leave.ng-leave-active {\n          -webkit-transform: scale(0);\n                  transform: scale(0); }\n    @media screen and (-ms-high-contrast: active) {\n      md-autocomplete input {\n        border: 1px solid #fff; }\n      md-autocomplete li:focus {\n        color: #fff; } }\n\n  .md-autocomplete-suggestions table, .md-autocomplete-suggestions ul {\n    width:100%;         //added by adam\n    background:white;   //added by adam\n    position: relative;\n    margin: 0;\n    list-style: none;\n    padding: 0;\n    z-index: 100; }\n    .md-autocomplete-suggestions li {\n      line-height: 48px; //separated by adam\n    }\n    .md-autocomplete-suggestions li, .md-autocomplete-suggestions tr {\n      /*added by adam */\n      width:100%;\n      text-align: left;\n      position: static !important;\n      text-transform: none;\n      /* end addition */\n      cursor: pointer;\n      font-size: 14px;\n      overflow: hidden;\n\n      transition: background 0.15s linear;\n      text-overflow: ellipsis; }\n      .md-autocomplete-suggestions li.ng-enter, .md-autocomplete-suggestions li.ng-hide-remove {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-in 0.2s;\n                animation: md-autocomplete-list-in 0.2s; }\n      .md-autocomplete-suggestions li.ng-leave, .md-autocomplete-suggestions li.ng-hide-add {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-out 0.2s;\n                animation: md-autocomplete-list-out 0.2s; }\n      .md-autocomplete-suggestions li:focus {\n        outline: none; }\n  </style>\n</template>\n"; });
 define('text!elems/md-button.html', ['module'], function(module) { module.exports = "<template style=\"display:inline-block; height:36px; line-height:36px\">\n  <button\n    ref=\"button\"\n    type=\"button\"\n    disabled.bind=\"disabled\"\n    click.delegate=\"click($event)\"\n    class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n    style=\"width:100%; height:inherit; line-height:inherit\">\n    <slot style=\"padding:auto\"></slot>\n  </button>\n</template>\n<!-- type=\"button\" because a button inside a form has it's type implicitly set to submit. And the spec says that the first button or input with type=\"submit\" is triggered on enter -->\n"; });
 define('text!elems/md-checkbox.html', ['module'], function(module) { module.exports = "<template style=\"display:inline-block\">\n  <label ref=\"label\" class=\"mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect\" style=\"width:100%; margin-right:8px\">\n    <input\n      required.bind=\"required || required ===''\"\n      disabled.bind=\"disabled || disabled ===''\"\n      checked.bind=\"checked\"\n      tabindex.one-time=\"tabindex\"\n      type=\"checkbox\"\n      class=\"mdl-checkbox__input\"\n      click.delegate=\"stopPropogation()\"/>\n    <slot></slot>\n  </label>\n</template>\n"; });
@@ -2994,8 +2995,8 @@ define('text!views/account.html', ['module'], function(module) { module.exports 
 define('text!views/drugs.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-table'></require>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-menu\"></require>\n  <require from=\"elems/md-switch\"></require>\n  <require from=\"elems/md-autocomplete\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/form\"></require>\n  <md-drawer>\n    <md-select\n      options.bind=\"['Ordered', 'Inventory < ReorderAt', 'Inventory > ReorderTo', 'Inventory Expiring before Min Days', 'Missing Retail Price', 'Missing Wholesale Price', 'Missing Image']\"\n      style=\"padding:0 8px;\"\n      disabled.bind=\"true\">\n      Quick Search\n    </md-select>\n    <a\n      repeat.for=\"ordered of drawer.ordered\"\n      style=\"font-size:12px; line-height:18px; padding:8px 8px\"\n      class=\"mdl-navigation__link ${ ordered == group.name ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectDrawer(ordered)\">\n      ${ ordered }\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--4-col full-height\">\n      <div class=\"mdl-card__supporting-text\" style=\"font-size:16px;\">\n        <md-input\n          required\n          style=\"width:49%\"\n          value.bind=\"drug._id\"\n          disabled.bind=\"drug._rev\"\n          pattern=\"\\d{4}-\\d{4}|\\d{5}-\\d{3}|\\d{5}-\\d{4}\">\n          Product NDC\n        </md-input>\n        <md-input style=\"width:49%\"\n          value.one-way=\"drug._id ? ('00000'+drug._id.split('-').slice(0,1)).slice(-5)+('0000'+drug._id.split('-').slice(1)).slice(-4) : ''\"\n          disabled=\"true\">\n          NDC9\n        </md-input>\n        <div if.bind=\"drug.generics[0].name\" style=\"position:relative\">\n          <md-button color fab=\"11\"\n            show.bind=\"drug._rev && drug.generics[drug.generics.length-1].name\"\n            click.delegate=\"addGeneric()\"\n            style=\"position:absolute; left:153px; margin-top:-5px; z-index:1\">\n            +\n          </md-button>\n          <md-button color fab=\"11\"\n            show.bind=\"drug._rev && ! drug.generics[drug.generics.length-1].name\"\n            mousedown.delegate=\"removeGeneric()\"\n            style=\"position:absolute; right:153px; margin-top:-5px; z-index:1\">\n            -\n          </md-button>\n        </div>\n        <div repeat.for=\"generic of drug.generics\">\n          <md-input\n            required\n            style=\"width:75%\"\n            pattern=\"([A-Z][0-9a-z]*\\s?)+\\b\"\n            value.bind=\"generic.name\">\n            ${ $index == 0 ? 'Generic Names & Strengths' : ''}\n          </md-input>\n          <md-input\n            style=\"width:23%\"\n            pattern=\"[0-9][0-9a-z/.]+\"\n            value.bind=\"generic.strength\">\n          </md-input>\n        </div>\n        <md-input\n          style=\"width:49%\"\n          pattern=\"([A-Z][a-z]*\\s?){1,2}\\b\"\n          value.bind=\"drug.brand\">\n          Brand Name\n        </md-input>\n        <md-input\n          required\n          style=\"width:49%\"\n          pattern=\"([A-Z][a-z]+\\s?)+\\b\"\n          value.bind=\"drug.form\">\n          Form\n        </md-input>\n        <md-input\n          style=\"width:100%\"\n          value.bind=\"drug.labeler\">\n          Labeler\n        </md-input>\n        <md-input\n          value.bind=\"drug.price.nadac | number\"\n          type=\"number\"\n          step=\".0001\"\n          style=\"width:49%\">\n          Nadac Price\n        </md-input>\n        <md-input\n          value.bind=\"drug.price.goodrx | number\"\n          type=\"number\"\n          step=\".0001\"\n          style=\"width:49%\">\n          GoodRx Price\n        </md-input>\n        <md-input\n          pattern=\"//[a-zA-Z0-9/.\\-_%]+\"\n          value.bind=\"drug.image\"\n          style=\"width:100%; font-size:9px;\">\n          ${ drug.image ? 'Image' : 'Image URL'}\n        </md-input>\n        <img\n          style=\"width:100%;\"\n          if.bind=\"drug.image\"\n          src.bind=\"drug.image\">\n      </div>\n      <div class=\"mdl-card__actions\">\n        <!-- <md-button color=\"accent\" raised\n          if.bind=\"drug._rev\"\n          style=\"width:100%;\"\n          disabled\n          click.delegate=\"deleteDrug()\">\n          Delete Drug\n        </md-button> -->\n        <md-button color raised form\n          style=\"width:100%;\"\n          disabled.bind=\"_savingDrug\"\n          click.delegate=\"drug._rev ? saveDrug() : addDrug()\"\n          form>\n          ${ _savingDrug ? 'Saving Drug...' : (drug._rev ? 'Save Drug' : 'Add Drug') }\n        </md-button>\n      </div>\n    </form>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--8-col full-height\">\n      <md-autocomplete\n        placeholder=\"Search Drugs by Generic Name or NDC...\"\n        value.bind=\"term\"\n        input.delegate=\"search() & debounce:50\"\n        keydown.delegate=\"scrollGroups($event) & debounce:50\"\n        style=\"margin:0px 24px; padding-right:15px\">\n        <table md-table>\n          <tr\n            repeat.for=\"group of groups\"\n            click.delegate=\"selectGroup(group, true)\"\n            class=\"${ group.name == $parent.group.name && 'is-selected'}\">\n            <td\n              class=\"mdl-data-table__cell--non-numeric\"\n              innerHTML.bind=\"group.name.replace(regex, '<strong>$1</strong>')\">\n            </td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <md-menu style=\"position:absolute; z-index:2; top:10px; right:5px;\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li if.bind=\"drug._rev\" click.delegate=\"selectDrug()\" class=\"mdl-menu__item\">\n          Add Drug\n        </li>\n        <li if.bind=\" ! drug._rev\" disabled class=\"mdl-menu__item\">\n          Add Drug\n        </li>\n        <li click.delegate=\"exportCSV()\" class=\"mdl-menu__item\">\n          Export CSV\n        </li>\n        <li click.delegate=\"$file.click()\" class=\"mdl-menu__item\">\n          Import CSV\n        </li>\n      </md-menu>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <md-switch\n        style=\"position:absolute; right:25px; top:47px; z-index:1\"\n        checked.one-way=\"account.ordered[group.name]\"\n        disabled.bind=\"! account.ordered[group.name] && ! drug._rev\"\n        click.delegate=\"order()\">\n      </md-switch>\n      <div class=\"table-wrap\">\n        <table md-table style=\"width:calc(100% - 216px)\">\n          <thead>\n            <tr>\n              <th class=\"mdl-data-table__cell--non-numeric\">Ndc</th>\n              <th class=\"mdl-data-table__cell--non-numeric\">Form</th>\n              <th class=\"mdl-data-table__cell--non-numeric\">Labeler</th>\n              <th class=\"mdl-data-table__cell--non-numeric\">Brand</th>\n              <th style=\"text-align:left; width:40px; padding-left:0;\">Nadac</th>\n              <th style=\"text-align:left; width:${ account.ordered[group.name] ? '40px' : '85px'}; padding-left:0;\">GoodRx</th>\n            </tr>\n          </thead>\n          <tr repeat.for=\"drug of group.drugs\" click.delegate=\"selectDrug(drug)\" class=\"${ drug._id == $parent.drug._id ? 'is-selected' : ''}\">\n            <td class=\"mdl-data-table__cell--non-numeric\">${ drug._id }</td>\n            <td class=\"mdl-data-table__cell--non-numeric\">${ drug.form }</td>\n            <td class=\"mdl-data-table__cell--non-numeric\">${ drug.labeler }</td>\n            <td class=\"mdl-data-table__cell--non-numeric\">${ drug.brand }</td>\n            <td style=\"padding:0; text-align:left\">${ drug.price.nadac | number:3 }</td>\n            <td style=\"padding:0; text-align:left\">${ drug.price.goodrx | number:3 }</td>\n          </tr>\n        </table>\n        <div show.bind=\"account.ordered[group.name]\" input.delegate=\"saveOrder() & debounce:1000\" style=\"width:200px; overflow:hidden; margin-top:10px; margin-right:16px\">\n          Ordered\n          <md-input\n            disabled\n            type=\"number\"\n            value.bind=\"inventory\"\n            style=\"width:100%\">\n            Inventory\n          </md-input>\n          <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).maxInventory\"\n            placeholder=\"3000\"\n            style=\"width:100%\">\n            Max Inventory\n          </md-input>\n          <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).minQty\"\n            placeholder=\"1\"\n            style=\"width:100%\">\n            Min Qty\n          </md-input>\n          <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).minDays\"\n            placeholder=\"60\"\n            style=\"width:100%\">\n            Min Days\n          </md-input>\n          <md-input\n            value.bind=\"(account.ordered[group.name] || {}).verifiedMessage\"\n            style=\"width:100%; font-size:12px\">\n            Verified Message\n          </md-input>\n          <md-input\n            value.bind=\"(account.ordered[group.name] || {}).destroyedMessage\"\n            style=\"width:100%; font-size:12px\">\n            Destroyed Message\n          </md-input>\n          <md-input\n            pattern=\"\\w{1,4}\"\n            value.bind=\"(account.ordered[group.name] || {}).defaultLocation\"\n            style=\"width:100%\">\n            Default Box\n          </md-input>\n          <!--\n          <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).minInventory\"\n            style=\"width:100%\">\n            Min Invntory\n          </md-input>\n          <md-input\n            type=\"number\"\n            value.bind=\"(account.ordered[group.name] || {}).maxPrice\"\n            style=\"width:100%\">\n            Max Price\n          </md-input> -->\n        </div>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n  </section>\n</template>\n"; });
 define('text!views/index.html', ['module'], function(module) { module.exports = "<!doctype html>\n<html style=\"overflow:hidden\">\n  <head>\n    <title>Loading SIRUM...</title>\n    <script src=\"assets/material.1.1.3.js\"></script>\n    <link rel=\"stylesheet\" href=\"assets/material.icon.css\">\n    <link rel=\"stylesheet\" href=\"assets/material.1.1.3.css\" />\n    <link rel=\"icon\" type=\"image/x-icon\" href=\"assets/favicon.png\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <style>\n    body { background:#eee }\n    a { color:rgb(0,88,123); text-decoration:none }\n\n    /*table-wrap needed because overflow:scroll doesn't work directly on table.  Also it is a conveneint place to do display:flex */\n    .table-wrap { overflow-y:scroll; height:100%; display:flex}\n    /*use flex instead of height:100% because latter was causing the parent md-card to have a scroll bar */\n    [md-table]  { width:100%; flex:1;}\n    /* want hover shadow to be 100% of width, so need to do padding within the tr (which needs this hack) rather than in table-wrap */\n    [md-table] th:first-child { padding-left:24px !important}\n    [md-table] td:first-child { padding-left:24px !important}\n    [md-table] td:last-child  { padding-right:24px !important}\n\n    /*give spacing for the header and the top and bottom gullies */\n    .full-height { height:calc(100vh - 96px); overflow-y:auto}\n\n    .mdl-layout__header { background:white;}\n    .mdl-layout__header, .mdl-layout__drawer, .mdl-layout__header-row .mdl-navigation__link, .mdl-layout__header .mdl-layout__drawer-button { color:rgb(66,66,66);}\n\n    .mdl-layout__drawer .mdl-navigation .mdl-navigation__link { padding:16px;}\n    .mdl-layout__drawer .mdl-navigation .mdl-navigation__link--current { border-left:solid 3px red; padding-left:13px; background:#e0e0e0; color:inherit }\n\n    .mdl-layout__header-row .mdl-navigation__link { border-top:solid 3px white; }\n    .mdl-layout__header-row .mdl-navigation__link--current { font-weight:600;  border-top-color:red;}\n\n    .mdl-data-table th { height:auto; padding-top:7px; padding-bottom:0; }\n    .mdl-data-table tbody tr { height:auto }\n    .mdl-data-table td { border:none; padding-top:7px; padding-bottom:7px; height:auto }\n\n    .mdl-button--raised { box-shadow:none } /*otherwise disabled.bind has weird animaiton twitching */\n    .mdl-button--fab.mdl-button--colored{ background:rgb(0,88,123);}\n\n    .mdl-card__supporting-text { width:100%; box-sizing: border-box; overflow-y:auto; flex:1 }\n    .mdl-card__actions { padding:16px }\n    /* animate page transitions */\n    .au-enter-active { animation:slideDown .5s; }\n\n    .mdl-snackbar { left:auto; right:6px; bottom:6px; margin-right:0%; font-size:24px; font-weight:300; max-width:100% }\n    .mdl-snackbar--active { transform:translate(0, 0); -webkit-transform:translate(0, 0); }\n    .mdl-snackbar__text { padding:8px 24px; }\n\n    .mdl-checkbox__tick-outline { width:13px } /*widen by 1px to avoid pixel gap for checkboxes on small screens*/\n\n    @keyframes slideDown {\n      0% {\n        opacity:0;\n        -webkit-transform:translate3d(0, -100%, 0);\n        -ms-transform:translate3d(0, -100%, 0);\n        transform:translate3d(0, -100%, 0)\n      }\n      100% {\n        opacity:.9;\n        -webkit-transform:none;\n        -ms-transform:none;\n        transform:none\n      }\n    }\n\n    /*.au-leave-active {\n      position:absolute;\n      -webkit-animation:slideLeft .5s;\n      animation:slideLeft .5s;\n    }*/\n    </style>\n    <style media=\"print\">\n      .mdl-data-table td { padding-top:4px; padding-bottom:4px; }\n      .hide-when-printed { display:none; }\n\n      /* Start multi-page printing */\n      .table-wrap { overflow-y:visible}\n      .mdl-card { overflow:visible; }\n      .mdl-layout__container { position:static}\n      .full-height { height:100%; overflow-y:visible}\n      /* End multi-page printing */\n\n    </style>\n  </head>\n  <body aurelia-app=\"views/index\">\n    <div class=\"splash\">\n      <div class=\"message\">Loading SIRUM...</div>\n      <i class=\"fa fa-spinner fa-spin\"></i>\n    </div>\n    <script src=\"assets/db/pouchdb-6.1.2.js\"></script>\n    <script src=\"assets/db/pouchdb-schema.js\"></script>\n    <script src=\"assets/db/pouchdb-model.js\"></script>\n    <script src=\"assets/db/pouchdb-client.js\"></script>\n    <script src=\"assets/csv/papa.min.js\"></script>\n    <script src=\"assets/csv/index.js\"></script>\n    <script src=\"assets/vendor-bundle.js\" data-main=\"aurelia-bootstrapper\"></script>\n  </body>\n</html>\n"; });
 define('text!views/inventory.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-switch\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-autocomplete\"></require>\n  <require from=\"elems/md-menu\"></require>\n  <require from=\"elems/form\"></require>\n  <style>\n    .mdl-button:hover { background-color:initial }\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n  </style>\n  <md-drawer>\n    <md-input\n      autoselect\n      style=\"padding:0 8px; width:auto\">\n      Filter pending inventory\n    </md-input>\n    <a\n      repeat.for=\"term of pending | toArray:term\"\n      class=\"mdl-navigation__link ${ term == 'Pending '+term.key ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectTerm('pending', term.key)\">\n      <div class=\"mdl-typography--title\">${term.val[0].drug.generic}</div>\n      ${ term.key.slice(0, 16) }, ${ term.val.length } items\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed\"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->\n      <div show.bind=\"transactions.length\" class=\"mdl-card__supporting-text\" style=\"padding-left:24px; white-space:nowrap\">\n        <div repeat.for=\"ndc of filter.ndc | toArray:true\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title\" style=\"padding:4px 0 8px 0\">\n            <div style=\"width:60%\">Ndc Filter</div>\n            <div style=\"width:20%\">Qty</div>\n            <div style=\"width:20%\">Count</div>\n          </div>\n          <md-checkbox style=\"width:60%; margin-bottom:3px\" click.delegate=\"signalFilter(ndc)\" checked.bind=\"ndc.val.isChecked\">${ndc.key}</md-checkbox>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${ndc.val.qty}</div>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${ndc.val.count}</div>\n        </div>\n        <div repeat.for=\"exp of filter.exp | toArray:true\" style=\"padding:0\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title\" style=\"padding:16px 0 4px 0\">\n            <div style=\"width:60%\">Exp Filter</div>\n          </div>\n          <md-checkbox style=\"width:60%; margin-bottom:3px\" click.delegate=\"signalFilter(exp)\" checked.bind=\"exp.val.isChecked\">${exp.key.slice(0, 10)}</md-checkbox>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${exp.val.qty}</div>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${exp.val.count}</div>\n        </div>\n        <div repeat.for=\"repack of filter.repack | toArray:true\" style=\"padding:0\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title\" style=\"padding:16px 0 4px 0\">\n            <div style=\"width:60%\">Repack Filter</div>\n          </div>\n          <md-checkbox style=\"width:60%; margin-bottom:3px\" click.delegate=\"signalFilter(repack)\" checked.bind=\"repack.val.isChecked\">${repack.key}</md-checkbox>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${repack.val.qty}</div>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${repack.val.count}</div>\n        </div>\n        <div repeat.for=\"form of filter.form | toArray:true\" style=\"padding:0\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title\" style=\"padding:16px 0 4px 0\">\n            <div style=\"width:60%\">Form Filter</div>\n          </div>\n          <md-checkbox style=\"width:60%; margin-bottom:3px\" click.delegate=\"signalFilter(form)\" checked.bind=\"form.val.isChecked\">${form.key}</md-checkbox>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${form.val.qty}</div>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${form.val.count}</div>\n        </div>\n        <!-- <md-input show.bind=\"transactions.length\" input.delegate=\"signalFilter()\" value.bind=\"filter.rx\" style=\"margin-left:16px;\" class=\"mdl-cell mdl-cell--10-col\">Rx Filter</md-input> -->\n      </div>\n    </div>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--9-col full-height\">\n      <md-autocomplete\n        placeholder.bind=\"placeholder\"\n        value.bind=\"term\"\n        input.delegate=\"search()\"\n        keyup.delegate=\"scrollTerms($event)\"\n        style=\"margin:0px 24px; padding-right:15px\">\n        <table md-table>\n          <tr\n            repeat.for=\"term of terms\"\n            click.delegate=\"selectTerm('drug.generic', term)\"\n            class=\"${ term == $parent.term && 'is-selected'}\">\n            <td\n              style=\"white-space:normal; max-width:70%\"\n              class=\"mdl-data-table__cell--non-numeric\"\n              innerHTML.bind=\"term | bold:$parent.term\">\n            </td>\n            <td style=\"max-width:30%\">\n              ${ ordered[term] ? 'Min Qty:'+(ordered[term].minQty || 10) +', Min Days:'+(ordered[term].minDays || 120) : ''}\n            </td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <md-menu click.delegate=\"openMenu($event)\" style=\"position:absolute; z-index:2; top:10px; right:5px;\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          click.delegate=\"exportCSV()\">\n          Export CSV\n        </li>\n        <li class=\"mdl-menu__item--full-bleed-divider\"\n          click.delegate=\"$file.click()\">\n          Import CSV\n        </li>\n        <li\n          disabled.bind=\" ! transactions.length\"\n          click.delegate=\"term.slice(0,7) == 'Pending' ? unpendInventory() : pendInventory()\">\n          ${ term.slice(0,7) == 'Pending' ? 'Unpend Selected' : 'Pend Selected'}\n        </li>\n        <li\n          disabled.bind=\" ! transactions.length\"\n          click.delegate=\"dispenseInventory()\">\n          Dispense Selected\n        </li>\n        <form>\n          <li form\n            click.delegate=\"repackInventory()\">\n            Repack Selected\n          </li>\n          <li>\n            <md-input\n              required\n              value.bind=\"repack.size | number\"\n              input.delegate=\"setRepackVials()\"\n              style=\"width:40px;\">\n              Qty\n            </md-input>\n            <md-input\n              required\n              value.bind=\"repack.vials | number\"\n              style=\"width:40px;\">\n              Vials\n            </md-input>\n            <md-input\n              required\n              value.bind=\"repack.exp | date\"\n              style=\"width:40px;\">\n              Exp\n            </md-input>\n            <md-input\n              required\n              value.bind=\"repack.location\"\n              pattern=\"[A-Z]\\d{2}\"\n              style=\"width:40px;\">\n              Bin\n            </md-input>\n          </li>\n        </form>\n      </md-menu>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div class=\"table-wrap\">\n        <table md-table>\n          <thead>\n            <tr>\n              <th style=\"width:50px; padding:0\">\n                <md-checkbox click.delegate=\"checkAllTransactions()\" checked.bind=\"allChecked\"></md-checkbox>\n              </th>\n              <th class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0\">Drug</th>\n              <th class=\"mdl-data-table__cell--non-numeric\">Form</th>\n              <th class=\"mdl-data-table__cell--non-numeric\">Ndc</th>\n              <th style=\"text-align:left; width:60px;\">Exp</th>\n              <th style=\"text-align:left; width:60px;\">Qty</th>\n              <th style=\"text-align:left; width:60px;\">Bin</th>\n              <th style=\"width:60px\"></th>\n            </tr>\n          </thead>\n          <tr repeat.for=\"transaction of transactions | inventoryFilter:filter\" input.delegate=\"saveTransaction(transaction) & debounce:1000\">\n            <td style=\"padding:0\">\n              <md-checkbox click.delegate=\"checkTransaction(transaction)\" checked.bind=\"transaction.isChecked\"></md-checkbox>\n            </td>\n            <td class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0\">${ transaction.drug.generic }</td>\n            <td class=\"mdl-data-table__cell--non-numeric\">${ transaction.drug.form }</td>\n            <td class=\"mdl-data-table__cell--non-numeric\">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>\n            <td style=\"padding:0\">\n              <md-input\n                id.bind=\"'exp_'+$index\"\n                required\n                keydown.delegate=\"expShortcuts($event, $index)\"\n                pattern=\"(0?[1-9]|1[012])/\\d{2}\"\n                value.bind=\"transaction.exp.to | date\"\n                style=\"width:40px; margin-bottom:-8px\"\n                placeholder>\n              </md-input>\n            </td>\n            <td style=\"padding:0\">\n              <md-input\n                id.bind=\"'qty_'+$index\"\n                required\n                keydown.delegate=\"qtyShortcuts($event, $index)\"\n                disabled.bind=\"transaction.next.length\"\n                type=\"number\"\n                value.bind=\"transaction.qty.to | number\"\n                style=\"width:40px; margin-bottom:-8px\"\n                max.bind=\"999\"\n                placeholder>\n              </md-input>\n            </td>\n            <!-- <td style=\"padding:0\">\n              <md-input\n                value.bind=\"transaction.rx.from\"\n                style=\"width:40px; margin-bottom:-8px\"\n                placeholder>\n              </md-input>\n            </td> -->\n            <td style=\"padding:0\">\n              <md-input\n                id.bind=\"'bin_'+$index\"\n                required\n                keydown.delegate=\"binShortcuts($event, $index)\"\n                keyup.delegate=\"saveTransaction(transaction) & debounce:1000\"\n                pattern=\"[A-Z]\\d{2,3}\"\n                value.bind=\"transaction.location | upperCase\"\n                style=\"width:40px; margin-bottom:-8px\"\n                maxlength.bind=\"4\"\n                placeholder>\n              </md-input>\n            </td>\n            <td style=\"padding:0 0 0 16px\">\n              <i show.bind=\"isRepacked(transaction)\" class=\"material-icons\" style=\"font-size:20px\">delete_sweep</i>\n            </td>\n          </tr>\n        </table>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n  </section>\n</template>\n"; });
-define('text!views/join.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-loading\"></require>\n  <style>md-input { height:65px }</style>\n  <section class=\"mdl-grid\" style=\"height:80vh;\">\n    <form class=\"mdl-cell mdl-cell--11-col mdl-cell--middle mdl-grid\" style=\"margin:0 auto; max-width:930px\">\n      <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col\" style=\"padding:16px\">\n        <div class=\"mdl-card__title\" style=\"padding-left:0\">\n          <div class=\"mdl-card__title-text\">\n            Register Your Facility\n          </div>\n        </div>\n        <md-input value.bind=\"account.name\" required>Facility</md-input>\n        <md-input value.bind=\"account.license\" required>License</md-input>\n        <md-input value.bind=\"account.phone\" type=\"tel\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Facility Phone</md-input>\n        <md-input value.bind=\"account.street\" required>Street</md-input>\n        <div class=\"mdl-grid\" style=\"padding:0; margin:0 -8px\">\n          <md-input value.bind=\"account.city\" class=\"mdl-cell mdl-cell--7-col\" required>City</md-input>\n          <md-input value.bind=\"account.state\" class=\"mdl-cell mdl-cell--2-col\" required>State</md-input>\n          <md-input value.bind=\"account.zip\" class=\"mdl-cell mdl-cell--3-col\" required>Zip</md-input>\n        </div>\n        <span class=\"mdl-color-text--grey-600\" style=\"margin-top:10px; height:20px; font-size:9px; margin-bottom:-8px\">${ loading }</span>\n      </div>\n      <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col\" style=\"padding:16px\">\n        <div class=\"mdl-grid\" style=\"padding:0; margin:-8px\">\n          <md-input value.bind=\"user.name.first\" class=\"mdl-cell mdl-cell--6-col\" required>First Name</md-input>\n          <md-input value.bind=\"user.name.last\" class=\"mdl-cell mdl-cell--6-col\" required>Last Name</md-input>\n        </div>\n        <md-input value.bind=\"user.email\" type=\"email\" pattern=\"[\\w._]{2,}@\\w{3,}\\.(com|org|net|gov)\" required>Email</md-input>\n        <md-input value.bind=\"user.phone\" type=\"tel\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Personal Phone</md-input>\n        <md-input value.bind=\"user.password\" required>Password</md-input>\n        <md-checkbox checked.bind=\"accept\" style=\"margin:20px 0 28px\" required>I accept the terms of use</md-checkbox>\n        <md-button raised color form disabled.bind=\"disabled\" click.delegate=\"join()\">Install</md-button>\n        <md-loading value.bind=\"progress.last_seq/progress.update_seq * 100\"></md-loading>\n      </div>\n    </form>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
-define('text!views/login.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-loading\"></require>\n  <section class=\"mdl-grid\" style=\"margin-top:30vh;\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle\" style=\"width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px\">\n      <md-input value.bind=\"phone\" type=\"tel\" pattern=\"\\d{10}\" required>Phone</md-input>\n      <md-input value.bind=\"password\" type=\"password\" required minlength=\"4\">Password</md-input>\n      <md-button\n        raised color form\n        click.delegate=\"login()\"\n        disabled.bind=\"disabled\"\n        style=\"padding-top:16px\">\n        Login\n      </md-button>\n      <md-loading value.bind=\"progress.last_seq/progress.update_seq * 100\"></md-loading>\n      <p class=\"mdl-color-text--grey-600\" style=\"margin-top:10px; height:20px; font-size:9px\">${ loading ? Math.floor(progress.last_seq/progress.update_seq * 100)+'% - ' + loading : '' }</p>\n    </form>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
+define('text!views/join.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-loading\"></require>\n  <require from=\"elems/form\"></require>\n  <style>md-input { height:65px }</style>\n  <section class=\"mdl-grid\" style=\"height:80vh;\">\n    <form class=\"mdl-cell mdl-cell--11-col mdl-cell--middle mdl-grid\" style=\"margin:0 auto; max-width:930px\">\n      <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col\" style=\"padding:16px\">\n        <div class=\"mdl-card__title\" style=\"padding-left:0\">\n          <div class=\"mdl-card__title-text\">\n            Register Your Facility\n          </div>\n        </div>\n        <md-input value.bind=\"account.name\" required>Facility</md-input>\n        <md-input value.bind=\"account.license\" required>License</md-input>\n        <md-input value.bind=\"account.phone\" type=\"tel\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Facility Phone</md-input>\n        <md-input value.bind=\"account.street\" required>Street</md-input>\n        <div class=\"mdl-grid\" style=\"padding:0; margin:0 -8px\">\n          <md-input value.bind=\"account.city\" class=\"mdl-cell mdl-cell--7-col\" required>City</md-input>\n          <md-input value.bind=\"account.state\" class=\"mdl-cell mdl-cell--2-col\" required>State</md-input>\n          <md-input value.bind=\"account.zip\" class=\"mdl-cell mdl-cell--3-col\" required>Zip</md-input>\n        </div>\n        <span class=\"mdl-color-text--grey-600\" style=\"margin-top:10px; height:20px; font-size:9px; margin-bottom:-8px\">${ loading }</span>\n      </div>\n      <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col\" style=\"padding:16px\">\n        <div class=\"mdl-grid\" style=\"padding:0; margin:-8px\">\n          <md-input value.bind=\"user.name.first\" class=\"mdl-cell mdl-cell--6-col\" required>First Name</md-input>\n          <md-input value.bind=\"user.name.last\" class=\"mdl-cell mdl-cell--6-col\" required>Last Name</md-input>\n        </div>\n        <md-input value.bind=\"user.email\" type=\"email\" pattern=\"[\\w._]{2,}@\\w{3,}\\.(com|org|net|gov)\" required>Email</md-input>\n        <md-input value.bind=\"user.phone\" type=\"tel\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Personal Phone</md-input>\n        <md-input value.bind=\"user.password\" required>Password</md-input>\n        <md-checkbox checked.bind=\"accept\" style=\"margin:20px 0 28px\" required>I accept the terms of use</md-checkbox>\n        <md-button raised color form disabled.bind=\"disabled\" click.delegate=\"join()\">Install</md-button>\n        <md-loading value.bind=\"progress.last_seq/progress.update_seq * 100\"></md-loading>\n      </div>\n    </form>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
+define('text!views/login.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-loading\"></require>\n  <require from=\"elems/form\"></require>\n  <section class=\"mdl-grid\" style=\"margin-top:30vh;\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle\" style=\"width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px\">\n      <md-input value.bind=\"phone\" type=\"tel\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Phone</md-input>\n      <md-input value.bind=\"password\" type=\"password\" required minlength=\"4\">Password</md-input>\n      <md-button\n        raised color form\n        click.delegate=\"login()\"\n        disabled.bind=\"disabled\"\n        style=\"padding-top:16px\">\n        Login\n      </md-button>\n      <md-loading value.bind=\"progress.last_seq/progress.update_seq * 100\"></md-loading>\n      <p class=\"mdl-color-text--grey-600\" style=\"margin-top:10px; height:20px; font-size:9px\">${ loading ? (progress.last_seq/progress.update_seq * 100).toFixed(0)+'%': '' } ${ loading }</p>\n    </form>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
 define('text!views/public.html', ['module'], function(module) { module.exports = "<template>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-select\"></require>\n  <require from=\"elems/md-button\"></require>\n  <require from=\"elems/md-switch\"></require>\n  <require from=\"elems/md-snackbar\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-autocomplete\"></require>\n  <style>\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n    .mdl-textfield__label { color:black; font-size:1rem }\n  </style>\n  <md-drawer>\n    <md-input\n      disabled\n      autoselect\n      style=\"padding:0 8px; width:auto\">\n      Filter accounts\n    </md-input>\n    <a\n      repeat.for=\"account of accounts\"\n      class=\"mdl-navigation__link ${ $parent.account == account._id ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectAccount($index)\">\n      <div class=\"mdl-typography--title\">${account.name}</div>\n      ${ account.city }, ${ account.state }\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--12-col full-height\">\n      <md-input\n        placeholder=\"Filter Drugs By Generic Name...\"\n        value.bind=\"filter\"\n        style=\"padding:14px 15px 0px; font-size:20px\">\n      </md-input>\n      <div style=\"width:100%; height:100%; display:flex\">\n        <div style=\"overflow-y:scroll; margin:8px; flex:1;\">\n          <table md-table>\n            <thead>\n              <tr>\n                <th class=\"mdl-data-table__cell--non-numeric\" style=\"width:115px; padding-left:8px\">Stock Level</th>\n                <th class=\"mdl-data-table__cell--non-numeric\">Generic Name</th>\n              </tr>\n            </thead>\n            <tr repeat.for=\"drug of inventory | drugFilter:filter\">\n              <td class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:8px\">${ drug.qty > 30 ? 'In Stock' : 'Out of Stock' }</td>\n              <td class=\"mdl-data-table__cell--non-numeric\" innerHTML.bind=\"drug.generic | bold:filter\"></td>\n            </tr>\n          </table>\n        </div>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n  </section>\n</template>\n"; });
 define('text!views/records.html', ['module'], function(module) { module.exports = "<template>\n  <style>\n    .mdl-layout__drawer {\n      width:450px;\n      transform: translateX(-550px);\n      transition-duration: 0.5s;\n    }\n    .mdl-navigation__link--current a:hover {\n      color:rgb(66, 66, 66) !important;\n      font-weight:600;\n    }\n  </style>\n  <require from='elems/md-shadow'></require>\n  <require from='elems/md-drawer'></require>\n  <require from='elems/md-table'></require>\n  <require from=\"elems/md-input\"></require>\n  <require from=\"elems/md-checkbox\"></require>\n  <require from=\"elems/md-select\"></require>\n  <md-drawer>\n    <md-select\n      style=\"padding:11px 8px 0; width:auto; font-size:16px; margin-bottom:0\"\n      value.bind=\"record\"\n      property=\"label\"\n      options.bind=\"recordTypes\">\n    </md-select>\n    <div style=\"padding-left:16px;\">\n      <div style=\"width:52px; display:inline-block;\">Month/Day</div>\n      <div style=\"width:90px; display:inline-block; text-align:right\">Count</div>\n      <div style=\"width:90px; display:inline-block; text-align:right\">RXs</div>\n      <div style=\"width:110px; display:inline-block; text-align:right\">Value</div>\n    </div>\n    <div\n      repeat.for=\"month of months\"\n      click.delegate=\"selectMonth(month)\"\n      class=\"mdl-navigation__link ${ month == $parent.month ? 'mdl-navigation__link--current' : ''}\">\n      <div style=\"width:52px; display:inline-block\">${ month.date.slice(0, 7) }</div>\n      <div style=\"width:90px; display:inline-block; text-align:right\">${month.count[record.value].toFixed(0)}</div>\n      <div style=\"width:90px; display:inline-block; text-align:right\">${month.rxs[record.value].toFixed(0)}</div>\n      <div style=\"width:110px; display:inline-block; text-align:right\">${month.value[record.value].toFixed(0)}</div>\n      <a\n        class=\"mdl-navigation__link\"\n        style=\"padding:0;\"\n        if.bind=\"month == $parent.month\"\n        repeat.for=\"day of days\"\n        click.delegate=\"selectDay(day.date, $event)\">\n        <div style=\"width:52px; display:inline-block; text-align:right\">${ day.date.slice(-2) }</div>\n        <div style=\"width:90px; display:inline-block; text-align:right\">${day.count[record.value].toFixed(0)}</div>\n        <div style=\"width:90px; display:inline-block; text-align:right\">${day.rxs[record.value].toFixed(0)}</div>\n        <div style=\"width:110px; display:inline-block; text-align:right\">${day.value[record.value].toFixed(0)}</div>\n      </a>\n    </div>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell full-height\" style=\"width:424px\">\n      <div class=\"mdl-card__title\" style=\"padding-left:16px\">\n        <div class=\"mdl-card__title-text\">\n          Transaction History\n        </div>\n      </div>\n      <div innerHTML.bind=\"history\" class=\"mdl-grid\" style=\"font-size:10px; font-family:Monaco; margin:0; padding:0 16px; white-space:pre; line-height:15px\"></div>\n    </div>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell full-height\" style=\"width:calc(100% - 424px - 32px)\">\n      <button id=\"import-export\"\n        style=\"position:absolute; z-index:2; text-align:right; top:5px; right:5px;\"\n        class=\"mdl-button mdl-js-button mdl-button--icon\">\n        <i class=\"material-icons\">more_vert</i>\n      </button>\n      <ul class=\"mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect\" for=\"import-export\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          show.bind=\"false\"\n          click.delegate=\"exportCSV()\"\n          class=\"mdl-menu__item\">\n          Export CSV\n        </li>\n        <li\n          show.bind=\"true\"\n          disabled\n          class=\"mdl-menu__item\">\n          Export CSV\n        </li>\n      </ul>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div class=\"table-wrap\">\n        <table md-table>\n          <thead>\n            <tr>\n              <th style=\"width:15px\"></th>\n              <th style=\"text-align:left;\">Drug</th>\n              <th style=\"text-align:left;\">Ndc</th>\n              <th style=\"text-align:left; width:5%;\">Exp</th>\n              <th style=\"width:5%\">Qty</th>\n            </tr>\n          </thead>\n          <tbody>\n            <tr repeat.for=\"transaction of transactions\" class=\"${ $parent.transaction != transaction || 'is-selected'}\" click.delegate=\"selectTransaction(transaction)\">\n              <td style=\"padding:0 0 0 8px\">\n                <md-checkbox\n                  disabled.one-time=\"true\"\n                  checked.bind=\"transaction.verifiedAt\">\n                </md-checkbox>\n              </td>\n              <td style=\"text-align:left; white-space:normal;\">\n                ${ transaction.drug.generic }\n              </td>\n              <td style=\"text-align:left;\">\n                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }\n              </td>\n              <td style=\"text-align:left;\">\n                ${ (transaction.exp.to || transaction.exp.from).slice(0, 10) }\n              </td>\n              <td>\n                ${ transaction.qty.to || transaction.qty.from }\n              </td>\n            </tr>\n          </tbody>\n        </table>\n      </div>\n    </div>\n  </section>\n</template>\n"; });
 define('text!views/routes.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"mdl-layout mdl-js-layout mdl-layout--fixed-header\">\n    <header class=\"mdl-layout__header hide-when-printed\">\n      <div class=\"mdl-layout__header-row\">\n        <img src=\"assets/SIRUM.logo.notag.png\" style=\"width:100px; margin-left:-16px\">\n        <span class=\"mdl-layout-title\"></span>\n        <!-- Add spacer, to align navigation to the right -->\n        <div class=\"mdl-layout-spacer\"></div>\n        <nav class=\"mdl-navigation\">\n          <a repeat.for=\"route of routes\" show.bind=\"route.isVisible\" class=\"mdl-navigation__link ${route.isActive ? 'mdl-navigation__link--current' : ''}\" href.bind=\"route.href\" style=\"\">\n            ${route.title}\n          </a>\n        </nav>\n      </div>\n    </header>\n    <main class=\"mdl-layout__content\">\n      <!-- http://stackoverflow.com/questions/33636796/chrome-safari-not-filling-100-height-of-flex-parent -->\n      <router-view style=\"display:block;\"></router-view>\n    </main>\n  </div>\n</template>\n"; });

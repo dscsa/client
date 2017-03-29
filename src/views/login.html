@@ -4,9 +4,10 @@
   <require from="elems/md-button"></require>
   <require from="elems/md-snackbar"></require>
   <require from="elems/md-loading"></require>
+  <require from="elems/form"></require>
   <section class="mdl-grid" style="margin-top:30vh;">
     <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
-      <md-input value.bind="phone" type="tel" pattern="\d{10}" required>Phone</md-input>
+      <md-input value.bind="phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
       <md-input value.bind="password" type="password" required minlength="4">Password</md-input>
       <md-button
         raised color form
@@ -16,7 +17,7 @@
         Login
       </md-button>
       <md-loading value.bind="progress.last_seq/progress.update_seq * 100"></md-loading>
-      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading ? Math.floor(progress.last_seq/progress.update_seq * 100)+'% - ' + loading : '' }</p>
+      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading ? (progress.last_seq/progress.update_seq * 100).toFixed(0)+'%': '' } ${ loading }</p>
     </form>
   </section>
   <md-snackbar ref="snackbar"></md-snackbar>
