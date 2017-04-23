@@ -10,11 +10,6 @@ export class FormCustomAttribute {
 
   change() {
     this.inputElement.disabled = this.formElement && ! this.formElement.checkValidity()
-
-    //Setting the disabled property alone did not seem to trigger MDL
-    this.inputElement.disabled
-      ? this.inputElement.setAttribute('disabled', true)
-      : this.inputElement.removeAttribute('disabled')
   }
 
   attached() {
