@@ -6,31 +6,32 @@ Application that uses the RESTful API written with the Aurelia framework
 - [install couchdb](http://couchdb.apache.org/#download)
 - install git
 ```
-sudo npm install aurelia-cli -g                                        #install dev tool
+sudo npm install -g aurelia-cli@^0.16.1                                #install dev tool
 
-sudo mkdir -p /path/to/repos/node_modules /path/to/install/keys
-sudo nano /path/to/install/keys/dev.js                                 #add your couchdb credentials
-cd /path/to/repos && sudo ln -s /path/to/install/keys keys             #create a symlink in the repos folder
+sudo mkdir -p dscsa/repos/node_modules dscsa/install/keys              #create the directories we need                         
+sudo nano dscsa/install/keys/dev.js                                    #add your couchdb credentials
+cd dscsa/repos && sudo ln -s ../install/keys keys                      #create a symlink in the repos folder
 
-sudo npm install dscsa/client --prefix='/path/to/install'              #install the app
-sudo npm install dscsa/development --prefix='/path/to/install'         #install the development environment
+sudo npm install dscsa/client --prefix='../install'                    #install the app
+sudo npm install dscsa/development --prefix='../install'               #install the development environment
  #Running npm install might bring up some errors because there is no package.json folder in dscsa/client or server. You can ignore these.
-cd node_modules && sudo ln -s path/to/install/node_modules/* ./        #does making aliases here first help?
+cd node_modules && sudo ln -s ../install/node_modules/* ./             #does making aliases here first help?
 
-sudo rm client && sudo git clone https://github.com/dscsa/client
-sudo rm server && sudo git clone https://github.com/dscsa/server
-sudo rm db && sudo git clone https://github.com/dscsa/pouch
-sudo rm csv && sudo git clone https://github.com/dscsa/csv
+sudo rm -R client && sudo git clone https://github.com/dscsa/client
+sudo rm -R server && sudo git clone https://github.com/dscsa/server
+sudo rm -R db && sudo git clone https://github.com/dscsa/pouch
+sudo rm -R csv && sudo git clone https://github.com/dscsa/csv
 
 sudo mv pouch db
 
- #Make sure couchDB is running on your local computer
+#Make sure couchDB is running on your local computer
 sudo node server                                                       #run the server api
+#Duplicate terminal tab                                               
 cd client && sudo au run —-watch                                       #start dev environment
 ```
 Test that both http://localhost and http://localhost:9000 now serve the app
 
-##Your local directory should look like this:
+##Your local "dscsa" directory should look like this:
 ```
 - install
     - keys
