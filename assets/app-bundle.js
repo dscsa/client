@@ -9,638 +9,6 @@ define('environment',["exports"], function (exports) {
     testing: true
   };
 });
-define('resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.expShortcuts = expShortcuts;
-  exports.qtyShortcuts = qtyShortcuts;
-  exports.incrementBin = incrementBin;
-  exports.saveTransaction = saveTransaction;
-  exports.scrollSelect = scrollSelect;
-  exports.focusInput = focusInput;
-  exports.toggleDrawer = toggleDrawer;
-  exports.drugSearch = drugSearch;
-  exports.parseUserDate = parseUserDate;
-  exports.toJsonDate = toJsonDate;
-  exports.waitForDrugsToIndex = waitForDrugsToIndex;
-  exports.canActivate = canActivate;
-
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-    return typeof obj;
-  } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-  };
-
-  function expShortcuts($event, $index) {
-    if ($event.which == 13) return this.focusInput('#qty_' + $index);
-
-    return true;
-  }
-
-  function qtyShortcuts($event, $index) {
-    if ($event.which == 13) return this.focusInput('#bin_' + $index, 'md-autocomplete');
-
-    return clearIfAsterick($event);
-  }
-
-  function incrementBin($event, transaction) {
-    if ($event.which == 107 || $event.which == 187) {
-      transaction.location = transaction.location[0] + (+transaction.location.slice(1) + 1);
-      saveTransaction.call(this, transaction);
-      return false;
-    }
-
-    if ($event.which == 109 || $event.which == 189) {
-      transaction.location = transaction.location[0] + (+transaction.location.slice(1) - 1);
-      saveTransaction.call(this, transaction);
-      return false;
-    }
-
-    return clearIfAsterick($event);
-  }
-
-  function clearIfAsterick($event) {
-    return $event.which == 106 || $event.shiftKey && $event.which == 56 ? $event.target.value = "" : true;
-  }
-
-  function saveTransaction(transaction) {
-    var _this = this;
-
-    return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
-      return _this.db.transaction.put(transaction);
-    }).catch(function (err) {
-      delete _this._saveTransaction;
-      throw _this.snackbar.error(err);
-    });
-  }
-
-  function scrollSelect($event, curr) {
-    var list = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-    var cb = arguments[3];
-
-
-    var index = list.indexOf(curr);
-    var last = list.length - 1;
-
-    if ($event.which == 38) cb.call(this, list[index > 0 ? index - 1 : last]);
-
-    if ($event.which == 40) cb.call(this, list[index < last ? index + 1 : 0]);
-  }
-
-  function focusInput(selector, fallback) {
-    var elem = document.querySelector(selector + ' input');
-
-    if (elem && !elem.disabled) elem.focus();else if (fallback) document.querySelector(fallback + ' input').focus();else console.log('Cannot find ' + selector + ' input');
-
-    return false;
-  }
-
-  function toggleDrawer() {
-    var drawer = document.querySelector('.mdl-layout__header');
-    drawer && drawer.firstChild.click();
-  }
-
-  var search = {
-    generic: function generic(_generic, clearCache) {
-      var start = Date.now();
-      var terms = _generic.toLowerCase().replace('.', '\\.').split(/, |[, ]/g);
-
-      if (_generic.startsWith(search._term) && !clearCache) {
-        var _ret = function () {
-          var regex = RegExp('(?=.*' + terms.join(')(?=.*( |0)') + ')', 'i');
-          return {
-            v: search._drugs.then(function (drugs) {
-              return drugs.filter(function (drug) {
-                return regex.test(drug.generic);
-              });
-            }).then(function (drugs) {
-              console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', _generic, 'cache', search._term);
-              search._term = _generic;
-              return drugs;
-            })
-          };
-        }();
-
-        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
-      }
-
-      search._term = _generic;
-
-      return search._drugs = this.db.drug.query('generics.name', search.range(terms[0])).then(search.map(start));
-    },
-    addPkgCode: function addPkgCode(term, drug) {
-      var pkg, ndc9, upc;
-      if (term.length > 8) {
-        ndc9 = '^' + drug.ndc9 + '(\\d{2})$';
-        upc = '^' + drug.upc + '(\\d{' + (10 - drug.upc.length) + '})$';
-        pkg = term.match(RegExp(ndc9 + '|' + upc));
-      }
-
-      drug.pkg = pkg ? pkg[1] || pkg[2] : '';
-      return drug;
-    },
-    range: function range(term) {
-      return { startkey: term, endkey: term + '\uFFFF', include_docs: true };
-    },
-    map: function map(start) {
-      return function (res) {
-        console.log('query returned', res.rows.length, 'rows and took', Date.now() - start);
-        return res.rows.map(function (row) {
-          return row.doc;
-        });
-      };
-    },
-    ndc: function ndc(_ndc, clearCache) {
-      var start = Date.now();
-      var term = _ndc.replace(/-/g, '');
-
-      if (term.length == 12 && term[0] == '3') term = term.slice(1, -1);
-
-      var ndc9 = term.slice(0, 9);
-      var upc = term.slice(0, 8);
-
-      if (term.startsWith(search._term) && !clearCache) {
-        console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term);
-        return search._drugs.then(function (drugs) {
-          return drugs.filter(function (drug) {
-            search.addPkgCode(term, drug);
-
-            return drug.ndc9.startsWith(ndc9) || drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc);
-          });
-        });
-      }
-
-      console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term);
-
-      search._term = term;
-
-      ndc9 = this.db.drug.query('ndc9', search.range(ndc9)).then(search.map(start));
-
-      upc = this.db.drug.query('upc', search.range(upc)).then(search.map(start));
-
-      return search._drugs = Promise.all([upc, ndc9]).then(function (results) {
-
-        var deduped = {};
-
-        for (var _iterator = results[0], _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-          var _ref;
-
-          if (_isArray) {
-            if (_i >= _iterator.length) break;
-            _ref = _iterator[_i++];
-          } else {
-            _i = _iterator.next();
-            if (_i.done) break;
-            _ref = _i.value;
-          }
-
-          var drug = _ref;
-
-          if (drug.upc.length != 9 && term.length != 11) deduped[drug._id] = drug;
-        }for (var _iterator2 = results[1], _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-          var _ref2;
-
-          if (_isArray2) {
-            if (_i2 >= _iterator2.length) break;
-            _ref2 = _iterator2[_i2++];
-          } else {
-            _i2 = _iterator2.next();
-            if (_i2.done) break;
-            _ref2 = _i2.value;
-          }
-
-          var _drug = _ref2;
-
-          deduped[_drug._id] = _drug;
-        }deduped = Object.keys(deduped).map(function (key) {
-          return search.addPkgCode(term, deduped[key]);
-        });
-        console.log('query returned', deduped.length, 'rows and took', Date.now() - start);
-        return deduped;
-      });
-    }
-  };
-
-  function drugSearch() {
-    var _this2 = this;
-
-    if (!this.term || this.term.length < 3) return Promise.resolve([]);
-
-    var clearCache = this._savingDrug;
-    var term = this.term.trim();
-
-    return this._search = Promise.resolve(this._search).then(function (_) {
-      return search[/^[\d-]+$/.test(term) ? 'ndc' : 'generic'].call(_this2, term, clearCache);
-    });
-  }
-
-  function parseUserDate(date) {
-    date = (date || "").split('/');
-    return {
-      year: date.pop(),
-      month: date.shift()
-    };
-  }
-
-  function toJsonDate(_ref3) {
-    var month = _ref3.month,
-        year = _ref3.year;
-
-    var date = new Date('20' + year, month, 1);
-    date.setDate(0);
-    return date.toJSON();
-  }
-
-  function waitForDrugsToIndex() {
-    var _this3 = this;
-
-    this.db.drug.drugIsIndexed.get().then(function (_) {
-      _this3.drugsIndexed = true;
-      _this3.placeholder = "Search Drugs By Generic Name Or NDC...";
-    });
-  }
-
-  function canActivate(_, next, _ref4) {
-    var router = _ref4.router;
-
-    return this.db.user.session.get().then(function (session) {
-
-      var loggedIn = session && session.account;
-
-      for (var _iterator3 = router.navigation, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-        var _ref5;
-
-        if (_isArray3) {
-          if (_i3 >= _iterator3.length) break;
-          _ref5 = _iterator3[_i3++];
-        } else {
-          _i3 = _iterator3.next();
-          if (_i3.done) break;
-          _ref5 = _i3.value;
-        }
-
-        var route = _ref5;
-
-        route.isVisible = loggedIn ? route.config.roles && ~route.config.roles.indexOf('user') : !route.config.roles;
-      }var canActivate = next.navModel.isVisible || !next.nav;
-
-      return canActivate || router.currentInstruction ? canActivate : new _aureliaRouter.Redirect(loggedIn ? 'shipments' : 'login');
-    }).catch(function (err) {
-      return console.log('loginRequired error', err);
-    });
-  }
-});
-define('resources/value-converters',['exports', '../resources/helpers'], function (exports, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.inventoryFilterValueConverter = exports.toArrayValueConverter = exports.dateValueConverter = exports.boldValueConverter = exports.valueValueConverter = exports.userFilterValueConverter = exports.drugFilterValueConverter = exports.shipmentFilterValueConverter = exports.upperCaseValueConverter = exports.numberValueConverter = exports.jsonValueConverter = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var jsonValueConverter = exports.jsonValueConverter = function () {
-    function jsonValueConverter() {
-      _classCallCheck(this, jsonValueConverter);
-    }
-
-    jsonValueConverter.prototype.toView = function toView() {
-      var object = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-      return JSON.stringify(object, null, " ");
-    };
-
-    return jsonValueConverter;
-  }();
-
-  var numberValueConverter = exports.numberValueConverter = function () {
-    function numberValueConverter() {
-      _classCallCheck(this, numberValueConverter);
-    }
-
-    numberValueConverter.prototype.fromView = function fromView(str) {
-      return str === '' ? null : +str;
-    };
-
-    return numberValueConverter;
-  }();
-
-  var upperCaseValueConverter = exports.upperCaseValueConverter = function () {
-    function upperCaseValueConverter() {
-      _classCallCheck(this, upperCaseValueConverter);
-    }
-
-    upperCaseValueConverter.prototype.fromView = function fromView(str) {
-      return str == null ? null : str.toUpperCase();
-    };
-
-    return upperCaseValueConverter;
-  }();
-
-  var shipmentFilterValueConverter = exports.shipmentFilterValueConverter = function () {
-    function shipmentFilterValueConverter() {
-      _classCallCheck(this, shipmentFilterValueConverter);
-    }
-
-    shipmentFilterValueConverter.prototype.toView = function toView() {
-      var shipments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-      filter = filter.toLowerCase();
-      return shipments.filter(function (shipment) {
-        return ~(shipment.account.from.name + ' ' + shipment.account.to.name + ' ' + shipment.tracking + ' ' + shipment.status + ' ' + (shipment._id && shipment._id.slice(0, 10))).toLowerCase().indexOf(filter);
-      });
-    };
-
-    return shipmentFilterValueConverter;
-  }();
-
-  var drugFilterValueConverter = exports.drugFilterValueConverter = function () {
-    function drugFilterValueConverter() {
-      _classCallCheck(this, drugFilterValueConverter);
-    }
-
-    drugFilterValueConverter.prototype.toView = function toView() {
-      var drugs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-      filter = filter.replace('.', '\\.').split(/, |[, ]/g);
-      var regex = RegExp('(?=.*' + filter.join(')(?=.*( |0)') + ')', 'i');
-      return drugs.filter(function (drug) {
-        return regex.test(drug.generic);
-      });
-    };
-
-    return drugFilterValueConverter;
-  }();
-
-  var userFilterValueConverter = exports.userFilterValueConverter = function () {
-    function userFilterValueConverter() {
-      _classCallCheck(this, userFilterValueConverter);
-    }
-
-    userFilterValueConverter.prototype.toView = function toView() {
-      var users = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-      filter = filter.toLowerCase();
-      var res = users.filter(function (user) {
-        try {
-          return ~(user.name.first + ' ' + user.name.last).toLowerCase().indexOf(filter);
-        } catch (err) {
-          console.log('filter err', user, err);
-        }
-      });
-      return res;
-    };
-
-    return userFilterValueConverter;
-  }();
-
-  var valueValueConverter = exports.valueValueConverter = function () {
-    function valueValueConverter() {
-      _classCallCheck(this, valueValueConverter);
-    }
-
-    valueValueConverter.prototype.toView = function toView() {
-      var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var decimals = arguments[1];
-      var trigger = arguments[2];
-
-
-      transactions = Array.isArray(transactions) ? transactions : [transactions];
-
-      return transactions.reduce(function (total, transaction) {
-        if (!transaction.drug.price || !transaction.qty) return 0;
-        var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
-        var qty = transaction.qty.to || transaction.qty.from || 0;
-        return total + qty * price;
-      }, 0).toFixed(decimals);
-    };
-
-    return valueValueConverter;
-  }();
-
-  var boldValueConverter = exports.boldValueConverter = function () {
-    function boldValueConverter() {
-      _classCallCheck(this, boldValueConverter);
-    }
-
-    boldValueConverter.prototype.toView = function toView(text, bold) {
-      if (!bold || !text) return text;
-
-      if (typeof bold == 'string') bold = RegExp('(' + bold.replace(/ /g, '|').replace('.', '( | 0)?\\.') + ')', 'gi');
-
-      return text.replace(bold, '<strong>$1</strong>');
-    };
-
-    return boldValueConverter;
-  }();
-
-  var dateValueConverter = exports.dateValueConverter = function () {
-    function dateValueConverter() {
-      _classCallCheck(this, dateValueConverter);
-    }
-
-    dateValueConverter.prototype.toView = function toView(date) {
-      if (!date) return '';
-      return date != this.model ? date.slice(5, 7) + '/' + date.slice(2, 4) : this.view;
-    };
-
-    dateValueConverter.prototype.fromView = function fromView(date) {
-
-      if (date.includes('*')) return null;
-
-      var add = date.includes('+') || date.includes('=');
-      var sub = date.includes('-');
-
-      var _parseUserDate = (0, _helpers.parseUserDate)(date.replace(/\+|\-|\=/g, '')),
-          month = _parseUserDate.month,
-          year = _parseUserDate.year;
-
-      if (year.length > 2) year = year.slice(0, 2);
-
-      if (add) month++;
-      if (sub) month--;
-
-      if (month == 0) {
-        month = 12;
-        year--;
-      }
-
-      if (month == 13) {
-        month = 1;
-        year++;
-      }
-
-      this.view = ("00" + month).slice(-2) + '/' + year;
-
-      return this.model = (0, _helpers.toJsonDate)({ month: month, year: year });
-    };
-
-    return dateValueConverter;
-  }();
-
-  var toArrayValueConverter = exports.toArrayValueConverter = function () {
-    function toArrayValueConverter() {
-      _classCallCheck(this, toArrayValueConverter);
-    }
-
-    toArrayValueConverter.prototype.toView = function toView() {
-      var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var sort = arguments[1];
-
-
-      var arr = Object.keys(obj);
-
-      if (sort) arr.sort().reverse();
-
-      return arr.map(function (key) {
-        return { key: key, val: obj[key] };
-      });
-    };
-
-    return toArrayValueConverter;
-  }();
-
-  var inventoryFilterValueConverter = exports.inventoryFilterValueConverter = function () {
-    function inventoryFilterValueConverter() {
-      _classCallCheck(this, inventoryFilterValueConverter);
-    }
-
-    inventoryFilterValueConverter.prototype.isRepacked = function isRepacked(transaction) {
-      return transaction.shipment._id.indexOf('.') == -1 ? 'Repacked' : 'Inventory';
-    };
-
-    inventoryFilterValueConverter.prototype.toView = function toView() {
-      var _this = this;
-
-      var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-      var ndcFilter = {};
-      var expFilter = {};
-      var repackFilter = {};
-      var formFilter = {};
-
-      transactions = transactions.filter(function (transaction) {
-        var qty = transaction.qty.to || transaction.qty.from;
-        var exp = transaction.exp.to || transaction.exp.from;
-        var ndc = transaction.drug._id;
-        var form = transaction.drug.form;
-        var repack = _this.isRepacked(transaction);
-
-        if (!expFilter[exp]) expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : true, count: 0, qty: 0 };
-
-        if (!ndcFilter[ndc]) ndcFilter[ndc] = { isChecked: filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : true, count: 0, qty: 0 };
-
-        if (!formFilter[form]) formFilter[form] = { isChecked: filter.form && filter.form[form] ? filter.form[form].isChecked : true, count: 0, qty: 0 };
-
-        if (!repackFilter[repack]) repackFilter[repack] = { isChecked: filter.form && filter.repack[repack] ? filter.repack[repack].isChecked : true, count: 0, qty: 0 };
-
-        if (!expFilter[exp].isChecked) {
-          if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
-            expFilter[exp].count++;
-            expFilter[exp].qty += qty;
-          }
-          return false;
-        }
-        if (!ndcFilter[ndc].isChecked) {
-          if (expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
-            ndcFilter[ndc].count++;
-            ndcFilter[ndc].qty += qty;
-          }
-          return false;
-        }
-
-        if (!formFilter[form].isChecked) {
-          if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && repackFilter[repack].isChecked) {
-            formFilter[form].count++;
-            formFilter[form].qty += qty;
-          }
-          return false;
-        }
-
-        if (!repackFilter[repack].isChecked) {
-          if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked) {
-            repackFilter[repack].count++;
-            repackFilter[repack].qty += qty;
-          }
-          return false;
-        }
-
-        expFilter[exp].count++;
-        expFilter[exp].qty += qty;
-
-        ndcFilter[ndc].count++;
-        ndcFilter[ndc].qty += qty;
-
-        formFilter[form].count++;
-        formFilter[form].qty += qty;
-
-        repackFilter[repack].count++;
-        repackFilter[repack].qty += qty;
-
-        return true;
-      });
-
-      filter.exp = expFilter;
-      filter.ndc = ndcFilter;
-      filter.form = formFilter;
-      filter.repack = repackFilter;
-
-      return transactions;
-    };
-
-    return inventoryFilterValueConverter;
-  }();
-});
-define('libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
-});
-define('libs/environment',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.default = {
-    debug: true,
-    testing: true
-  };
-});
-define('libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Db = exports.Db = function Db() {
-    _classCallCheck(this, Db);
-
-    return pouchdbClient;
-  };
-});
 define('elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';
 
@@ -667,8 +35,6 @@ define('elems/form',['exports', 'aurelia-framework'], function (exports, _aureli
 
     FormCustomAttribute.prototype.change = function change() {
       this.inputElement.disabled = this.formElement && !this.formElement.checkValidity();
-
-      this.inputElement.disabled ? this.inputElement.setAttribute('disabled', true) : this.inputElement.removeAttribute('disabled');
     };
 
     FormCustomAttribute.prototype.attached = function attached() {
@@ -1265,6 +631,625 @@ define('elems/md-table',["exports", "aurelia-framework"], function (exports, _au
 
     return MdTableCustomAttribute;
   }()) || _class);
+});
+define('libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
+});
+define('libs/environment',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = {
+    debug: true,
+    testing: true
+  };
+});
+define('libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Db = exports.Db = function Db() {
+    _classCallCheck(this, Db);
+
+    return pouchdbClient;
+  };
+});
+define('resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.expShortcuts = expShortcuts;
+  exports.qtyShortcuts = qtyShortcuts;
+  exports.incrementBin = incrementBin;
+  exports.saveTransaction = saveTransaction;
+  exports.scrollSelect = scrollSelect;
+  exports.focusInput = focusInput;
+  exports.toggleDrawer = toggleDrawer;
+  exports.drugSearch = drugSearch;
+  exports.parseUserDate = parseUserDate;
+  exports.toJsonDate = toJsonDate;
+  exports.waitForDrugsToIndex = waitForDrugsToIndex;
+  exports.canActivate = canActivate;
+  function expShortcuts($event, $index) {
+    if ($event.which == 13) return this.focusInput('#qty_' + $index);
+
+    return true;
+  }
+
+  function qtyShortcuts($event, $index) {
+    if ($event.which == 13) return this.focusInput('#bin_' + $index, 'md-autocomplete');
+
+    return clearIfAsterick($event);
+  }
+
+  function incrementBin($event, transaction) {
+    if ($event.which == 107 || $event.which == 187) {
+      transaction.location = transaction.location[0] + (+transaction.location.slice(1) + 1);
+      saveTransaction.call(this, transaction);
+      return false;
+    }
+
+    if ($event.which == 109 || $event.which == 189) {
+      transaction.location = transaction.location[0] + (+transaction.location.slice(1) - 1);
+      saveTransaction.call(this, transaction);
+      return false;
+    }
+
+    return clearIfAsterick($event);
+  }
+
+  function clearIfAsterick($event) {
+    return $event.which == 106 || $event.shiftKey && $event.which == 56 ? $event.target.value = "" : true;
+  }
+
+  function saveTransaction(transaction) {
+    var _this = this;
+
+    return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
+      return _this.db.transaction.put(transaction);
+    }).catch(function (err) {
+      delete _this._saveTransaction;
+      throw _this.snackbar.error(err);
+    });
+  }
+
+  function scrollSelect($event, curr) {
+    var list = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+    var cb = arguments[3];
+
+
+    var index = list.indexOf(curr);
+    var last = list.length - 1;
+
+    if ($event.which == 38) cb.call(this, list[index > 0 ? index - 1 : last]);
+
+    if ($event.which == 40) cb.call(this, list[index < last ? index + 1 : 0]);
+  }
+
+  function focusInput(selector, fallback) {
+    var elem = document.querySelector(selector + ' input');
+
+    if (elem && !elem.disabled) elem.focus();else if (fallback) document.querySelector(fallback + ' input').focus();else console.log('Cannot find ' + selector + ' input');
+
+    return false;
+  }
+
+  function toggleDrawer() {
+    var drawer = document.querySelector('.mdl-layout__header');
+    drawer && drawer.firstChild.click();
+  }
+
+  var search = {
+    generic: function generic(_generic, clearCache) {
+      var start = Date.now();
+      var terms = _generic.toLowerCase().replace('.', '\\.').split(/, |[, ]/g);
+
+      if (_generic.startsWith(search._term) && !clearCache) {
+        var regex = RegExp('(?=.*' + terms.join(')(?=.*( |0)') + ')', 'i');
+        return search._drugs.then(function (drugs) {
+          return drugs.filter(function (drug) {
+            return regex.test(drug.generic);
+          });
+        }).then(function (drugs) {
+          console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', _generic, 'cache', search._term);
+          search._term = _generic;
+          return drugs;
+        });
+      }
+
+      search._term = _generic;
+
+      return search._drugs = this.db.drug.query('generics.name', search.range(terms[0])).then(search.map(start));
+    },
+    addPkgCode: function addPkgCode(term, drug) {
+      var pkg, ndc9, upc;
+      if (term.length > 8) {
+        ndc9 = '^' + drug.ndc9 + '(\\d{2})$';
+        upc = '^' + drug.upc + '(\\d{' + (10 - drug.upc.length) + '})$';
+        pkg = term.match(RegExp(ndc9 + '|' + upc));
+      }
+
+      drug.pkg = pkg ? pkg[1] || pkg[2] : '';
+      return drug;
+    },
+    range: function range(term) {
+      return { startkey: term, endkey: term + '\uFFFF', include_docs: true };
+    },
+    map: function map(start) {
+      return function (res) {
+        console.log('query returned', res.rows.length, 'rows and took', Date.now() - start);
+        return res.rows.map(function (row) {
+          return row.doc;
+        });
+      };
+    },
+    ndc: function ndc(_ndc, clearCache) {
+      var start = Date.now();
+      var term = _ndc.replace(/-/g, '');
+
+      if (term.length == 12 && term[0] == '3') term = term.slice(1, -1);
+
+      var ndc9 = term.slice(0, 9);
+      var upc = term.slice(0, 8);
+
+      if (term.startsWith(search._term) && !clearCache) {
+        console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term);
+        return search._drugs.then(function (drugs) {
+          return drugs.filter(function (drug) {
+            search.addPkgCode(term, drug);
+
+            return drug.ndc9.startsWith(ndc9) || drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc);
+          });
+        });
+      }
+
+      console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term);
+
+      search._term = term;
+
+      ndc9 = this.db.drug.query('ndc9', search.range(ndc9)).then(search.map(start));
+
+      upc = this.db.drug.query('upc', search.range(upc)).then(search.map(start));
+
+      return search._drugs = Promise.all([upc, ndc9]).then(function (results) {
+
+        var deduped = {};
+
+        for (var _iterator = results[0], _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+          var _ref;
+
+          if (_isArray) {
+            if (_i >= _iterator.length) break;
+            _ref = _iterator[_i++];
+          } else {
+            _i = _iterator.next();
+            if (_i.done) break;
+            _ref = _i.value;
+          }
+
+          var drug = _ref;
+
+          if (drug.upc.length != 9 && term.length != 11) deduped[drug._id] = drug;
+        }for (var _iterator2 = results[1], _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+          var _ref2;
+
+          if (_isArray2) {
+            if (_i2 >= _iterator2.length) break;
+            _ref2 = _iterator2[_i2++];
+          } else {
+            _i2 = _iterator2.next();
+            if (_i2.done) break;
+            _ref2 = _i2.value;
+          }
+
+          var _drug = _ref2;
+
+          deduped[_drug._id] = _drug;
+        }deduped = Object.keys(deduped).map(function (key) {
+          return search.addPkgCode(term, deduped[key]);
+        });
+        console.log('query returned', deduped.length, 'rows and took', Date.now() - start);
+        return deduped;
+      });
+    }
+  };
+
+  function drugSearch() {
+    var _this2 = this;
+
+    if (!this.term || this.term.length < 3) return Promise.resolve([]);
+
+    var clearCache = this._savingDrug;
+    var term = this.term.trim();
+
+    return this._search = Promise.resolve(this._search).then(function (_) {
+      return search[/^[\d-]+$/.test(term) ? 'ndc' : 'generic'].call(_this2, term, clearCache);
+    });
+  }
+
+  function parseUserDate(date) {
+    date = (date || "").split('/');
+    return {
+      year: date.pop(),
+      month: date.shift()
+    };
+  }
+
+  function toJsonDate(_ref3) {
+    var month = _ref3.month,
+        year = _ref3.year;
+
+    var date = new Date('20' + year, month, 1);
+    date.setDate(0);
+    return date.toJSON();
+  }
+
+  function waitForDrugsToIndex() {
+    var _this3 = this;
+
+    this.db.drug.drugIsIndexed.get().then(function (_) {
+      _this3.drugsIndexed = true;
+      _this3.placeholder = "Search Drugs By Generic Name Or NDC...";
+    });
+  }
+
+  function canActivate(_, next, _ref4) {
+    var router = _ref4.router;
+
+    return this.db.user.session.get().then(function (session) {
+
+      var loggedIn = session && session.account;
+
+      for (var _iterator3 = router.navigation, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+        var _ref5;
+
+        if (_isArray3) {
+          if (_i3 >= _iterator3.length) break;
+          _ref5 = _iterator3[_i3++];
+        } else {
+          _i3 = _iterator3.next();
+          if (_i3.done) break;
+          _ref5 = _i3.value;
+        }
+
+        var route = _ref5;
+
+        route.isVisible = loggedIn ? route.config.roles && ~route.config.roles.indexOf('user') : !route.config.roles;
+      }var canActivate = next.navModel.isVisible || !next.nav;
+
+      return canActivate || router.currentInstruction ? canActivate : new _aureliaRouter.Redirect(loggedIn ? 'shipments' : 'login');
+    }).catch(function (err) {
+      return console.log('loginRequired error', err);
+    });
+  }
+});
+define('resources/value-converters',['exports', '../resources/helpers'], function (exports, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.inventoryFilterValueConverter = exports.toArrayValueConverter = exports.dateValueConverter = exports.boldValueConverter = exports.valueValueConverter = exports.userFilterValueConverter = exports.drugFilterValueConverter = exports.shipmentFilterValueConverter = exports.upperCaseValueConverter = exports.numberValueConverter = exports.jsonValueConverter = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var jsonValueConverter = exports.jsonValueConverter = function () {
+    function jsonValueConverter() {
+      _classCallCheck(this, jsonValueConverter);
+    }
+
+    jsonValueConverter.prototype.toView = function toView() {
+      var object = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+      return JSON.stringify(object, null, " ");
+    };
+
+    return jsonValueConverter;
+  }();
+
+  var numberValueConverter = exports.numberValueConverter = function () {
+    function numberValueConverter() {
+      _classCallCheck(this, numberValueConverter);
+    }
+
+    numberValueConverter.prototype.fromView = function fromView(str) {
+      return str === '' ? null : +str;
+    };
+
+    return numberValueConverter;
+  }();
+
+  var upperCaseValueConverter = exports.upperCaseValueConverter = function () {
+    function upperCaseValueConverter() {
+      _classCallCheck(this, upperCaseValueConverter);
+    }
+
+    upperCaseValueConverter.prototype.fromView = function fromView(str) {
+      return str == null ? null : str.toUpperCase();
+    };
+
+    return upperCaseValueConverter;
+  }();
+
+  var shipmentFilterValueConverter = exports.shipmentFilterValueConverter = function () {
+    function shipmentFilterValueConverter() {
+      _classCallCheck(this, shipmentFilterValueConverter);
+    }
+
+    shipmentFilterValueConverter.prototype.toView = function toView() {
+      var shipments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+      filter = filter.toLowerCase();
+      return shipments.filter(function (shipment) {
+        return ~(shipment.account.from.name + ' ' + shipment.account.to.name + ' ' + shipment.tracking + ' ' + shipment.status + ' ' + (shipment._id && shipment._id.slice(0, 10))).toLowerCase().indexOf(filter);
+      });
+    };
+
+    return shipmentFilterValueConverter;
+  }();
+
+  var drugFilterValueConverter = exports.drugFilterValueConverter = function () {
+    function drugFilterValueConverter() {
+      _classCallCheck(this, drugFilterValueConverter);
+    }
+
+    drugFilterValueConverter.prototype.toView = function toView() {
+      var drugs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+      filter = filter.replace('.', '\\.').split(/, |[, ]/g);
+      var regex = RegExp('(?=.*' + filter.join(')(?=.*( |0)') + ')', 'i');
+      return drugs.filter(function (drug) {
+        return regex.test(drug.generic);
+      });
+    };
+
+    return drugFilterValueConverter;
+  }();
+
+  var userFilterValueConverter = exports.userFilterValueConverter = function () {
+    function userFilterValueConverter() {
+      _classCallCheck(this, userFilterValueConverter);
+    }
+
+    userFilterValueConverter.prototype.toView = function toView() {
+      var users = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+      filter = filter.toLowerCase();
+      var res = users.filter(function (user) {
+        try {
+          return ~(user.name.first + ' ' + user.name.last).toLowerCase().indexOf(filter);
+        } catch (err) {
+          console.log('filter err', user, err);
+        }
+      });
+      return res;
+    };
+
+    return userFilterValueConverter;
+  }();
+
+  var valueValueConverter = exports.valueValueConverter = function () {
+    function valueValueConverter() {
+      _classCallCheck(this, valueValueConverter);
+    }
+
+    valueValueConverter.prototype.toView = function toView() {
+      var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var decimals = arguments[1];
+      var trigger = arguments[2];
+
+
+      transactions = Array.isArray(transactions) ? transactions : [transactions];
+
+      return transactions.reduce(function (total, transaction) {
+        if (!transaction.drug.price || !transaction.qty) return 0;
+        var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
+        var qty = transaction.qty.to || transaction.qty.from || 0;
+        return total + qty * price;
+      }, 0).toFixed(decimals);
+    };
+
+    return valueValueConverter;
+  }();
+
+  var boldValueConverter = exports.boldValueConverter = function () {
+    function boldValueConverter() {
+      _classCallCheck(this, boldValueConverter);
+    }
+
+    boldValueConverter.prototype.toView = function toView(text, bold) {
+      if (!bold || !text) return text;
+
+      if (typeof bold == 'string') bold = RegExp('(' + bold.replace(/ /g, '|').replace('.', '( | 0)?\\.') + ')', 'gi');
+
+      return text.replace(bold, '<strong>$1</strong>');
+    };
+
+    return boldValueConverter;
+  }();
+
+  var dateValueConverter = exports.dateValueConverter = function () {
+    function dateValueConverter() {
+      _classCallCheck(this, dateValueConverter);
+    }
+
+    dateValueConverter.prototype.toView = function toView(date) {
+      if (!date) return '';
+      return date != this.model ? date.slice(5, 7) + '/' + date.slice(2, 4) : this.view;
+    };
+
+    dateValueConverter.prototype.fromView = function fromView(date) {
+
+      if (date.includes('*')) return null;
+
+      var add = date.includes('+') || date.includes('=');
+      var sub = date.includes('-');
+
+      var _parseUserDate = (0, _helpers.parseUserDate)(date.replace(/\+|\-|\=/g, '')),
+          month = _parseUserDate.month,
+          year = _parseUserDate.year;
+
+      if (year.length > 2) year = year.slice(0, 2);
+
+      if (add) month++;
+      if (sub) month--;
+
+      if (month == 0) {
+        month = 12;
+        year--;
+      }
+
+      if (month == 13) {
+        month = 1;
+        year++;
+      }
+
+      this.view = ("00" + month).slice(-2) + '/' + year;
+
+      return this.model = (0, _helpers.toJsonDate)({ month: month, year: year });
+    };
+
+    return dateValueConverter;
+  }();
+
+  var toArrayValueConverter = exports.toArrayValueConverter = function () {
+    function toArrayValueConverter() {
+      _classCallCheck(this, toArrayValueConverter);
+    }
+
+    toArrayValueConverter.prototype.toView = function toView() {
+      var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var sort = arguments[1];
+
+
+      var arr = Object.keys(obj);
+
+      if (sort) arr.sort().reverse();
+
+      return arr.map(function (key) {
+        return { key: key, val: obj[key] };
+      });
+    };
+
+    return toArrayValueConverter;
+  }();
+
+  var inventoryFilterValueConverter = exports.inventoryFilterValueConverter = function () {
+    function inventoryFilterValueConverter() {
+      _classCallCheck(this, inventoryFilterValueConverter);
+    }
+
+    inventoryFilterValueConverter.prototype.isRepacked = function isRepacked(transaction) {
+      return transaction.shipment._id.indexOf('.') == -1 ? 'Repacked' : 'Inventory';
+    };
+
+    inventoryFilterValueConverter.prototype.toView = function toView() {
+      var _this = this;
+
+      var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      var ndcFilter = {};
+      var expFilter = {};
+      var repackFilter = {};
+      var formFilter = {};
+
+      transactions = transactions.filter(function (transaction) {
+        var qty = transaction.qty.to || transaction.qty.from;
+        var exp = transaction.exp.to || transaction.exp.from;
+        var ndc = transaction.drug._id;
+        var form = transaction.drug.form;
+        var repack = _this.isRepacked(transaction);
+
+        if (!expFilter[exp]) expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : true, count: 0, qty: 0 };
+
+        if (!ndcFilter[ndc]) ndcFilter[ndc] = { isChecked: filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : true, count: 0, qty: 0 };
+
+        if (!formFilter[form]) formFilter[form] = { isChecked: filter.form && filter.form[form] ? filter.form[form].isChecked : true, count: 0, qty: 0 };
+
+        if (!repackFilter[repack]) repackFilter[repack] = { isChecked: filter.form && filter.repack[repack] ? filter.repack[repack].isChecked : true, count: 0, qty: 0 };
+
+        if (!expFilter[exp].isChecked) {
+          if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+            expFilter[exp].count++;
+            expFilter[exp].qty += qty;
+          }
+          return false;
+        }
+        if (!ndcFilter[ndc].isChecked) {
+          if (expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+            ndcFilter[ndc].count++;
+            ndcFilter[ndc].qty += qty;
+          }
+          return false;
+        }
+
+        if (!formFilter[form].isChecked) {
+          if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && repackFilter[repack].isChecked) {
+            formFilter[form].count++;
+            formFilter[form].qty += qty;
+          }
+          return false;
+        }
+
+        if (!repackFilter[repack].isChecked) {
+          if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked) {
+            repackFilter[repack].count++;
+            repackFilter[repack].qty += qty;
+          }
+          return false;
+        }
+
+        expFilter[exp].count++;
+        expFilter[exp].qty += qty;
+
+        ndcFilter[ndc].count++;
+        ndcFilter[ndc].qty += qty;
+
+        formFilter[form].count++;
+        formFilter[form].qty += qty;
+
+        repackFilter[repack].count++;
+        repackFilter[repack].qty += qty;
+
+        return true;
+      });
+
+      filter.exp = expFilter;
+      filter.ndc = ndcFilter;
+      filter.form = formFilter;
+      filter.repack = repackFilter;
+
+      return transactions;
+    };
+
+    return inventoryFilterValueConverter;
+  }();
 });
 define('views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _helpers) {
   'use strict';
@@ -2982,7 +2967,7 @@ define('views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../
   }()) || _class);
 });
 define('text!elems/md-autocomplete.html', ['module'], function(module) { module.exports = "<template style=\"box-shadow:none\">\n  <!-- z-index of 2 is > than checkboxes which have z-index of 1 -->\n  <md-autocomplete-wrap\n    ref=\"form\"\n    class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\"\n    style=\"z-index:2; width:100%; padding-top:10px\">\n    <input class=\"md-input mdl-textfield__input\"\n      value.bind=\"value\"\n      disabled.bind=\"disabled\"\n      placeholder.bind=\"placeholder || ''\"\n      focus.trigger=\"toggleResults()\"\n      focusout.delegate=\"toggleResults($event)\"\n      style=\"font-size:20px;\">\n    <div show.bind=\"showResults\"\n      tabindex=\"-1\"\n      style=\"width:100%; overflow-y:scroll; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); max-height: 400px !important;\"\n      class=\"md-autocomplete-suggestions\">\n      <slot></slot>\n    </div>\n  </md-autocomplete-wrap>\n  <style>\n  @-webkit-keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @-webkit-keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  @keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  md-autocomplete {\n    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);\n    border-radius: 2px;\n    display: block;\n    height: 40px;\n    position: relative;\n    overflow: visible;\n    min-width: 190px; }\n    md-autocomplete[md-floating-label] {\n      padding-bottom: 26px;\n      box-shadow: none;\n      border-radius: 0;\n      background: transparent;\n      height: auto; }\n      md-autocomplete[md-floating-label] md-input-container {\n        padding-bottom: 0; }\n      md-autocomplete[md-floating-label] md-autocomplete-wrap {\n        height: auto; }\n      md-autocomplete[md-floating-label] button {\n        top: auto;\n        bottom: 5px; }\n    md-autocomplete md-autocomplete-wrap {\n      display: block;\n      position: relative;\n      overflow: visible;\n      height: 40px; }\n      md-autocomplete md-autocomplete-wrap md-progress-linear {\n        position: absolute;\n        bottom: 0;\n        left: 0;\n        width: 100%;\n        height: 3px;\n        transition: none; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear .md-container {\n          transition: none;\n          top: auto;\n          height: 3px; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter.ng-enter-active {\n            opacity: 1; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave.ng-leave-active {\n            opacity: 0; }\n    md-autocomplete input:not(.md-input) {\n      position: absolute;\n      left: 0;\n      top: 0;\n      width: 100%;\n      box-sizing: border-box;\n      border: none;\n      box-shadow: none;\n      padding: 0 15px;\n      font-size: 14px;\n      line-height: 40px;\n      height: 40px;\n      outline: none;\n      background: transparent; }\n      md-autocomplete input:not(.md-input)::-ms-clear {\n        display: none; }\n    md-autocomplete button {\n      position: absolute;\n      top: 10px;\n      right: 10px;\n      line-height: 20px;\n      text-align: center;\n      width: 20px;\n      height: 20px;\n      cursor: pointer;\n      border: none;\n      border-radius: 50%;\n      padding: 0;\n      font-size: 12px;\n      background: transparent; }\n      md-autocomplete button:after {\n        content: '';\n        position: absolute;\n        top: -6px;\n        right: -6px;\n        bottom: -6px;\n        left: -6px;\n        border-radius: 50%;\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        opacity: 0;\n        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }\n      md-autocomplete button:focus {\n        outline: none; }\n        md-autocomplete button:focus:after {\n          -webkit-transform: scale(1);\n                  transform: scale(1);\n          opacity: 1; }\n      md-autocomplete button md-icon {\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        -webkit-transform: translate3d(-50%, -50%, 0) scale(0.9);\n                transform: translate3d(-50%, -50%, 0) scale(0.9); }\n        md-autocomplete button md-icon path {\n          stroke-width: 0; }\n      md-autocomplete button.ng-enter {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-enter.ng-enter-active {\n          -webkit-transform: scale(1);\n                  transform: scale(1); }\n      md-autocomplete button.ng-leave {\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-leave.ng-leave-active {\n          -webkit-transform: scale(0);\n                  transform: scale(0); }\n    @media screen and (-ms-high-contrast: active) {\n      md-autocomplete input {\n        border: 1px solid #fff; }\n      md-autocomplete li:focus {\n        color: #fff; } }\n\n  .md-autocomplete-suggestions table, .md-autocomplete-suggestions ul {\n    width:100%;         //added by adam\n    background:white;   //added by adam\n    position: relative;\n    margin: 0;\n    list-style: none;\n    padding: 0;\n    z-index: 100; }\n    .md-autocomplete-suggestions li {\n      line-height: 48px; //separated by adam\n    }\n    .md-autocomplete-suggestions li, .md-autocomplete-suggestions tr {\n      /*added by adam */\n      width:100%;\n      text-align: left;\n      position: static !important;\n      text-transform: none;\n      /* end addition */\n      cursor: pointer;\n      font-size: 14px;\n      overflow: hidden;\n\n      transition: background 0.15s linear;\n      text-overflow: ellipsis; }\n      .md-autocomplete-suggestions li.ng-enter, .md-autocomplete-suggestions li.ng-hide-remove {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-in 0.2s;\n                animation: md-autocomplete-list-in 0.2s; }\n      .md-autocomplete-suggestions li.ng-leave, .md-autocomplete-suggestions li.ng-hide-add {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-out 0.2s;\n                animation: md-autocomplete-list-out 0.2s; }\n      .md-autocomplete-suggestions li:focus {\n        outline: none; }\n  </style>\n</template>\n"; });
-define('text!elems/md-button.html', ['module'], function(module) { module.exports = "<template style=\"display:inline-block; height:36px; line-height:36px\">\n  <button\n    ref=\"button\"\n    type=\"button\"\n    disabled.bind=\"disabled\"\n    click.delegate=\"click($event)\"\n    class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n    style=\"width:100%; height:inherit; line-height:inherit\">\n    <slot style=\"padding:auto\"></slot>\n  </button>\n</template>\n<!-- type=\"button\" because a button inside a form has it's type implicitly set to submit. And the spec says that the first button or input with type=\"submit\" is triggered on enter -->\n"; });
+define('text!elems/md-button.html', ['module'], function(module) { module.exports = "<template style=\"display:inline-block; height:36px; line-height:36px\">\n  <button\n    ref=\"button\"\n    type=\"button\"\n    disabled.two-way=\"disabled\"\n    click.delegate=\"click($event)\"\n    class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n    style=\"width:100%; height:inherit; line-height:inherit\">\n    <slot style=\"padding:auto\"></slot>\n  </button>\n</template>\n<!-- type=\"button\" because a button inside a form has its type implicitly set to submit. And the spec says that the first button or input with type=\"submit\" is triggered on enter -->\n<!-- two-way because FormCustomAttribute can set button's disabled property directly -->\n"; });
 define('text!elems/md-checkbox.html', ['module'], function(module) { module.exports = "<template style=\"display:inline-block\">\n  <label ref=\"label\" class=\"mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect\" style=\"width:100%; margin-right:8px\">\n    <input\n      required.bind=\"required || required ===''\"\n      disabled.bind=\"disabled || disabled ===''\"\n      checked.bind=\"checked\"\n      tabindex.one-time=\"tabindex\"\n      type=\"checkbox\"\n      class=\"mdl-checkbox__input\"\n      click.delegate=\"stopPropogation()\"/>\n    <slot></slot>\n  </label>\n</template>\n"; });
 define('text!elems/md-drawer.html', ['module'], function(module) { module.exports = "<template>\n    <slot></slot>\n</template>\n"; });
 define('text!elems/md-input.html', ['module'], function(module) { module.exports = "<!-- firefox needs max-height otherwise is oversizes the parent element -->\n<template style=\"display:inline-block; box-sizing:border-box;\">\n  <div ref=\"div\" class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\" style=\"width:100%; margin-bottom:-12px; padding-top:22px; min-height:19px; line-height:19px; font-size:inherit; text-overflow:inherit; display:block; ${ label.textContent.trim() || 'padding-top:0px'};\">\n    <!-- Chrome's input[type=date] has a minimum height of 24px because of its internal buttons, to align heights we need to make all have min-height. -->\n    <input\n      ref=\"input\"\n      required.bind=\"required || required === ''\"\n      class=\"mdl-textfield__input\"\n      value.bind=\"value\"\n      disabled.bind=\"disabled || disabled === ''\"\n      max.bind=\"max\"\n      pattern.bind=\"pattern || '.*'\"\n      type.bind=\"type\"\n      step.bind=\"step\"\n      placeholder.bind=\"placeholder || ''\"\n      minlength.bind=\"minlength\"\n      maxlength.bind=\"maxlength || 100\"\n      style=\"padding:0; min-height:inherit; line-height:inherit; font-size:inherit; font-weight:inherit; text-transform:inherit; text-overflow:inherit; \"/>\n    <label ref=\"label\" class=\"mdl-textfield__label\"><slot></slot></label>\n  </div>\n</template>\n"; });
