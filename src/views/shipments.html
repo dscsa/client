@@ -13,6 +13,7 @@
   <require from="elems/form"></require>
   <md-drawer autofocus>
     <md-input
+      name = "pro_filter_input"
       value.bind="filter"
       autoselect
       style="padding:0 8px; width:auto">
@@ -24,6 +25,7 @@
       style="margin:-33px 0 0 185px;">
     </md-switch> -->
     <a
+      name = "new_shipment"
       if.bind=" ! filter"
       class="mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(null, true)">
@@ -31,6 +33,7 @@
       or add inventory
     </a>
     <a
+      name = "pro_shipments"
       repeat.for="shipment of shipments[role.shipments] | shipmentFilter:filter"
       class="mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectShipment(shipment, true)">
@@ -61,6 +64,7 @@
           Tracking #
         </md-select>
         <md-input
+          name = "pro_tracking_input"
           if.bind="role.shipments == 'to' && ! shipment._rev"
           focusin.delegate="setCheckboxes()"
           autofocus
@@ -71,6 +75,7 @@
           Tracking #
         </md-input>
         <md-select
+          name = "pro_from_option"
           style="width:100%;"
           value.bind="shipment.account.from"
           options.bind="(role.accounts == 'to' || shipment._rev) ? [shipment.account.from] : accounts[role.accounts]"
@@ -134,6 +139,7 @@
       </div>
       <div class="mdl-card__actions">
         <md-button color raised form
+          name = "pro_create_button"
           ref="newShipmentButton"
           style="width:100%"
           show.bind="shipment._id == shipmentId && ! shipment._rev"
@@ -153,6 +159,7 @@
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
       <!-- disabled.bind="! searchReady" -->
       <md-autocomplete
+        name = "pro_searchbar"
         value.bind="term"
         input.delegate="search() & debounce:50"
         keydown.delegate="autocompleteShortcuts($event) & debounce:50"
@@ -206,12 +213,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr style="padding-top:7px;" repeat.for="transaction of transactions" input.delegate="saveTransaction(transaction) & debounce:1500">
+            <tr style="padding-top:7px;" name = "pro_transaction" repeat.for="transaction of transactions" input.delegate="saveTransaction(transaction) & debounce:1500">
               <td style="padding:0 0 0 8px">
                 <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->
                 <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->
                 <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use verifiedAt directly rather than isChecked because autocheck coerces isChecked to be out of sync -->
                 <md-checkbox
+                  name = "pro_checkbox"
                   click.delegate="manualCheck($index)"
                   disabled.bind=" ! moveItemsButton.offsetParent && ! newShipmentButton.offsetParent && transaction.next.length"
                   checked.bind="transaction.isChecked">
@@ -229,6 +237,7 @@
               <td style="padding:0">
                 ${ transaction.exp[role.accounts] | date}
                 <md-input
+                  name = "pro_exp"
                   id.bind="'exp_'+$index"
                   required
                   keydown.delegate="expShortcutsKeydown($event, $index)"
@@ -245,6 +254,7 @@
                   <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->
                   <!-- keyup rather than keydown because we want the new quantity not the old one -->
                   <md-input
+                    name = "pro_qty"
                     id.bind="'qty_'+$index"
                     required
                     keydown.delegate="qtyShortcutsKeydown($event, $index)"
@@ -259,6 +269,7 @@
               </td>
               <td style="padding:0">
                 <md-input
+                  name = "pro_bin"
                   id.bind="'bin_'+$index"
                   required
                   disabled.bind=" ! transaction.verifiedAt || transaction.next.length"

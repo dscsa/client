@@ -14,9 +14,10 @@
       if.bind=" ! filter"
       class="mdl-navigation__link ${ ! user.email ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectUser({name:{}, account:{_id:session.account._id}})">
-      <div class="mdl-typography--title">New User</div>
+      <div name = "pro_new_user" class="mdl-typography--title">New User</div>
     </a>
     <a
+      name = "existing_users"
       repeat.for="user of users | userFilter:filter"
       class="mdl-navigation__link ${ user.email == $parent.user.email ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectUser(user)">
@@ -31,14 +32,14 @@
         </div>
       </div>
       <div class="mdl-card__supporting-text" style="font-size:16px;" input.delegate="saveUser() & debounce:1000">
-        <md-input style="width:49%" value.bind="user.name.first" required>First Name</md-input>
-        <md-input style="width:49%" value.bind="user.name.last" required>Last Name</md-input>
-        <md-input style="width:100%" value.bind="user.email" type="email" pattern="[\w._]{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>
-        <md-input style="width:100%" value.bind="user.phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
-        <md-input style="width:100%" value.bind="user.password" if.bind=" ! user._id" required>Password</md-input>
+        <md-input style="width:49%" value.bind="user.name.first" name = "pro_first_name" required>First Name</md-input>
+        <md-input style="width:49%" value.bind="user.name.last" name = "pro_last_name" required>Last Name</md-input>
+        <md-input style="width:100%" value.bind="user.email" type="email" name = "pro_email" pattern="[\w._]{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>
+        <md-input style="width:100%" value.bind="user.phone" type="tel" name = "pro_phone" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
+        <md-input style="width:100%" value.bind="user.password" name = "pro_password" if.bind=" ! user._id" required>Password</md-input>
       </div>
       <div class="mdl-card__actions">
-        <md-button color raised style="width:100%" if.bind="users.length != 0 && ! user._id" form click.delegate="addUser()">Create User</md-button>
+        <md-button color raised style="width:100%" name = "pro_create_user_button" if.bind="users.length != 0 && ! user._id" form click.delegate="addUser()">Create User</md-button>
         <md-button color raised style="width:100%" if.bind="users.length == 0 || user._id == session._id" click.delegate="logout()" disabled.bind="disableLogout">${ disableLogout || 'Uninstall' }</md-button>
         <md-button color="accent" raised style="width:100%" if.bind="user._id && user._id != session._id" click.delegate="deleteUser()">Delete User</md-button>
       </div>
@@ -61,9 +62,10 @@
               <th class="mdl-data-table__cell--non-numeric">Location</th>
             </tr>
           </thead>
-          <tr repeat.for="account of accounts" if.bind="account != $parent.account">
+          <tr name = "pro_account" repeat.for="account of accounts" if.bind="account != $parent.account">
             <td class="mdl-data-table__cell--non-numeric">
               <md-checkbox
+                name = "pro_checkbox"
                 if.bind="type != 'To'"
                 checked.one-way="$parent.account.authorized.indexOf(account._id) != -1"
                 click.delegate="authorize(account._id)">

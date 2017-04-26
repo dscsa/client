@@ -22,6 +22,7 @@
       Filter pending inventory
     </md-input>
     <a
+      name = "pro_pended_items"
       repeat.for="term of pending | toArray:term"
       class="mdl-navigation__link ${ term == 'Pending '+term.key ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectTerm('pending', term.key)">
@@ -32,37 +33,37 @@
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
       <div show.bind="transactions.length" class="mdl-card__supporting-text" style="padding-left:24px; white-space:nowrap">
-        <div repeat.for="ndc of filter.ndc | toArray:true">
+        <div name = "pro_ndc_filter" repeat.for="ndc of filter.ndc | toArray:true">
           <div if.bind="$index == 0" class="mdl-card__title" style="padding:4px 0 8px 0">
             <div style="width:60%">Ndc Filter</div>
             <div style="width:20%">Qty</div>
             <div style="width:20%">Count</div>
           </div>
-          <md-checkbox style="width:60%; margin-bottom:3px" click.delegate="signalFilter(ndc)" checked.bind="ndc.val.isChecked">${ndc.key}</md-checkbox>
+          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="signalFilter(ndc)" checked.bind="ndc.val.isChecked">${ndc.key}</md-checkbox>
           <div style="width:18%; display:inline-block; vertical-align:top">${ndc.val.qty}</div>
           <div style="width:18%; display:inline-block; vertical-align:top">${ndc.val.count}</div>
         </div>
-        <div repeat.for="exp of filter.exp | toArray:true" style="padding:0">
+        <div name = "pro_exp_filter" repeat.for="exp of filter.exp | toArray:true" style="padding:0">
           <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
             <div style="width:60%">Exp Filter</div>
           </div>
-          <md-checkbox style="width:60%; margin-bottom:3px" click.delegate="signalFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
+          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="signalFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
           <div style="width:18%; display:inline-block; vertical-align:top">${exp.val.qty}</div>
           <div style="width:18%; display:inline-block; vertical-align:top">${exp.val.count}</div>
         </div>
-        <div repeat.for="repack of filter.repack | toArray:true" style="padding:0">
+        <div name = "pro_repack_filter" repeat.for="repack of filter.repack | toArray:true" style="padding:0">
           <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
             <div style="width:60%">Repack Filter</div>
           </div>
-          <md-checkbox style="width:60%; margin-bottom:3px" click.delegate="signalFilter(repack)" checked.bind="repack.val.isChecked">${repack.key}</md-checkbox>
+          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="signalFilter(repack)" checked.bind="repack.val.isChecked">${repack.key}</md-checkbox>
           <div style="width:18%; display:inline-block; vertical-align:top">${repack.val.qty}</div>
           <div style="width:18%; display:inline-block; vertical-align:top">${repack.val.count}</div>
         </div>
-        <div repeat.for="form of filter.form | toArray:true" style="padding:0">
+        <div name = "pro_form_filter" repeat.for="form of filter.form | toArray:true" style="padding:0">
           <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
             <div style="width:60%">Form Filter</div>
           </div>
-          <md-checkbox style="width:60%; margin-bottom:3px" click.delegate="signalFilter(form)" checked.bind="form.val.isChecked">${form.key}</md-checkbox>
+          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="signalFilter(form)" checked.bind="form.val.isChecked">${form.key}</md-checkbox>
           <div style="width:18%; display:inline-block; vertical-align:top">${form.val.qty}</div>
           <div style="width:18%; display:inline-block; vertical-align:top">${form.val.count}</div>
         </div>
@@ -71,6 +72,7 @@
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
       <md-autocomplete
+        name = "pro_searchbar"
         placeholder.bind="placeholder"
         value.bind="term"
         input.delegate="search()"
@@ -78,6 +80,7 @@
         style="margin:0px 24px; padding-right:15px">
         <table md-table>
           <tr
+            name = "pro_search_res"
             repeat.for="term of terms"
             click.delegate="selectTerm('drug.generic', term)"
             class="${ term == $parent.term && 'is-selected'}">
@@ -92,7 +95,7 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
+      <md-menu name = "pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
           click.delegate="exportCSV()">
@@ -103,23 +106,27 @@
           Import CSV
         </li>
         <li
+          name = "pro_pend"
           disabled.bind=" ! transactions.length"
           click.delegate="term.slice(0,7) == 'Pending' ? unpendInventory() : pendInventory()">
           ${ term.slice(0,7) == 'Pending' ? 'Unpend Selected' : 'Pend Selected'}
         </li>
         <li
+          name = "pro_dispense"
           disabled.bind=" ! transactions.length"
           click.delegate="dispenseInventory()">
           Dispense Selected
         </li>
         <form>
           <li form
+            name = "pro_repack_selected"
             click.delegate="repackInventory()">
             Repack Selected
           </li>
           <li>
             <md-input
               required
+              name = "pro_repack_qty"
               value.bind="repack.size | number"
               input.delegate="setRepackVials()"
               style="width:40px;">
@@ -127,18 +134,21 @@
             </md-input>
             <md-input
               required
+              name = "pro_repack_vials"
               value.bind="repack.vials | number"
               style="width:40px;">
               Vials
             </md-input>
             <md-input
               required
+              name = "pro_repack_exp"
               value.bind="repack.exp | date"
               style="width:40px;">
               Exp
             </md-input>
             <md-input
               required
+              name = "pro_repack_bin"              
               value.bind="repack.location"
               pattern="[A-Z]\d{2}"
               style="width:40px;">
@@ -153,7 +163,7 @@
           <thead>
             <tr>
               <th style="width:50px; padding:0">
-                <md-checkbox click.delegate="checkAllTransactions()" checked.bind="allChecked"></md-checkbox>
+                <md-checkbox name = "pro_checkall" click.delegate="checkAllTransactions()" checked.bind="allChecked"></md-checkbox>
               </th>
               <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
               <th class="mdl-data-table__cell--non-numeric">Form</th>
@@ -164,15 +174,16 @@
               <th style="width:60px"></th>
             </tr>
           </thead>
-          <tr repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
+          <tr name = "pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
             <td style="padding:0">
-              <md-checkbox click.delegate="checkTransaction(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
+              <md-checkbox name = "pro_transaction_checkbox" click.delegate="checkTransaction(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
             </td>
             <td class="mdl-data-table__cell--non-numeric" style="padding-left:0">${ transaction.drug.generic }</td>
             <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
             <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>
             <td style="padding:0">
               <md-input
+                name = "pro_transaction_exp"
                 id.bind="'exp_'+$index"
                 required
                 keydown.delegate="expShortcuts($event, $index)"
@@ -184,6 +195,7 @@
             </td>
             <td style="padding:0">
               <md-input
+                name = "pro_transaction_qty"
                 id.bind="'qty_'+$index"
                 required
                 keydown.delegate="qtyShortcuts($event, $index)"
@@ -204,6 +216,7 @@
             </td> -->
             <td style="padding:0">
               <md-input
+                name = "pro_transaction_bin"
                 id.bind="'bin_'+$index"
                 required
                 keydown.delegate="binShortcuts($event, $index)"
@@ -215,8 +228,8 @@
                 placeholder>
               </md-input>
             </td>
-            <td style="padding:0 0 0 16px">
-              <i show.bind="isRepacked(transaction)" class="material-icons" style="font-size:20px">delete_sweep</i>
+            <td name = "pro_repack_icon" style="padding:0 0 0 16px">
+              <i name = "pro_icon" show.bind="isRepacked(transaction)" class="material-icons" style="font-size:20px">delete_sweep</i>
             </td>
           </tr>
         </table>
