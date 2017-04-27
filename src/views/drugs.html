@@ -30,6 +30,7 @@
       <div class="mdl-card__supporting-text" style="font-size:16px;">
         <md-input
           required
+          name = "pro_ndc_field"
           style="width:49%"
           value.bind="drug._id"
           disabled.bind="drug._rev"
@@ -58,6 +59,7 @@
         <div repeat.for="generic of drug.generics">
           <md-input
             required
+            name = "pro_gen_field"
             style="width:75%"
             pattern="([A-Z][0-9a-z]*\s?)+\b"
             value.bind="generic.name">
@@ -77,6 +79,7 @@
         </md-input>
         <md-input
           required
+          name = "pro_form_field"
           style="width:49%"
           pattern="([A-Z][a-z]+\s?)+\b"
           value.bind="drug.form">
@@ -121,6 +124,7 @@
           Delete Drug
         </md-button> -->
         <md-button color raised form
+          name = "pro_drug_button"
           style="width:100%;"
           disabled.bind="_savingDrug"
           click.delegate="drug._rev ? saveDrug() : addDrug()"
@@ -131,6 +135,7 @@
     </form>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
       <md-autocomplete
+        name = "pro_searchbar"
         placeholder="Search Drugs by Generic Name or NDC..."
         value.bind="term"
         input.delegate="search() & debounce:50"
@@ -138,6 +143,7 @@
         style="margin:0px 24px; padding-right:15px">
         <table md-table>
           <tr
+            name = "pro_search_res"
             repeat.for="group of groups"
             click.delegate="selectGroup(group, true)"
             class="${ group.name == $parent.group.name && 'is-selected'}">
@@ -148,12 +154,12 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu style="position:absolute; z-index:2; top:10px; right:5px;">
+      <md-menu name = "pro_menu" style="position:absolute; z-index:2; top:10px; right:5px;">
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
-        <li if.bind="drug._rev" click.delegate="selectDrug()" class="mdl-menu__item">
+        <li name = "menu_add_drug" if.bind="drug._rev" click.delegate="selectDrug()" class="mdl-menu__item">
           Add Drug
         </li>
-        <li if.bind=" ! drug._rev" disabled class="mdl-menu__item">
+        <li name = "menu_add_drug" if.bind=" ! drug._rev" disabled class="mdl-menu__item">
           Add Drug
         </li>
         <li click.delegate="exportCSV()" class="mdl-menu__item">
@@ -165,6 +171,7 @@
       </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <md-switch
+        name = "pro_switch"
         style="position:absolute; right:25px; top:47px; z-index:1"
         checked.one-way="account.ordered[group.name]"
         disabled.bind="! account.ordered[group.name] && ! drug._rev"
