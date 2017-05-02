@@ -1,9 +1,9 @@
 import {inject} from 'aurelia-framework';
-import {Db}     from '../libs/pouch'
+import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {canActivate} from '../resources/helpers'
 
-@inject(Db, Router)
+@inject(Pouch, Router)
 export class inventory {
 
   constructor(db, router){

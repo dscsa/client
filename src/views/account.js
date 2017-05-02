@@ -1,10 +1,10 @@
 import {inject} from 'aurelia-framework';
-import {Db}     from '../libs/pouch'
+import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router'
 import {canActivate} from '../resources/helpers'
 
 //TODO this is causing Router to revert route and switches to not be upgraded @pageState()
-@inject(Db, Router)
+@inject(Pouch, Router)
 export class account {
 
   constructor(db, router){

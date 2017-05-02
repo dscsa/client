@@ -1,4 +1,4 @@
-export class Db {
+export class Pouch {
   constructor() {
     return pouchdbClient
   }

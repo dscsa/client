@@ -1,10 +1,10 @@
 import {inject} from 'aurelia-framework';
-import {Db}     from '../libs/pouch'
+import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
 import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex, toggleDrawer} from '../resources/helpers'
 
-@inject(Db, Router)
+@inject(Pouch, Router)
 export class inventory {
 
   constructor(db, router){

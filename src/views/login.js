@@ -1,10 +1,10 @@
 import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
-import {Db}     from '../libs/pouch'
+import {Pouch}     from '../libs/pouch'
 import {canActivate} from '../resources/helpers'
 
 
-@inject(Db, Router)
+@inject(Pouch, Router)
 export class login {
 
   constructor(db, router){

@@ -1,11 +1,11 @@
 import {inject}     from 'aurelia-framework'
 import {Router}     from 'aurelia-router'
-import {Db}         from '../libs/pouch'
+import {Pouch}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {canActivate} from '../resources/helpers'
 
 //@pageState()
-@inject(Db, Router, HttpClient)
+@inject(Pouch, Router, HttpClient)
 export class join {
 
   constructor(db, router, http){

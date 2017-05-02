@@ -1,12 +1,12 @@
 import {inject}     from 'aurelia-framework'
 import {Router}     from 'aurelia-router'
-import {Db}         from '../libs/pouch'
+import {Pouch}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {csv}        from '../libs/csv'
 import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 //@pageState()
-@inject(Db, Router, HttpClient)
+@inject(Pouch, Router, HttpClient)
 export class shipments {
 
   constructor(db, router, http){

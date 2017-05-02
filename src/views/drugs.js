@@ -1,12 +1,12 @@
 import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
-import {Db}     from '../libs/pouch'
+import {Pouch}     from '../libs/pouch'
 import {csv}    from '../libs/csv'
 import {canActivate, scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
 
 
 //@pageState()
-@inject(Db, Router)
+@inject(Pouch, Router)
 export class drugs {
   constructor(db, router){
     console.log(1)
