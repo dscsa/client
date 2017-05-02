@@ -9,6 +9,33 @@ define('environment',["exports"], function (exports) {
     testing: true
   };
 });
+define('libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
+});
+define('libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Db = exports.Db = function Db() {
+    _classCallCheck(this, Db);
+
+    return pouchdbClient;
+  };
+});
 define('elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';
 
@@ -631,44 +658,6 @@ define('elems/md-table',["exports", "aurelia-framework"], function (exports, _au
 
     return MdTableCustomAttribute;
   }()) || _class);
-});
-define('libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
-});
-define('libs/environment',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.default = {
-    debug: true,
-    testing: true
-  };
-});
-define('libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Db = exports.Db = function Db() {
-    _classCallCheck(this, Db);
-
-    return pouchdbClient;
-  };
 });
 define('resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
   'use strict';
