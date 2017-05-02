@@ -1,15 +1,27 @@
 # client
 Application that uses the RESTful API written with the Aurelia framework
 
+Development > Server > Client > CSV, Pouch
+
 ## install development into new dscsa folder
 ### note: dscsa/development is a large install because it depends on gulp for bundling, babel for transpiling, and protractor for testing.
 - [install node](https://nodejs.org/en/download/current)
 - [install couchdb](http://couchdb.apache.org/#download)
 - install git (dialog will appear on first use of git clone command)
-- create and cd into the folder in which you want to install
+
 ```
+# create and cd into the folder in which you want to install
 npm install dscsa/development
-sudo npm start #will ask for couchdb credentials on first run
+
+# build the client with watch and run server
+# will ask for couchdb credentials on first run
+# should work from localhost and localhost:9000
+sudo npm start
+
+# run protractor end-to-end tests
+# must run after sudo npm start
+# close browser windows w/ app
+sudo npm test
 ```
 ```
 - Your Installation Folder
