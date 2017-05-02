@@ -8,8 +8,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "server":"https://github.com/dscsa/server",
-    "db":"https://github.com/dscsa/pouch",
+    "pouch":"https://github.com/dscsa/pouch",
     "csv":"https://github.com/dscsa/csv"
   }
 }
