@@ -277,7 +277,7 @@ export class inventory {
       let win = window.open()
       if ( ! win)
         return this.snackbar.show(`Enable browser pop-ups to print repack labels`)
-  
+
       win.document.write(label.join('<br>').repeat(this.repack.vials))
       win.print()
       win.close()
