@@ -9,6 +9,7 @@
   <require from="client/src/elems/md-switch"></require>
   <require from="client/src/elems/md-autocomplete"></require>
   <require from="client/src/elems/md-snackbar"></require>
+  <require from="client/src/elems/md-text"></require>
   <require from="client/src/elems/form"></require>
   <md-drawer>
     <md-select
@@ -104,10 +105,15 @@
           style="width:49%">
           GoodRx Price
         </md-input>
+        <md-text
+          style="width:100%; font-size:11px"
+          value.bind="drug.warning">
+          Warning
+        </md-text>
         <md-input
           pattern="//[a-zA-Z0-9/.\-_%]+"
           value.bind="drug.image"
-          style="width:100%; font-size:9px;">
+          style="width:100%; font-size:9px">
           ${ drug.image ? 'Image' : 'Image URL'}
         </md-input>
         <img

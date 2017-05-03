@@ -410,6 +410,11 @@ export class shipments {
     if ( ! drug)
       return this.snackbar.show(`Cannot find drug matching this search`)
 
+    this.drug = drug
+
+    if (drug.warning) //not imported from CSV
+      this.dialog.showModal()
+
     transaction = transaction || {
       qty:{from:null, to:null},
       exp:{
