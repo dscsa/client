@@ -6,7 +6,7 @@ export function configure(aurelia) {
   aurelia.use
     .standardConfiguration()
     .plugin('aurelia-animator-css')
-    .globalResources('resources/value-converters')
+    .globalResources('client/src/resources/value-converters')
 
-  aurelia.start().then(a => a.setRoot('views/routes'));
+  aurelia.start().then(a => a.setRoot('client/src/views/routes'));
 }
