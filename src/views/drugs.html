@@ -250,6 +250,20 @@
             style="width:100%">
             Default Box
           </md-input>
+          <md-input
+            type="number"
+            step="1"
+            value.bind="(account.ordered[group.name] || {}).price30"
+            style="width:49%">
+            30 day price
+          </md-input>
+          <md-input
+            type="number"
+            step="1"
+            value.bind="(account.ordered[group.name] || {}).price90"
+            style="width:48%">
+            90 day price
+          </md-input>
           <!--
           <md-input
             type="number"
