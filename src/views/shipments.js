@@ -467,6 +467,11 @@ export class shipments {
     })
   }
 
+  dialogClose() {
+    this.dialog.close()
+    this.focusInput('#qty_0')
+  }
+
   exportCSV() {
     let name = 'Shipment '+this.shipment._id+'.csv'
     this.csv.fromJSON(name, this.transactions.map(transaction => {
