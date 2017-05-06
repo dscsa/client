@@ -70,15 +70,21 @@ cd /dscsa
 sudo add-apt-repository ppa:couchdb/stable -y
 sudo apt-get update
 sudo apt-get install couchdb -y
+
+# start only if a new instance
 sudo mv /var/lib/couchdb /dscsa
-sudo ln -s /dscsa/couchdb /var/lib/couchdb
-sudo nano /etc/couchdb/local.ini
+sudo mv /etc/couchdb/local.ini /dscsa/couchdb/local.ini
+sudo nano /dscsa/couchdb/local.ini
 #set [httpd] bind_address = 0.0.0.0,
 #add [compactions] _default = [{db_fragmentation, "40%"}, {view_fragmentation, "40%"}]
 #set [couch_httpd_auth]	allow_persistent_cookies = true
 #set [couch_httpd_auth] timeout = 31536000
 sudo service couchdb restart
 goto <elastic-ip>:5984/_utils
+# stop only if a new instance
+
+sudo ln -s /dscsa/couchdb /var/lib/couchdb
+sudo ln -s /dscsa/couchdb /etc/couchdb/local.ini
 
 #install nodejs and application
 curl --silent --location https://deb.nodesource.com/setup_6.x | sudo bash -
