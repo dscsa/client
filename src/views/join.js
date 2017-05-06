@@ -18,7 +18,7 @@ export class join {
       license:'Pharmacy',
       street:'',
       city:'',
-      state:'OR',
+      state:'',
       zip:'',
       ordered:{}
     }
