@@ -12,7 +12,7 @@ export class inventory {
     this.router = router
     this.csv    = csv
     this.limit  = 100
-    this.repack = {size:30}
+    this.repack = {}
     this.transactions = []
 
     this.placeholder     = "Search by generic name, ndc, exp, or bin" //Put in while database syncs
@@ -231,7 +231,7 @@ export class inventory {
       this.transactions.unshift({
         verifiedAt:new Date().toJSON(),
         exp:{to:this.repack.exp, from:null},
-        qty:{to:this.repack.size, from:null},
+        qty:{to:this.repack.vialQty, from:null},
         user:{_id:this.user},
         shipment:{_id:this.account},
         location:this.repack.location,
@@ -243,7 +243,7 @@ export class inventory {
     }
 
     //Keep record of any excess that is implicitly destroyed
-    let excess = this.repack.qty - (this.repack.size * this.repack.vials)
+    let excess = this.repack.totalQty - (this.repack.vialQty * this.repack.vials)
     if (excess > 0)
     {
       all.push(this.db.transaction.post({
@@ -265,7 +265,7 @@ export class inventory {
         `Ndc ${this.transactions[0].drug._id}`,
         `Exp ${this.repack.exp.slice(0, 10)}`,
         `Bin ${this.repack.location}`,
-        `Qty ${this.repack.size}`,
+        `Qty ${this.repack.vialQty}`,
         `Pharmacist ________________`,
         `</p>`
       ]
@@ -288,18 +288,20 @@ export class inventory {
   }
 
   setRepackVials() {
-    this.repack.vials = +this.repack.size ? Math.floor(this.repack.qty / this.repack.size) : ''
+    this.repack.vials = +this.repack.vialQty ? Math.floor(this.repack.totalQty / this.repack.vialQty) : ''
   }
 
   openMenu($event) {
     if ($event.target.tagName != 'I')
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
-    this.repack.qty = 0,
+console.log('openMenu', this.ordered[this.term], this.repack);
+    this.repack.vialQty = this.ordered[this.term] && this.ordered[this.term].vialQty ? this.ordered[this.term].vialQty : 90
+    this.repack.totalQty = 0,
     this.repack.exp = '2099-01-01T00:00:00'
     for (let transaction of this.transactions) {
       if (transaction.isChecked) {
-        this.repack.qty += transaction.qty.to
+        this.repack.totalQty += transaction.qty.to
         this.repack.exp  = this.repack.exp < transaction.exp.to ? this.repack.exp : transaction.exp.to
       }
     }
@@ -317,7 +319,7 @@ export class inventory {
     this.db.transaction.query('inventory.drug.generic', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
     .then(res => {
       return res.rows.map(row => {
-        row.doc.next = JSON.stringify(row.doc.next)
+        row.doc.next = JSON.stringify(row.doc.next);
         return row.doc
       })
     })

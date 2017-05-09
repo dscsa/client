@@ -264,6 +264,18 @@
             style="width:48%">
             90 day price
           </md-input>
+          <md-input
+            type="number"
+            step="1"
+            value.bind="(account.ordered[group.name] || {}).vialQty"
+            style="width:48%">
+            Vial Qty
+          </md-input>
+          <md-input
+            value.bind="(account.ordered[group.name] || {}).vialSize"
+            style="width:49%">
+            Vial Size
+          </md-input>
           <!--
           <md-input
             type="number"
