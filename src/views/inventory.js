@@ -83,8 +83,8 @@ export class inventory {
       let bExp  = b.exp.to || b.exp.from || ''
       let aQty  = a.qty.to || a.qty.from || ''
       let bQty  = b.qty.to || b.qty.from || ''
-      let aBin  = a.location || ''
-      let bBin  = b.location || ''
+      let aBin  = a.bin || ''
+      let bBin  = b.bin || ''
       let aPack = this.isRepacked(a)
       let bPack = this.isRepacked(b)
 
@@ -127,7 +127,7 @@ export class inventory {
 
   search() {
     if (/[A-Z][0-9]{3}/.test(this.term))
-      return this.selectTerm('location', this.term)
+      return this.selectTerm('bin', this.term)
 
     if (/20\d\d-\d\d-?\d?\d?/.test(this.term))
       return this.selectTerm('exp', this.term, true)
@@ -234,7 +234,7 @@ export class inventory {
         qty:{to:this.repack.vialQty, from:null},
         user:{_id:this.user},
         shipment:{_id:this.account},
-        location:this.repack.location,
+        bin:this.repack.bin,
         drug:this.transactions[0].drug,
         next:this.pendingIndex != null ? [{pending:{}, createdAt}] : [] //Keep it pending if we are on pending screen
       })
@@ -264,7 +264,7 @@ export class inventory {
         `<strong>${this.transactions[0].drug.generic+' '+this.transactions[0].drug.form}</strong>`,
         `Ndc ${this.transactions[0].drug._id}`,
         `Exp ${this.repack.exp.slice(0, 10)}`,
-        `Bin ${this.repack.location}`,
+        `Bin ${this.repack.bin}`,
         `Qty ${this.repack.vialQty}`,
         `Pharmacist ________________`,
         `</p>`

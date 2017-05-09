@@ -273,11 +273,11 @@
                   id.bind="'bin_'+$index"
                   required
                   disabled.bind=" ! transaction.verifiedAt || transaction.next.length"
-                  keyup.delegate="setLocation(transaction) & debounce:1500"
+                  keyup.delegate="setBin(transaction) & debounce:1500"
                   keydown.delegate="binShortcuts($event, $index)"
                   pattern="[A-Z]\d{3}"
                   maxlength.bind="4"
-                  value.bind="transaction.location | upperCase"
+                  value.bind="transaction.bin | upperCase"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>

@@ -262,13 +262,13 @@ export class shipments {
     return this.incrementBin($event, this.transactions[$index])
   }
 
-  getLocation(transaction) {
-    return (this.getOrder(transaction) || {}).defaultLocation || this._location
+  getBin(transaction) {
+    return (this.getOrder(transaction) || {}).defaultBin || this._bin
   }
 
-  setLocation(transaction) {
-    if (this.getLocation(transaction) != transaction.location)
-      this._location = transaction.location //Only prepopulate non-default locations into next transaction
+  setBin(transaction) {
+    if (this.getBin(transaction) != transaction.bin)
+      this._bin = transaction.bin //Only prepopulate non-default bins into next transaction
   }
 
   aboveMinQty(order, transaction) {
@@ -356,20 +356,20 @@ export class shipments {
   toggleVerifiedCheck(transaction) {
 
     let verifiedAt = transaction.verifiedAt
-    let location   = transaction.location
+    let bin = transaction.bin
 
     if (verifiedAt) {
       transaction.verifiedAt = null
-      transaction.location   = null
+      transaction.bin = null
     } else {
       transaction.verifiedAt = new Date().toJSON()
-      transaction.location   = this.getLocation(transaction)
+      transaction.bin = this.getBin(transaction)
     }
 
     this.saveTransaction(transaction).catch(err => {
       transaction.isChecked  = ! transaction.isChecked
       transaction.verifiedAt = verifiedAt
-      transaction.location   = location
+      transaction.bin = bin
     })
   }
 
