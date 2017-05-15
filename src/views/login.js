@@ -10,7 +10,7 @@ export class login {
   constructor(db, router){
     this.db          = db
     this.router      = router
-    this.phone       = '650.488.7434'
+    this.phone       = ''
     this.password    = ''
     this.canActivate = canActivate
   }

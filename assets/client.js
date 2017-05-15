@@ -2281,7 +2281,7 @@ define('client/src/views/login',['exports', 'aurelia-framework', 'aurelia-router
 
       this.db = db;
       this.router = router;
-      this.phone = '650.488.7434';
+      this.phone = '';
       this.password = '';
       this.canActivate = _helpers.canActivate;
     }
