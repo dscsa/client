@@ -95,6 +95,7 @@ sudo npm install forever -g                    #to do make new repo with this de
 sudo node /dscsa/node_modules/server           #create server login
 ctrl c (to stop server)
 sudo forever start /dscsa/node_modules/server  #forever list, forever stop
+#log: sudo nano /var/log/couchdb/couch.log
 ```
 
 ##### Testing Notes
