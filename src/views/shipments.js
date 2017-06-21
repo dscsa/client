@@ -442,7 +442,7 @@ export class shipments {
     this.transactions.unshift(transaction) //Add the drug to the view
 
     let order        = this.getOrder(transaction)
-    let isPharMerica = /pharmerica.*/i.test(this.shipment.account.from.name)
+    let isPharMerica = false ///pharmerica.*/i.test(this.shipment.account.from.name)
 
     //We set current inventory when adding a new transaction.  This is a tradeoff of frequency vs accurracy.  This will be inaccurate
     //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
