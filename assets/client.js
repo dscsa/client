@@ -1565,15 +1565,14 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     drugs.prototype.exportCSV = function exportCSV(generic) {
       var _this6 = this;
 
+      var rows = [];
       this.db.drug.allDocs({ include_docs: true, endkey: '_design' }).then(function (res) {
-        return Promise.all(res.rows.map(function (row) {
+        return res.rows.reduce(function (chain, row) {
           var key = [_this6.account._id, row.doc.generic, row.doc._id];
-          return new Promise(function (resolve) {
-            return setTimeout(resolve, 100);
-          }).then(function (_) {
+          return chain.then(function (_) {
             return _this6.db.transaction.query('inventory', { key: key });
           }).then(function (inventory) {
-            return {
+            rows.push({
               order: _this6.account.ordered[row.doc.generic],
               '': row.doc,
               upc: "UPC " + row.doc.upc,
@@ -1582,10 +1581,10 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
                 return generic.name + " " + generic.strength;
               }).join(';'),
               inventory: inventory.rows[0] && inventory.rows[0].value
-            };
+            });
           });
-        }));
-      }).then(function (rows) {
+        }, Promise.resolve());
+      }).then(function (_) {
         return _this6.csv.fromJSON('Drugs ' + new Date().toJSON() + '.csv', rows);
       });
     };

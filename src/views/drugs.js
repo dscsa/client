@@ -144,25 +144,28 @@ export class drugs {
   }
 
   exportCSV(generic) {
+    let rows = []
     this.db.drug.allDocs({include_docs:true, endkey:'_design'})
     .then(res => {
-      return Promise.all(res.rows.map(row => {
+      //Sequentially add rows since parallel cause insufficient resource error
+      return res.rows.reduce((chain, row) => {
         const key = [this.account._id, row.doc.generic, row.doc._id]
-        return new Promise(resolve => setTimeout(resolve, 100)) //slow down requests otherwise https://stackoverflow.com/questions/24122506/neterr-insufficient-resources-error-when-adding-numerous-img-elements-to-dom
+        return chain
         .then(_ => this.db.transaction.query('inventory', {key}))
         .then(inventory => {
-          return {
+          rows.push({
             order:this.account.ordered[row.doc.generic],
             '':row.doc,
             upc:"UPC "+row.doc.upc,
             ndc9:"NDC9 "+row.doc.ndc9,
             generics:row.doc.generics.map(generic => generic.name+" "+generic.strength).join(';'),
             inventory:inventory.rows[0] && inventory.rows[0].value
-          }
+          })
         })
-      }))
+      }, Promise.resolve())
+
     })
-    .then(rows => this.csv.fromJSON(`Drugs ${new Date().toJSON()}.csv`, rows))
+    .then(_ => this.csv.fromJSON(`Drugs ${new Date().toJSON()}.csv`, rows))
   }
 
   importCSV() {
