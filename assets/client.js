@@ -1567,7 +1567,12 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       this.db.drug.allDocs({ include_docs: true, endkey: '_design' }).then(function (res) {
         return Promise.all(res.rows.map(function (row) {
-          return _this6.db.transaction.query('inventory', { key: [_this6.account._id, row.doc.generic, row.doc._id] }).then(function (inventory) {
+          var key = [_this6.account._id, row.doc.generic, row.doc._id];
+          return new Promise(function (resolve) {
+            return setTimeout(resolve, 20);
+          }).then(function (_) {
+            return _this6.db.transaction.query('inventory', { key: key });
+          }).then(function (inventory) {
             return {
               order: _this6.account.ordered[row.doc.generic],
               '': row.doc,

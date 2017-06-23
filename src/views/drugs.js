@@ -147,7 +147,9 @@ export class drugs {
     this.db.drug.allDocs({include_docs:true, endkey:'_design'})
     .then(res => {
       return Promise.all(res.rows.map(row => {
-        return this.db.transaction.query('inventory', {key:[this.account._id, row.doc.generic, row.doc._id]})
+        const key = [this.account._id, row.doc.generic, row.doc._id]
+        return new Promise(resolve => setTimeout(resolve, 20)) //slow down requests otherwise https://stackoverflow.com/questions/24122506/neterr-insufficient-resources-error-when-adding-numerous-img-elements-to-dom
+        .then(_ => this.db.transaction.query('inventory', {key}))
         .then(inventory => {
           return {
             order:this.account.ordered[row.doc.generic],
