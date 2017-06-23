@@ -1569,7 +1569,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
         return Promise.all(res.rows.map(function (row) {
           var key = [_this6.account._id, row.doc.generic, row.doc._id];
           return new Promise(function (resolve) {
-            return setTimeout(resolve, 20);
+            return setTimeout(resolve, 100);
           }).then(function (_) {
             return _this6.db.transaction.query('inventory', { key: key });
           }).then(function (inventory) {
