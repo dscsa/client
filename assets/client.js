@@ -1565,27 +1565,45 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     drugs.prototype.exportCSV = function exportCSV(generic) {
       var _this6 = this;
 
-      var rows = [];
-      this.db.drug.allDocs({ include_docs: true, endkey: '_design' }).then(function (res) {
-        return res.rows.reduce(function (chain, row) {
-          var key = [_this6.account._id, row.doc.generic, row.doc._id];
-          return chain.then(function (_) {
-            return _this6.db.transaction.query('inventory', { key: key });
-          }).then(function (inventory) {
-            rows.push({
-              order: _this6.account.ordered[row.doc.generic],
-              '': row.doc,
-              upc: "UPC " + row.doc.upc,
-              ndc9: "NDC9 " + row.doc.ndc9,
-              generics: row.doc.generics.map(function (generic) {
-                return generic.name + " " + generic.strength;
-              }).join(';'),
-              inventory: inventory.rows[0] && inventory.rows[0].value
-            });
-          });
-        }, Promise.resolve());
-      }).then(function (_) {
-        return _this6.csv.fromJSON('Drugs ' + new Date().toJSON() + '.csv', rows);
+      var inventory = this.db.transaction.query('inventory', { key: [this.account._id] });
+      var drugs = this.db.drug.allDocs({ include_docs: true, endkey: '_design' });
+      Promise.all([inventory, drugs]).then(function (_ref2) {
+        var inventory = _ref2[0],
+            drugs = _ref2[1];
+
+
+        var ndcMap = {};
+        for (var _iterator2 = inventory.rows, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+          var _ref3;
+
+          if (_isArray2) {
+            if (_i2 >= _iterator2.length) break;
+            _ref3 = _iterator2[_i2++];
+          } else {
+            _i2 = _iterator2.next();
+            if (_i2.done) break;
+            _ref3 = _i2.value;
+          }
+
+          var row = _ref3;
+
+          map[row.key[2]] = row.value;
+        }
+
+        return drugs.rows.map(function (row) {
+          return {
+            order: _this6.account.ordered[row.doc.generic],
+            '': row.doc,
+            upc: "UPC " + row.doc.upc,
+            ndc9: "NDC9 " + row.doc.ndc9,
+            generics: row.doc.generics.map(function (generic) {
+              return generic.name + " " + generic.strength;
+            }).join(';'),
+            inventory: ndcMap[row.doc._id]
+          };
+        }).then(function (drugs) {
+          return _this6.csv.fromJSON('Drugs ' + new Date().toJSON() + '.csv', drugs);
+        });
       });
     };
 

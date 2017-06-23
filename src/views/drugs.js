@@ -144,28 +144,27 @@ export class drugs {
   }
 
   exportCSV(generic) {
-    let rows = []
-    this.db.drug.allDocs({include_docs:true, endkey:'_design'})
-    .then(res => {
-      //Sequentially add rows since parallel cause insufficient resource error
-      return res.rows.reduce((chain, row) => {
-        const key = [this.account._id, row.doc.generic, row.doc._id]
-        return chain
-        .then(_ => this.db.transaction.query('inventory', {key}))
-        .then(inventory => {
-          rows.push({
-            order:this.account.ordered[row.doc.generic],
-            '':row.doc,
-            upc:"UPC "+row.doc.upc,
-            ndc9:"NDC9 "+row.doc.ndc9,
-            generics:row.doc.generics.map(generic => generic.name+" "+generic.strength).join(';'),
-            inventory:inventory.rows[0] && inventory.rows[0].value
-          })
-        })
-      }, Promise.resolve())
+    let inventory = this.db.transaction.query('inventory', {key:[this.account._id]})
+    let drugs = this.db.drug.allDocs({include_docs:true, endkey:'_design'})
+    Promise.all([inventory, drugs]).then(([inventory, drugs]) => {
 
+      let ndcMap = {}
+      for (const row of inventory.rows) {
+        map[row.key[2]] = row.value
+      }
+
+      return drugs.rows.map(row => {
+        return {
+          order:this.account.ordered[row.doc.generic],
+          '':row.doc,
+          upc:"UPC "+row.doc.upc,
+          ndc9:"NDC9 "+row.doc.ndc9,
+          generics:row.doc.generics.map(generic => generic.name+" "+generic.strength).join(';'),
+          inventory:ndcMap[row.doc._id]
+        }
+      })
+      .then(drugs => this.csv.fromJSON(`Drugs ${new Date().toJSON()}.csv`, drugs))
     })
-    .then(_ => this.csv.fromJSON(`Drugs ${new Date().toJSON()}.csv`, rows))
   }
 
   importCSV() {
