@@ -1482,7 +1482,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       var _this3 = this;
 
       this.term = group.name;
-      this.db.transaction.query('inventory.drug.generic', { key: group.name, include_docs: true }).then(function (inventory) {
+      this.db.transaction.query('inventory.drug.generic', { key: [this.account, group.name], include_docs: true }).then(function (inventory) {
         _this3.inventory = inventory.rows[0] && inventory.rows[0].qty;
       });
 
@@ -1567,7 +1567,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       this.db.drug.allDocs({ include_docs: true, endkey: '_design' }).then(function (res) {
         return Promise.all(res.rows.map(function (row) {
-          return _this6.db.transaction.query('inventory', { key: [row.doc.generic, row.doc._id] }).then(function (inventory) {
+          return _this6.db.transaction.query('inventory', { key: [_this6.account, row.doc.generic, row.doc._id] }).then(function (inventory) {
             return {
               order: _this6.account.ordered[row.doc.generic],
               '': row.doc,

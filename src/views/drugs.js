@@ -73,7 +73,7 @@ export class drugs {
   //3) selectDrug and we need to find the group with that particular generic name
   selectGroup(group, autoselectDrug) {
     this.term = group.name
-    this.db.transaction.query('inventory.drug.generic', {key:group.name, include_docs:true}).then(inventory => {
+    this.db.transaction.query('inventory.drug.generic', {key:[this.account, group.name], include_docs:true}).then(inventory => {
       this.inventory = inventory.rows[0] && inventory.rows[0].qty
     })
 
@@ -147,7 +147,7 @@ export class drugs {
     this.db.drug.allDocs({include_docs:true, endkey:'_design'})
     .then(res => {
       return Promise.all(res.rows.map(row => {
-        return this.db.transaction.query('inventory', {key:[row.doc.generic, row.doc._id]})
+        return this.db.transaction.query('inventory', {key:[this.account, row.doc.generic, row.doc._id]})
         .then(inventory => {
           return {
             order:this.account.ordered[row.doc.generic],
