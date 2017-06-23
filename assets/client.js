@@ -1571,7 +1571,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
         var inventory = _ref2[0],
             drugs = _ref2[1];
 
-
+        console.log('Export queries run');
         var ndcMap = {};
         for (var _iterator2 = inventory.rows, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
           var _ref3;
@@ -1587,10 +1587,10 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
           var row = _ref3;
 
-          map[row.key[2]] = row.value;
+          ndcMap[row.key[2]] = row.value;
         }
-
-        return drugs.rows.map(function (row) {
+        console.log('Inital map complete');
+        _this6.csv.fromJSON('Drugs ' + new Date().toJSON() + '.csv', drugs.rows.map(function (row) {
           return {
             order: _this6.account.ordered[row.doc.generic],
             '': row.doc,
@@ -1601,9 +1601,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
             }).join(';'),
             inventory: ndcMap[row.doc._id]
           };
-        }).then(function (drugs) {
-          return _this6.csv.fromJSON('Drugs ' + new Date().toJSON() + '.csv', drugs);
-        });
+        }));
       });
     };
 

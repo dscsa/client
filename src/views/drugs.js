@@ -147,13 +147,13 @@ export class drugs {
     let inventory = this.db.transaction.query('inventory', {key:[this.account._id]})
     let drugs = this.db.drug.allDocs({include_docs:true, endkey:'_design'})
     Promise.all([inventory, drugs]).then(([inventory, drugs]) => {
-
+      console.log('Export queries run')
       let ndcMap = {}
       for (const row of inventory.rows) {
-        map[row.key[2]] = row.value
+        ndcMap[row.key[2]] = row.value
       }
-
-      return drugs.rows.map(row => {
+      console.log('Inital map complete')
+      this.csv.fromJSON(`Drugs ${new Date().toJSON()}.csv`, drugs.rows.map(row => {
         return {
           order:this.account.ordered[row.doc.generic],
           '':row.doc,
@@ -162,8 +162,7 @@ export class drugs {
           generics:row.doc.generics.map(generic => generic.name+" "+generic.strength).join(';'),
           inventory:ndcMap[row.doc._id]
         }
-      })
-      .then(drugs => this.csv.fromJSON(`Drugs ${new Date().toJSON()}.csv`, drugs))
+      }))
     })
   }
 
