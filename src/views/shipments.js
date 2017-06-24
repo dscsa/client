@@ -277,9 +277,9 @@ export class shipments {
     console.log('aboveMinQty', transaction)
     let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
     let defaultQty = price > 1 ? 1 : 1 //keep expensive meds
-    let aboveMinQty = qty >= Math.min(+order.minQty || defaultQty, 10) //temp min() to help stock boxes in GA
+    let aboveMinQty = qty >= Math.min(+order.minQty || defaultQty, 10) //change #1 of 2: temp min() to help stock boxes in GA
     if ( ! aboveMinQty) console.log('Ordered drug but qty', qty, 'is less than', +order.minQty || defaultQty)
-    return qty >= (+order.minQty || defaultQty)
+    return qty >= Math.min(+order.minQty || defaultQty, 10) //change #2 of 2: temp min() to help stock boxes in GA
   }
 
   aboveMinExp(order, transaction) {
