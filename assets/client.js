@@ -2757,7 +2757,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       console.log('aboveMinQty', transaction);
       var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
       var defaultQty = price > 1 ? 1 : 1;
-      var aboveMinQty = qty >= (+order.minQty || defaultQty);
+      var aboveMinQty = qty >= Math.min(+order.minQty || defaultQty, 10);
       if (!aboveMinQty) console.log('Ordered drug but qty', qty, 'is less than', +order.minQty || defaultQty);
       return qty >= (+order.minQty || defaultQty);
     };
