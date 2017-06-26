@@ -170,14 +170,16 @@ export class inventoryFilterValueConverter {
           expFilter[exp].count++
           expFilter[exp].qty += qty
         }
-        return false
+
+        return transaction.isChecked = false
       }
       if ( ! ndcFilter[ndc].isChecked) {
         if (expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
           ndcFilter[ndc].count++
           ndcFilter[ndc].qty += qty
         }
-        return false
+
+        return transaction.isChecked = false
       }
 
       if ( ! formFilter[form].isChecked) {
@@ -185,7 +187,7 @@ export class inventoryFilterValueConverter {
           formFilter[form].count++
           formFilter[form].qty += qty
         }
-        return false
+        return transaction.isChecked = false
       }
 
       if ( ! repackFilter[repack].isChecked) {
@@ -193,7 +195,8 @@ export class inventoryFilterValueConverter {
           repackFilter[repack].count++
           repackFilter[repack].qty += qty
         }
-        return false
+
+        return transaction.isChecked = false
       }
 
       expFilter[exp].count++

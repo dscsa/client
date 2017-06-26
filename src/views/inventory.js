@@ -180,7 +180,7 @@ export class inventory {
       let transaction = this.transactions[i]
 
       if ( ! transaction.isChecked) continue
-
+      console.log('transaction update next', transaction)
       checked.push(transaction)
 
       transaction.next = updateFn(transaction)
@@ -231,7 +231,7 @@ export class inventory {
       this.transactions.unshift({
         verifiedAt:new Date().toJSON(),
         exp:{to:this.repack.exp, from:null},
-        qty:{to:this.repack.vialQty, from:null},
+        qty:{to:+this.repack.vialQty, from:null},
         user:{_id:this.user},
         shipment:{_id:this.account},
         bin:this.repack.bin,
