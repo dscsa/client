@@ -23,11 +23,11 @@
     </md-input>
     <a
       name = "pro_pended_items"
-      repeat.for="term of pending | toArray:term"
-      class="mdl-navigation__link ${ term == 'Pending '+term.key ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectTerm('pending', term.key)">
-      <div class="mdl-typography--title">${term.val[0].drug.generic}</div>
-      ${ term.key.slice(0, 16) }, ${ term.val.length } items
+      repeat.for="group of pending | toArray:term"
+      class="mdl-navigation__link ${ term == 'Pending '+group.key ? 'mdl-navigation__link--current' : ''}"
+      click.delegate="selectTerm('pending', group.key)">
+      <div class="mdl-typography--title">${group.val[0].drug.generic}</div>
+      ${ group.key.slice(0, 16) }, ${ group.val.length } items
     </a>
   </md-drawer>
   <section class="mdl-grid au-animate">
