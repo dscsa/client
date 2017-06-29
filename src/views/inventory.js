@@ -29,7 +29,7 @@ export class inventory {
     this.reset           = $event => {
       if ($event.newURL.slice(-9) == 'inventory') {
         this.term = ''
-        this.allChecked = false
+        this.visibleChecked = false
         this.setTransactions([])
       }
     }
@@ -104,14 +104,14 @@ export class inventory {
     transaction.isChecked = ! transaction.isChecked
 
     if ( ! transaction.isChecked)
-      this.allChecked = false
+      this.visibleChecked = false
   }
 
   //Check all visible (non-filtered) transactions
-  checkAllTransactions() {
-    this.allChecked = ! this.allChecked
     for (let transaction of this.transactions)
       transaction.isChecked = this.allChecked
+  checkVisibleTransactions() {
+    this.visibleChecked = ! this.visibleChecked
   }
 
   isRepacked(transaction) {
@@ -154,7 +154,7 @@ export class inventory {
       return this.selectPending(key)
 
     this.term = key
-    this.allChecked = false
+    this.visibleChecked = false
 
     let opts = {include_docs:true, limit:this.limit}
     if (type != 'generic') {
@@ -204,9 +204,10 @@ export class inventory {
     if (this.term.slice(0,7) == 'Pending' && checked.length == length) {
       delete this.pending[this.term.slice(8)]
       this.term = ''
-      this.allChecked = false
       this.router.navigate(`inventory`, {trigger:false}) //don't accidentally go back here on reload
     }
+
+    this.visibleChecked = false
 
     return checked
   }
@@ -313,7 +314,7 @@ export class inventory {
     if ($event.target.tagName != 'I')
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
-console.log('openMenu', this.ordered[this.term], this.repack);
+    console.log('openMenu', this.ordered[this.term], this.repack);
     this.repack.vialQty = this.ordered[this.term] && this.ordered[this.term].vialQty ? this.ordered[this.term].vialQty : 90
     this.repack.totalQty = 0,
     this.repack.exp = '2099-01-01T00:00:00'
