@@ -479,3 +479,95 @@ console.log('openMenu', this.ordered[this.term], this.repack);
   //   .then(_ => this.snackbar.show(`Imported Inventory Items`))
   // }
 }
+
+//ADDED step of converting object to array
+export class inventoryFilterValueConverter {
+  isRepacked(transaction) {
+    return transaction.shipment._id.indexOf('.') == -1 ? 'Repacked' : 'Inventory'
+  }
+  toView(transactions = [], filter = {}){
+    //restart filter on transaction changes but keep checks
+    //where they are if user is just modifying the filter
+    let ndcFilter    = {}
+    let expFilter    = {}
+    let repackFilter = {}
+    let formFilter   = {}
+
+    transactions = transactions.filter(transaction => {
+
+      //TODO we could reduce code by making this a loop of keys.  Lot's of redundancy here
+      let qty    = transaction.qty.to || transaction.qty.from
+      let exp    = transaction.exp.to || transaction.exp.from
+      let ndc    = transaction.drug._id
+      let form   = transaction.drug.form
+      let repack = this.isRepacked(transaction)
+
+      if ( ! expFilter[exp])
+        expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : true, count:0, qty:0}
+
+      if ( ! ndcFilter[ndc])
+        ndcFilter[ndc] = {isChecked:filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : true, count:0, qty:0}
+
+      if ( ! formFilter[form])
+        formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : true, count:0, qty:0}
+
+      if ( ! repackFilter[repack])
+        repackFilter[repack] = {isChecked:filter.form && filter.repack[repack] ? filter.repack[repack].isChecked : true, count:0, qty:0}
+
+      if ( ! expFilter[exp].isChecked) {
+        if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+          expFilter[exp].count++
+          expFilter[exp].qty += qty
+        }
+
+        return transaction.isChecked = false
+      }
+      if ( ! ndcFilter[ndc].isChecked) {
+        if (expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+          ndcFilter[ndc].count++
+          ndcFilter[ndc].qty += qty
+        }
+
+        return transaction.isChecked = false
+      }
+
+      if ( ! formFilter[form].isChecked) {
+        if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && repackFilter[repack].isChecked) {
+          formFilter[form].count++
+          formFilter[form].qty += qty
+        }
+        return transaction.isChecked = false
+      }
+
+      if ( ! repackFilter[repack].isChecked) {
+        if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked) {
+          repackFilter[repack].count++
+          repackFilter[repack].qty += qty
+        }
+
+        return transaction.isChecked = false
+      }
+
+      expFilter[exp].count++
+      expFilter[exp].qty += qty
+
+      ndcFilter[ndc].count++
+      ndcFilter[ndc].qty += qty
+
+      formFilter[form].count++
+      formFilter[form].qty += qty
+
+      repackFilter[repack].count++
+      repackFilter[repack].qty += qty
+
+      return true
+    })
+
+    filter.exp    = expFilter
+    filter.ndc    = ndcFilter
+    filter.form   = formFilter
+    filter.repack = repackFilter
+
+    return transactions
+  }
+}
