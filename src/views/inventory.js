@@ -171,10 +171,6 @@ export class inventory {
     this.filter = Object.assign({}, this.filter)
   }
 
-  updateNextOfSelected(updateFn) {
-    let createdAt = new Date().toJSON() //must be exact same timestamp for group of pending items
-    let length    = this.transactions.length
-    let checked   = []
     //since we may be deleting as we go, loop backward
     for (let i = length - 1; i >= 0; i--)  {
       let transaction = this.transactions[i]

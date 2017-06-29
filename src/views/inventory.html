@@ -119,6 +119,7 @@
         </li>
         <form>
           <li form
+            class="mdl-menu__item--full-bleed-divider"
             name = "pro_repack_selected"
             click.delegate="repackInventory()">
             Repack Selected
@@ -156,6 +157,11 @@
             </md-input>
           </li>
         </form>
+        <li
+          disabled.bind=" ! transactions.length"
+          click.delegate="disposeInventory()">
+          Dispose Selected
+        </li>
       </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div class="table-wrap">
