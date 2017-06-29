@@ -107,6 +107,7 @@ export class inventory {
       this.allChecked = false
   }
 
+  //Check all visible (non-filtered) transactions
   checkAllTransactions() {
     this.allChecked = ! this.allChecked
     for (let transaction of this.transactions)
@@ -171,6 +172,9 @@ export class inventory {
     this.filter = Object.assign({}, this.filter)
   }
 
+  updateSelected(updateFn) {
+    const length = this.transactions.length
+    let checked = []
     //since we may be deleting as we go, loop backward
     for (let i = length - 1; i >= 0; i--)  {
       let transaction = this.transactions[i]
@@ -179,11 +183,14 @@ export class inventory {
       console.log('transaction update next', transaction)
       checked.push(transaction)
 
-      transaction.next = updateFn(transaction)
-      for (let val of transaction.next)
-        val.createdAt = createdAt
+      updateFn(transaction)
 
+      //Remove from transactions displayed. This currently works because all actions
+      //pend, unpend, dispense, and repack remove transaction from the current list
+      //if we add another action where this is not true, we will need to pass an additional parameter.
       this.transactions.splice(i, 1)
+
+      //Save the transaction
       this.db.transaction.put(transaction)
       .catch(err => {
         transaction.next.pop()
@@ -192,6 +199,8 @@ export class inventory {
       })
     }
 
+    //Remove pending items from drawer if all pending items were checked
+    //check for this.term so we don't rerun this for each item
     if (this.term.slice(0,7) == 'Pending' && checked.length == length) {
       delete this.pending[this.term.slice(8)]
       this.term = ''
@@ -203,24 +212,34 @@ export class inventory {
   }
 
   unpendInventory() {
-    this.updateNextOfSelected(_ => [])
+    this.updateSelected(transaction => transaction.next = [])
   }
 
   pendInventory() {
-    let next = [{pending:{}}]
-    let selectedTransactions = this.updateNextOfSelected(_ => next)
+    const next = [{pending:{}, createdAt:new Date().toJSON()}]
+    let checked = this.updateSelected(transaction => transaction.next = next)
+
     //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
     //to trigger and update using Object.assign rather than just adding a property
-    this.pending = Object.assign({[next[0].createdAt]:selectedTransactions}, this.pending)
+    this.pending = Object.assign({[next[0].createdAt]:checked}, this.pending)
   }
 
   dispenseInventory() {
-    this.updateNextOfSelected(_ => [{dispensed:{}}])
+    const createdAt = new Date().toJSON()
+    this.updateSelected(transaction => transaction.next = [{dispensed:{}, createdAt}])
+  }
+
+  disposeInventory() {
+    const createdAt = new Date().toJSON()
+    this.updateSelected(transaction => {
+      transaction.verifiedAt = null
+      transaction.bin = null
+    })
   }
 
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
-    let all = [], createdAt = new Date().toJSON()
+    let newTransactions = [], createdAt = new Date().toJSON()
 
     //Create the new (repacked) transactions
     for (let i=0; i<this.repack.vials; i++) {
@@ -235,14 +254,14 @@ export class inventory {
         next:this.pendingIndex != null ? [{pending:{}, createdAt}] : [] //Keep it pending if we are on pending screen
       })
 
-      all.push(this.db.transaction.post(this.transactions[0]))
+      newTransactions.push(this.db.transaction.post(this.transactions[0]))
     }
 
     //Keep record of any excess that is implicitly destroyed
     let excess = this.repack.totalQty - (this.repack.vialQty * this.repack.vials)
     if (excess > 0)
     {
-      all.push(this.db.transaction.post({
+      newTransactions.push(this.db.transaction.post({
         exp:{to:this.repack.exp, from:null},
         qty:{to:excess, from:null},
         user:{_id:this.user},
@@ -253,7 +272,7 @@ export class inventory {
     }
 
     //Once we have the new _ids insert them into the next property of the checked transactions
-    Promise.all(all).then(all => {
+    Promise.all(newTransactions).then(newTransactions => {
 
       let label = [
         `<p style="page-break-after:always;">`,
@@ -266,9 +285,12 @@ export class inventory {
         `</p>`
       ]
 
-      this.updateNextOfSelected(_ => all.map(val => {
-        return {transaction:{_id:val.id}}
-      }))
+      const createdAt = new Date().toJSON()
+      const next = newTransactions.map(newTransaction => {
+        return {transaction:{_id:newTransaction.id}, createdAt}
+      })
+
+      this.updateSelected(transaction => transaction.next = next)
 
       let win = window.open()
       if ( ! win)
@@ -360,17 +382,17 @@ console.log('openMenu', this.ordered[this.term], this.repack);
 
   importCSV() {
     this.snackbar.show(`Parsing csv file`)
-console.log(1)
+
     this.csv.toJSON(this.$file.files[0], transactions => {
       this.$file.value = ''
       let errs  = []
       let chain = Promise.resolve()
-console.log(2)
+
       for (let i in transactions) {
         chain = chain
         .then(_ => {
           let transaction = transactions[i]
-console.log(3)
+
           transaction._err = undefined
           transaction._id  = undefined
           transaction._rev = undefined
@@ -378,7 +400,6 @@ console.log(3)
           //This will add drugs upto the point where a drug cannot be found rather than rejecting all
           return this.db.drug.get(transaction.drug._id)
           .then(drug => {
-            console.log(4)
             transaction.drug = {
               _id:drug._id,
               brand:drug.brand,
@@ -392,12 +413,10 @@ console.log(3)
             return this.db.transaction.post(transaction)
           })
           .catch(err => {
-            console.log(5)
             transaction._err = 'Upload Error: '+JSON.stringify(err)
             errs.push(transaction)
           })
           .then(_ => {
-            console.log(6)
             if (+i && (i % 100 == 0))
               this.snackbar.show(`Imported ${i} of ${transactions.length}`)
           })
