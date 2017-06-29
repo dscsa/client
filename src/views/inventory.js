@@ -53,7 +53,6 @@ export class inventory {
       .then(res => {
         this.pending = this.sortTransactions(res.rows.map(row => row.doc))
         .reduce((pending, transaction) => {
-          transaction.isChecked = true //checked by default
           let createdAt = transaction.next[0].createdAt
           pending[createdAt] = pending[createdAt] || []
           pending[createdAt].push(transaction)
@@ -96,11 +95,13 @@ export class inventory {
       if (aExp > bExp) return 1
       if (aQty > bQty) return -1
       if (aQty < bQty) return 1
+
       return 0
     })
   }
 
   checkTransaction(transaction) {
+
     transaction.isChecked = ! transaction.isChecked
 
     if ( ! transaction.isChecked)
@@ -108,10 +109,13 @@ export class inventory {
   }
 
   //Check all visible (non-filtered) transactions
-    for (let transaction of this.transactions)
-      transaction.isChecked = this.allChecked
   checkVisibleTransactions() {
     this.visibleChecked = ! this.visibleChecked
+
+    let visibleTransactions = inventoryFilterValueConverter.prototype.toView(this.transactions, this.filter)
+    console.log('visible transactions', visibleTransactions.length, 'of', this.transactions.length)
+    for (let transaction of visibleTransactions)
+      transaction.isChecked = this.visibleChecked
   }
 
   isRepacked(transaction) {
@@ -141,7 +145,7 @@ export class inventory {
 
   selectPending(pendingAt) {
     this.term = 'Pending '+pendingAt
-    this.allChecked = true
+    console.log('select pend', pendingAt)
     this.setTransactions(this.pending[pendingAt] || [])
     this.toggleDrawer()
   }
@@ -180,7 +184,7 @@ export class inventory {
       let transaction = this.transactions[i]
 
       if ( ! transaction.isChecked) continue
-      console.log('transaction update next', transaction)
+
       checked.push(transaction)
 
       updateFn(transaction)
@@ -218,7 +222,10 @@ export class inventory {
 
   pendInventory() {
     const next = [{pending:{}, createdAt:new Date().toJSON()}]
-    let checked = this.updateSelected(transaction => transaction.next = next)
+    let checked = this.updateSelected(transaction => {
+      transaction.isChecked = false
+      transaction.next = next
+    })
 
     //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
     //to trigger and update using Object.assign rather than just adding a property
