@@ -45,13 +45,13 @@
         </md-input>
         <div if.bind="drug.generics[0].name" style="position:relative">
           <md-button color fab="11"
-            show.bind="drug._rev && drug.generics[drug.generics.length-1].name"
+            show.bind="drug.generics[drug.generics.length-1].name"
             click.delegate="addGeneric()"
             style="position:absolute; left:153px; margin-top:-5px; z-index:1">
             +
           </md-button>
           <md-button color fab="11"
-            show.bind="drug._rev && ! drug.generics[drug.generics.length-1].name"
+            show.bind="! drug.generics[drug.generics.length-1].name"
             mousedown.delegate="removeGeneric()"
             style="position:absolute; right:153px; margin-top:-5px; z-index:1">
             -
