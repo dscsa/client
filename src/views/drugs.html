@@ -66,10 +66,18 @@
             value.bind="generic.name">
             ${ $index == 0 ? 'Generic Names & Strengths' : ''}
           </md-input>
-          <!-- limit units: ug > mcg, gm > g, meq > ~ mg, hr > h -->
+          <!--
+          limit units:
+          https://stackoverflow.com/questions/2078915/a-regular-expression-to-exclude-a-word-string
+          ([0-9]+|[0-9]+\.[0-9]+) Numerator must start with an integer or a decimal with leading digit, e.g, 0.3 not .3
+          (?!ug|gm|meq|hr)[a-z]* Numerator may have units but must substitute the following ug > mcg, gm > g, meq > ~ mg, hr > h
+          (/....)? Denominator is optional
+          ([0-9]+|[0-9]+\.[0-9]+)? Numerator may start with an integer or a decimal with leading digit.  Optional because 1 is implied e.g. 1mg/ml or 24mg/h
+          (?!ug|gm|meq|hr)[a-z]*  Numerator may have units but must substitute the following ug > mcg, gm > g, meq > ~ mg, hr > h
+          -->
           <md-input
             style="width:23%"
-            pattern="[0-9]([0-9a-z/.](?!ug)(?!gm)(?!meq)(?!hr))+"
+            pattern="([0-9]+|[0-9]+\.[0-9]+)(?!ug|gm|meq|hr)[a-z]*(/([0-9]+|[0-9]+\.[0-9]+)?(?!ug|gm|meq|hr)[a-z]*)?"
             value.bind="generic.strength">
           </md-input>
         </div>
