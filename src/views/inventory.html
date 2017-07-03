@@ -101,15 +101,10 @@
           click.delegate="exportCSV()">
           Export CSV
         </li>
-        <li class="mdl-menu__item--full-bleed-divider"
+        <li
+          class="mdl-menu__item--full-bleed-divider"
           click.delegate="$file.click()">
           Import CSV
-        </li>
-        <li
-          name = "pro_pend"
-          disabled.bind=" ! transactions.length"
-          click.delegate="term.slice(0,7) == 'Pending' ? unpendInventory() : pendInventory()">
-          ${ term.slice(0,7) == 'Pending' ? 'Unpend Selected' : 'Pend Selected'}
         </li>
         <li
           name = "pro_dispense"
@@ -117,15 +112,27 @@
           click.delegate="dispenseInventory()">
           Dispense Selected
         </li>
+        <li
+          class="mdl-menu__item--full-bleed-divider"
+          disabled.bind=" ! transactions.length"
+          click.delegate="disposeInventory()">
+          Dispose Selected
+        </li>
+        <li
+          name = "pro_pend"
+          disabled.bind=" ! transactions.length"
+          click.delegate="term.slice(0,7) == 'Pending' ? unpendInventory() : pendInventory()">
+          ${ term.slice(0,7) == 'Pending' ? 'Unpend Selected' : 'Pend Selected'}
+        </li>
         <form>
           <li form
-            class="mdl-menu__item--full-bleed-divider"
             name = "pro_repack_selected"
             click.delegate="repackInventory()">
             Repack Selected
           </li>
           <li>
             <md-input
+            type="number"
               required
               name = "pro_repack_qty"
               value.bind="repack.vialQty | number"
@@ -137,6 +144,7 @@
               required
               name = "pro_repack_vials"
               value.bind="repack.vials | number"
+              pattern="[1-9][0-9]*"
               style="width:40px;">
               Vials
             </md-input>
@@ -157,11 +165,6 @@
             </md-input>
           </li>
         </form>
-        <li
-          disabled.bind=" ! transactions.length"
-          click.delegate="disposeInventory()">
-          Dispose Selected
-        </li>
       </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div class="table-wrap">

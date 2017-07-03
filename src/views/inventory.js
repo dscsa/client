@@ -82,8 +82,10 @@ export class inventory {
       let bExp  = b.exp.to || b.exp.from || ''
       let aQty  = a.qty.to || a.qty.from || ''
       let bQty  = b.qty.to || b.qty.from || ''
-      let aBin  = a.bin || ''
-      let bBin  = b.bin || ''
+      //Swap second (row) and third (column) digits.  Because it's easier to
+      //to shop by column first because it doesn't require the shopper to move
+      let aBin  = a.bin ? a.bin[0]+a.bin[2]+a.bin[1]+(a.bin[3] || '') : ''
+      let bBin  = b.bin ? b.bin[0]+b.bin[2]+b.bin[1]+(b.bin[3] || '') : ''
       let aPack = this.isRepacked(a)
       let bPack = this.isRepacked(b)
 
@@ -314,7 +316,7 @@ export class inventory {
   }
 
   setRepackVials() {
-    this.repack.vials = +this.repack.vialQty ? Math.floor(this.repack.totalQty / this.repack.vialQty) : ''
+    this.repack.vials = this.repack.totalQty && +this.repack.vialQty ? Math.floor(this.repack.totalQty / this.repack.vialQty) : ''
   }
 
   openMenu($event) {
@@ -324,11 +326,11 @@ export class inventory {
     console.log('openMenu', this.ordered[this.term], this.repack);
     this.repack.vialQty = this.ordered[this.term] && this.ordered[this.term].vialQty ? this.ordered[this.term].vialQty : 90
     this.repack.totalQty = 0,
-    this.repack.exp = '2099-01-01T00:00:00'
+    this.repack.exp = ''
     for (let transaction of this.transactions) {
       if (transaction.isChecked) {
         this.repack.totalQty += transaction.qty.to
-        this.repack.exp  = this.repack.exp < transaction.exp.to ? this.repack.exp : transaction.exp.to
+        this.repack.exp  = this.repack.exp && this.repack.exp < transaction.exp.to ? this.repack.exp : transaction.exp.to
       }
     }
     this.setRepackVials()
