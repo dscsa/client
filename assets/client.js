@@ -1763,8 +1763,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var aPack = _this4.isRepacked(a);
         var bPack = _this4.isRepacked(b);
 
-        if (aPack > bPack) return 1;
-        if (aPack < bPack) return -1;
+        if (aPack > bPack) return -1;
+        if (aPack < bPack) return 1;
         if (aBin > bBin) return 1;
         if (aBin < bBin) return -1;
         if (aExp < bExp) return 1;

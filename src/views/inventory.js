@@ -89,8 +89,8 @@ export class inventory {
       let aPack = this.isRepacked(a)
       let bPack = this.isRepacked(b)
 
-      if (aPack > bPack) return 1
-      if (aPack < bPack) return -1
+      if (aPack > bPack) return -1
+      if (aPack < bPack) return 1
       if (aBin > bBin) return 1
       if (aBin < bBin) return -1
       if (aExp < bExp) return 1
