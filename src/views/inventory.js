@@ -30,7 +30,7 @@ export class inventory {
       if ($event.newURL.slice(-9) == 'inventory') {
         this.term = ''
         this.visibleChecked = false
-        this.setTransactions([])
+        this.setTransactions()
       }
     }
   }
@@ -124,7 +124,7 @@ export class inventory {
     return transaction.shipment._id.indexOf('.') == -1
   }
 
-  setTransactions(transactions) {
+  setTransactions(transactions = []) {
     if (transactions.length == this.limit)
       this.snackbar.show(`Displaying first 100 results`)
 
@@ -146,9 +146,13 @@ export class inventory {
   }
 
   selectPending(pendingAt) {
-    this.term = 'Pending '+pendingAt
-    console.log('select pend', pendingAt)
-    this.setTransactions(this.pending[pendingAt] || [])
+    let transactions = this.pending[pendingAt]
+
+    if (transactions)
+      this.term = 'Pending '+transactions[0].drug.generic
+
+    console.log('select pending', pendingAt, transactions)
+    this.setTransactions(transactions)
     this.toggleDrawer()
   }
 
@@ -323,8 +327,10 @@ export class inventory {
     if ($event.target.tagName != 'I')
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
-    console.log('openMenu', this.ordered[this.term], this.repack);
-    this.repack.vialQty = this.ordered[this.term] && this.ordered[this.term].vialQty ? this.ordered[this.term].vialQty : 90
+    console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);
+    const term = this.term.replace('Pending ', '')
+
+    this.repack.vialQty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
     this.repack.totalQty = 0,
     this.repack.exp = ''
     for (let transaction of this.transactions) {

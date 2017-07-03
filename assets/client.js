@@ -1700,7 +1700,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         if ($event.newURL.slice(-9) == 'inventory') {
           _this.term = '';
           _this.visibleChecked = false;
-          _this.setTransactions([]);
+          _this.setTransactions();
         }
       };
     }
@@ -1810,7 +1810,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       return transaction.shipment._id.indexOf('.') == -1;
     };
 
-    inventory.prototype.setTransactions = function setTransactions(transactions) {
+    inventory.prototype.setTransactions = function setTransactions() {
+      var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+
       if (transactions.length == this.limit) this.snackbar.show('Displaying first 100 results');
 
       this.transactions = this.sortTransactions(transactions);
@@ -1834,9 +1836,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.selectPending = function selectPending(pendingAt) {
-      this.term = 'Pending ' + pendingAt;
-      console.log('select pend', pendingAt);
-      this.setTransactions(this.pending[pendingAt] || []);
+      var transactions = this.pending[pendingAt];
+
+      if (transactions) this.term = 'Pending ' + transactions[0].drug.generic;
+
+      console.log('select pending', pendingAt, transactions);
+      this.setTransactions(transactions);
       this.toggleDrawer();
     };
 
@@ -2007,8 +2012,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.openMenu = function openMenu($event) {
       if ($event.target.tagName != 'I') return true;
 
-      console.log('openMenu', this.ordered[this.term], this.repack);
-      this.repack.vialQty = this.ordered[this.term] && this.ordered[this.term].vialQty ? this.ordered[this.term].vialQty : 90;
+      console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);
+      var term = this.term.replace('Pending ', '');
+
+      this.repack.vialQty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90;
       this.repack.totalQty = 0, this.repack.exp = '';
       for (var _iterator2 = this.transactions, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
         var _ref2;
