@@ -9,7 +9,6 @@ import {canActivate, scrollSelect, toggleDrawer, drugSearch} from '../resources/
 @inject(Pouch, Router)
 export class drugs {
   constructor(db, router){
-    console.log(1)
     this.csv    = csv
     this.db     = db
     this.router = router
@@ -72,7 +71,7 @@ export class drugs {
   //2) selectDrawer and we need to find the group with that particular generic name
   //3) selectDrug and we need to find the group with that particular generic name
   selectGroup(group, autoselectDrug) {
-    console.log('selectGroup()', this.group.name, this.drug.generic)
+    console.log('selectGroup()', group.name, this.drug && this.drug.generic)
 
     this.term = group.name
     this.db.transaction.query('inventory.drug.generic', {key:[this.account._id, group.name], include_docs:true}).then(inventory => {
@@ -98,7 +97,7 @@ export class drugs {
 
   selectDrug(drug, autoselectGroup) {
     //Default is for Add Drug menu item in view
-    console.log('selectDrug()', this.group.name, this.drug.generic)
+    console.log('selectDrug()', this.group.name, drug.generic)
     this.drug = drug || {
       generics:this.drug ? this.drug.generics : [{name:'', strength:''}],
       form:this.drug && this.drug.form

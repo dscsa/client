@@ -58,11 +58,14 @@
           </md-button>
         </div>
         <div repeat.for="generic of drug.generics">
+          <!--
+          [1-9]{0,2} is for Vitamins which do not have 0 or 10 and can be up to two digits
+          -->
           <md-input
             required
             name = "pro_gen_field"
             style="width:75%"
-            pattern="([A-Z][a-z]*\s?)+\b"
+            pattern="([A-Z][1-9]{0,2}[a-z]*\s?)+\b"
             value.bind="generic.name">
             ${ $index == 0 ? 'Generic Names & Strengths' : ''}
           </md-input>
