@@ -207,7 +207,8 @@
                 name = "pro_transaction_qty"
                 id.bind="'qty_'+$index"
                 required
-                keydown.delegate="qtyShortcuts($event, $index)"
+                keydown.delegate="qtyShortcutsKeydown($event, $index)"
+                input.trigger="qtyShortcutsInput($event, $index)"
                 disabled.bind="transaction.next.length"
                 type="number"
                 value.bind="transaction.qty.to | number"

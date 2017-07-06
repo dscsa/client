@@ -15,6 +15,23 @@ export function qtyShortcuts($event, $index) {
   return clearIfAsterick($event)
 }
 
+export function removeTransactionIfQty0($event, $index) {
+  //Delete an item in the qty is 0.  Instead of having a delete button
+
+  let transaction = this.transactions[$index]
+  let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
+  let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
+
+  if ( ! donorDelete && ! doneeDelete)
+    return true
+
+  this.drugs = [] //get rid of previous results since someone might press enter and accidentally readd the same drug
+  this.transactions.splice($index, 1) //Important to call splice before promise resolves since it will cancel the saveTransaction which would cause a conflict
+  //TODO get rid of this.diff as well in case this transaction was selected
+  this.db.transaction.remove(transaction)
+  this.focusInput(`md-autocomplete`)
+}
+
 export function incrementBin($event, transaction) {
   if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
     transaction.bin = transaction.bin[0]+(+transaction.bin.slice(1)+1)

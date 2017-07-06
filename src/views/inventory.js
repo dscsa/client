@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex, toggleDrawer} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex, toggleDrawer} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class inventory {
@@ -18,7 +18,8 @@ export class inventory {
     this.placeholder     = "Search by generic name, ndc, exp, or bin" //Put in while database syncs
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcuts    = expShortcuts
-    this.qtyShortcuts    = qtyShortcuts
+    this.qtyShortcutsKeydown    = qtyShortcuts
+    this.removeTransactionIfQty0 = removeTransactionIfQty0
     this.saveTransaction = saveTransaction
     this.incrementBin    = incrementBin
     this.focusInput      = focusInput
@@ -340,6 +341,15 @@ export class inventory {
       }
     }
     this.setRepackVials()
+  }
+
+  //Split functionality into Keydown and Input listeners because (keydown is set in constructor)
+  //Don't put this code into input because enter (which == 13) does not trigger input event.
+  //Don't put input code here because would then need a setTimeout for the quantity to actually change
+  //and you would need to ignore non-input key values.  So it cleaner to just keep these listeners separate
+  qtyShortcutsInput($event, $index) {
+    //Only run autocheck if the transaction was not deleted
+    this.removeTransactionIfQty0($event, $index)
   }
 
   binShortcuts($event, $index) {

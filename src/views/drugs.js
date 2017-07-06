@@ -72,6 +72,8 @@ export class drugs {
   //2) selectDrawer and we need to find the group with that particular generic name
   //3) selectDrug and we need to find the group with that particular generic name
   selectGroup(group, autoselectDrug) {
+    console.log('selectGroup()', this.group.name, this.drug.generic)
+
     this.term = group.name
     this.db.transaction.query('inventory.drug.generic', {key:[this.account._id, group.name], include_docs:true}).then(inventory => {
       this.inventory = inventory.rows[0] && inventory.rows[0].qty
@@ -96,6 +98,7 @@ export class drugs {
 
   selectDrug(drug, autoselectGroup) {
     //Default is for Add Drug menu item in view
+    console.log('selectDrug()', this.group.name, this.drug.generic)
     this.drug = drug || {
       generics:this.drug ? this.drug.generics : [{name:'', strength:''}],
       form:this.drug && this.drug.form
@@ -127,6 +130,8 @@ export class drugs {
   //We might make a separate database and API out of this one day, but for now just save on account object.
   //TODO: Warn on delete since we won't save save any of the preferences?
   order() {
+    console.log('before order()', this.group.name, this.drug.generic)
+
     if (this.account.ordered[this.group.name]) {
       //Delete this group from the drawer drawer
       this.drawer.ordered = this.drawer.ordered.filter(generic => {
@@ -139,7 +144,7 @@ export class drugs {
       this.drawer.ordered.unshift(this.group.name)
       this.account.ordered[this.group.name] = {}
     }
-
+    console.log('after order()', this.group.name, this.drug.generic)
     this.saveOrder()
   }
 
@@ -241,7 +246,9 @@ export class drugs {
   // }
 
   saveOrder() {
+    console.log('before saveOrder()', this.group.name, this.drug.generic)
     return this.db.account.put(this.account).catch(_ => {
+      console.log('after saveOrder()', this.group.name, this.drug.generic)
       this.snackbar.show(`Order could not be saved: ${err.reason || err.message}`)
     })
   }

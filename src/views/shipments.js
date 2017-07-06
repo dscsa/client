@@ -3,7 +3,7 @@ import {Router}     from 'aurelia-router'
 import {Pouch}         from '../libs/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {csv}        from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, incrementBin, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'
 
 //@pageState()
 @inject(Pouch, Router, HttpClient)
@@ -22,6 +22,7 @@ export class shipments {
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcutsKeydown = expShortcuts
     this.qtyShortcutsKeydown = qtyShortcuts
+    this.removeTransactionIfQty0 = removeTransactionIfQty0
     this.incrementBin    = incrementBin
     this.saveTransaction = saveTransaction
     this.focusInput      = focusInput
@@ -236,24 +237,6 @@ export class shipments {
     //Only run autocheck if the transaction was not deleted
     this.removeTransactionIfQty0($event, $index) && this.autoCheck($index)
   }
-
-  removeTransactionIfQty0($event, $index) {
-    //Delete an item in the qty is 0.  Instead of having a delete button
-
-    let transaction = this.transactions[$index]
-    let doneeDelete = ! transaction.qty.from && transaction.qty.to === 0
-    let donorDelete = ! transaction.qty.to   && transaction.qty.from === 0
-
-    if ( ! donorDelete && ! doneeDelete)
-      return true
-
-    this.drugs = [] //get rid of previous results since someone might press enter and accidentally readd the same drug
-    this.transactions.splice($index, 1) //Important to call splice before promise resolves since it will cancel the saveTransaction which would cause a conflict
-    //TODO get rid of this.diff as well in case this transaction was selected
-    this.db.transaction.remove(transaction)
-    this.focusInput(`md-autocomplete`)
-  }
-
 
   binShortcuts($event, $index) {
     if ($event.which == 13)
