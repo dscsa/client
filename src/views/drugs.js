@@ -97,7 +97,7 @@ export class drugs {
 
   selectDrug(drug, autoselectGroup) {
     //Default is for Add Drug menu item in view
-    console.log('selectDrug()', this.group.name, drug.generic)
+    console.log('selectDrug()', this.group && this.group.name, drug && drug.generic)
     this.drug = drug || {
       generics:this.drug ? this.drug.generics : [{name:'', strength:''}],
       form:this.drug && this.drug.form

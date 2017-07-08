@@ -1425,7 +1425,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     };
 
     drugs.prototype.selectDrug = function selectDrug(drug, autoselectGroup) {
-      console.log('selectDrug()', this.group.name, drug.generic);
+      console.log('selectDrug()', this.group && this.group.name, drug && drug.generic);
       this.drug = drug || {
         generics: this.drug ? this.drug.generics : [{ name: '', strength: '' }],
         form: this.drug && this.drug.form
@@ -2309,7 +2309,7 @@ define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router'
         console.log('join success', _);
         return _this.router.navigate('shipments');
       }).catch(function (err) {
-        return _this.snackbar.error('Join failed', err);
+        return _this.snackbar.error('Join failed', { err: err, account: _this.account, user: _this.user });
       });
     };
 

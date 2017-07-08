@@ -63,6 +63,6 @@ export class join {
       console.log('join success', _)
       return this.router.navigate('shipments')
     })
-    .catch(err => this.snackbar.error('Join failed', err))
+    .catch(err => this.snackbar.error('Join failed', {err, account:this.account, user:this.user}))
   }
 }
