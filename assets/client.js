@@ -2073,8 +2073,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.exportCSV = function exportCSV() {
       var _this9 = this;
 
-      this.db.transaction.query('inventory.drug.generic', { include_docs: true, startkey: [this.account], endkey: [this.account, {}] }).then(function (res) {
-        return res.rows.map(function (row) {
+      var pending = this.db.transaction.query('inventory.pendingAt', { include_docs: true, startkey: [this.account], endkey: [this.account, {}] });
+      var inventory = this.db.transaction.query('inventory.drug.generic', { include_docs: true, startkey: [this.account], endkey: [this.account, {}] });
+
+      Promise.all([pending, inventory]).then(function (res) {
+        return res[0].rows.concat(res[1].rows).map(function (row) {
           row.doc.next = JSON.stringify(row.doc.next);
           return row.doc;
         });
