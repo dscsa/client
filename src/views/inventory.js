@@ -122,7 +122,7 @@ export class inventory {
   }
 
   isRepacked(transaction) {
-    return transaction.shipment._id.indexOf('.') == -1
+    return transaction.bin && transaction.bin.length == 3
   }
 
   setTransactions(transactions = []) {
@@ -293,7 +293,7 @@ export class inventory {
         `<p style="page-break-after:always;">`,
         `<strong>${this.transactions[0].drug.generic+' '+this.transactions[0].drug.form}</strong>`,
         `Ndc ${this.transactions[0].drug._id}`,
-        `Exp ${this.repack.exp.slice(0, 10)}`,
+        `Exp ${this.repack.exp.slice(0, 7)}`,
         `Bin ${this.repack.bin}`,
         `Qty ${this.repack.vialQty}`,
         `Pharmacist ________________`,
@@ -508,9 +508,6 @@ export class inventory {
 
 //ADDED step of converting object to array
 export class inventoryFilterValueConverter {
-  isRepacked(transaction) {
-    return transaction.shipment._id.indexOf('.') == -1 ? 'Repacked' : 'Inventory'
-  }
   toView(transactions = [], filter = {}){
     //restart filter on transaction changes but keep checks
     //where they are if user is just modifying the filter
@@ -526,7 +523,7 @@ export class inventoryFilterValueConverter {
       let exp    = transaction.exp.to || transaction.exp.from
       let ndc    = transaction.drug._id
       let form   = transaction.drug.form
-      let repack = this.isRepacked(transaction)
+      let repack = inventory.prototype.isRepacked(transaction) ? 'Repacked' : 'Inventory'
 
       if ( ! expFilter[exp])
         expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : true, count:0, qty:0}

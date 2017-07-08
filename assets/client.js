@@ -951,9 +951,8 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     var month = _ref3.month,
         year = _ref3.year;
 
-    var date = new Date('20' + year, month, 1);
-    date.setDate(0);
-    return date.toJSON();
+    console.log('date', month, year, new Date('20' + year, month - 1, 1).toJSON());
+    return new Date('20' + year, month - 1, 1).toJSON();
   }
 
   function waitForDrugsToIndex() {
@@ -1829,7 +1828,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.isRepacked = function isRepacked(transaction) {
-      return transaction.shipment._id.indexOf('.') == -1;
+      return transaction.bin && transaction.bin.length == 3;
     };
 
     inventory.prototype.setTransactions = function setTransactions() {
@@ -2004,7 +2003,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       Promise.all(newTransactions).then(function (newTransactions) {
 
-        var label = ['<p style="page-break-after:always;">', '<strong>' + (_this8.transactions[0].drug.generic + ' ' + _this8.transactions[0].drug.form) + '</strong>', 'Ndc ' + _this8.transactions[0].drug._id, 'Exp ' + _this8.repack.exp.slice(0, 10), 'Bin ' + _this8.repack.bin, 'Qty ' + _this8.repack.vialQty, 'Pharmacist ________________', '</p>'];
+        var label = ['<p style="page-break-after:always;">', '<strong>' + (_this8.transactions[0].drug.generic + ' ' + _this8.transactions[0].drug.form) + '</strong>', 'Ndc ' + _this8.transactions[0].drug._id, 'Exp ' + _this8.repack.exp.slice(0, 7), 'Bin ' + _this8.repack.bin, 'Qty ' + _this8.repack.vialQty, 'Pharmacist ________________', '</p>'];
 
         var createdAt = new Date().toJSON();
         var next = newTransactions.map(function (newTransaction) {
@@ -2146,13 +2145,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       _classCallCheck(this, inventoryFilterValueConverter);
     }
 
-    inventoryFilterValueConverter.prototype.isRepacked = function isRepacked(transaction) {
-      return transaction.shipment._id.indexOf('.') == -1 ? 'Repacked' : 'Inventory';
-    };
-
     inventoryFilterValueConverter.prototype.toView = function toView() {
-      var _this11 = this;
-
       var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
       var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
@@ -2166,7 +2159,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var exp = transaction.exp.to || transaction.exp.from;
         var ndc = transaction.drug._id;
         var form = transaction.drug.form;
-        var repack = _this11.isRepacked(transaction);
+        var repack = inventory.prototype.isRepacked(transaction) ? 'Repacked' : 'Inventory';
 
         if (!expFilter[exp]) expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : true, count: 0, qty: 0 };
 

@@ -211,10 +211,15 @@ export function parseUserDate(date) {
 }
 
 //To get last day in month, set it to next month and subtract a day
+// export function toJsonDate({month, year}) {
+//   let date = new Date('20'+year,month, 1)
+//   date.setDate(0)
+//   return date.toJSON()
+// }
+//Can't round up must round down
 export function toJsonDate({month, year}) {
-  let date = new Date('20'+year,month, 1)
-  date.setDate(0)
-  return date.toJSON()
+  console.log('date', month, year, new Date('20'+year,month-1, 1).toJSON())
+  return new Date('20'+year,month-1, 1).toJSON()
 }
 
 //Calls the direct query to pouch to wait on the drug database being synced. Then it
