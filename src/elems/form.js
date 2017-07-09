@@ -9,6 +9,9 @@ export class FormCustomAttribute {
   }
 
   change() {
+    if (this.value == 'onchange' && this.serialize() == this.initialValue)
+      return this.inputElement.disabled = true
+
     this.inputElement.disabled = this.formElement && ! this.formElement.checkValidity()
   }
 
@@ -21,8 +24,22 @@ export class FormCustomAttribute {
 
     this.inputElement = this.element.querySelector('input,button,select') || this.element
 
+    this.initialValue = this.serialize()
     //When going "back" to "Create New Shipment" form.checkValidity() would return true
     //initially and then turn to false. setTimeout seems to eliminate this problem
     setTimeout(this.change)
+  }
+
+  serialize() {
+    let s = []
+    for (let field of this.formElement.elements) {
+      if (field.type != 'select-multiple')
+        s.push(field.value)
+      else
+        for (let option of field.options)
+          if(option.selected)
+            s.push(option.value)
+    }
+    return s.join('&')
   }
 }
