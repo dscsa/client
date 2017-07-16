@@ -26,7 +26,7 @@
       repeat.for="group of pending | toArray:term"
       class="mdl-navigation__link ${ term == 'Pending '+group.key ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectTerm('pending', group.key)">
-      <div class="mdl-typography--title">${group.val[0].drug.generic}</div>
+      <div class="mdl-typography--title" style="font-size:17px">${group.val[0].drug.generic}</div>
       ${ group.key.slice(0, 16) }, ${ group.val.length } items
     </a>
   </md-drawer>

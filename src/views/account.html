@@ -8,6 +8,7 @@
   <require from="client/src/elems/md-switch"></require>
   <require from="client/src/elems/md-checkbox"></require>
   <require from="client/src/elems/md-snackbar"></require>
+  <require from="client/src/elems/md-menu"></require>
   <require from="client/src/elems/form"></require>
 
   <md-drawer>
@@ -47,6 +48,33 @@
       </div>
     </form>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--8-col full-height">
+      <md-menu name="pro_menu" style="position:absolute; z-index:2; top:10px; right:5px;">
+        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
+        <li style="width:200px" disabled.bind="true">
+          Export
+          <div style="width:80px; float:right;">Import</div>
+        </li>
+        <a download="Transactions ${csvDate}" href="${csvHref}/transaction.csv"><li>
+          Transactions
+          <input change.delegate="importCSV($event)" type="file" style="width:80px; float:right; margin-top:15px">
+        </li></a>
+        <a download="Shipments ${csvDate}" href="${csvHref}/shipment.csv"><li>
+          Shipments
+          <input change.delegate="importCSV($event)" type="file" style="width:80px; float:right; margin-top:15px">
+        </li></a>
+        <a download="Accounts ${csvDate}" href="${csvHref}/account.csv"><li>
+          Accounts
+          <input change.delegate="importCSV($event)" type="file" style="width:80px; float:right; margin-top:15px">
+        </li></a>
+        <a download="Users ${csvDate}" href="${csvHref}/user.csv"><li>
+          Users
+          <input change.delegate="importCSV($event)" type="file" style="width:80px; float:right; margin-top:15px">
+        </li></a>
+        <a download="Drugs ${csvDate}" href="${csvHref}/drug.csv"><li>
+          Drugs
+          <input change.delegate="importCSV($event)" type="file" style="width:80px; float:right; margin-top:15px">
+        </li></a>
+      </md-menu>
       <div class="table-wrap">
         <table md-table>
           <thead>

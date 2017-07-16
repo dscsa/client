@@ -325,7 +325,7 @@ export class inventory {
   }
 
   openMenu($event) {
-    if ($event.target.tagName != 'I')
+    if ($event.target.tagName != 'I' || ! this.transactions.length)
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
     console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);

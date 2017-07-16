@@ -11,6 +11,8 @@ export class account {
     this.db           = db
     this.router       = router
     this.canActivate  = canActivate
+    this.csvHref = window.location.protocol+'//'+window.location.hostname
+    this.csvDate = `${new Date().toJSON().slice(0, -8)}`
   }
 
   activate() {
@@ -83,5 +85,14 @@ export class account {
       this.router.navigate('login', {trigger:true})
     })
     .catch(err => console.trace('Logout failed:',err))
+  }
+
+  importCSV($event) {
+    this.snackbar.show(`Uploading CSV File`) //'transaction.csv'
+    const elem = $event.target
+    console.log(elem.parentNode.parentNode.getAttribute('href'), elem.parentNode.parentNode.href, elem.parentNode.parentNode)
+    return this.db.ajax({method:'post', url:elem.parentNode.parentNode.getAttribute('href'), body:elem.files[0], json:false})
+    .then(rows => this.snackbar.show('Import Succesful'))
+    .catch(err => this.snackbar.error('Import Error', err))
   }
 }
