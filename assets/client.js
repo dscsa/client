@@ -2013,14 +2013,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.dispenseInventory = function dispenseInventory() {
-      var createdAt = new Date().toJSON();
+      var next = [{ dispensed: {}, createdAt: new Date().toJSON() }];
       this.updateSelected(function (transaction) {
-        return transaction.next = [{ dispensed: {}, createdAt: createdAt }];
+        return transaction.next = next;
       });
     };
 
     inventory.prototype.disposeInventory = function disposeInventory() {
-      var createdAt = new Date().toJSON();
       this.updateSelected(function (transaction) {
         transaction.verifiedAt = null;
         transaction.bin = null;
@@ -2035,7 +2034,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       for (var i = 0; i < this.repack.vials; i++) {
         this.transactions.unshift({
-          verifiedAt: new Date().toJSON(),
+          verifiedAt: createdAt,
           exp: { to: this.repack.exp, from: null },
           qty: { to: +this.repack.vialQty, from: null },
           user: { _id: this.user },
@@ -2062,7 +2061,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         var label = ['<p style="page-break-after:always;">', '<strong>' + (_this8.transactions[0].drug.generic + ' ' + _this8.transactions[0].drug.form) + '</strong>', 'Ndc ' + _this8.transactions[0].drug._id, 'Exp ' + _this8.repack.exp.slice(0, 7), 'Bin ' + _this8.repack.bin, 'Qty ' + _this8.repack.vialQty, 'Pharmacist ________________', '</p>'];
 
-        var createdAt = new Date().toJSON();
         var next = newTransactions.map(function (newTransaction) {
           return { transaction: { _id: newTransaction.id }, createdAt: createdAt };
         });

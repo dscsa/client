@@ -240,12 +240,11 @@ export class inventory {
   }
 
   dispenseInventory() {
-    const createdAt = new Date().toJSON()
-    this.updateSelected(transaction => transaction.next = [{dispensed:{}, createdAt}])
+    const next = [{dispensed:{}, createdAt:new Date().toJSON()}]
+    this.updateSelected(transaction => transaction.next = next)
   }
 
   disposeInventory() {
-    const createdAt = new Date().toJSON()
     this.updateSelected(transaction => {
       transaction.verifiedAt = null
       transaction.bin = null
@@ -259,7 +258,7 @@ export class inventory {
     //Create the new (repacked) transactions
     for (let i=0; i<this.repack.vials; i++) {
       this.transactions.unshift({
-        verifiedAt:new Date().toJSON(),
+        verifiedAt:createdAt,
         exp:{to:this.repack.exp, from:null},
         qty:{to:+this.repack.vialQty, from:null},
         user:{_id:this.user},
@@ -300,7 +299,6 @@ export class inventory {
         `</p>`
       ]
 
-      const createdAt = new Date().toJSON()
       const next = newTransactions.map(newTransaction => {
         return {transaction:{_id:newTransaction.id}, createdAt}
       })
