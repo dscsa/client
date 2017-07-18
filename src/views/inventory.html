@@ -132,18 +132,20 @@
           </li>
           <li>
             <md-input
-            type="number"
               required
+              type="number"
               name = "pro_repack_qty"
-              value.bind="repack.vialQty | number"
+              value.bind="repack.vialQty"
+              max.bind="repack.totalQty/(repack.vials >= 1 ? repack.vials : 1)"
               input.delegate="setRepackVials()"
               style="width:40px;">
               Qty
             </md-input>
             <md-input
               required
+              type="number"
               name = "pro_repack_vials"
-              value.bind="repack.vials | number"
+              value.bind="repack.vials"
               pattern="[1-9][0-9]*"
               style="width:40px;">
               Vials

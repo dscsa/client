@@ -271,7 +271,9 @@ export class inventory {
       newTransactions.push(this.db.transaction.post(this.transactions[0]))
     }
 
-    //Keep record of any excess that is implicitly destroyed
+    //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
+    //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
+    //because we don't know where the extra pills came from.
     let excess = this.repack.totalQty - (this.repack.vialQty * this.repack.vials)
     if (excess > 0)
     {
@@ -327,6 +329,7 @@ export class inventory {
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
     console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);
+
     const term = this.term.replace('Pending ', '')
 
     this.repack.vialQty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
@@ -338,6 +341,7 @@ export class inventory {
         this.repack.exp  = this.repack.exp && this.repack.exp < transaction.exp.to ? this.repack.exp : transaction.exp.to
       }
     }
+
     this.setRepackVials()
   }
 
