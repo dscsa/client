@@ -8,6 +8,7 @@ import {inject, bindable, bindingMode} from 'aurelia-framework';
 @bindable('placeholder')
 @bindable('input')
 @bindable('max')
+@bindable('min')
 @bindable('required')
 @bindable('minlength')
 @bindable('maxlength')
