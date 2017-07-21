@@ -1868,7 +1868,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.toggleCheck = function toggleCheck(transaction) {
-      console.log('toggleCheck transaction._id', transaction._id);
+      console.log('toggleCheck transaction', JSON.stringify(transaction, null, "  "));
       this.setCheck(transaction, !transaction.isChecked);
     };
 
@@ -2010,6 +2010,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         if (!transaction.isChecked) return 'continue';
 
+        _this7.setCheck(transaction, false);
         _this7.transactions.splice(i, 1);
 
         updateFn(transaction);
@@ -2076,10 +2077,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.unsetPending = function unsetPending(transaction) {
-      var pendedAt = transaction.next[0].createdAt;
+      var pendingAt = transaction.next[0].createdAt;
       var generic = transaction.drug.generic;
 
-      if (!this.pending[generic][pendedAt].length) delete this.pending[generic][pendedAt];
+      if (!this.pending[generic][pendingAt].length) delete this.pending[generic][pendingAt];
 
       if (!Object.keys(this.pending[generic]).length) delete this.pending[generic];
     };
@@ -2102,7 +2103,16 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var _this10 = this;
 
       var newTransactions = [],
-          createdAt = new Date().toJSON();
+          next = void 0,
+          createdAt = void 0;
+
+      if (this.term.slice(0, 7) == 'Pending') {
+        createdAt = this.transactions[0].next[0].createdAt;
+        next = [{ pending: {}, createdAt: createdAt }];
+      } else {
+        createdAt = new Date().toJSON();
+        next = [];
+      }
 
       for (var i = 0; i < this.repack.vials; i++) {
         this.transactions.unshift({
@@ -2113,7 +2123,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           shipment: { _id: this.account },
           bin: this.repack.bin,
           drug: this.transactions[0].drug,
-          next: this.pendingIndex != null ? [{ pending: {}, createdAt: createdAt }] : [] });
+          next: next
+        });
 
         newTransactions.push(this.db.transaction.post(this.transactions[0]));
       }
@@ -2230,7 +2241,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var pending = transaction.next[0] && transaction.next[0].pending;
 
         if (!expFilter[exp]) {
-          console.log('pending', !!pending, 'exp', exp, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked);
           expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : pending || false, count: 0, qty: 0 };
         }
 

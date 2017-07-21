@@ -110,7 +110,7 @@ export class inventory {
   }
 
   toggleCheck(transaction) {
-    console.log('toggleCheck transaction._id',  transaction._id)
+    console.log('toggleCheck transaction',  JSON.stringify(transaction, null, "  "))
     this.setCheck(transaction, ! transaction.isChecked)
   }
 
@@ -238,6 +238,7 @@ export class inventory {
       //Remove from transactions displayed. This currently works because all actions
       //pend, unpend, dispense, and repack remove transaction from the current list
       //if we add another action where this is not true, we will need to pass an additional parameter.
+      this.setCheck(transaction, false)
       this.transactions.splice(i, 1)
 
       updateFn(transaction)
@@ -298,11 +299,13 @@ export class inventory {
   }
 
   unsetPending(transaction) {
-    const pendedAt = transaction.next[0].createdAt
+    const pendingAt = transaction.next[0].createdAt
     const generic = transaction.drug.generic
 
-    if ( ! this.pending[generic][pendedAt].length)
-      delete this.pending[generic][pendedAt]
+    //Don't need to splice the pendingAt array because updateSelected does that automatically
+
+    if ( ! this.pending[generic][pendingAt].length)
+      delete this.pending[generic][pendingAt]
 
     if ( ! Object.keys(this.pending[generic]).length)
       delete this.pending[generic]
@@ -322,7 +325,16 @@ export class inventory {
 
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
-    let newTransactions = [], createdAt = new Date().toJSON()
+    let newTransactions = [], next, createdAt
+
+    //Keep it pending if we are on pending screen
+    if (this.term.slice(0,7) == 'Pending') {
+      createdAt = this.transactions[0].next[0].createdAt
+      next = [{pending:{}, createdAt}]
+    } else {
+      createdAt = new Date().toJSON()
+      next = []
+    }
 
     //Create the new (repacked) transactions
     for (let i=0; i<this.repack.vials; i++) {
@@ -334,7 +346,7 @@ export class inventory {
         shipment:{_id:this.account},
         bin:this.repack.bin,
         drug:this.transactions[0].drug,
-        next:this.pendingIndex != null ? [{pending:{}, createdAt}] : [] //Keep it pending if we are on pending screen
+        next:next
       })
 
       newTransactions.push(this.db.transaction.post(this.transactions[0]))
@@ -383,6 +395,7 @@ export class inventory {
       win.document.write(label.join('<br>').repeat(this.repack.vials))
       win.print()
       win.close()
+
     }).catch(err => {
       console.error(err)
       this.snackbar.show(`Transactions could not repackaged: ${err.reason}`)
@@ -457,7 +470,7 @@ export class inventoryFilterValueConverter {
       let pending = transaction.next[0] && transaction.next[0].pending
 
       if ( ! expFilter[exp]) {
-        console.log('pending', !!pending, 'exp', exp, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked)
+        //console.log('pending', !!pending, 'exp', exp, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked)
         expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : pending || false, count:0, qty:0}
       }
 
