@@ -119,14 +119,15 @@ export class inventory {
     this.setVisibleChecks( ! this.filter.checked.visible)
   }
 
-  setVisibleChecks(visible) {
+  setVisibleChecks(isChecked) {
     if ( ! this.filter) return
 
     let filtered = inventoryFilterValueConverter.prototype.toView(this.transactions, this.filter)
-    for (let transaction of filtered)
-      this.setCheck(transaction, visible)
 
-    this.filter.checked.visible = visible
+    for (let transaction of filtered)
+      this.setCheck(transaction, isChecked)
+
+    this.filter.checked.visible = isChecked
   }
 
   //Cannot rely on 'this' other than this.filter
@@ -158,7 +159,8 @@ export class inventory {
       this.snackbar.show(`Displaying first 100 results`)
 
     this.transactions = this.sortTransactions(transactions)
-    this.refreshFilter() //inventerFilterValueConverter sets the filter object, we need to make sure this triggers aurelia
+    console.log('reset filter')
+    this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
   }
 
   search() {
@@ -204,13 +206,13 @@ export class inventory {
 
   selectTerm(type, key) {
 
+    this.setVisibleChecks(false) //reset selected qty back to 0
+
     type == 'pending'
       ? this.selectPending(key)
       : this.selectInventory(type, key)
 
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
-    console.log('select term: filter reset')
-    this.filter = {}
   }
 
   refreshFilter(obj) {
@@ -455,7 +457,7 @@ export class inventoryFilterValueConverter {
       let pending = transaction.next[0] && transaction.next[0].pending
 
       if ( ! expFilter[exp]) {
-        console.log('pending', pending, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked)
+        console.log('pending', !!pending, 'exp', exp, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked)
         expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : pending || false, count:0, qty:0}
       }
 
@@ -504,6 +506,7 @@ export class inventoryFilterValueConverter {
 
       if ( ! transaction.isChecked)
         checkVisible = false
+
 
       expFilter[exp].count++
       expFilter[exp].qty += qty
