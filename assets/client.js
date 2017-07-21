@@ -1813,7 +1813,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
             var row = _ref;
 
             _this2.setPending(row.doc);
-          }
+          }_this2.refreshPending();
         }).then(function (_) {
           var keys = Object.keys(params);
           if (keys[0]) _this2.selectTerm(keys[0], params[keys[0]]);

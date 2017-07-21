@@ -54,6 +54,8 @@ export class inventory {
       .then(res => {
         for (let row of res.rows)
           this.setPending(row.doc)
+
+        this.refreshPending() //not needed on development without this on production, blank drawer on inital load
       })
       .then(_ => {
         let keys = Object.keys(params)
