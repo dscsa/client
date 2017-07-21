@@ -110,6 +110,7 @@ export class inventory {
   }
 
   toggleCheck(transaction) {
+    console.log('toggleCheck transaction._id',  transaction._id)
     this.setCheck(transaction, ! transaction.isChecked)
   }
 

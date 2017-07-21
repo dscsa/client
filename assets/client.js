@@ -1868,6 +1868,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.toggleCheck = function toggleCheck(transaction) {
+      console.log('toggleCheck transaction._id', transaction._id);
       this.setCheck(transaction, !transaction.isChecked);
     };
 
