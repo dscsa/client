@@ -1954,7 +1954,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       if (transactions) this.term = 'Pending ' + generic + ': ' + pendingAt.slice(5, 19);
 
-      console.log('select pending', this.term, transactions);
+      console.log('select pending', this.term);
       this.setTransactions(transactions);
       this.toggleDrawer();
     };
@@ -2222,12 +2222,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var ndc = transaction.drug._id;
         var form = transaction.drug.form;
         var repack = inventory.prototype.isRepacked(transaction) ? 'Repacked' : 'Inventory';
+        var pending = transaction.next[0] && transaction.next[0].pending;
 
-        if (!expFilter[exp]) expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : false, count: 0, qty: 0 };
+        if (!expFilter[exp]) expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : pending || false, count: 0, qty: 0 };
 
-        if (!ndcFilter[ndc]) ndcFilter[ndc] = { isChecked: filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : !i, count: 0, qty: 0 };
+        if (!ndcFilter[ndc]) ndcFilter[ndc] = { isChecked: filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : pending || !i, count: 0, qty: 0 };
 
-        if (!formFilter[form]) formFilter[form] = { isChecked: filter.form && filter.form[form] ? filter.form[form].isChecked : !i, count: 0, qty: 0 };
+        if (!formFilter[form]) formFilter[form] = { isChecked: filter.form && filter.form[form] ? filter.form[form].isChecked : pending || !i, count: 0, qty: 0 };
 
         if (!repackFilter[repack]) repackFilter[repack] = { isChecked: filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : true, count: 0, qty: 0 };
 
