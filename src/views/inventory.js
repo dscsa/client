@@ -44,8 +44,10 @@ export class inventory {
     //TODO find a more elegant way to accomplish this
     window.addEventListener("hashchange", this.reset)
 
+    this.db.account.get(this.account).then(account => this.ordered = account.ordered)
     //TODO replace this with page state library
-    this.db.user.session.get().then(session => {
+
+    return this.db.user.session.get().then(session => {
 
       this.user    = session._id
       this.account = session.account._id
@@ -55,16 +57,14 @@ export class inventory {
         for (let row of res.rows)
           this.setPending(row.doc)
 
-        this.refreshPending() //not needed on development without this on production, blank drawer on inital load
+        //this.refreshPending() //not needed on development without this on production, blank drawer on inital load
       })
       .then(_ => {
         let keys = Object.keys(params)
         if (keys[0])
           this.selectTerm(keys[0], params[keys[0]])
       })
-
-      return this.db.account.get(this.account)
-    }).then(account => this.ordered = account.ordered)
+    })
   }
 
   scrollTerms($event) {
@@ -190,6 +190,7 @@ export class inventory {
   selectTerm(type, key) {
 
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
+    console.log('select term: filter reset')
     this.filter = {checked:this.filter && this.filter.checked}
     this.setVisibleChecks(false)
 
@@ -450,8 +451,10 @@ export class inventoryFilterValueConverter {
       let repack = inventory.prototype.isRepacked(transaction) ? 'Repacked' : 'Inventory'
       let pending = transaction.next[0] && transaction.next[0].pending
 
-      if ( ! expFilter[exp])
+      if ( ! expFilter[exp]) {
+        console.log('pending', pending, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked)
         expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : pending || false, count:0, qty:0}
+      }
 
       if ( ! ndcFilter[ndc])
         ndcFilter[ndc] = {isChecked:filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : pending || ! i, count:0, qty:0}

@@ -1792,7 +1792,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       window.addEventListener("hashchange", this.reset);
 
-      this.db.user.session.get().then(function (session) {
+      this.db.account.get(this.account).then(function (account) {
+        return _this2.ordered = account.ordered;
+      });
+
+
+      return this.db.user.session.get().then(function (session) {
 
         _this2.user = session._id;
         _this2.account = session.account._id;
@@ -1813,15 +1818,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
             var row = _ref;
 
             _this2.setPending(row.doc);
-          }_this2.refreshPending();
+          }
         }).then(function (_) {
           var keys = Object.keys(params);
           if (keys[0]) _this2.selectTerm(keys[0], params[keys[0]]);
         });
-
-        return _this2.db.account.get(_this2.account);
-      }).then(function (account) {
-        return _this2.ordered = account.ordered;
       });
     };
 
@@ -1963,6 +1964,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var _this6 = this;
 
       this.router.navigate('inventory?' + type + '=' + key, { trigger: false });
+      console.log('select term: filter reset');
       this.filter = { checked: this.filter && this.filter.checked };
       this.setVisibleChecks(false);
 
@@ -2224,7 +2226,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var repack = inventory.prototype.isRepacked(transaction) ? 'Repacked' : 'Inventory';
         var pending = transaction.next[0] && transaction.next[0].pending;
 
-        if (!expFilter[exp]) expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : pending || false, count: 0, qty: 0 };
+        if (!expFilter[exp]) {
+          console.log('pending', pending, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked);
+          expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : pending || false, count: 0, qty: 0 };
+        }
 
         if (!ndcFilter[ndc]) ndcFilter[ndc] = { isChecked: filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : pending || !i, count: 0, qty: 0 };
 
