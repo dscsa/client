@@ -211,7 +211,6 @@ export class inventory {
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
     console.log('select term: filter reset')
     this.filter = {}
-    this.setVisibleChecks(false)
   }
 
   refreshFilter(obj) {
