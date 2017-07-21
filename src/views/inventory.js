@@ -210,7 +210,7 @@ export class inventory {
 
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
     console.log('select term: filter reset')
-    this.filter = {checked:this.filter && this.filter.checked}
+    this.filter = {}
     this.setVisibleChecks(false)
   }
 
