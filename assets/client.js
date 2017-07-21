@@ -1792,16 +1792,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       window.addEventListener("hashchange", this.reset);
 
-      this.db.account.get(this.account).then(function (account) {
-        return _this2.ordered = account.ordered;
-      });
-
-
       this.db.user.session.get().then(function (session) {
 
         _this2.user = session._id;
         _this2.account = session.account._id;
 
+        _this2.db.account.get(_this2.account).then(function (account) {
+          return _this2.ordered = account.ordered;
+        });
         _this2.db.transaction.query('inventory.pendingAt', { include_docs: true, startkey: [_this2.account], endkey: [_this2.account, {}] }).then(function (res) {
           for (var _iterator = res.rows, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
             var _ref;

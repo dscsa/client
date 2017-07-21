@@ -44,7 +44,6 @@ export class inventory {
     //TODO find a more elegant way to accomplish this
     window.addEventListener("hashchange", this.reset)
 
-    this.db.account.get(this.account).then(account => this.ordered = account.ordered)
     //TODO replace this with page state library
 
     this.db.user.session.get().then(session => {
@@ -52,6 +51,7 @@ export class inventory {
       this.user    = session._id
       this.account = session.account._id
 
+      this.db.account.get(this.account).then(account => this.ordered = account.ordered)
       this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
       .then(res => {
         for (let row of res.rows)
