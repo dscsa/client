@@ -188,7 +188,7 @@ export class inventory {
   selectTerm(type, key) {
 
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
-    this.filter = {}
+    this.filter = {checked:this.filter && this.filter.checked}
     this.setVisibleChecks(false)
 
     if (type == 'pending')
@@ -432,7 +432,7 @@ export class inventoryFilterValueConverter {
     let expFilter     = {}
     let repackFilter  = {}
     let formFilter    = {}
-    let checkVisible  = !!transactions.length //unchecked if not transactions
+    let checkVisible  = true
 
     filter.checked = filter.checked || {}
     filter.checked.qty = filter.checked.qty || 0
@@ -515,7 +515,7 @@ export class inventoryFilterValueConverter {
     filter.ndc     = ndcFilter
     filter.form    = formFilter
     filter.repack  = repackFilter
-    filter.checked.visible = checkVisible
+    filter.checked.visible = transactions.length ? checkVisible : false //unchecked if not transactions
 
     return transactions
   }

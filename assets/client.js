@@ -1963,7 +1963,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var _this6 = this;
 
       this.router.navigate('inventory?' + type + '=' + key, { trigger: false });
-      this.filter = {};
+      this.filter = { checked: this.filter && this.filter.checked };
       this.setVisibleChecks(false);
 
       if (type == 'pending') return this.selectPending(key);
@@ -2210,7 +2210,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var expFilter = {};
       var repackFilter = {};
       var formFilter = {};
-      var checkVisible = !!transactions.length;
+      var checkVisible = true;
 
       filter.checked = filter.checked || {};
       filter.checked.qty = filter.checked.qty || 0;
@@ -2286,7 +2286,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       filter.ndc = ndcFilter;
       filter.form = formFilter;
       filter.repack = repackFilter;
-      filter.checked.visible = checkVisible;
+      filter.checked.visible = transactions.length ? checkVisible : false;
 
       return transactions;
     };
