@@ -188,8 +188,8 @@ export class inventory {
   selectTerm(type, key) {
 
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
-    this.setVisibleChecks(false)
     this.filter = {}
+    this.setVisibleChecks(false)
 
     if (type == 'pending')
       return this.selectPending(key)

@@ -1963,8 +1963,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var _this6 = this;
 
       this.router.navigate('inventory?' + type + '=' + key, { trigger: false });
-      this.setVisibleChecks(false);
       this.filter = {};
+      this.setVisibleChecks(false);
 
       if (type == 'pending') return this.selectPending(key);
 
@@ -2204,7 +2204,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventoryFilterValueConverter.prototype.toView = function toView() {
       var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var filter = arguments[1];
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       var ndcFilter = {};
       var expFilter = {};
