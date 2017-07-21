@@ -2223,7 +2223,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var form = transaction.drug.form;
         var repack = inventory.prototype.isRepacked(transaction) ? 'Repacked' : 'Inventory';
 
-        if (!expFilter[exp]) expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : !i, count: 0, qty: 0 };
+        if (!expFilter[exp]) expFilter[exp] = { isChecked: filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : false, count: 0, qty: 0 };
 
         if (!ndcFilter[ndc]) ndcFilter[ndc] = { isChecked: filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : !i, count: 0, qty: 0 };
 
