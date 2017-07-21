@@ -21,25 +21,36 @@
       style="padding:0 8px; width:auto">
       Filter pending inventory
     </md-input>
-    <a
-      name = "pro_pended_items"
-      repeat.for="group of pending | toArray:term"
-      class="mdl-navigation__link ${ term == 'Pending '+group.key ? 'mdl-navigation__link--current' : ''}"
-      click.delegate="selectTerm('pending', group.key)">
-      <div class="mdl-typography--title" style="font-size:17px">${group.val[0].drug.generic}</div>
-      ${ group.key.slice(0, 16) }, ${ group.val.length } items
-    </a>
+    <div repeat.for="pendingDrug of pending | toArray">
+      <div class="mdl-typography--title" style="font-size:17px; cursor:default; color:#757575; padding:8px">${pendingDrug.key}</div>
+      <div
+        name="pro_pended_items"
+        repeat.for="pendingAt of pendingDrug.val | toArray"
+        click.delegate="selectTerm('pending', pendingDrug.key+': '+pendingAt.key)"
+        class="mdl-navigation__link ${ term == 'Pending '+pendingDrug.key+': '+pendingAt.key.slice(5, 19) ? 'mdl-navigation__link--current' : ''}"
+        style="cursor:pointer; padding-top:2px; padding-bottom:2px">
+        ${ pendingAt.key.slice(5, 16) }, ${ pendingAt.val.length } items
+      </div>
+    </div>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
       <div show.bind="transactions.length" class="mdl-card__supporting-text" style="padding-left:24px; white-space:nowrap">
-        <div name = "pro_ndc_filter" repeat.for="ndc of filter.ndc | toArray:true">
-          <div if.bind="$index == 0" class="mdl-card__title" style="padding:4px 0 8px 0">
-            <div style="width:60%">Ndc Filter</div>
+        <div>
+          <div class="mdl-card__title" style="padding:4px 0 8px 0">
+            <div style="width:60%"></div>
             <div style="width:20%">Qty</div>
             <div style="width:20%">Count</div>
           </div>
-          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="signalFilter(ndc)" checked.bind="ndc.val.isChecked">${ndc.key}</md-checkbox>
+          <md-checkbox name = "pro_checkall" style="width:60%; margin-bottom:3px" click.delegate="toggleVisibleChecks()" checked.bind="filter.checked.visible">Selected</md-checkbox>
+          <div style="width:18%; display:inline-block; vertical-align:top">${filter.checked.qty}</div>
+          <div style="width:18%; display:inline-block; vertical-align:top">${filter.checked.count}</div>
+        </div>
+        <div name = "pro_ndc_filter" repeat.for="ndc of filter.ndc | toArray:true">
+          <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
+            <div style="width:60%">Ndc Filter</div>
+          </div>
+          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="refreshFilter(ndc)" checked.bind="ndc.val.isChecked">${ndc.key}</md-checkbox>
           <div style="width:18%; display:inline-block; vertical-align:top">${ndc.val.qty}</div>
           <div style="width:18%; display:inline-block; vertical-align:top">${ndc.val.count}</div>
         </div>
@@ -47,7 +58,7 @@
           <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
             <div style="width:60%">Exp Filter</div>
           </div>
-          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="signalFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
+          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="refreshFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
           <div style="width:18%; display:inline-block; vertical-align:top">${exp.val.qty}</div>
           <div style="width:18%; display:inline-block; vertical-align:top">${exp.val.count}</div>
         </div>
@@ -55,7 +66,7 @@
           <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
             <div style="width:60%">Repack Filter</div>
           </div>
-          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="signalFilter(repack)" checked.bind="repack.val.isChecked">${repack.key}</md-checkbox>
+          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="refreshFilter(repack)" checked.bind="repack.val.isChecked">${repack.key}</md-checkbox>
           <div style="width:18%; display:inline-block; vertical-align:top">${repack.val.qty}</div>
           <div style="width:18%; display:inline-block; vertical-align:top">${repack.val.count}</div>
         </div>
@@ -63,11 +74,11 @@
           <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
             <div style="width:60%">Form Filter</div>
           </div>
-          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="signalFilter(form)" checked.bind="form.val.isChecked">${form.key}</md-checkbox>
+          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="refreshFilter(form)" checked.bind="form.val.isChecked">${form.key}</md-checkbox>
           <div style="width:18%; display:inline-block; vertical-align:top">${form.val.qty}</div>
           <div style="width:18%; display:inline-block; vertical-align:top">${form.val.count}</div>
         </div>
-        <!-- <md-input show.bind="transactions.length" input.delegate="signalFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input> -->
+        <!-- <md-input show.bind="transactions.length" input.delegate="refreshFilter()" value.bind="filter.rx" style="margin-left:16px;" class="mdl-cell mdl-cell--10-col">Rx Filter</md-input> -->
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
@@ -96,16 +107,6 @@
         </table>
       </md-autocomplete>
       <md-menu name = "pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
-        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
-        <li
-          click.delegate="exportCSV()">
-          Export CSV
-        </li>
-        <li
-          class="mdl-menu__item--full-bleed-divider"
-          click.delegate="$file.click()">
-          Import CSV
-        </li>
         <li
           name = "pro_dispense"
           disabled.bind=" ! transactions.length"
@@ -118,11 +119,28 @@
           click.delegate="disposeInventory()">
           Dispose Selected
         </li>
+        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
-          name = "pro_pend"
+          name="pro_pend"
+          show.bind="term.slice(0,7) == 'Pending'"
           disabled.bind=" ! transactions.length"
-          click.delegate="term.slice(0,7) == 'Pending' ? unpendInventory() : pendInventory()">
-          ${ term.slice(0,7) == 'Pending' ? 'Unpend Selected' : 'Pend Selected'}
+          click.delegate="unpendInventory()">
+          Unpend Selected
+        </li>
+        <li
+          repeat.for="group of pending[transactions[0].drug.generic] | toArray"
+          show.bind="term != 'Pending '+transactions[0].drug.generic+': '+group.key.slice(5, 19)"
+          name="pro_pend"
+          class="mdl-menu__item"
+          click.delegate="pendInventory(group.key)">
+          Pend to ${group.key.slice(5, 16)}
+        </li>
+        <li
+          name="pro_pend"
+          disabled.bind=" ! transactions.length"
+          click.delegate="pendInventory()"
+          class="mdl-menu__item--full-bleed-divider">
+          Pend to New
         </li>
         <form>
           <li form
@@ -173,9 +191,7 @@
         <table md-table>
           <thead>
             <tr>
-              <th style="width:50px; padding:0">
-                <md-checkbox name = "pro_checkall" click.delegate="checkVisibleTransactions()" checked.bind="visibleChecked"></md-checkbox>
-              </th>
+              <th style="width:50px; padding:0"></th>
               <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
               <th class="mdl-data-table__cell--non-numeric">Form</th>
               <th class="mdl-data-table__cell--non-numeric">Ndc</th>
@@ -187,7 +203,7 @@
           </thead>
           <tr name = "pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
             <td style="padding:0">
-              <md-checkbox name = "pro_transaction_checkbox" click.delegate="checkTransaction(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
+              <md-checkbox name = "pro_transaction_checkbox" click.delegate="toggleCheck(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
             </td>
             <td class="mdl-data-table__cell--non-numeric" style="padding-left:0">${ transaction.drug.generic }</td>
             <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
@@ -211,7 +227,7 @@
                 required
                 keydown.delegate="qtyShortcutsKeydown($event, $index)"
                 input.trigger="qtyShortcutsInput($event, $index)"
-                disabled.bind="transaction.next.length"
+                disabled.bind="transaction.next[0] && ! transaction.next[0].pending"
                 type="number"
                 value.bind="transaction.qty.to | number"
                 style="width:40px; margin-bottom:-8px"

@@ -4,6 +4,7 @@
     <!-- Chrome's input[type=date] has a minimum height of 24px because of its internal buttons, to align heights we need to make all have min-height. -->
     <input
       if.bind="type != 'number'"
+      type.bind="type"
       name="input"
       ref="input"
       required.bind="required || required === ''"

@@ -14,6 +14,7 @@ export class inventory {
     this.limit  = 100
     this.repack = {}
     this.transactions = []
+    this.pending = {}
 
     this.placeholder     = "Search by generic name, ndc, exp, or bin" //Put in while database syncs
     this.waitForDrugsToIndex = waitForDrugsToIndex
@@ -30,7 +31,6 @@ export class inventory {
     this.reset           = $event => {
       if ($event.newURL.slice(-9) == 'inventory') {
         this.term = ''
-        this.visibleChecked = false
         this.setTransactions()
       }
     }
@@ -52,13 +52,8 @@ export class inventory {
 
       this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
       .then(res => {
-        this.pending = this.sortTransactions(res.rows.map(row => row.doc))
-        .reduce((pending, transaction) => {
-          let createdAt = transaction.next[0].createdAt
-          pending[createdAt] = pending[createdAt] || []
-          pending[createdAt].push(transaction)
-          return pending
-        }, {})
+        for (let row of res.rows)
+          this.setPending(row.doc)
       })
       .then(_ => {
         let keys = Object.keys(params)
@@ -79,23 +74,32 @@ export class inventory {
 
   sortTransactions(transactions) {
     return transactions.sort((a, b) => {
-      let aExp  = a.exp.to || a.exp.from || ''
-      let bExp  = b.exp.to || b.exp.from || ''
-      let aQty  = a.qty.to || a.qty.from || ''
-      let bQty  = b.qty.to || b.qty.from || ''
-      //Swap second (row) and third (column) digits.  Because it's easier to
-      //to shop by column first because it doesn't require the shopper to move
-      let aBin  = a.bin ? a.bin[0]+a.bin[2]+a.bin[1]+(a.bin[3] || '') : ''
-      let bBin  = b.bin ? b.bin[0]+b.bin[2]+b.bin[1]+(b.bin[3] || '') : ''
+
       let aPack = this.isRepacked(a)
       let bPack = this.isRepacked(b)
 
+      //For repacked, sort repacked first (descending)
       if (aPack > bPack) return -1
       if (aPack < bPack) return 1
+
+      let aBin  = a.bin ? a.bin[0]+a.bin[2]+a.bin[1]+(a.bin[3] || '') : ''
+      let bBin  = b.bin ? b.bin[0]+b.bin[2]+b.bin[1]+(b.bin[3] || '') : ''
+
+      //For bin sory acsending alphabetically
+      //Swap second (row) and third (column) digits.  Because it's easier to
+      //to shop by column first because it doesn't require the shopper to move
       if (aBin > bBin) return 1
       if (aBin < bBin) return -1
+
+      let aExp  = a.exp.to || a.exp.from || ''
+      let bExp  = b.exp.to || b.exp.from || ''
+
       if (aExp < bExp) return 1
       if (aExp > bExp) return -1
+
+      let aQty  = a.qty.to || a.qty.from || ''
+      let bQty  = b.qty.to || b.qty.from || ''
+
       if (aQty > bQty) return 1
       if (aQty < bQty) return -1
 
@@ -103,22 +107,44 @@ export class inventory {
     })
   }
 
-  checkTransaction(transaction) {
-
-    transaction.isChecked = ! transaction.isChecked
-
-    if ( ! transaction.isChecked)
-      this.visibleChecked = false
+  toggleCheck(transaction) {
+    this.setCheck(transaction, ! transaction.isChecked)
   }
 
   //Check all visible (non-filtered) transactions
-  checkVisibleTransactions() {
-    this.visibleChecked = ! this.visibleChecked
+  toggleVisibleChecks() {
+    this.setVisibleChecks( ! this.filter.checked.visible)
+  }
 
-    let visibleTransactions = inventoryFilterValueConverter.prototype.toView(this.transactions, this.filter)
-    console.log('visible transactions', visibleTransactions.length, 'of', this.transactions.length)
-    for (let transaction of visibleTransactions)
-      transaction.isChecked = this.visibleChecked
+  setVisibleChecks(visible) {
+    if ( ! this.filter) return
+
+    let filtered = inventoryFilterValueConverter.prototype.toView(this.transactions, this.filter)
+    for (let transaction of filtered)
+      this.setCheck(transaction, visible)
+
+    this.filter.checked.visible = visible
+  }
+
+  //Cannot rely on 'this' other than this.filter
+  //because used by inventoryFilterValueConverter
+  setCheck(transaction, isChecked) {
+
+    const qty = transaction.qty.to || transaction.qty.from || 0
+
+    if (isChecked && ! transaction.isChecked) {
+      this.filter.checked.qty += qty
+      this.filter.checked.count++
+    }
+
+    if ( ! isChecked && transaction.isChecked) {
+      this.filter.checked.qty -= qty
+      this.filter.checked.count--
+      this.filter.checked.visible = false
+      console.log('setCheck', this.filter.checked)
+    }
+
+    return transaction.isChecked = isChecked
   }
 
   isRepacked(transaction) {
@@ -130,7 +156,7 @@ export class inventory {
       this.snackbar.show(`Displaying first 100 results`)
 
     this.transactions = this.sortTransactions(transactions)
-    this.signalFilter() //inventerFilterValueConverter sets the filter object, we need to make sure this triggers aurelia
+    this.refreshFilter() //inventerFilterValueConverter sets the filter object, we need to make sure this triggers aurelia
   }
 
   search() {
@@ -146,13 +172,16 @@ export class inventory {
     })
   }
 
-  selectPending(pendingAt) {
-    let transactions = this.pending[pendingAt]
+  selectPending(pendingKey) {
+
+    const [generic, pendingAt] = pendingKey.split(': ')
+
+    let transactions = this.pending[generic] ? this.pending[generic][pendingAt] : []
 
     if (transactions)
-      this.term = 'Pending '+transactions[0].drug.generic
+      this.term = 'Pending '+generic+': '+pendingAt.slice(5, 19)
 
-    console.log('select pending', pendingAt, transactions)
+    console.log('select pending', this.term, transactions)
     this.setTransactions(transactions)
     this.toggleDrawer()
   }
@@ -165,7 +194,7 @@ export class inventory {
       return this.selectPending(key)
 
     this.term = key
-    this.visibleChecked = false
+    this.setVisibleChecks(false)
 
     let opts = {include_docs:true, limit:this.limit}
     if (type != 'generic') {
@@ -178,65 +207,97 @@ export class inventory {
     this.db.transaction.query('inventory.'+type, opts).then(setTransactions)
   }
 
-  signalFilter(obj) {
+  refreshFilter(obj) {
     if (obj) obj.val.isChecked = ! obj.val.isChecked
     this.filter = Object.assign({}, this.filter)
   }
 
+  refreshPending() {
+    //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
+    //to trigger and update using Object.assign rather than just adding a property
+    this.pending = Object.assign({}, this.pending)
+  }
+
   updateSelected(updateFn) {
     const length = this.transactions.length
-    let checked = []
+    let all = []
     //since we may be deleting as we go, loop backward
     for (let i = length - 1; i >= 0; i--)  {
       let transaction = this.transactions[i]
 
       if ( ! transaction.isChecked) continue
 
-      checked.push(transaction)
-
-      updateFn(transaction)
-
       //Remove from transactions displayed. This currently works because all actions
       //pend, unpend, dispense, and repack remove transaction from the current list
       //if we add another action where this is not true, we will need to pass an additional parameter.
       this.transactions.splice(i, 1)
 
+      updateFn(transaction)
+
       //Save the transaction
-      this.db.transaction.put(transaction)
+      all.unshift(this.db.transaction.put(transaction)
       .catch(err => {
         transaction.next.pop()
         this.transactions.splice(i, 0, transaction)
         this.snackbar.error('Error removing inventory', err)
-      })
+      }))
     }
 
-    //Remove pending items from drawer if all pending items were checked
-    //check for this.term so we don't rerun this for each item
-    if (this.term.slice(0,7) == 'Pending' && checked.length == length) {
-      delete this.pending[this.term.slice(8)]
-      this.term = ''
-      this.router.navigate(`inventory`, {trigger:false}) //don't accidentally go back here on reload
-    }
+    this.filter.checked.visible = false
 
-    this.visibleChecked = false
-
-    return checked
+    return Promise.all(all)
   }
 
   unpendInventory() {
-    this.updateSelected(transaction => transaction.next = [])
+    const term = this.transactions[0].drug.generic
+    this.updateSelected(transaction => {
+      this.unsetPending(transaction) //this must happen first so we have next info
+      transaction.isChecked = false
+      transaction.next = []
+    })
+    //We must let these transactions save witout next for them to appear back in inventory
+    .then(_ => this.selectTerm('drug.generic', term))
+
+    this.refreshPending()
   }
 
-  pendInventory() {
-    const next = [{pending:{}, createdAt:new Date().toJSON()}]
-    let checked = this.updateSelected(transaction => {
-      transaction.isChecked = false
-      transaction.next = next
-    })
+  pendInventory(createdAt = new Date().toJSON()) {
+    const term = this.transactions[0].drug.generic+': '+createdAt
+    this.updateSelected(transaction => {
+      if (transaction.next[0]) //this is for moving all of one pending to another (we must delete the original)
+        this.unsetPending(transaction)
 
-    //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
-    //to trigger and update using Object.assign rather than just adding a property
-    this.pending = Object.assign({[next[0].createdAt]:checked}, this.pending)
+      transaction.isChecked = false
+      transaction.next = [{pending:{}, createdAt}]
+      this.setPending(transaction) //this must happen last so we have next info
+    })
+    //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
+    this.selectTerm('pending', term)
+
+    this.refreshPending()
+  }
+
+  //Group pending into this structure {drug:{pendedAt1:[...drugs], pendedAt2:[...drugs]}}
+  //this will allow easy functionality of the "Pend to" feature in case someone forgot to
+  //pend a drug with the original group.
+  setPending(transaction) {
+    const generic  = transaction.drug.generic
+    const pendedAt = transaction.next[0].createdAt
+
+    this.pending[generic] = this.pending[generic] || {}
+    this.pending[generic][pendedAt] = this.pending[generic][pendedAt] || []
+    this.pending[generic][pendedAt].push(transaction)
+  }
+
+  unsetPending(transaction) {
+    const pendedAt = transaction.next[0].createdAt
+    const generic = transaction.drug.generic
+
+    if ( ! this.pending[generic][pendedAt].length)
+      delete this.pending[generic][pendedAt]
+
+    if ( ! Object.keys(this.pending[generic]).length)
+      delete this.pending[generic]
   }
 
   dispenseInventory() {
@@ -360,154 +421,6 @@ export class inventory {
 
     return this.incrementBin($event, this.transactions[$index])
   }
-
-  exportCSV() {
-    let pending   = this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
-    let inventory = this.db.transaction.query('inventory.drug.generic', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
-
-    Promise.all([pending, inventory]).then(res => {
-      return res[0].rows.concat(res[1].rows).map(row => {
-        row.doc.next = JSON.stringify(row.doc.next);
-        return row.doc
-      })
-    })
-    .then(rows => this.csv.fromJSON(`Inventory ${new Date().toJSON()}.csv`, rows))
-  }
-
-  // importCSV() {
-  //   this.csv.toJSON(this.$file.files[0], parsed => {
-  //     this.$file.value = ''
-  //     return Promise.all(parsed.map(transaction => {
-  //       transaction._err        = undefined
-  //       transaction._id          = undefined
-  //       transaction._rev         = undefined
-  //       transaction.next         = JSON.parse(transaction.next)
-  //       //This will add drugs upto the point where a drug cannot be found rather than rejecting all
-  //       return this.db.drug.get(transaction.drug._id)
-  //       .then(drug => {
-  //         transaction.drug = {
-  //           _id:drug._id,
-  //           brand:drug.brand,
-  //           generic:drug.generic,
-  //           generics:drug.generics,
-  //           form:drug.form,
-  //           price:drug.price,
-  //           pkg:drug.pkg
-  //         }
-  //
-  //         return this.db.transaction.post(transaction)
-  //       })
-  //       .then(_ => { //do not return anything so we don't download successes
-  //         this.transactions.unshift(transaction)
-  //       })
-  //       .catch(err => {
-  //         transaction._err = 'Upload Error: '+JSON.stringify(err)
-  //         return transaction //return something so we do download errors
-  //       })
-  //     }))
-  //   })
-  //   .then(rows => this.snackbar.show('Import Succesful'))
-  //   .catch(err => this.snackbar.error('Import Error', err))
-  // }
-
-  importCSV() {
-    this.snackbar.show(`Parsing csv file`)
-
-    this.csv.toJSON(this.$file.files[0], transactions => {
-      this.$file.value = ''
-      let errs  = []
-      let chain = Promise.resolve()
-
-      for (let i in transactions) {
-        chain = chain
-        .then(_ => {
-          let transaction = transactions[i]
-
-          transaction._err = undefined
-          transaction._id  = undefined
-          transaction._rev = undefined
-          transaction.next = JSON.parse(transaction.next)
-          //This will add drugs upto the point where a drug cannot be found rather than rejecting all
-          return this.db.drug.get(transaction.drug._id)
-          .then(drug => {
-            transaction.drug = {
-              _id:drug._id,
-              brand:drug.brand,
-              generic:drug.generic,
-              generics:drug.generics,
-              form:drug.form,
-              price:drug.price,
-              pkg:drug.pkg
-            }
-
-            return this.db.transaction.post(transaction)
-          })
-          .catch(err => {
-            transaction._err = 'Upload Error: '+JSON.stringify(err)
-            errs.push(transaction)
-          })
-          .then(_ => {
-            if (+i && (i % 100 == 0))
-              this.snackbar.show(`Imported ${i} of ${transactions.length}`)
-          })
-        })
-      }
-
-      return chain.then(_ => errs)  //return something so we do download errors
-    })
-    .then(rows => this.snackbar.show('Import Succesful'))
-    .catch(err => this.snackbar.error('Import Error', err))
-  }
-
-  // importCSV() {
-  //   console.log('this.$file.value', this.$file.value)
-  //   this.csv.parse(this.$file.files[0]).then(parsed => {
-  //     return Promise.all(parsed.map(transaction => {
-  //       this.$file.value = ''  //Change event only fires if filename changed.  Manually set to blank in case user re-uploads same file (name)
-  //       transaction._id          = undefined
-  //       transaction._rev         = undefined
-  //       transaction.next         = JSON.parse(transaction.next || "[]")
-  //       return this.db.drug.get({_id:transaction.drug._id}).then(drugs => {
-  //         //This will add drugs upto the point where a drug cannot be found rather than rejecting all
-  //         if ( ! drugs[0])
-  //           throw 'Cannot find drug with _id '+transaction.drug._id
-  //
-  //         transaction.drug = {
-  //           _id:drugs[0]._id,
-  //           brand:drugs[0].brand,
-  //           generic:drugs[0].generic,
-  //           generics:drugs[0].generics,
-  //           form:drugs[0].form,
-  //           price:drugs[0].price,
-  //           pkg:drugs[0].pkg
-  //         }
-  //
-  //         return transaction
-  //       })
-  //       .catch(drug => {
-  //         console.log('Missing drug', transaction.drug._id, transaction.drug)
-  //         throw drug
-  //       })
-  //     }))
-  //   })
-  //   .then(rows => {
-  //     let chain = Promise.resolve()
-  //     for (let i = 0; i < rows.length; i += 36*30-1) {
-  //       chain = chain.then(_ => {
-  //         let args = rows.slice(i, i+36*30-1)
-  //         args = args.map(row => this.db.transaction.post(row))
-  //         args.push(new Promise(r => setTimeout(r, 4000)))
-  //         return Promise.all(args)
-  //       })
-  //       .catch(err => {
-  //         console.log('importCSV error',  i, i+36*30-1, err)
-  //         this.snackbar.show('Error Importing Inventory: '+JSON.stringify(err))
-  //       })
-  //     }
-  //     return chain
-  //   })
-  //   .then(_ => this.snackbar.show(`Imported Inventory Items`))
-  // }
 }
 
 //ADDED step of converting object to array
@@ -515,12 +428,15 @@ export class inventoryFilterValueConverter {
   toView(transactions = [], filter = {}){
     //restart filter on transaction changes but keep checks
     //where they are if user is just modifying the filter
-    let ndcFilter    = {}
-    let expFilter    = {}
-    let repackFilter = {}
-    let formFilter   = {}
+    let ndcFilter     = {}
+    let expFilter     = {}
+    let repackFilter  = {}
+    let formFilter    = {}
+    let checkVisible  = true
 
-    transactions = transactions.filter(transaction => {
+    filter.checked = filter.checked || {qty:0, count:0}
+
+    transactions = transactions.filter((transaction, i) => {
 
       //TODO we could reduce code by making this a loop of keys.  Lot's of redundancy here
       let qty    = transaction.qty.to || transaction.qty.from
@@ -530,16 +446,16 @@ export class inventoryFilterValueConverter {
       let repack = inventory.prototype.isRepacked(transaction) ? 'Repacked' : 'Inventory'
 
       if ( ! expFilter[exp])
-        expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : true, count:0, qty:0}
+        expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : ! i, count:0, qty:0}
 
       if ( ! ndcFilter[ndc])
-        ndcFilter[ndc] = {isChecked:filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : true, count:0, qty:0}
+        ndcFilter[ndc] = {isChecked:filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : ! i, count:0, qty:0}
 
       if ( ! formFilter[form])
-        formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : true, count:0, qty:0}
+        formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : ! i, count:0, qty:0}
 
       if ( ! repackFilter[repack])
-        repackFilter[repack] = {isChecked:filter.form && filter.repack[repack] ? filter.repack[repack].isChecked : true, count:0, qty:0}
+        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : true, count:0, qty:0}
 
       if ( ! expFilter[exp].isChecked) {
         if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
@@ -547,7 +463,7 @@ export class inventoryFilterValueConverter {
           expFilter[exp].qty += qty
         }
 
-        return transaction.isChecked = false
+        return inventory.prototype.setCheck.call({filter}, transaction, false)
       }
       if ( ! ndcFilter[ndc].isChecked) {
         if (expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
@@ -555,7 +471,7 @@ export class inventoryFilterValueConverter {
           ndcFilter[ndc].qty += qty
         }
 
-        return transaction.isChecked = false
+        return inventory.prototype.setCheck.call({filter}, transaction, false)
       }
 
       if ( ! formFilter[form].isChecked) {
@@ -563,7 +479,7 @@ export class inventoryFilterValueConverter {
           formFilter[form].count++
           formFilter[form].qty += qty
         }
-        return transaction.isChecked = false
+        return inventory.prototype.setCheck.call({filter}, transaction, false)
       }
 
       if ( ! repackFilter[repack].isChecked) {
@@ -572,8 +488,11 @@ export class inventoryFilterValueConverter {
           repackFilter[repack].qty += qty
         }
 
-        return transaction.isChecked = false
+        return inventory.prototype.setCheck.call({filter}, transaction, false)
       }
+
+      if ( ! transaction.isChecked)
+        checkVisible = false
 
       expFilter[exp].count++
       expFilter[exp].qty += qty
@@ -590,10 +509,11 @@ export class inventoryFilterValueConverter {
       return true
     })
 
-    filter.exp    = expFilter
-    filter.ndc    = ndcFilter
-    filter.form   = formFilter
-    filter.repack = repackFilter
+    filter.exp     = expFilter
+    filter.ndc     = ndcFilter
+    filter.form    = formFilter
+    filter.repack  = repackFilter
+    filter.checked.visible = checkVisible
 
     return transactions
   }
