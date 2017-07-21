@@ -141,7 +141,6 @@ export class inventory {
       this.filter.checked.qty -= qty
       this.filter.checked.count--
       this.filter.checked.visible = false
-      console.log('setCheck', this.filter.checked)
     }
 
     return transaction.isChecked = isChecked
@@ -189,12 +188,13 @@ export class inventory {
   selectTerm(type, key) {
 
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
-
+    this.setVisibleChecks(false)
+    this.filter = {}
+    
     if (type == 'pending')
       return this.selectPending(key)
 
     this.term = key
-    this.setVisibleChecks(false)
 
     let opts = {include_docs:true, limit:this.limit}
     if (type != 'generic') {
@@ -425,7 +425,7 @@ export class inventory {
 
 //ADDED step of converting object to array
 export class inventoryFilterValueConverter {
-  toView(transactions = [], filter = {}){
+  toView(transactions = [], filter){
     //restart filter on transaction changes but keep checks
     //where they are if user is just modifying the filter
     let ndcFilter     = {}
