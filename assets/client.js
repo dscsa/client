@@ -1797,7 +1797,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       });
 
 
-      return this.db.user.session.get().then(function (session) {
+      this.db.user.session.get().then(function (session) {
 
         _this2.user = session._id;
         _this2.account = session.account._id;
@@ -1818,7 +1818,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
             var row = _ref;
 
             _this2.setPending(row.doc);
-          }
+          }_this2.refreshPending();
         }).then(function (_) {
           var keys = Object.keys(params);
           if (keys[0]) _this2.selectTerm(keys[0], params[keys[0]]);

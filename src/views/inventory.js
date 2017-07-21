@@ -47,7 +47,7 @@ export class inventory {
     this.db.account.get(this.account).then(account => this.ordered = account.ordered)
     //TODO replace this with page state library
 
-    return this.db.user.session.get().then(session => {
+    this.db.user.session.get().then(session => {
 
       this.user    = session._id
       this.account = session.account._id
@@ -57,7 +57,7 @@ export class inventory {
         for (let row of res.rows)
           this.setPending(row.doc)
 
-        //this.refreshPending() //not needed on development without this on production, blank drawer on inital load
+        this.refreshPending() //not needed on development without this on production, blank drawer on inital load
       })
       .then(_ => {
         let keys = Object.keys(params)
