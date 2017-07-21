@@ -1958,15 +1958,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.toggleDrawer();
     };
 
-    inventory.prototype.selectTerm = function selectTerm(type, key) {
+    inventory.prototype.selectInventory = function selectInventory(type, key) {
       var _this6 = this;
-
-      this.router.navigate('inventory?' + type + '=' + key, { trigger: false });
-      console.log('select term: filter reset');
-      this.filter = { checked: this.filter && this.filter.checked };
-      this.setVisibleChecks(false);
-
-      if (type == 'pending') return this.selectPending(key);
 
       this.term = key;
 
@@ -1983,6 +1976,16 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         }));
       };
       this.db.transaction.query('inventory.' + type, opts).then(setTransactions);
+    };
+
+    inventory.prototype.selectTerm = function selectTerm(type, key) {
+
+      type == 'pending' ? this.selectPending(key) : this.selectInventory(type, key);
+
+      this.router.navigate('inventory?' + type + '=' + key, { trigger: false });
+      console.log('select term: filter reset');
+      this.filter = { checked: this.filter && this.filter.checked };
+      this.setVisibleChecks(false);
     };
 
     inventory.prototype.refreshFilter = function refreshFilter(obj) {

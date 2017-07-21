@@ -187,16 +187,7 @@ export class inventory {
     this.toggleDrawer()
   }
 
-  selectTerm(type, key) {
-
-    this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
-    console.log('select term: filter reset')
-    this.filter = {checked:this.filter && this.filter.checked}
-    this.setVisibleChecks(false)
-
-    if (type == 'pending')
-      return this.selectPending(key)
-
+  selectInventory(type, key) {
     this.term = key
 
     let opts = {include_docs:true, limit:this.limit}
@@ -208,6 +199,18 @@ export class inventory {
     }
     const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc))
     this.db.transaction.query('inventory.'+type, opts).then(setTransactions)
+  }
+
+  selectTerm(type, key) {
+
+    type == 'pending'
+      ? this.selectPending(key)
+      : this.selectInventory(type, key)
+
+    this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
+    console.log('select term: filter reset')
+    this.filter = {checked:this.filter && this.filter.checked}
+    this.setVisibleChecks(false)
   }
 
   refreshFilter(obj) {
