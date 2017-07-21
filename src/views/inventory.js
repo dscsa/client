@@ -432,9 +432,11 @@ export class inventoryFilterValueConverter {
     let expFilter     = {}
     let repackFilter  = {}
     let formFilter    = {}
-    let checkVisible  = true
+    let checkVisible  = !!transactions.length //unchecked if not transactions
 
-    filter.checked = filter.checked || {qty:0, count:0}
+    filter.checked = filter.checked || {}
+    filter.checked.qty = filter.checked.qty || 0
+    filter.checked.count = filter.checked.count || 0
 
     transactions = transactions.filter((transaction, i) => {
 

@@ -2210,9 +2210,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var expFilter = {};
       var repackFilter = {};
       var formFilter = {};
-      var checkVisible = true;
+      var checkVisible = !!transactions.length;
 
-      filter.checked = filter.checked || { qty: 0, count: 0 };
+      filter.checked = filter.checked || {};
+      filter.checked.qty = filter.checked.qty || 0;
+      filter.checked.count = filter.checked.count || 0;
 
       transactions = transactions.filter(function (transaction, i) {
         var qty = transaction.qty.to || transaction.qty.from;
