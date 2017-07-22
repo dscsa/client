@@ -128,8 +128,7 @@
         </li>
         <li
           repeat.for="group of pending[transactions[0].drug.generic] | toArray"
-          show.bind="term != 'Pending '+transactions[0].drug.generic+': '+group.key.slice(5, 19)"
-          disabled.bind=" ! $parent.filter.checked.count"
+          show.bind="filter.checked.count && (term != 'Pending '+transactions[0].drug.generic+': '+group.key.slice(5, 19))"
           name="pro_pend"
           class="mdl-menu__item"
           click.delegate="pendInventory(group.key)">
