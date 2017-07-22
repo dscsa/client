@@ -10,10 +10,23 @@ export class FormCustomAttribute {
   }
 
   change() {
+
     if (this.value == 'onchange' && this.serialize() == this.initialValue)
       return this.inputElement.disabled = true
 
-    this.inputElement.disabled = this.element.disabled || (this.formElement && ! this.formElement.checkValidity())
+    //Here we cached response because assigning to elem.disabled everytime
+    //does not work if more than one input toggles on disabled (e.g., repacking form)
+    const valid = this.formElement && this.formElement.checkValidity()
+
+    if ( ! valid && ! this.cache) {
+      this.cache = ! this.inputElement.disabled
+      this.inputElement.disabled = true
+    }
+
+    if ( valid && this.cache) {
+      this.cache = false
+      this.inputElement.disabled = false
+    }
   }
 
   attached() {
