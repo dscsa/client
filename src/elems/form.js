@@ -12,7 +12,7 @@ export class FormCustomAttribute {
     if (this.value == 'onchange' && this.serialize() == this.initialValue)
       return this.inputElement.disabled = true
 
-    this.inputElement.disabled = this.formElement && ! this.formElement.checkValidity()
+    this.inputElement.disabled = this.element.disabled || (this.formElement && ! this.formElement.checkValidity())
   }
 
   attached() {

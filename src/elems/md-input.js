@@ -26,6 +26,7 @@ export class MdInputCustomElement {
     setTimeout(_ => {
       this.div && this.div.MaterialTextfield && this.div.MaterialTextfield.checkDisabled()
       this.div && this.div.MaterialTextfield && this.div.MaterialTextfield.checkValidity()
+      this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', {bubbles:true})) //this is to trigger formCustomAttribute and others to reevaluate
     }) //disabled hasn't actually been changed yet so wait for the change and then check
   }
 

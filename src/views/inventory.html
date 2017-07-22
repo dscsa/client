@@ -108,13 +108,13 @@
       <md-menu name = "pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <li
           name = "pro_dispense"
-          disabled.bind=" ! transactions.length"
+          disabled.bind=" ! filter.checked.count"
           click.delegate="dispenseInventory()">
           Dispense Selected
         </li>
         <li
           class="mdl-menu__item--full-bleed-divider"
-          disabled.bind=" ! transactions.length"
+          disabled.bind=" ! filter.checked.count"
           click.delegate="disposeInventory()">
           Dispose Selected
         </li>
@@ -122,13 +122,14 @@
         <li
           name="pro_pend"
           show.bind="term.slice(0,7) == 'Pending'"
-          disabled.bind=" ! transactions.length"
+          disabled.bind=" ! filter.checked.count"
           click.delegate="unpendInventory()">
           Unpend Selected
         </li>
         <li
           repeat.for="group of pending[transactions[0].drug.generic] | toArray"
           show.bind="term != 'Pending '+transactions[0].drug.generic+': '+group.key.slice(5, 19)"
+          disabled.bind=" ! filter.checked.count"
           name="pro_pend"
           class="mdl-menu__item"
           click.delegate="pendInventory(group.key)">
@@ -136,7 +137,7 @@
         </li>
         <li
           name="pro_pend"
-          disabled.bind=" ! transactions.length"
+          disabled.bind=" ! filter.checked.count"
           click.delegate="pendInventory()"
           class="mdl-menu__item--full-bleed-divider">
           Pend to New
@@ -144,6 +145,7 @@
         <form>
           <li form
             name = "pro_repack_selected"
+            disabled.bind=" ! filter.checked.count"
             click.delegate="repackInventory()">
             Repack Selected
           </li>
@@ -155,6 +157,7 @@
               value.bind="repack.vialQty"
               max.bind="repack.totalQty/(repack.vials >= 1 ? repack.vials : 1)"
               input.delegate="setRepackVials()"
+              disabled.bind=" ! filter.checked.count"
               style="width:40px;">
               Qty
             </md-input>
@@ -164,6 +167,7 @@
               name = "pro_repack_vials"
               value.bind="repack.vials"
               min="1"
+              disabled.bind=" ! filter.checked.count"
               style="width:40px;">
               Vials
             </md-input>
@@ -171,6 +175,7 @@
               required
               name = "pro_repack_exp"
               value.bind="repack.exp | date"
+              disabled.bind=" ! filter.checked.count"
               style="width:40px;">
               Exp
             </md-input>
@@ -179,6 +184,7 @@
               name = "pro_repack_bin"
               value.bind="repack.bin"
               pattern="[A-Z]\d{2}"
+              disabled.bind=" ! filter.checked.count"
               style="width:40px;">
               Bin
             </md-input>
