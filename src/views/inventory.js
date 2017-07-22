@@ -481,7 +481,7 @@ export class inventoryFilterValueConverter {
         formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : pending || ! i, count:0, qty:0}
 
       if ( ! repackFilter[repack])
-        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : true, count:0, qty:0}
+        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : ! repackFilter['Repacked'], count:0, qty:0}
 
       if ( ! expFilter[exp].isChecked) {
         if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
