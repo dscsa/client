@@ -23,9 +23,9 @@ define('client/src/elems/form',['exports', 'aurelia-framework'], function (expor
     }
   }
 
-  var _dec, _class;
+  var _dec, _dec2, _class;
 
-  var FormCustomAttribute = exports.FormCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
+  var FormCustomAttribute = exports.FormCustomAttribute = (_dec = (0, _aureliaFramework.bindable)('disabled'), _dec2 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = function () {
     function FormCustomAttribute(element) {
       _classCallCheck(this, FormCustomAttribute);
 
@@ -90,7 +90,7 @@ define('client/src/elems/form',['exports', 'aurelia-framework'], function (expor
     };
 
     return FormCustomAttribute;
-  }()) || _class);
+  }()) || _class) || _class);
 });
 define('client/src/elems/md-autocomplete',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';

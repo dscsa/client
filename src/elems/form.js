@@ -1,5 +1,6 @@
-import {inject} from 'aurelia-framework';
+import {inject, bindable} from 'aurelia-framework';
 
+@bindable('disabled')
 @inject(Element)
 export class FormCustomAttribute {
 
