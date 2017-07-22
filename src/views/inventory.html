@@ -127,11 +127,12 @@
           Unpend Selected
         </li>
         <li
-          name="pro_pend"
+          repeat.for="group of pending[transactions[0].drug.generic] | toArray"
           show.bind="term != 'Pending '+transactions[0].drug.generic+': '+group.key.slice(5, 19)"
           disabled.bind=" ! filter.checked.count"
-          click.delegate="pendInventory(group.key)"
-          repeat.for="group of pending[transactions[0].drug.generic] | toArray">
+          name="pro_pend"
+          class="mdl-menu__item"
+          click.delegate="pendInventory(group.key)">
           Pend to ${group.key.slice(5, 16)}
         </li>
         <li
