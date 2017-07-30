@@ -221,6 +221,7 @@ export class inventory {
   }
 
   refreshPending() {
+    console.log('refreshPending')
     //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
     //to trigger and update using Object.assign rather than just adding a property
     this.pending = Object.assign({}, this.pending)
@@ -241,6 +242,9 @@ export class inventory {
       this.setCheck(transaction, false)
       this.transactions.splice(i, 1)
 
+      //If pending we want to move it.  Dispense/disposed/unpend all remove from pending
+      this.unsetPending(transaction)
+
       updateFn(transaction)
 
       //Save the transaction
@@ -252,6 +256,8 @@ export class inventory {
       }))
     }
 
+    this.refreshPending() //unsetPending and updateFn may (un)pend some items
+
     this.filter.checked.visible = false
 
     return Promise.all(all)
@@ -260,30 +266,22 @@ export class inventory {
   unpendInventory() {
     const term = this.transactions[0].drug.generic
     this.updateSelected(transaction => {
-      this.unsetPending(transaction) //this must happen first so we have next info
       transaction.isChecked = false
       transaction.next = []
     })
-    //We must let these transactions save witout next for them to appear back in inventory
-    .then(_ => this.selectTerm('drug.generic', term))
-
-    this.refreshPending()
+    //We must let these transactions save without next for them to appear back in inventory
+   .then(_ => this.selectTerm('drug.generic', term))
   }
 
   pendInventory(createdAt = new Date().toJSON()) {
     const term = this.transactions[0].drug.generic+': '+createdAt
     this.updateSelected(transaction => {
-      if (transaction.next[0]) //this is for moving all of one pending to another (we must delete the original)
-        this.unsetPending(transaction)
-
       transaction.isChecked = false
       transaction.next = [{pending:{}, createdAt}]
       this.setPending(transaction) //this must happen last so we have next info
     })
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     this.selectTerm('pending', term)
-
-    this.refreshPending()
   }
 
   //Group pending into this structure {drug:{pendedAt1:[...drugs], pendedAt2:[...drugs]}}
@@ -299,10 +297,15 @@ export class inventory {
   }
 
   unsetPending(transaction) {
+
+    if ( ! transaction.next[0] || ! transaction.next[0].pending)
+      return //called indiscriminately from updateSelected
+
     const pendingAt = transaction.next[0].createdAt
     const generic = transaction.drug.generic
-
+    console.log('unsetPending', pendingAt, generic)
     //Don't need to splice the pendingAt array because updateSelected does that automatically
+    this.refreshPending() //updateFn may pend some items
 
     if ( ! this.pending[generic][pendingAt].length)
       delete this.pending[generic][pendingAt]
@@ -318,6 +321,7 @@ export class inventory {
 
   disposeInventory() {
     this.updateSelected(transaction => {
+      transaction.next = []
       transaction.verifiedAt = null
       transaction.bin = null
     })
@@ -325,20 +329,14 @@ export class inventory {
 
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
-    let newTransactions = [], next, createdAt
-
-    //Keep it pending if we are on pending screen
-    if (this.term.slice(0,7) == 'Pending') {
-      createdAt = this.transactions[0].next[0].createdAt
-      next = [{pending:{}, createdAt}]
-    } else {
-      createdAt = new Date().toJSON()
-      next = []
-    }
+    let newTransactions = [],
+        next = [],
+        createdAt = new Date().toJSON()
 
     //Create the new (repacked) transactions
     for (let i=0; i<this.repack.vials; i++) {
-      this.transactions.unshift({
+
+      let newTransaction = {
         verifiedAt:createdAt,
         exp:{to:this.repack.exp, from:null},
         qty:{to:+this.repack.vialQty, from:null},
@@ -347,9 +345,14 @@ export class inventory {
         bin:this.repack.bin,
         drug:this.transactions[0].drug,
         next:next
-      })
+      }
 
-      newTransactions.push(this.db.transaction.post(this.transactions[0]))
+      //Only add to display if we are not in pending screen
+      //if pended we don't want it to appear
+      if (this.term.slice(0,7) != 'Pending')
+        this.transactions.unshift(newTransaction)
+
+      newTransactions.push(this.db.transaction.post(newTransaction))
     }
 
     //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping

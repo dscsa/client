@@ -2009,6 +2009,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.refreshPending = function refreshPending() {
+      console.log('refreshPending');
+
       this.pending = Object.assign({}, this.pending);
     };
 
@@ -2026,6 +2028,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         _this7.setCheck(transaction, false);
         _this7.transactions.splice(i, 1);
 
+        _this7.unsetPending(transaction);
+
         updateFn(transaction);
 
         all.unshift(_this7.db.transaction.put(transaction).catch(function (err) {
@@ -2041,6 +2045,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         if (_ret === 'continue') continue;
       }
 
+      this.refreshPending();
+
       this.filter.checked.visible = false;
 
       return Promise.all(all);
@@ -2051,14 +2057,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var term = this.transactions[0].drug.generic;
       this.updateSelected(function (transaction) {
-        _this8.unsetPending(transaction);
         transaction.isChecked = false;
         transaction.next = [];
       }).then(function (_) {
         return _this8.selectTerm('drug.generic', term);
       });
-
-      this.refreshPending();
     };
 
     inventory.prototype.pendInventory = function pendInventory() {
@@ -2068,16 +2071,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var term = this.transactions[0].drug.generic + ': ' + createdAt;
       this.updateSelected(function (transaction) {
-        if (transaction.next[0]) _this9.unsetPending(transaction);
-
         transaction.isChecked = false;
         transaction.next = [{ pending: {}, createdAt: createdAt }];
         _this9.setPending(transaction);
       });
 
       this.selectTerm('pending', term);
-
-      this.refreshPending();
     };
 
     inventory.prototype.setPending = function setPending(transaction) {
@@ -2090,8 +2089,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.unsetPending = function unsetPending(transaction) {
+
+      if (!transaction.next[0] || !transaction.next[0].pending) return;
+
       var pendingAt = transaction.next[0].createdAt;
       var generic = transaction.drug.generic;
+      console.log('unsetPending', pendingAt, generic);
+
+      this.refreshPending();
 
       if (!this.pending[generic][pendingAt].length) delete this.pending[generic][pendingAt];
 
@@ -2107,6 +2112,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.disposeInventory = function disposeInventory() {
       this.updateSelected(function (transaction) {
+        transaction.next = [];
         transaction.verifiedAt = null;
         transaction.bin = null;
       });
@@ -2116,19 +2122,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var _this10 = this;
 
       var newTransactions = [],
-          next = void 0,
-          createdAt = void 0;
-
-      if (this.term.slice(0, 7) == 'Pending') {
-        createdAt = this.transactions[0].next[0].createdAt;
-        next = [{ pending: {}, createdAt: createdAt }];
-      } else {
-        createdAt = new Date().toJSON();
-        next = [];
-      }
+          next = [],
+          createdAt = new Date().toJSON();
 
       for (var i = 0; i < this.repack.vials; i++) {
-        this.transactions.unshift({
+
+        var newTransaction = {
           verifiedAt: createdAt,
           exp: { to: this.repack.exp, from: null },
           qty: { to: +this.repack.vialQty, from: null },
@@ -2137,9 +2136,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           bin: this.repack.bin,
           drug: this.transactions[0].drug,
           next: next
-        });
+        };
 
-        newTransactions.push(this.db.transaction.post(this.transactions[0]));
+        if (this.term.slice(0, 7) != 'Pending') this.transactions.unshift(newTransaction);
+
+        newTransactions.push(this.db.transaction.post(newTransaction));
       }
 
       var excess = this.repack.totalQty - this.repack.vialQty * this.repack.vials;
