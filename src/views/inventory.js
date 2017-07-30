@@ -81,8 +81,8 @@ export class inventory {
       let bPack = this.isRepacked(b)
 
       //For repacked, sort repacked first (descending)
-      if (aPack > bPack) return 1
-      if (aPack < bPack) return -1
+      if (aPack > bPack) return -1
+      if (aPack < bPack) return 1
 
       let aBin  = a.bin ? a.bin[0]+a.bin[2]+a.bin[1]+(a.bin[3] || '') : ''
       let bBin  = b.bin ? b.bin[0]+b.bin[2]+b.bin[1]+(b.bin[3] || '') : ''
