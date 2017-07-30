@@ -1855,8 +1855,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var aPack = _this4.isRepacked(a);
         var bPack = _this4.isRepacked(b);
 
-        if (aPack > bPack) return -1;
-        if (aPack < bPack) return 1;
+        if (aPack > bPack) return 1;
+        if (aPack < bPack) return -1;
 
         var aBin = a.bin ? a.bin[0] + a.bin[2] + a.bin[1] + (a.bin[3] || '') : '';
         var bBin = b.bin ? b.bin[0] + b.bin[2] + b.bin[1] + (b.bin[3] || '') : '';
