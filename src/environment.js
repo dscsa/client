@@ -1,4 +1,4 @@
 export default {
-  debug: true,
-  testing: true
+  debug: false,  //when either of these is true sourcemap is included
+  testing: false //when either of these is true sourcemap is included
 };
