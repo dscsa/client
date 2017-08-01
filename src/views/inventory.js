@@ -329,6 +329,14 @@ export class inventory {
 
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
+
+    let repackQty = this.repack.vialQty * this.repack.vials
+    let excessQty = this.repack.totalQty - repackQty
+
+    if (excessQty < 0) //html validation should prevent this, but some seemed to slip passed
+      return this.snackbar.show(`Selected qty of ${this.repack.totalQty} less than the ${ repackQty } needed`)
+
+
     let newTransactions = [],
         next = [],
         createdAt = new Date().toJSON()
@@ -358,12 +366,11 @@ export class inventory {
     //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
     //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
     //because we don't know where the extra pills came from.
-    let excess = this.repack.totalQty - (this.repack.vialQty * this.repack.vials)
-    if (excess > 0)
+    if (excessQty > 0)
     {
       newTransactions.push(this.db.transaction.post({
         exp:{to:this.repack.exp, from:null},
-        qty:{to:excess, from:null},
+        qty:{to:excessQty, from:null},
         user:{_id:this.user},
         shipment:{_id:this.account},
         drug:this.transactions[0].drug,

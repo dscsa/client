@@ -2121,6 +2121,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.repackInventory = function repackInventory() {
       var _this10 = this;
 
+      var repackQty = this.repack.vialQty * this.repack.vials;
+      var excessQty = this.repack.totalQty - repackQty;
+
+      if (excessQty < 0) return this.snackbar.show('Selected qty of ' + this.repack.totalQty + ' less than the ' + repackQty + ' needed');
+
       var newTransactions = [],
           next = [],
           createdAt = new Date().toJSON();
@@ -2143,11 +2148,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         newTransactions.push(this.db.transaction.post(newTransaction));
       }
 
-      var excess = this.repack.totalQty - this.repack.vialQty * this.repack.vials;
-      if (excess > 0) {
+      if (excessQty > 0) {
         newTransactions.push(this.db.transaction.post({
           exp: { to: this.repack.exp, from: null },
-          qty: { to: excess, from: null },
+          qty: { to: excessQty, from: null },
           user: { _id: this.user },
           shipment: { _id: this.account },
           drug: this.transactions[0].drug,
