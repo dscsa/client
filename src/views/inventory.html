@@ -165,6 +165,7 @@
               type="number"
               name = "pro_repack_vials"
               value.bind="repack.vials"
+              max.bind="repack.totalQty/repack.vialQty"
               min="1"
               disabled.bind=" ! filter.checked.count"
               style="width:40px;">
