@@ -206,7 +206,7 @@
               <th style="width:60px"></th>
             </tr>
           </thead>
-          <tr name = "pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveTransaction(transaction) & debounce:1000">
+          <tr name = "pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter" input.delegate="saveAndReconcileTransaction(transaction) & debounce:1000">
             <td style="padding:0">
               <md-checkbox name = "pro_transaction_checkbox" click.delegate="toggleCheck(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
             </td>
@@ -253,7 +253,6 @@
                 id.bind="'bin_'+$index"
                 required
                 keydown.delegate="binShortcuts($event, $index)"
-                keyup.delegate="saveTransaction(transaction) & debounce:1000"
                 pattern="[A-Z]\d{2,3}"
                 value.bind="transaction.bin | upperCase"
                 style="width:40px; margin-bottom:-8px"

@@ -365,18 +365,16 @@ export class inventory {
 
     //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
     //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
-    //because we don't know where the extra pills came from.
-    if (excessQty > 0)
-    {
-      newTransactions.push(this.db.transaction.post({
-        exp:{to:this.repack.exp, from:null},
-        qty:{to:excessQty, from:null},
-        user:{_id:this.user},
-        shipment:{_id:this.account},
-        drug:this.transactions[0].drug,
-        next:[] //Keep it pending if we are on pending screen
-      }))
-    }
+    //because we don't know where the extra pills came from.  If 0 still keep record in case we need to
+    //adjust it after the fact (on sever with reconcileRepackQty)
+    newTransactions.push(this.db.transaction.post({
+      exp:{to:this.repack.exp, from:null},
+      qty:{to:excessQty, from:null},
+      user:{_id:this.user},
+      shipment:{_id:this.account},
+      drug:this.transactions[0].drug,
+      next:[] //Keep it pending if we are on pending screen
+    }))
 
     //Once we have the new _ids insert them into the next property of the checked transactions
     Promise.all(newTransactions).then(newTransactions => {
@@ -409,6 +407,38 @@ export class inventory {
     }).catch(err => {
       console.error(err)
       this.snackbar.show(`Transactions could not repackaged: ${err.reason}`)
+    })
+  }
+
+  //Upon repacking, excess forced to be >= 0 and is recorded as a new transaction that was "disposed"
+  //However we want to allow users to adjust repack quantities after being made.  To do this we need to
+  //adjust the excess quantity up or down accordingly.
+  saveAndReconcileTransaction(transaction) {
+console.log('saveAndReconcileTransaction')
+    //Get current qty so we can see if the qty changed
+    this.db.transaction.get(transaction._id).then(repack => {
+      const qtyChange = transaction.qty.to - repack.qty.to
+
+      if ( ! qtyChange) {
+        return this.saveTransaction(transaction)
+      }
+
+      return this.db.transaction.query('next.transaction._id', {key:[this.account, transaction._id], include_docs:true}).then(res => {
+
+        let excess = res.rows.pop().doc.next.pop().transaction._id
+
+        return this.db.transaction.get(excess).then(excess => {
+            excess.qty.to -= qtyChange
+
+            if (excess.qty.to < 0) {
+              transaction.qty.to = repack.qty.to
+              return this.snackbar.show(`Cannot set repack qty to be more than qty orginally repacked, ${repack.qty.to+excess.qty.to+qtyChange}`)
+            }
+
+            this.db.transaction.put(excess)
+            return this.saveTransaction(transaction)
+        })
+      })
     })
   }
 
@@ -448,9 +478,11 @@ export class inventory {
 
   binShortcuts($event, $index) {
     if ($event.which == 13) //Enter should focus on next row's exp
-      return this.focusInput(`#exp_${$index+1}`)
+      this.focusInput(`#exp_${$index+1}`)
+    else
+      this.incrementBin($event, this.transactions[$index])
 
-    return this.incrementBin($event, this.transactions[$index])
+    return true
   }
 }
 
