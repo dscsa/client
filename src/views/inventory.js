@@ -381,7 +381,7 @@ export class inventory {
 
       let label = [
         `<p style="page-break-after:always;">`,
-        `<strong>${this.transactions[0].drug.generic+' '+this.transactions[0].drug.form}</strong>`,
+        `<strong>${this.transactions[0].drug.generic}</strong>`,
         `Ndc ${this.transactions[0].drug._id}`,
         `Exp ${this.repack.exp.slice(0, 7)}`,
         `Bin ${this.repack.bin}`,
@@ -414,7 +414,7 @@ export class inventory {
   //However we want to allow users to adjust repack quantities after being made.  To do this we need to
   //adjust the excess quantity up or down accordingly.
   saveAndReconcileTransaction(transaction) {
-console.log('saveAndReconcileTransaction')
+    console.log('saveAndReconcileTransaction')
     //Get current qty so we can see if the qty changed
     this.db.transaction.get(transaction._id).then(repack => {
       const qtyChange = transaction.qty.to - repack.qty.to

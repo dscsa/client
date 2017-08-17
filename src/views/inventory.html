@@ -100,7 +100,7 @@
               innerHTML.bind="term | bold:$parent.term">
             </td>
             <td style="max-width:30%">
-              ${ ordered[term] ? 'Min Qty:'+(ordered[term].minQty || 10) +', Min Days:'+(ordered[term].minDays || 120) : ''}
+              ${ ordered[term] ? 'Min Qty:'+(ordered[term].minQty || 1) +', Min Days:'+(ordered[term].minDays || 60) : ''}
             </td>
           </tr>
         </table>
