@@ -425,6 +425,10 @@ console.log('saveAndReconcileTransaction')
 
       return this.db.transaction.query('next.transaction._id', {key:[this.account, transaction._id], include_docs:true}).then(res => {
 
+        if ( ! res.rows.length) {
+          return this.saveTransaction(transaction)
+        }
+
         let excess = res.rows.pop().doc.next.pop().transaction._id
 
         return this.db.transaction.get(excess).then(excess => {

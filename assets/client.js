@@ -2193,6 +2193,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         return _this11.db.transaction.query('next.transaction._id', { key: [_this11.account, transaction._id], include_docs: true }).then(function (res) {
 
+          if (!res.rows.length) {
+            return _this11.saveTransaction(transaction);
+          }
+
           var excess = res.rows.pop().doc.next.pop().transaction._id;
 
           return _this11.db.transaction.get(excess).then(function (excess) {
