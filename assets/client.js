@@ -2389,7 +2389,7 @@ define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router'
 
       this.account = {
         name: '',
-        license: 'Pharmacy',
+        license: '',
         street: '',
         city: '',
         state: '',
@@ -2398,8 +2398,8 @@ define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router'
       };
 
       this.user = {
-        name: { first: 'Guest', last: 'User' },
-        phone: '650.488.7434'
+        name: { first: '', last: '' },
+        phone: ''
       };
       this.canActivate = _helpers.canActivate;
     }

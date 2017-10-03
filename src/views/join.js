@@ -15,7 +15,7 @@ export class join {
 
     this.account = {
       name:'',
-      license:'Pharmacy',
+      license:'',
       street:'',
       city:'',
       state:'',
@@ -24,8 +24,8 @@ export class join {
     }
 
     this.user = {
-      name:{first:'Guest',last:'User'},
-      phone:'650.488.7434'
+      name:{first:'',last:''},
+      phone:''
     }
     this.canActivate = canActivate
   }
