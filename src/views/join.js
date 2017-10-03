@@ -31,23 +31,24 @@ export class join {
   }
 
   join() {
-    console.log('this.account.phone', this.account.phone)
+
     this.db.account.post(this.account)
     .then(res => {
       this.user.account = {_id:res.id}
-      console.log('this.user.phone', this.user.phone)
+      console.log('this.account.phone', this.account.phone, res)
       let password = this.user.password
       return this.db.user.post(this.user)
-      .then(_ => this.user.password = password)
+      .then(res => this.user.password = password, res)
     })
-    .then(_ => {
-      console.log(1)
+    .then(res => {
+      console.log('this.user.phone', this.user.phone, res)
       //local user is created but now replicator must call bulk docs which then triggers creation of a
       //_user login. Since, we don't know exactly how long this will take so we must do a timeout here
-      return new Promise(resolve => setTimeout(resolve, 1000))
+      return new Promise(resolve => setTimeout(resolve, 2000))
     })
     .then(_ => {
       console.log(2)
+
       return this.db.user.session.post(this.user)
     })
     .then(loading => {

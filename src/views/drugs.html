@@ -191,7 +191,7 @@
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <md-switch
         name = "pro_switch"
-        style="position:absolute; right:25px; top:47px; z-index:1"
+        style="position:absolute; right:25px; top:47px; z-index:2"
         checked.one-way="account.ordered[group.name]"
         disabled.bind="! account.ordered[group.name] && ! drug._rev"
         click.delegate="order()">
@@ -217,7 +217,7 @@
             <td style="padding:0; text-align:left">${ drug.price.goodrx | number:3 }</td>
           </tr>
         </table>
-        <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="width:200px; overflow:hidden; margin-top:10px; margin-right:16px">
+        <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="background:white; z-index:1; width:200px; overflow:hidden; margin-top:10px; margin-right:16px">
           Ordered
           <md-input
             disabled
