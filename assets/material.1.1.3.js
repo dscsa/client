@@ -3425,9 +3425,12 @@ MaterialLayout.prototype.init = function () {
             }
         }
         // Add drawer toggling button to our layout, if we have an openable drawer.
+        console.log('is drawer')
         if (this.drawer_) {
             var drawerButton = this.element_.querySelector('.' + this.CssClasses_.DRAWER_BTN);
+            console.log('is button')
             if (!drawerButton) {
+                console.log('init button')
                 drawerButton = document.createElement('div');
                 drawerButton.setAttribute('aria-expanded', 'false');
                 drawerButton.setAttribute('role', 'button');

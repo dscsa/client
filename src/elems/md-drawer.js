@@ -29,7 +29,7 @@ export class MdDrawerCustomElement {
     if (this.button)
       this.button.style.display = 'block'
 
-    if (this.autofocus && this.header.firstChild)
+    if (this.autofocus && this.header.firstChild && this.header.firstChild.click)
       this.header.firstChild.click()
   }
 

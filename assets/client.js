@@ -301,7 +301,7 @@ define('client/src/elems/md-drawer',['exports', 'aurelia-framework'], function (
 
       if (this.button) this.button.style.display = 'block';
 
-      if (this.autofocus && this.header.firstChild) this.header.firstChild.click();
+      if (this.autofocus && this.header.firstChild && this.header.firstChild.click) this.header.firstChild.click();
     };
 
     MdDrawerCustomElement.prototype.detached = function detached() {
