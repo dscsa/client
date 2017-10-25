@@ -75,7 +75,9 @@ export class account {
     console.log('account.authorize', _id, this.account.authorized)
     let index  = this.account.authorized.indexOf(_id)
     let method = ~ index ? 'delete' : 'post'
-    this.db.account.authorized[method](_id).then(res => this.account.authorized = res.authorized)
+    this.db.account.authorized[method](_id)
+    .then(res => this.account.authorized = res.authorized)
+    .catch(err => console.error('account.authorize', err))
     //TODO reset checkbox and show snackbar if change not made
   }
 

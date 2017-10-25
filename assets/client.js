@@ -1362,6 +1362,8 @@ define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouc
       var method = ~index ? 'delete' : 'post';
       this.db.account.authorized[method](_id).then(function (res) {
         return _this5.account.authorized = res.authorized;
+      }).catch(function (err) {
+        return console.error('account.authorize', err);
       });
     };
 
