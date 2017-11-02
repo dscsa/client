@@ -1981,12 +1981,17 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.term = key;
 
       var opts = { include_docs: true, limit: this.limit, reduce: false };
-      if (type != 'generic') {
+
+      if (type == 'bin') {
+        opts.startkey = [this.account, key.slice(0, 3), key.slice(3)];
+        opts.endkey = [this.account, key.slice(0, 3), key.slice(3) + '\uFFFF'];
+      } else if (type == 'exp') {
         opts.startkey = [this.account, key];
         opts.endkey = [this.account, key + '\uFFFF'];
-      } else {
+      } else if (type == 'generic') {
         opts.key = [this.account, key];
       }
+
       var setTransactions = function setTransactions(res) {
         return _this6.setTransactions(res.rows.map(function (row) {
           return row.doc;

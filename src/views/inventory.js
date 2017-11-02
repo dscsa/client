@@ -194,12 +194,17 @@ export class inventory {
     this.term = key
 
     let opts = {include_docs:true, limit:this.limit, reduce:false}
-    if (type != 'generic') {
+
+    if (type == 'bin') {
+      opts.startkey = [this.account, key.slice(0,3), key.slice(3)]
+      opts.endkey   = [this.account, key.slice(0,3), key.slice(3)+'\uffff']
+    } else if (type == 'exp') {
       opts.startkey = [this.account, key]
       opts.endkey   = [this.account, key+'\uffff']
-    } else {
+    } else if (type == 'generic') {
       opts.key = [this.account, key]
     }
+    
     const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc))
     this.db.transaction.query('inventory.'+type, opts).then(setTransactions)
   }
