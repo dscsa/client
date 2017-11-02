@@ -1980,7 +1980,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.term = key;
 
-      var opts = { include_docs: true, limit: this.limit };
+      var opts = { include_docs: true, limit: this.limit, reduce: false };
       if (type != 'generic') {
         opts.startkey = [this.account, key];
         opts.endkey = [this.account, key + '\uFFFF'];

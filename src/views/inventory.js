@@ -193,7 +193,7 @@ export class inventory {
   selectInventory(type, key) {
     this.term = key
 
-    let opts = {include_docs:true, limit:this.limit}
+    let opts = {include_docs:true, limit:this.limit, reduce:false}
     if (type != 'generic') {
       opts.startkey = [this.account, key]
       opts.endkey   = [this.account, key+'\uffff']
