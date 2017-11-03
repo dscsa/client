@@ -198,11 +198,9 @@ export class inventory {
     if (type == 'bin') {
       opts.startkey = [this.account, key.slice(0,3), key.slice(3)]
       opts.endkey   = [this.account, key.slice(0,3), key.slice(3)+'\uffff']
-    } else if (type == 'exp') {
+    } else {
       opts.startkey = [this.account, key]
       opts.endkey   = [this.account, key+'\uffff']
-    } else if (type == 'drug.generic') {
-      opts.key = [this.account, key]
     }
 
     const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc))
