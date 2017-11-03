@@ -1985,11 +1985,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       if (type == 'bin') {
         opts.startkey = [this.account, key.slice(0, 3), key.slice(3)];
         opts.endkey = [this.account, key.slice(0, 3), key.slice(3) + '\uFFFF'];
-      } else if (type == 'exp') {
+      } else {
         opts.startkey = [this.account, key];
         opts.endkey = [this.account, key + '\uFFFF'];
-      } else if (type == 'drug.generic') {
-        opts.key = [this.account, key];
       }
 
       var setTransactions = function setTransactions(res) {
