@@ -1988,7 +1988,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       } else if (type == 'exp') {
         opts.startkey = [this.account, key];
         opts.endkey = [this.account, key + '\uFFFF'];
-      } else if (type == 'generic') {
+      } else if (type == 'drug.generic') {
         opts.key = [this.account, key];
       }
 

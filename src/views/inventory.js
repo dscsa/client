@@ -201,10 +201,10 @@ export class inventory {
     } else if (type == 'exp') {
       opts.startkey = [this.account, key]
       opts.endkey   = [this.account, key+'\uffff']
-    } else if (type == 'generic') {
+    } else if (type == 'drug.generic') {
       opts.key = [this.account, key]
     }
-    
+
     const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc))
     this.db.transaction.query('inventory.'+type, opts).then(setTransactions)
   }
