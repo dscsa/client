@@ -338,8 +338,9 @@ define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (e
       var _this = this;
 
       setTimeout(function (_) {
-        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDirty();
-        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkValidity();
+        if (!_this.div || !_this.div.MaterialTextfield) return;
+        _this.div.MaterialTextfield.checkDirty();
+        _this.div.MaterialTextfield.checkValidity();
         _this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', { bubbles: true }));
       });
     };
@@ -348,8 +349,9 @@ define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (e
       var _this2 = this;
 
       setTimeout(function (_) {
-        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDisabled();
-        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkValidity();
+        if (!_this2.div || !_this2.div.MaterialTextfield) return;
+        _this2.div.MaterialTextfield.checkDisabled();
+        _this2.div.MaterialTextfield.checkValidity();
         _this2.div.MaterialTextfield.input_.dispatchEvent(new Event('change', { bubbles: true }));
       });
     };
