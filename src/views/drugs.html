@@ -117,6 +117,12 @@
           style="width:49%">
           GoodRx Price
         </md-input>
+        <md-input
+          type="date"
+          style="width:100%"
+          value.bind="drug.price.invalidAt">
+          Price Invalid After
+        </md-input>
         <md-text
           style="width:100%; font-size:11px"
           value.bind="drug.warning">
