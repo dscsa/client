@@ -230,20 +230,20 @@
             <td style="padding:0; text-align:left">${ drug.price.retail | number:3 }</td>
           </tr>
         </table>
-        <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="background:white; z-index:1; width:200px; overflow:hidden; margin-top:10px; margin-right:16px">
-          Ordered
+        <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="background:white; z-index:1; width:200px; overflow:hidden; margin:10px 8px;">
+          <div style="width:100%">Ordered</div>
           <md-input
             disabled
             type="number"
             value.bind="qtyBinned"
-            style="width:49%">
+            style="width:48%">
             Inventory
           </md-input>
           <md-input
             disabled
             type="number"
             value.bind="qtyRepacked"
-            style="width:49%">
+            style="width:48%">
             Repacked
           </md-input>
           <md-input
