@@ -433,7 +433,7 @@ export class shipments {
     order && this.db.transaction.query('inventory', {startkey:[this.account._id, drug.generic], endkey:[this.account._id, drug.generic+'\uffff']})
     .then(inventory => {
       console.log('inventory', inventory)
-      order.inventory = inventory.rows[0] ? inventory.rows[0].value.total : 0
+      order.inventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] : 0
       console.log('order.inventory', order.inventory)
     })
 

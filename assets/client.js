@@ -2928,7 +2928,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       var isPharMerica = false;
       order && this.db.transaction.query('inventory', { startkey: [this.account._id, drug.generic], endkey: [this.account._id, drug.generic + '\uFFFF'] }).then(function (inventory) {
         console.log('inventory', inventory);
-        order.inventory = inventory.rows[0] ? inventory.rows[0].value.total : 0;
+        order.inventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] : 0;
         console.log('order.inventory', order.inventory);
       });
 
