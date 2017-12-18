@@ -217,8 +217,8 @@
               <th class="mdl-data-table__cell--non-numeric">Form</th>
               <th class="mdl-data-table__cell--non-numeric">Labeler</th>
               <th class="mdl-data-table__cell--non-numeric">Brand</th>
-              <th style="text-align:left; width:40px; padding-left:0;">Nadac</th>
-              <th style="text-align:left; width:${ account.ordered[group.name] ? '40px' : '85px'}; padding-left:0;">GoodRx</th>
+              <th style="text-align:left; width:40px; padding-left:0;">Price</th>
+              <th style="text-align:left; width:${ account.ordered[group.name] ? '40px' : '85px'}; padding-left:0;">Retail</th>
             </tr>
           </thead>
           <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
@@ -226,8 +226,8 @@
             <td class="mdl-data-table__cell--non-numeric">${ drug.form }</td>
             <td class="mdl-data-table__cell--non-numeric">${ drug.labeler }</td>
             <td class="mdl-data-table__cell--non-numeric">${ drug.brand }</td>
-            <td style="padding:0; text-align:left">${ drug.price.nadac | number:3 }</td>
-            <td style="padding:0; text-align:left">${ drug.price.goodrx | number:3 }</td>
+            <td style="padding:0; text-align:left">${ (drug.price.goodrx || drug.price.nadac) | number:3 }</td>
+            <td style="padding:0; text-align:left">${ drug.price.retail | number:3 }</td>
           </tr>
         </table>
         <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="background:white; z-index:1; width:200px; overflow:hidden; margin-top:10px; margin-right:16px">
