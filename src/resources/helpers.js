@@ -172,11 +172,11 @@ let search = {
 
       let deduped = {}
 
-      for (const drug of results[0])
-        if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc which is cutoff at 8 digits will have false positives
+      for (const drug of results[1])
           deduped[drug._id] = drug
 
-      for (const drug of results[1])
+      for (const drug of results[0])
+        if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc which is cutoff at 8 digits will have false positives
           deduped[drug._id] = drug
 
       deduped = Object.keys(deduped).map(key => search.addPkgCode(term, deduped[key]))
