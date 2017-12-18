@@ -74,8 +74,13 @@ export class drugs {
     console.log('selectGroup()', group.name, this.drug && this.drug.generic)
 
     this.term = group.name
-    this.db.transaction.query('inventory.drug.generic', {key:[this.account._id, group.name], include_docs:true}).then(inventory => {
-      this.inventory = inventory.rows[0] && inventory.rows[0].qty
+    
+    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name], endkey:[this.account._id, drug.generic+'\uffff']})
+    .then(inventory => {
+      console.log('inventory', inventory)
+      this.qtyBinned   = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] : 0
+      this.qtyRepacked = inventory.rows[0] ? inventory.rows[0].value['qty.repacked'] : 0
+      console.log('inventory',this.qtyBinned, this.qtyRepacked)
     })
 
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
