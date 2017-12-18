@@ -110,18 +110,18 @@
           Prices Invalid After
         </md-input>
         <md-input
-          value.bind="drug.price.nadac | number"
-          type="number"
-          step=".0001"
-          style="width:32%">
-          Nadac Price
-        </md-input>
-        <md-input
           value.bind="drug.price.goodrx | number"
           type="number"
           step=".0001"
           style="width:32%">
           GoodRx Price
+        </md-input>
+        <md-input
+          value.bind="drug.price.nadac | number"
+          type="number"
+          step=".0001"
+          style="width:32%">
+          Nadac Price
         </md-input>
         <md-input
           value.bind="drug.price.retail | number"
