@@ -99,29 +99,36 @@
           Form
         </md-input>
         <md-input
-          style="width:100%"
+          style="width:49%"
           value.bind="drug.labeler">
           Labeler
+        </md-input>
+        <md-input
+          type="date"
+          style="width:49%"
+          value.bind="drug.price.invalidAt">
+          Prices Invalid After
         </md-input>
         <md-input
           value.bind="drug.price.nadac | number"
           type="number"
           step=".0001"
-          style="width:49%">
+          style="width:32%">
           Nadac Price
         </md-input>
         <md-input
           value.bind="drug.price.goodrx | number"
           type="number"
           step=".0001"
-          style="width:49%">
+          style="width:32%">
           GoodRx Price
         </md-input>
         <md-input
-          type="date"
-          style="width:100%"
-          value.bind="drug.price.invalidAt">
-          Price Invalid After
+          value.bind="drug.price.retail | number"
+          type="number"
+          step=".0001"
+          style="width:32%">
+          Retail Price
         </md-input>
         <md-text
           style="width:100%; font-size:11px"
