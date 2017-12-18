@@ -495,7 +495,7 @@ export class inventory {
 
 //ADDED step of converting object to array
 export class inventoryFilterValueConverter {
-  toView(transactions = [], filter = {}){
+  toView(transactions = [], filter = {}, term = ''){
     //restart filter on transaction changes but keep checks
     //where they are if user is just modifying the filter
     let ndcFilter     = {}
@@ -503,6 +503,7 @@ export class inventoryFilterValueConverter {
     let repackFilter  = {}
     let formFilter    = {}
     let checkVisible  = true
+    let defaultCheck  = /20\d\d-\d\d-?\d?\d?/.test(term)
 
     filter.checked = filter.checked || {}
     filter.checked.qty = filter.checked.qty || 0
@@ -520,17 +521,17 @@ export class inventoryFilterValueConverter {
 
       if ( ! expFilter[exp]) {
         //console.log('pending', !!pending, 'exp', exp, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked)
-        expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : pending || false, count:0, qty:0}
+        expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : defaultCheck || pending || false, count:0, qty:0}
       }
 
       if ( ! ndcFilter[ndc])
-        ndcFilter[ndc] = {isChecked:filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : pending || ! i, count:0, qty:0}
+        ndcFilter[ndc] = {isChecked:filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : defaultCheck || pending || ! i, count:0, qty:0}
 
       if ( ! formFilter[form])
-        formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : pending || ! i, count:0, qty:0}
+        formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : defaultCheck || pending || ! i, count:0, qty:0}
 
       if ( ! repackFilter[repack])
-        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : pending || ! repackFilter['Repacked'], count:0, qty:0}
+        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : defaultCheck || pending || ! repackFilter['Repacked'], count:0, qty:0}
 
       if ( ! expFilter[exp].isChecked) {
         if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
