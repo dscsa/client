@@ -74,8 +74,8 @@ export class drugs {
     console.log('selectGroup()', group.name, this.drug && this.drug.generic)
 
     this.term = group.name
-    
-    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name], endkey:[this.account._id, drug.generic+'\uffff']})
+
+    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name], endkey:[this.account._id, group.name+'\uffff']})
     .then(inventory => {
       console.log('inventory', inventory)
       this.qtyBinned   = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] : 0

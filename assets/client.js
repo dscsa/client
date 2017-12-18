@@ -1479,7 +1479,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       this.term = group.name;
 
-      this.db.transaction.query('inventory', { startkey: [this.account._id, group.name], endkey: [this.account._id, drug.generic + '\uFFFF'] }).then(function (inventory) {
+      this.db.transaction.query('inventory', { startkey: [this.account._id, group.name], endkey: [this.account._id, group.name + '\uFFFF'] }).then(function (inventory) {
         console.log('inventory', inventory);
         _this3.qtyBinned = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] : 0;
         _this3.qtyRepacked = inventory.rows[0] ? inventory.rows[0].value['qty.repacked'] : 0;
@@ -1535,10 +1535,10 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
             _ref = _i.value;
           }
 
-          var _drug = _ref;
+          var drug = _ref;
 
-          groups[_drug.generic] = groups[_drug.generic] || { name: _drug.generic, drugs: [] };
-          groups[_drug.generic].drugs.push(_drug);
+          groups[drug.generic] = groups[drug.generic] || { name: drug.generic, drugs: [] };
+          groups[drug.generic].drugs.push(drug);
         }
         _this4.groups = Object.keys(groups).map(function (key) {
           return groups[key];
