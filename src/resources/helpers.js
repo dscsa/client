@@ -118,7 +118,7 @@ let search = {
     var pkg, ndc9, upc
     if (term.length > 8) {
       ndc9 = '^'+drug.ndc9+'(\\d{2})$'
-      upc  = '^'+drug.upc+'(\\d{'+(10 - drug.upc.length)+'})$'
+      upc  = '^'+drug.upc+'(\\d{1,2})$' //upc could be 8, 9 or 10 digits long so just save all extra digits
       pkg  = term.match(RegExp(ndc9+'|'+upc))
     }
 
