@@ -168,22 +168,16 @@ let search = {
     upc = this.db.drug.query('upc', search.range(upc)).then(search.map(start))
 
     //TODO add in ES6 destructuing
-    return search._drugs = Promise.all([upc, ndc9]).then(results => {
+    return search._drugs = Promise.all([ndc9, upc]).then(results => {
 
-      let uniqueUpc  = {}
-      let uniqueNdc9 = {}
+      let unique = {}
 
       for (const drug of results[0])
-        if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc which is cutoff at 8 digits will have false positives
-          uniqueUpc[drug._id] = drug
+        unique[drug._id] = drug
 
       for (const drug of results[1])
-          uniqueNdc9[drug._id] = drug
-
-      //put the most likely options first
-      let unique = term.length == 9 || term.length == 11
-        ? Object.assign(uniqueNdc9, uniqueUpc)
-        : Object.assign(uniqueUpc, uniqueNdc9)
+        if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc which is cutoff at 8 digits will have false positives
+          unique[drug._id] = drug
 
       unique = Object.keys(unique).map(key => search.addPkgCode(term, unique[key]))
       console.log('query returned', unique.length, 'rows and took', Date.now() - start)

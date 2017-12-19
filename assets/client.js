@@ -939,10 +939,9 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
       upc = this.db.drug.query('upc', search.range(upc)).then(search.map(start));
 
-      return search._drugs = Promise.all([upc, ndc9]).then(function (results) {
+      return search._drugs = Promise.all([ndc9, upc]).then(function (results) {
 
-        var uniqueUpc = {};
-        var uniqueNdc9 = {};
+        var unique = {};
 
         for (var _iterator = results[0], _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
           var _ref;
@@ -958,7 +957,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
           var drug = _ref;
 
-          if (drug.upc.length != 9 && term.length != 11) uniqueUpc[drug._id] = drug;
+          unique[drug._id] = drug;
         }for (var _iterator2 = results[1], _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
           var _ref2;
 
@@ -973,11 +972,8 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
           var _drug = _ref2;
 
-          uniqueNdc9[_drug._id] = _drug;
-        }
-        var unique = term.length == 9 || term.length == 11 ? Object.assign(uniqueNdc9, uniqueUpc) : Object.assign(uniqueUpc, uniqueNdc9);
-
-        unique = Object.keys(unique).map(function (key) {
+          if (_drug.upc.length != 9 && term.length != 11) unique[_drug._id] = _drug;
+        }unique = Object.keys(unique).map(function (key) {
           return search.addPkgCode(term, unique[key]);
         });
         console.log('query returned', unique.length, 'rows and took', Date.now() - start);
