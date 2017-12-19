@@ -293,7 +293,7 @@ export function getHistory(id) {
             toName    = 'To: '+v.shipment.account.to.name
             toStreet  = v.shipment.account.to.street
             toAddress = v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip
-            tracking  = `<a target='_blank' href='https://www.fedex.com/apps/fedextrack/?tracknumbers=${pad(v.shipment.tracking, 20)}'>FedEx Tracking</a>`
+            tracking  = `<a target='_blank' href='https://www.fedex.com/apps/fedextrack/?tracknumbers=${v.shipment.tracking}'>${pad('FedEx Tracking', 20)}</a>`
           }
 
           return date     + pad(fromName, 35)    + toName    +"<br>"+
