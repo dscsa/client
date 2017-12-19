@@ -259,6 +259,7 @@ export function canActivate(_, next, {router}) {
 
 export function history(id) {
   return this.db.transaction.history.get(id).then(history => {
+    console.log('history', id, history)
     //TODO move this to /history?text=true. Other formatting options?
     function id(k,o) {
       //console.log(o, typeof o)
@@ -278,6 +279,8 @@ export function history(id) {
 
           let status = this.status || 'pickup' //Might not be initialized yet
           let href   = '/#/shipments/'+v.shipment._id
+
+          console.log('history k-v', k, v)
 
           return pad('From: '+v.shipment.account.from.name)+pad('To: '+v.shipment.account.to.name)+"<a href='"+href+"'>"+v.type+" <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a><br>"+
                  pad(v.shipment.account.from.street)+pad(v.shipment.account.to.street)+'Date '+v._id.slice(2, 10)+'<br>'+

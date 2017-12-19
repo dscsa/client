@@ -1061,6 +1061,8 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     var _this4 = this;
 
     return this.db.transaction.history.get(id).then(function (history) {
+      console.log('history', id, history);
+
       function id(k, o) {
         if (Array.isArray(o)) return o;
         return o.shipment.from.name + ' ' + o._id;
@@ -1074,6 +1076,8 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
         var status = _this4.status || 'pickup';
         var href = '/#/shipments/' + v.shipment._id;
+
+        console.log('history k-v', k, v);
 
         return pad('From: ' + v.shipment.account.from.name) + pad('To: ' + v.shipment.account.to.name) + "<a href='" + href + "'>" + v.type + " <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a><br>" + pad(v.shipment.account.from.street) + pad(v.shipment.account.to.street) + 'Date ' + v._id.slice(2, 10) + '<br>' + pad(v.shipment.account.from.city + ', ' + v.shipment.account.from.state + ' ' + v.shipment.account.from.zip) + pad(v.shipment.account.to.city + ', ' + v.shipment.account.to.state + ' ' + v.shipment.account.to.zip) + 'Quantity ' + (v.qty.to || v.qty.from);
       }, "   ").replace(/\[\n?\s*/g, "<div style='margin-top:-12px'>").replace(/\n?\s*\],?/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
