@@ -2308,7 +2308,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var $index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
       console.log('getHistory', this.transactions[$index]);
-      console.log(this.history(this.transactions[$index]._id));
+      this.history(this.transactions[$index]._id).then(function (history) {
+        console.log(history);
+      });
     };
 
     return inventory;

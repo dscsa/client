@@ -497,7 +497,9 @@ export class inventory {
 
   getHistory($index = 0) {
     console.log('getHistory', this.transactions[$index])
-    console.log(this.history(this.transactions[$index]._id))
+    this.history(this.transactions[$index]._id).then(history => {
+      console.log(history)
+    })
   }
 }
 
