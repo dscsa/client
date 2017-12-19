@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex, toggleDrawer} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex, toggleDrawer, history} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class inventory {
@@ -28,6 +28,7 @@ export class inventory {
     this.drugSearch      = drugSearch
     this.canActivate     = canActivate
     this.toggleDrawer    = toggleDrawer
+    this.history         = history
     this.reset           = $event => {
       if ($event.newURL.slice(-9) == 'inventory') {
         this.term = ''
@@ -47,6 +48,8 @@ export class inventory {
     //TODO replace this with page state library
 
     this.db.user.session.get().then(session => {
+
+      this.getHistory()
 
       this.user    = session._id
       this.account = session.account._id
@@ -490,6 +493,11 @@ export class inventory {
       this.incrementBin($event, this.transactions[$index])
 
     return true
+  }
+
+  getHistory($index = 0) {
+    console.log('getHistory', this.transactions[$index])
+    console.log(this.history(this.transactions[$index]._id))
   }
 }
 

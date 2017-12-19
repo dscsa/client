@@ -256,3 +256,38 @@ export function canActivate(_, next, {router}) {
   })
   .catch(err => console.log('loginRequired error', err))
 }
+
+export function history(id) {
+  return this.db.transaction.history.get(id).then(history => {
+    //TODO move this to /history?text=true. Other formatting options?
+    function id(k,o) {
+      //console.log(o, typeof o)
+      if (Array.isArray(o))
+        return o
+      return o.shipment.from.name+' '+o._id
+    }
+    //console.log('history', JSON.stringify(history.content, id, "*"))
+    function pad(word) {
+      return (word+' '.repeat(25)).slice(0, 25)
+    }
+    return JSON.stringify(
+      history.reverse(),
+      (k,v) => {
+        if (Array.isArray(v))
+          return v
+
+          let status = this.status || 'pickup' //Might not be initialized yet
+          let href   = '/#/shipments/'+v.shipment._id
+
+          return pad('From: '+v.shipment.account.from.name)+pad('To: '+v.shipment.account.to.name)+"<a href='"+href+"'>"+v.type+" <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a><br>"+
+                 pad(v.shipment.account.from.street)+pad(v.shipment.account.to.street)+'Date '+v._id.slice(2, 10)+'<br>'+
+                 pad(v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip)+pad(v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip)+'Quantity '+(v.qty.to || v.qty.from)
+      },
+      "   "
+    )
+    .replace(/\[\n?\s*/g, "<div style='margin-top:-12px'>")
+    .replace(/\n?\s*\],?/g, '</div>')
+    .replace(/ *"/g, '')
+    .replace(/\n/g, '<br><br>')
+  })
+}

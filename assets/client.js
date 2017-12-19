@@ -784,6 +784,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   exports.toJsonDate = toJsonDate;
   exports.waitForDrugsToIndex = waitForDrugsToIndex;
   exports.canActivate = canActivate;
+  exports.history = history;
   function expShortcuts($event, $index) {
     if ($event.which == 13) return this.focusInput('#qty_' + $index);
 
@@ -1053,6 +1054,29 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
       return canActivate || router.currentInstruction ? canActivate : new _aureliaRouter.Redirect(loggedIn ? 'shipments' : 'login');
     }).catch(function (err) {
       return console.log('loginRequired error', err);
+    });
+  }
+
+  function history(id) {
+    var _this4 = this;
+
+    return this.db.transaction.history.get(id).then(function (history) {
+      function id(k, o) {
+        if (Array.isArray(o)) return o;
+        return o.shipment.from.name + ' ' + o._id;
+      }
+
+      function pad(word) {
+        return (word + ' '.repeat(25)).slice(0, 25);
+      }
+      return JSON.stringify(history.reverse(), function (k, v) {
+        if (Array.isArray(v)) return v;
+
+        var status = _this4.status || 'pickup';
+        var href = '/#/shipments/' + v.shipment._id;
+
+        return pad('From: ' + v.shipment.account.from.name) + pad('To: ' + v.shipment.account.to.name) + "<a href='" + href + "'>" + v.type + " <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a><br>" + pad(v.shipment.account.from.street) + pad(v.shipment.account.to.street) + 'Date ' + v._id.slice(2, 10) + '<br>' + pad(v.shipment.account.from.city + ', ' + v.shipment.account.from.state + ' ' + v.shipment.account.from.zip) + pad(v.shipment.account.to.city + ', ' + v.shipment.account.to.state + ' ' + v.shipment.account.to.zip) + 'Quantity ' + (v.qty.to || v.qty.from);
+      }, "   ").replace(/\[\n?\s*/g, "<div style='margin-top:-12px'>").replace(/\n?\s*\],?/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
     });
   }
 });
@@ -1801,6 +1825,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.drugSearch = _helpers.drugSearch;
       this.canActivate = _helpers.canActivate;
       this.toggleDrawer = _helpers.toggleDrawer;
+      this.history = _helpers.history;
       this.reset = function ($event) {
         if ($event.newURL.slice(-9) == 'inventory') {
           _this.term = '';
@@ -1819,6 +1844,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       window.addEventListener("hashchange", this.reset);
 
       this.db.user.session.get().then(function (session) {
+
+        _this2.getHistory();
 
         _this2.user = session._id;
         _this2.account = session.account._id;
@@ -2275,6 +2302,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       if ($event.which == 13) this.focusInput('#exp_' + ($index + 1));else this.incrementBin($event, this.transactions[$index]);
 
       return true;
+    };
+
+    inventory.prototype.getHistory = function getHistory() {
+      var $index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+      console.log('getHistory', this.transactions[$index]);
+      console.log(this.history(this.transactions[$index]._id));
     };
 
     return inventory;
