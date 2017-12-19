@@ -272,7 +272,7 @@ export function getHistory(id) {
       return (word+' '.repeat(35)).slice(0, 35)
     }
     return JSON.stringify(
-      _history.reverse(),
+      _history,
       (k,v) => {
         if (Array.isArray(v))
           return v
@@ -282,9 +282,8 @@ export function getHistory(id) {
           let fromName    = 'From: '+v.shipment.account.from.name
           let fromStreet  = v.shipment.account.from.street
           let fromAddress = v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip
-          let date        = 'Date '+v._id.slice(2, 10)
+          let date        = `<a href='${href}'>${v._id.slice(0, 10)}</a>`
           let qty         = 'Quantity '+(v.qty.to || v.qty.from)
-          let icon        = "<a href='"+href+"'>"+v.type+" <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a>"
           let toName      = ''
           let toStreet    = ''
           let toAddress   = ''
@@ -294,15 +293,12 @@ export function getHistory(id) {
             toName      = 'To: '+v.shipment.account.to.name
             toStreet    = v.shipment.account.to.street
             toAddress   = v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip
-            tracking    = "<br><a href='https://www.fedex.com/apps/fedextrack/?tracknumbers="+v.shipment.tracking+"'>"+v.shipment.tracking+"</a>"
+            tracking    = `<a target="_blank" href='https://www.fedex.com/apps/fedextrack/?tracknumbers=${v.shipment.tracking}'>FedEx Tracking</a>`
           }
 
-          console.log('history k-v', k, v)
-
-          return pad(fromName)    +pad(toName)    +icon+"<br>"+
-                 pad(fromStreet)  +pad(toStreet)  +date+'<br>'+
-                 pad(fromAddress) +pad(toAddress) +qty+
-                 tracking
+          return pad(fromName)    +pad(toName)    +date+"<br>"+
+                 pad(fromStreet)  +pad(toStreet)  +qty+'<br>'+
+                 pad(fromAddress) +pad(toAddress) +tracking
       },
       "   "
     )
