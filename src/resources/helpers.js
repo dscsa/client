@@ -258,8 +258,8 @@ export function canActivate(_, next, {router}) {
 }
 
 export function history(id) {
-  return this.db.transaction.history.get(id).then(history => {
-    console.log('history', id, history)
+  return this.db.transaction.history.get(id).then(_history => {
+    console.log('history', id, _history)
     //TODO move this to /history?text=true. Other formatting options?
     function id(k,o) {
       //console.log(o, typeof o)
@@ -267,12 +267,12 @@ export function history(id) {
         return o
       return o.shipment.from.name+' '+o._id
     }
-    //console.log('history', JSON.stringify(history.content, id, "*"))
+    //console.log('_history', JSON.stringify(_history.content, id, "*"))
     function pad(word) {
       return (word+' '.repeat(25)).slice(0, 25)
     }
     return JSON.stringify(
-      history.reverse(),
+      _history.reverse(),
       (k,v) => {
         if (Array.isArray(v))
           return v

@@ -1060,8 +1060,8 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   function history(id) {
     var _this4 = this;
 
-    return this.db.transaction.history.get(id).then(function (history) {
-      console.log('history', id, history);
+    return this.db.transaction.history.get(id).then(function (_history) {
+      console.log('history', id, _history);
 
       function id(k, o) {
         if (Array.isArray(o)) return o;
@@ -1071,7 +1071,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
       function pad(word) {
         return (word + ' '.repeat(25)).slice(0, 25);
       }
-      return JSON.stringify(history.reverse(), function (k, v) {
+      return JSON.stringify(_history.reverse(), function (k, v) {
         if (Array.isArray(v)) return v;
 
         var status = _this4.status || 'pickup';
