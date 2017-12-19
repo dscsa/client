@@ -282,8 +282,8 @@ export function getHistory(id) {
           let fromName    = 'From: '+v.shipment.account.from.name
           let fromStreet  = v.shipment.account.from.street
           let fromAddress = v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip
-          let date        = `<a href="${href}">${v._id.slice(0, 10)}</a>`
-          let qty         = 'Quantity '+(v.qty.to || v.qty.from)
+          let date        = `<a href='${href}'>${pad(v._id.slice(0, 10), 20)}</a>`
+          let qty         = pad('Quantity '+(v.qty.to || v.qty.from), 20)
           let tracking    = pad(v.type, 20)
           let toName      = ''
           let toStreet    = ''
@@ -293,15 +293,12 @@ export function getHistory(id) {
             toName    = 'To: '+v.shipment.account.to.name
             toStreet  = v.shipment.account.to.street
             toAddress = v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip
-            tracking  = `<a target="_blank" href="https://www.fedex.com/apps/fedextrack/?tracknumbers=${v.shipment.tracking}">FedEx Tracking</a>`
-            tracking  = pad(tracking, tracking.length + 20 - 14) //link more than 20 characters but that is okey since hidden
+            tracking  = `<a target='_blank' href='https://www.fedex.com/apps/fedextrack/?tracknumbers=${pad(v.shipment.tracking, 20)}'>FedEx Tracking</a>`
           }
 
-          date = pad(date, date.length + 20 - 10) //link more than 20 characters but that is okey since hidden
-
-          return date         + pad(fromName, 35)    + toName    +"<br>"+
-                 pad(qty, 20) + pad(fromStreet, 35)  + toStreet  +'<br>'+
-                 tracking     + pad(fromAddress, 35) + toAddress
+          return date     + pad(fromName, 35)    + toName    +"<br>"+
+                 qty      + pad(fromStreet, 35)  + toStreet  +'<br>'+
+                 tracking + pad(fromAddress, 35) + toAddress
       },
       "   "
     )
