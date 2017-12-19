@@ -118,7 +118,7 @@ let search = {
     var pkg, ndc9, upc
     if (term.length > 8) {
       ndc9 = '^'+drug.ndc9+'(\\d{2})$'
-      upc  = '^'+drug.upc+'(\\d{1,2})$' //upc could be 8, 9 or 10 digits long so just save all extra digits
+      upc  = '^'+drug.upc+'(\\d{' + (10 - drug.upc.length) + '})$' //upc could be 8, 9 or 10 digits long so just save all extra digits
       pkg  = term.match(RegExp(ndc9+'|'+upc))
     }
 
@@ -168,18 +168,18 @@ let search = {
     upc = this.db.drug.query('upc', search.range(upc)).then(search.map(start))
 
     //TODO add in ES6 destructuing
-    return search._drugs = Promise.all([ndc9, upc]).then(results => {
+    return search._drugs = Promise.all([ndc9, upc]).then(([ndc9, upc]) => {
 
       let unique = {}
 
-      for (const drug of results[0])
+      for (const drug of ndc9)
         unique[drug._id] = drug
 
-      for (const drug of results[1])
+      for (const drug of upc)
         if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc which is cutoff at 8 digits will have false positives
           unique[drug._id] = drug
 
-      unique = Object.keys(unique).map(key => search.addPkgCode(term, unique[key]))
+      unique = Object.keys(unique).reverse().map(key => search.addPkgCode(term, unique[key]))
       console.log('query returned', unique.length, 'rows and took', Date.now() - start)
       return unique
     })

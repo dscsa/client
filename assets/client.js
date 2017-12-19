@@ -893,7 +893,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
       var pkg, ndc9, upc;
       if (term.length > 8) {
         ndc9 = '^' + drug.ndc9 + '(\\d{2})$';
-        upc = '^' + drug.upc + '(\\d{1,2})$';
+        upc = '^' + drug.upc + '(\\d{' + (10 - drug.upc.length) + '})$';
         pkg = term.match(RegExp(ndc9 + '|' + upc));
       }
 
@@ -939,41 +939,44 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
       upc = this.db.drug.query('upc', search.range(upc)).then(search.map(start));
 
-      return search._drugs = Promise.all([ndc9, upc]).then(function (results) {
+      return search._drugs = Promise.all([ndc9, upc]).then(function (_ref) {
+        var ndc9 = _ref[0],
+            upc = _ref[1];
+
 
         var unique = {};
 
-        for (var _iterator = results[0], _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-          var _ref;
+        for (var _iterator = ndc9, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+          var _ref2;
 
           if (_isArray) {
             if (_i >= _iterator.length) break;
-            _ref = _iterator[_i++];
+            _ref2 = _iterator[_i++];
           } else {
             _i = _iterator.next();
             if (_i.done) break;
-            _ref = _i.value;
+            _ref2 = _i.value;
           }
 
-          var drug = _ref;
+          var drug = _ref2;
 
           unique[drug._id] = drug;
-        }for (var _iterator2 = results[1], _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-          var _ref2;
+        }for (var _iterator2 = upc, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+          var _ref3;
 
           if (_isArray2) {
             if (_i2 >= _iterator2.length) break;
-            _ref2 = _iterator2[_i2++];
+            _ref3 = _iterator2[_i2++];
           } else {
             _i2 = _iterator2.next();
             if (_i2.done) break;
-            _ref2 = _i2.value;
+            _ref3 = _i2.value;
           }
 
-          var _drug = _ref2;
+          var _drug = _ref3;
 
           if (_drug.upc.length != 9 && term.length != 11) unique[_drug._id] = _drug;
-        }unique = Object.keys(unique).map(function (key) {
+        }unique = Object.keys(unique).reverse().map(function (key) {
           return search.addPkgCode(term, unique[key]);
         });
         console.log('query returned', unique.length, 'rows and took', Date.now() - start);
@@ -1003,9 +1006,9 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     };
   }
 
-  function toJsonDate(_ref3) {
-    var month = _ref3.month,
-        year = _ref3.year;
+  function toJsonDate(_ref4) {
+    var month = _ref4.month,
+        year = _ref4.year;
 
     console.log('date', month, year, new Date('20' + year, month - 1, 1).toJSON());
     return new Date('20' + year, month - 1, 1).toJSON();
@@ -1020,26 +1023,26 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     });
   }
 
-  function canActivate(_, next, _ref4) {
-    var router = _ref4.router;
+  function canActivate(_, next, _ref5) {
+    var router = _ref5.router;
 
     return this.db.user.session.get().then(function (session) {
 
       var loggedIn = session && session.account;
 
       for (var _iterator3 = router.navigation, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-        var _ref5;
+        var _ref6;
 
         if (_isArray3) {
           if (_i3 >= _iterator3.length) break;
-          _ref5 = _iterator3[_i3++];
+          _ref6 = _iterator3[_i3++];
         } else {
           _i3 = _iterator3.next();
           if (_i3.done) break;
-          _ref5 = _i3.value;
+          _ref6 = _i3.value;
         }
 
-        var route = _ref5;
+        var route = _ref6;
 
         route.isVisible = loggedIn ? route.config.roles && ~route.config.roles.indexOf('user') : !route.config.roles;
       }var canActivate = next.navModel.isVisible || !next.nav;
