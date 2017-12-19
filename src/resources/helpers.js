@@ -284,11 +284,11 @@ export function getHistory(id) {
           let fromAddress = v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip
           let date        = `<a href='${href}'>${v._id.slice(0, 10)}</a>`
           let qty         = 'Quantity '+(v.qty.to || v.qty.from)
+          let tracking    = v.type
           let toName      = ''
           let toStreet    = ''
           let toAddress   = ''
-          let tracking    = ''
-
+          
           if (v.shipment.account.to) {
             toName      = 'To: '+v.shipment.account.to.name
             toStreet    = v.shipment.account.to.street

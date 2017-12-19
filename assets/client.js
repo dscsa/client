@@ -1081,10 +1081,10 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         var fromAddress = v.shipment.account.from.city + ', ' + v.shipment.account.from.state + ' ' + v.shipment.account.from.zip;
         var date = '<a href=\'' + href + '\'>' + v._id.slice(0, 10) + '</a>';
         var qty = 'Quantity ' + (v.qty.to || v.qty.from);
+        var tracking = v.type;
         var toName = '';
         var toStreet = '';
         var toAddress = '';
-        var tracking = '';
 
         if (v.shipment.account.to) {
           toName = 'To: ' + v.shipment.account.to.name;
