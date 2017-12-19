@@ -277,14 +277,29 @@ export function history(id) {
         if (Array.isArray(v))
           return v
 
-          let status = this.status || 'pickup' //Might not be initialized yet
-          let href   = '/#/shipments/'+v.shipment._id
+          let status      = this.status || 'pickup' //Might not be initialized yet
+          let href        = '/#/shipments/'+v.shipment._id
+          let fromName    = 'From: '+v.shipment.account.from.name
+          let fromStreet  = v.shipment.account.from.street
+          let fromAddress = v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip
+          let date        = 'Date '+v._id.slice(2, 10)
+          let qty         = 'Quantity '+(v.qty.to || v.qty.from)
+          let icon        = "<a href='"+href+"'>"+v.type+" <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a>"
+          let toName      = ''
+          let toStreet    = ''
+          let toAddress   = ''
+
+          if (v.shipment.account.to) {
+            toName      = 'To: '+v.shipment.account.to.name
+            toStreet    = v.shipment.account.to.street
+            toAddress   = v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip
+          }
 
           console.log('history k-v', k, v)
 
-          return pad('From: '+v.shipment.account.from.name)+pad('To: '+v.shipment.account.to.name)+"<a href='"+href+"'>"+v.type+" <i class='material-icons' style='font-size:12px; vertical-align:text-top; padding-top:1px'>exit_to_app</i></a><br>"+
-                 pad(v.shipment.account.from.street)+pad(v.shipment.account.to.street)+'Date '+v._id.slice(2, 10)+'<br>'+
-                 pad(v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip)+pad(v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip)+'Quantity '+(v.qty.to || v.qty.from)
+          return pad(fromName)+pad(toName)+icon+"<br>"+
+                 pad(fromStreet)+pad(toStreet)+date+'<br>'+
+                 pad(fromAddress)+pad(toAddress)+qty
       },
       "   "
     )
