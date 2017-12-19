@@ -152,11 +152,16 @@ let search = {
     //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
     if (term.startsWith(search._term) && ! clearCache) {
       console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term)
-      return search._drugs.then(drugs => drugs.filter(drug => {
-        search.addPkgCode(term, drug)
-        //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc  which is cutoff at 8 digits will have false positives
-        return drug.ndc9.startsWith(ndc9) || (drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc))
-      }))
+      return search._drugs.then(drugs => {
+        let filtered = drugs.filter(filter)
+        return term.length == 9 || term.length == 11 ? filtered.reverse() : filtered
+      })
+    }
+
+    function filter(drug) {
+      search.addPkgCode(term, drug)
+      //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc  which is cutoff at 8 digits will have false positives
+      return drug.ndc9.startsWith(ndc9) || (drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc))
     }
 
     console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term)
@@ -179,7 +184,7 @@ let search = {
         if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc which is cutoff at 8 digits will have false positives
           unique[drug._id] = drug
 
-      unique = Object.keys(unique).reverse().map(key => search.addPkgCode(term, unique[key]))
+      unique = Object.keys(unique).map(key => search.addPkgCode(term, unique[key]))
       console.log('query returned', unique.length, 'rows and took', Date.now() - start)
       return unique
     })

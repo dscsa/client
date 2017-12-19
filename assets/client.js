@@ -923,12 +923,15 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
       if (term.startsWith(search._term) && !clearCache) {
         console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term);
         return search._drugs.then(function (drugs) {
-          return drugs.filter(function (drug) {
-            search.addPkgCode(term, drug);
-
-            return drug.ndc9.startsWith(ndc9) || drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc);
-          });
+          var filtered = drugs.filter(filter);
+          return term.length == 9 || term.length == 11 ? filtered.reverse() : filtered;
         });
+      }
+
+      function filter(drug) {
+        search.addPkgCode(term, drug);
+
+        return drug.ndc9.startsWith(ndc9) || drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc);
       }
 
       console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term);
@@ -976,7 +979,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
           var _drug = _ref3;
 
           if (_drug.upc.length != 9 && term.length != 11) unique[_drug._id] = _drug;
-        }unique = Object.keys(unique).reverse().map(function (key) {
+        }unique = Object.keys(unique).map(function (key) {
           return search.addPkgCode(term, unique[key]);
         });
         console.log('query returned', unique.length, 'rows and took', Date.now() - start);
