@@ -269,7 +269,7 @@ export function getHistory(id) {
     }
     //console.log('_history', JSON.stringify(_history.content, id, "*"))
     function pad(word) {
-      return (word+' '.repeat(50)).slice(0, 50)
+      return (word+' '.repeat(35)).slice(0, 35)
     }
     return JSON.stringify(
       _history.reverse(),
@@ -294,7 +294,7 @@ export function getHistory(id) {
             toName      = 'To: '+v.shipment.account.to.name
             toStreet    = v.shipment.account.to.street
             toAddress   = v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip
-            tracking    = '<br><a href="https://www.fedex.com/apps/fedextrack/?tracknumbers='+v.shipment.tracking+'">'+v.shipment.tracking+'</a>'
+            tracking    = "<br><a href='https://www.fedex.com/apps/fedextrack/?tracknumbers="+v.shipment.tracking+"'>"+v.shipment.tracking+"</a>"
           }
 
           console.log('history k-v', k, v)
