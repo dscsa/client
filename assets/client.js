@@ -1079,9 +1079,9 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         var fromName = 'From: ' + v.shipment.account.from.name;
         var fromStreet = v.shipment.account.from.street;
         var fromAddress = v.shipment.account.from.city + ', ' + v.shipment.account.from.state + ' ' + v.shipment.account.from.zip;
-        var date = '<a href=\'' + href + '\'>' + v._id.slice(0, 10) + '</a>';
+        var date = '<a href="' + href + '">' + v._id.slice(0, 10) + '</a>';
         var qty = 'Quantity ' + (v.qty.to || v.qty.from);
-        var tracking = v.type;
+        var tracking = pad(v.type, 20);
         var toName = '';
         var toStreet = '';
         var toAddress = '';
@@ -1090,10 +1090,13 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
           toName = 'To: ' + v.shipment.account.to.name;
           toStreet = v.shipment.account.to.street;
           toAddress = v.shipment.account.to.city + ', ' + v.shipment.account.to.state + ' ' + v.shipment.account.to.zip;
-          tracking = '<a target="_blank" href=\'https://www.fedex.com/apps/fedextrack/?tracknumbers=' + v.shipment.tracking + '\'>FedEx Tracking</a>';
+          tracking = '<a target="_blank" href="https://www.fedex.com/apps/fedextrack/?tracknumbers=' + v.shipment.tracking + '">FedEx Tracking</a>';
+          tracking = pad(tracking, tracking.length + 20 - 14);
         }
 
-        return pad(date, 20) + pad(fromName, 35) + toName + "<br>" + pad(qty, 20) + pad(fromStreet, 35) + toStreet + '<br>' + pad(tracking, 20) + pad(fromAddress, 35) + toAddress;
+        date = pad(date, date.length + 20 - 10);
+
+        return date + pad(fromName, 35) + toName + "<br>" + pad(qty, 20) + pad(fromStreet, 35) + toStreet + '<br>' + tracking + pad(fromAddress, 35) + toAddress;
       }, "   ").replace(/\[\n?\s*/g, "<div style='margin-top:-12px'>").replace(/\n?\s*\],?/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
     });
   }

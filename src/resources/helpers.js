@@ -282,23 +282,26 @@ export function getHistory(id) {
           let fromName    = 'From: '+v.shipment.account.from.name
           let fromStreet  = v.shipment.account.from.street
           let fromAddress = v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip
-          let date        = `<a href='${href}'>${v._id.slice(0, 10)}</a>`
+          let date        = `<a href="${href}">${v._id.slice(0, 10)}</a>`
           let qty         = 'Quantity '+(v.qty.to || v.qty.from)
-          let tracking    = v.type
+          let tracking    = pad(v.type, 20)
           let toName      = ''
           let toStreet    = ''
           let toAddress   = ''
 
           if (v.shipment.account.to) {
-            toName      = 'To: '+v.shipment.account.to.name
-            toStreet    = v.shipment.account.to.street
-            toAddress   = v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip
-            tracking    = `<a target="_blank" href='https://www.fedex.com/apps/fedextrack/?tracknumbers=${v.shipment.tracking}'>FedEx Tracking</a>`
+            toName    = 'To: '+v.shipment.account.to.name
+            toStreet  = v.shipment.account.to.street
+            toAddress = v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip
+            tracking  = `<a target="_blank" href="https://www.fedex.com/apps/fedextrack/?tracknumbers=${v.shipment.tracking}">FedEx Tracking</a>`
+            tracking  = pad(tracking, tracking.length + 20 - 14) //link more than 20 characters but that is okey since hidden
           }
 
-          return pad(date, 20)     + pad(fromName, 35)    + toName    +"<br>"+
-                 pad(qty, 20)      + pad(fromStreet, 35)  + toStreet  +'<br>'+
-                 pad(tracking, 20) + pad(fromAddress, 35) + toAddress
+          date = pad(date, date.length + 20 - 10) //link more than 20 characters but that is okey since hidden
+
+          return date         + pad(fromName, 35)    + toName    +"<br>"+
+                 pad(qty, 20) + pad(fromStreet, 35)  + toStreet  +'<br>'+
+                 tracking     + pad(fromAddress, 35) + toAddress
       },
       "   "
     )
