@@ -268,8 +268,8 @@ export function getHistory(id) {
       return o.shipment.from.name+' '+o._id
     }
     //console.log('_history', JSON.stringify(_history.content, id, "*"))
-    function pad(word) {
-      return (word+' '.repeat(35)).slice(0, 35)
+    function pad(word, num) {
+      return (word+' '.repeat(num)).slice(0, num)
     }
     return JSON.stringify(
       _history,
@@ -288,7 +288,7 @@ export function getHistory(id) {
           let toName      = ''
           let toStreet    = ''
           let toAddress   = ''
-          
+
           if (v.shipment.account.to) {
             toName      = 'To: '+v.shipment.account.to.name
             toStreet    = v.shipment.account.to.street
@@ -296,9 +296,9 @@ export function getHistory(id) {
             tracking    = `<a target="_blank" href='https://www.fedex.com/apps/fedextrack/?tracknumbers=${v.shipment.tracking}'>FedEx Tracking</a>`
           }
 
-          return pad(fromName)    +pad(toName)    +date+"<br>"+
-                 pad(fromStreet)  +pad(toStreet)  +qty+'<br>'+
-                 pad(fromAddress) +pad(toAddress) +tracking
+          return pad(date, 20)     + pad(fromName, 35)    + toName    +"<br>"+
+                 pad(qty, 20)      + pad(fromStreet, 35)  + toStreet  +'<br>'+
+                 pad(tracking, 20) + pad(fromAddress, 35) + toAddress
       },
       "   "
     )
