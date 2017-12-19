@@ -269,7 +269,7 @@ export function getHistory(id) {
     }
     //console.log('_history', JSON.stringify(_history.content, id, "*"))
     function pad(word) {
-      return (word+' '.repeat(25)).slice(0, 25)
+      return (word+' '.repeat(50)).slice(0, 50)
     }
     return JSON.stringify(
       _history.reverse(),
