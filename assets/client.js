@@ -941,9 +941,10 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
       return search._drugs = Promise.all([upc, ndc9]).then(function (results) {
 
-        var deduped = {};
+        var uniqueUpc = {};
+        var uniqueNdc9 = {};
 
-        for (var _iterator = results[1], _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        for (var _iterator = results[0], _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
           var _ref;
 
           if (_isArray) {
@@ -957,8 +958,8 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
           var drug = _ref;
 
-          deduped[drug._id] = drug;
-        }for (var _iterator2 = results[0], _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+          if (drug.upc.length != 9 && term.length != 11) uniqueUpc[drug._id] = drug;
+        }for (var _iterator2 = results[1], _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
           var _ref2;
 
           if (_isArray2) {
@@ -972,12 +973,15 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
           var _drug = _ref2;
 
-          if (_drug.upc.length != 9 && term.length != 11) deduped[_drug._id] = _drug;
-        }deduped = Object.keys(deduped).map(function (key) {
-          return search.addPkgCode(term, deduped[key]);
+          uniqueNdc9[_drug._id] = _drug;
+        }
+        var unique = term.length == 9 || term.length == 11 ? Object.assign(uniqueNdc9, uniqueUpc) : Object.assign(uniqueUpc, uniqueNdc9);
+
+        unique = Object.keys(unique).map(function (key) {
+          return search.addPkgCode(term, unique[key]);
         });
-        console.log('query returned', deduped.length, 'rows and took', Date.now() - start);
-        return deduped;
+        console.log('query returned', unique.length, 'rows and took', Date.now() - start);
+        return unique;
       });
     }
   };
