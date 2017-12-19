@@ -1845,8 +1845,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.db.user.session.get().then(function (session) {
 
-        _this2.getHistory();
-
         _this2.user = session._id;
         _this2.account = session.account._id;
 
@@ -1981,6 +1979,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.transactions = this.sortTransactions(transactions);
       console.log('reset filter');
+      this.getHistory();
+
       this.filter = {};
     };
 

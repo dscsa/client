@@ -49,8 +49,6 @@ export class inventory {
 
     this.db.user.session.get().then(session => {
 
-      this.getHistory()
-
       this.user    = session._id
       this.account = session.account._id
 
@@ -163,6 +161,8 @@ export class inventory {
 
     this.transactions = this.sortTransactions(transactions)
     console.log('reset filter')
+    this.getHistory()
+
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
   }
 
