@@ -105,7 +105,7 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu name = "pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
+      <md-menu name="pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <li
           name = "pro_dispense"
           disabled.bind=" ! filter.checked.count"
@@ -261,12 +261,20 @@
               </md-input>
             </td>
             <td name="pro_repack_icon" style="padding:0 0 0 16px">
-              <i name="pro_icon" show.bind="isRepacked(transaction)" class="material-icons" style="font-size:20px">delete_sweep</i>
+              <i name="pro_icon" click.delegate="showHistoryDialog(transaction._id)" show.bind="isRepacked(transaction)" class="material-icons" style="font-size:20px">delete_sweep</i>
+              <i name="pro_icon" click.delegate="showHistoryDialog(transaction._id)" show.bind="! isRepacked(transaction)" class="material-icons show-on-hover" style="font-size:20px">history</i>
             </td>
           </tr>
         </table>
       </div>
     </div>
     <md-snackbar ref="snackbar"></md-snackbar>
+    <dialog ref="dialog" class="mdl-dialog">
+    <h4 class="mdl-dialog__title">History</h4>
+    <div class="mdl-dialog__content">${history}</div>
+    <div class="mdl-dialog__actions">
+      <md-button click.delegate="closeHistoryDialog()">Close</md-button>
+    </div>
+  </dialog>
   </section>
 </template>

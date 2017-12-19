@@ -257,7 +257,7 @@ export function canActivate(_, next, {router}) {
   .catch(err => console.log('loginRequired error', err))
 }
 
-export function history(id) {
+export function getHistory(id) {
   return this.db.transaction.history.get(id).then(_history => {
     console.log('history', id, _history)
     //TODO move this to /history?text=true. Other formatting options?
@@ -288,18 +288,21 @@ export function history(id) {
           let toName      = ''
           let toStreet    = ''
           let toAddress   = ''
+          let tracking    = ''
 
           if (v.shipment.account.to) {
             toName      = 'To: '+v.shipment.account.to.name
             toStreet    = v.shipment.account.to.street
             toAddress   = v.shipment.account.to.city+', '+v.shipment.account.to.state+' '+v.shipment.account.to.zip
+            tracking    = '<br><a href="https://www.fedex.com/apps/fedextrack/?tracknumbers='+v.shipment.tracking+'">'+v.shipment.tracking+'</a>'
           }
 
           console.log('history k-v', k, v)
 
-          return pad(fromName)+pad(toName)+icon+"<br>"+
-                 pad(fromStreet)+pad(toStreet)+date+'<br>'+
-                 pad(fromAddress)+pad(toAddress)+qty
+          return pad(fromName)    +pad(toName)    +icon+"<br>"+
+                 pad(fromStreet)  +pad(toStreet)  +date+'<br>'+
+                 pad(fromAddress) +pad(toAddress) +qty+
+                 tracking
       },
       "   "
     )
