@@ -161,8 +161,6 @@ export class inventory {
 
     this.transactions = this.sortTransactions(transactions)
     console.log('reset filter')
-    this.getHistory()
-
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
   }
 
@@ -497,10 +495,10 @@ export class inventory {
 
   showHistoryDialog(id) {
     console.log('getHistory', id)
+    this.dialog.showModal()
     this.getHistory(id).then(history => {
       console.log(history)
       this.history = history
-      this.dialog.showModal()
     })
   }
 

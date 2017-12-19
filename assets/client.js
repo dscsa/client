@@ -1997,8 +1997,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.transactions = this.sortTransactions(transactions);
       console.log('reset filter');
-      this.getHistory();
-
       this.filter = {};
     };
 
@@ -2326,10 +2324,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var _this12 = this;
 
       console.log('getHistory', id);
+      this.dialog.showModal();
       this.getHistory(id).then(function (history) {
         console.log(history);
         _this12.history = history;
-        _this12.dialog.showModal();
       });
     };
 
