@@ -504,6 +504,7 @@ export class inventory {
 
   closeHistoryDialog() {
     this.dialog.close()
+    this.history = ''
   }
 }
 

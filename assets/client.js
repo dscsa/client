@@ -2333,6 +2333,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.closeHistoryDialog = function closeHistoryDialog() {
       this.dialog.close();
+      this.history = '';
     };
 
     return inventory;
