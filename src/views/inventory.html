@@ -22,7 +22,7 @@
       Filter pending inventory
     </md-input>
     <div repeat.for="pendingDrug of pending | toArray">
-      <div class="mdl-typography--title" style="font-size:17px; cursor:default; color:#757575; padding:8px">${pendingDrug.key}</div>
+      <div class="mdl-typography--title" style="font-size:12px; font-weight:600; cursor:default; color:#757575; padding:8px">${pendingDrug.key}</div>
       <div
         name="pro_pended_items"
         repeat.for="pendingAt of pendingDrug.val | toArray"
