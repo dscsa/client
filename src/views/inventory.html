@@ -29,7 +29,7 @@
         click.delegate="selectTerm('pending', pendingDrug.key+': '+pendingAt.key)"
         class="mdl-navigation__link ${ term == 'Pending '+pendingDrug.key+': '+pendingAt.key.slice(5, 19) ? 'mdl-navigation__link--current' : ''}"
         style="cursor:pointer; padding-top:2px; padding-bottom:2px">
-        ${ pendingAt.key.slice(5, 16) }, ${ pendingAt.val.length } items
+        ${ pendingAt.key.slice(5, 16).replace('T', ' ') }, ${ pendingAt.val.length } items
       </div>
     </div>
   </md-drawer>
