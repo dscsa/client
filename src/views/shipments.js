@@ -39,7 +39,7 @@ export class shipments {
       return this.db.account.get(session.account._id)
     })
     .then(account => {
-      this.account = {_id:account._id, name:account.name}
+      this.account = {_id:account._id, name:account.name, defaults:account.defaults}
       this.ordered = {[account._id]:account.ordered}
 
       //TODO From View
@@ -258,17 +258,17 @@ export class shipments {
     let qty = transaction.qty[this.role.shipments]
     if ( ! qty) return false
     console.log('aboveMinQty', transaction)
-    let price      = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
-    let defaultQty = price > 1 ? 1 : 1 //keep expensive meds
-    let aboveMinQty = qty >= (+order.minQty || defaultQty)
-    if ( ! aboveMinQty) console.log('Ordered drug but qty', qty, 'is less than', +order.minQty || defaultQty)
+    let price  = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
+    let minQty = +order.minQty || this.account.default.minQty
+    let aboveMinQty = qty >= minQty
+    if ( ! aboveMinQty) console.log('Ordered drug but qty', qty, 'is less than', minQty)
     return aboveMinQty
   }
 
   aboveMinExp(order, transaction) {
     let exp = transaction.exp[this.role.shipments]
-    if ( ! exp) return ! order.minDays
-    let minDays = order.minDays || 60
+    let minDays = order.minDays || this.account.default.minDays
+    if ( ! exp) return ! minDays
     let aboveMinExp = new Date(exp) - Date.now() >= minDays*24*60*60*1000
     if ( ! aboveMinExp) console.log('Ordered drug but expiration', exp, 'is before', minDays)
     return aboveMinExp
@@ -276,7 +276,7 @@ export class shipments {
 
   belowMaxInventory(order, transaction) {
     let newInventory = transaction.qty[this.role.shipments] + order.inventory
-    let maxInventory = order.maxInventory || 3000
+    let maxInventory = order.maxInventory || this.account.default.maxInventory
     let belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory //in case of an inventory error let's keep the drug
     if ( ! belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory) //
     return belowMaxInventory

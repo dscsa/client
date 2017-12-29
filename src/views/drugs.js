@@ -249,12 +249,21 @@ export class drugs {
   //   return true
   // }
 
-  saveOrder() {
-    console.log('before saveOrder()', this.group.name, this.drug.generic)
+  saveAccount() {
+    console.log('before saveAccount()', this.group.name, this.drug.generic)
     return this.db.account.put(this.account).catch(_ => {
-      console.log('after saveOrder()', this.group.name, this.drug.generic)
-      this.snackbar.show(`Order could not be saved: ${err.reason || err.message}`)
+      console.log('after saveAccount()', this.group.name, this.drug.generic)
+      this.snackbar.show(`Error while saving: ${err.reason || err.message}`)
     })
+  }
+
+  showDefaultsDialog() {
+    console.log('showDefaultsDialog')
+    this.dialog.showModal()
+  }
+
+  closeDefaultsDialog() {
+    this.dialog.close()
   }
 
   addDrug() {

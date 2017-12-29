@@ -230,7 +230,7 @@
             <td style="padding:0; text-align:left">${ drug.price.retail | number:3 }</td>
           </tr>
         </table>
-        <div show.bind="account.ordered[group.name]" input.delegate="saveOrder() & debounce:1000" style="background:white; z-index:1; width:200px; overflow:hidden; margin:10px 8px;">
+        <div show.bind="account.ordered[group.name]" input.delegate="saveAccount() & debounce:1000" style="background:white; z-index:1; width:200px; overflow:hidden; margin:10px 8px;">
           <div style="width:100%">Ordered</div>
           <md-input
             disabled
@@ -249,21 +249,21 @@
           <md-input
             type="number"
             value.bind="(account.ordered[group.name] || {}).maxInventory"
-            placeholder="3000"
+            placeholder="account.default.maxInventory"
             style="width:100%">
             Max Inventory
           </md-input>
           <md-input
             type="number"
             value.bind="(account.ordered[group.name] || {}).minQty"
-            placeholder="1"
+            placeholder="account.default.minQty"
             style="width:100%">
             Min Qty
           </md-input>
           <md-input
             type="number"
             value.bind="(account.ordered[group.name] || {}).minDays"
-            placeholder="60"
+            placeholder="account.default.minDays"
             style="width:100%">
             Min Days
           </md-input>
@@ -297,34 +297,35 @@
             style="width:48%">
             90 day price
           </md-input>
-          <md-input
-            type="number"
-            step="1"
-            value.bind="(account.ordered[group.name] || {}).vialQty"
-            style="width:48%">
-            Vial Qty
-          </md-input>
-          <md-input
-            value.bind="(account.ordered[group.name] || {}).vialSize"
-            style="width:49%">
-            Vial Size
-          </md-input>
-          <!--
-          <md-input
-            type="number"
-            value.bind="(account.ordered[group.name] || {}).minInventory"
-            style="width:100%">
-            Min Invntory
-          </md-input>
-          <md-input
-            type="number"
-            value.bind="(account.ordered[group.name] || {}).maxPrice"
-            style="width:100%">
-            Max Price
-          </md-input> -->
         </div>
       </div>
     </div>
     <md-snackbar ref="snackbar"></md-snackbar>
+    <dialog ref="dialog" class="mdl-dialog" style="width:800px; top:3%; height:90%; overflow-y:scroll">
+    <h4 class="mdl-dialog__title" style="margin-top:0px">History</h4>
+    <div class="mdl-dialog__content" input.delegate="saveAccount() & debounce:1000">
+      <md-input
+        type="number"
+        value.bind="account.default.maxInventory"
+        style="width:100%">
+        Max Inventory
+      </md-input>
+      <md-input
+        type="number"
+        value.bind="account.default.minQty"
+        style="width:100%">
+        Min Qty
+      </md-input>
+      <md-input
+        type="number"
+        value.bind="account.default.minDays"
+        style="width:100%">
+        Min Days
+      </md-input>
+    </div>
+    <div class="mdl-dialog__actions">
+      <md-button click.delegate="closeDefaultsDialog()">Close</md-button>
+    </div>
+  </dialog>
   </section>
 </template>
