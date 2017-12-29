@@ -39,7 +39,7 @@ export class shipments {
       return this.db.account.get(session.account._id)
     })
     .then(account => {
-      this.account = {_id:account._id, name:account.name, defaults:account.defaults}
+      this.account = {_id:account._id, name:account.name, default:account.default || {}}
       this.ordered = {[account._id]:account.ordered}
 
       //TODO From View
