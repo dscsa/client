@@ -2859,8 +2859,9 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       var exp = transaction.exp[this.role.shipments];
       var minDays = order.minDays || this.account.default.minDays;
       if (!exp) return !minDays;
-      var aboveMinExp = new Date(exp) - Date.now() >= minDays * 24 * 60 * 60 * 1000;
-      if (!aboveMinExp) console.log('Ordered drug but expiration', exp, 'is before', minDays);
+      var days = (new Date(exp) - Date.now()) / 24 / 60 / 60 / 1000;
+      var aboveMinExp = days >= minDays;
+      if (!aboveMinExp) console.log('Ordered drug but expiration', exp, 'is in', days, 'days and is before min days of', minDays);
       return aboveMinExp;
     };
 
