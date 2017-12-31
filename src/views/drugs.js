@@ -150,7 +150,7 @@ export class drugs {
       this.account.ordered[this.group.name] = {}
     }
     console.log('after order()', this.group.name, this.drug.generic)
-    this.saveOrder()
+    this.saveAccount()
   }
 
   exportCSV(generic) {

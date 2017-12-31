@@ -1611,7 +1611,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
         this.account.ordered[this.group.name] = {};
       }
       console.log('after order()', this.group.name, this.drug.generic);
-      this.saveOrder();
+      this.saveAccount();
     };
 
     drugs.prototype.exportCSV = function exportCSV(generic) {
