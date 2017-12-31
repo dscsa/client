@@ -1535,9 +1535,10 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       });
 
       if (!group.drugs) group.drugs = this.search().then(function (_) {
-          return _this3.groups.length ? _this3.groups.filter(function (group) {
+          var filtered = _this3.groups.filter(function (group) {
             return _this3.term == group.name;
-          })[0].drugs : [];
+          });
+          return filtered.length ? filtered[0].drugs : [];
         });
 
       Promise.resolve(group.drugs).then(function (drugs) {

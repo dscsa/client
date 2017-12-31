@@ -86,7 +86,8 @@ export class drugs {
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
       group.drugs = this.search().then(_ => {
         //Use filter to get an exact match not just one ingredient
-        return this.groups.length ? this.groups.filter(group => this.term == group.name)[0].drugs : []
+        let filtered = this.groups.filter(group => this.term == group.name)
+        return filtered.length ? filtered[0].drugs : []
       })
 
     Promise.resolve(group.drugs).then(drugs => {
