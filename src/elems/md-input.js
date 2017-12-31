@@ -36,7 +36,7 @@ export class MdInputCustomElement {
   attached() {
     componentHandler.upgradeElement(this.div)
 
-    if ( ! this.placeholder)
+    if ( ! this.placeholder && this.type != 'date')
       this.div.classList.remove('has-placeholder')
 
     if (this.autofocus || this.autofocus === '')

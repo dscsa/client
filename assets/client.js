@@ -359,7 +359,7 @@ define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (e
     MdInputCustomElement.prototype.attached = function attached() {
       componentHandler.upgradeElement(this.div);
 
-      if (!this.placeholder) this.div.classList.remove('has-placeholder');
+      if (!this.placeholder && this.type != 'date') this.div.classList.remove('has-placeholder');
 
       if (this.autofocus || this.autofocus === '') this.div.MaterialTextfield.input_.focus();
     };
