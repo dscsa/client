@@ -253,7 +253,7 @@
                 id.bind="'bin_'+$index"
                 required
                 keydown.delegate="binShortcuts($event, $index)"
-                pattern="[A-Z]\d{2,3}"
+                pattern="[A-Z]\d{2}|[A-Za-z]\d{3}"
                 value.bind="transaction.bin | upperCase"
                 style="width:40px; margin-bottom:-8px"
                 maxlength.bind="4"
