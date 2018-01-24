@@ -165,7 +165,7 @@ export class inventory {
   }
 
   search() {
-    if (/[A-Za-z][0-9]{3}/.test(this.term))
+    if (/[A-Za-z][0-9]{2,3}/.test(this.term))
       return this.selectTerm('bin', this.term)
 
     if (/20\d\d-\d\d-?\d?\d?/.test(this.term))

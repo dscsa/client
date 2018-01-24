@@ -85,7 +85,7 @@
         name = "pro_searchbar"
         placeholder.bind="placeholder"
         value.bind="term"
-        input.delegate="search()"
+        input.delegate="search() & debounce"
         keyup.delegate="scrollTerms($event)"
         style="margin:0px 24px; padding-right:15px">
         <table md-table>
