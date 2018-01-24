@@ -2013,9 +2013,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.search = function search() {
       var _this5 = this;
 
-      if (/[A-Za-z][0-9]{2,3}/.test(this.term)) return this.selectTerm('bin', this.term);
+      if (this.isBin(this.term)) return this.selectTerm('bin', this.term);
 
-      if (/20\d\d-\d\d-?\d?\d?/.test(this.term)) return this.selectTerm('exp', this.term, true);
+      if (this.isExp(this.term)) return this.selectTerm('exp', this.term, true);
 
       this.drugSearch().then(function (drugs) {
         _this5.terms = drugs.map(function (drug) {
@@ -2024,6 +2024,16 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           return generics.indexOf(generic) == index;
         });
       });
+    };
+
+    inventory.prototype.isBin = function isBin(term) {
+      return (/[A-Za-z][0-9]{2,3}/.test(term)
+      );
+    };
+
+    inventory.prototype.isExp = function isExp() {
+      return (/20\d\d-\d\d-?\d?\d?/.test(term)
+      );
     };
 
     inventory.prototype.selectPending = function selectPending(pendingKey) {
@@ -2364,7 +2374,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var repackFilter = {};
       var formFilter = {};
       var checkVisible = true;
-      var defaultCheck = /20\d\d-\d\d-?\d?\d?/.test(term);
+      var defaultCheck = inventory.prototype.isExp(term) || inventory.prototype.isBin(term);
 
       filter.checked = filter.checked || {};
       filter.checked.qty = filter.checked.qty || 0;

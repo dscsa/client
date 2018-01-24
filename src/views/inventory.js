@@ -165,16 +165,24 @@ export class inventory {
   }
 
   search() {
-    if (/[A-Za-z][0-9]{2,3}/.test(this.term))
+    if (this.isBin(this.term))
       return this.selectTerm('bin', this.term)
 
-    if (/20\d\d-\d\d-?\d?\d?/.test(this.term))
+    if (this.isExp(this.term))
       return this.selectTerm('exp', this.term, true)
 
     //Drug search is by NDC and we want to group by generic
     this.drugSearch().then(drugs => {
       this.terms = drugs.map(drug => drug.generic).filter((generic, index, generics) => generics.indexOf(generic) == index);
     })
+  }
+
+  isBin(term) {
+    return /[A-Za-z][0-9]{2,3}/.test(term)
+  }
+
+  isExp() {
+    return /20\d\d-\d\d-?\d?\d?/.test(term)
   }
 
   selectPending(pendingKey) {
@@ -518,7 +526,7 @@ export class inventoryFilterValueConverter {
     let repackFilter  = {}
     let formFilter    = {}
     let checkVisible  = true
-    let defaultCheck  = /20\d\d-\d\d-?\d?\d?/.test(term)
+    let defaultCheck  = inventory.prototype.isExp(term) || inventory.prototype.isBin(term)
 
     filter.checked = filter.checked || {}
     filter.checked.qty = filter.checked.qty || 0
