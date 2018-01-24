@@ -181,7 +181,7 @@ export class inventory {
     return /[A-Za-z][0-9]{2,3}/.test(term)
   }
 
-  isExp() {
+  isExp(term) {
     return /20\d\d-\d\d-?\d?\d?/.test(term)
   }
 

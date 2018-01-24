@@ -2031,7 +2031,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       );
     };
 
-    inventory.prototype.isExp = function isExp() {
+    inventory.prototype.isExp = function isExp(term) {
       return (/20\d\d-\d\d-?\d?\d?/.test(term)
       );
     };
