@@ -474,9 +474,10 @@ export class inventory {
 
     const term = this.term.replace('Pending ', '')
 
-    this.repack.vialQty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
+    this.repack.vialQty  = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
     this.repack.totalQty = 0,
-    this.repack.exp = ''
+    this.repack.exp      = ''
+    this.repack.drug     = null
     for (let transaction of this.transactions) {
       if (transaction.isChecked) {
 
