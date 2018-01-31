@@ -172,9 +172,16 @@ export class inventory {
     if (type == 'bin') {
       opts.startkey = [this.account, key.slice(0,3), key.slice(3)]
       opts.endkey   = [this.account, key.slice(0,3), key.slice(3)+'\uffff']
-    } else {
+    } else if (type == 'exp') {
       opts.startkey = [this.account, key]
       opts.endkey   = [this.account, key+'\uffff']
+    } else {
+      //Only show medicine at least one month from expiration
+      //just in case there is a lot of it and limit prevent us from seeing more
+      var now = new Date()
+      d.setMonth(d.getMonth() + 1)
+      opts.startkey = [this.account, key, d.toJSON()]
+      opts.endkey   = [this.account, key, '\uffff']
     }
 
     const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc))

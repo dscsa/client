@@ -2027,9 +2027,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       if (type == 'bin') {
         opts.startkey = [this.account, key.slice(0, 3), key.slice(3)];
         opts.endkey = [this.account, key.slice(0, 3), key.slice(3) + '\uFFFF'];
-      } else {
+      } else if (type == 'exp') {
         opts.startkey = [this.account, key];
         opts.endkey = [this.account, key + '\uFFFF'];
+      } else {
+        var now = new Date();
+        d.setMonth(d.getMonth() + 1);
+        opts.startkey = [this.account, key, d.toJSON()];
+        opts.endkey = [this.account, key, '\uFFFF'];
       }
 
       var setTransactions = function setTransactions(res) {
