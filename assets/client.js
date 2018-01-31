@@ -2313,7 +2313,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.repack.vialQty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90;
       this.repack.totalQty = 0, this.repack.exp = '';
-      this.repack.drug = null;
       for (var _iterator3 = this.transactions, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
         var _ref3;
 
@@ -2330,7 +2329,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         if (_transaction.isChecked) {
 
-          if (!this.repack.drug) this.repack.drug = _transaction.drug;else if (this.repack.drug._id != _transaction.drug._id) this.repack.drug = null;
+          if (this.repack.drug == null) this.repack.drug = _transaction.drug;else if (this.repack.drug._id != _transaction.drug._id) this.repack.drug = false;
 
           this.repack.totalQty += _transaction.qty.to;
           this.repack.exp = this.repack.exp && this.repack.exp < _transaction.exp.to ? this.repack.exp : _transaction.exp.to;

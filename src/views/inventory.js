@@ -479,14 +479,13 @@ export class inventory {
     this.repack.vialQty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
     this.repack.totalQty = 0,
     this.repack.exp = ''
-    this.repack.drug = null
     for (let transaction of this.transactions) {
       if (transaction.isChecked) {
 
-        if ( ! this.repack.drug)
+        if (this.repack.drug == null)
           this.repack.drug = transaction.drug
         else if (this.repack.drug._id != transaction.drug._id) //Can only repack drugs with same NDC.  TODO Show Error?
-          this.repack.drug = null
+          this.repack.drug = false
 
         this.repack.totalQty += transaction.qty.to
         this.repack.exp  = this.repack.exp && this.repack.exp < transaction.exp.to ? this.repack.exp : transaction.exp.to
