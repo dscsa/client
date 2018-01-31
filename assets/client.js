@@ -2031,9 +2031,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         opts.startkey = [this.account, key];
         opts.endkey = [this.account, key + '\uFFFF'];
       } else {
-        var now = new Date();
-        d.setMonth(d.getMonth() + 1);
-        opts.startkey = [this.account, key, d.toJSON()];
+        var minExp = new Date();
+        minExp.setMonth(minExp.getMonth() + 1);
+        opts.startkey = [this.account, key, minExp.toJSON()];
         opts.endkey = [this.account, key, '\uFFFF'];
       }
 

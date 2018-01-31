@@ -178,9 +178,9 @@ export class inventory {
     } else {
       //Only show medicine at least one month from expiration
       //just in case there is a lot of it and limit prevent us from seeing more
-      var now = new Date()
-      d.setMonth(d.getMonth() + 1)
-      opts.startkey = [this.account, key, d.toJSON()]
+      var minExp = new Date()
+      minExp.setMonth(minExp.getMonth() + 1)
+      opts.startkey = [this.account, key, minExp.toJSON()]
       opts.endkey   = [this.account, key, '\uffff']
     }
 
