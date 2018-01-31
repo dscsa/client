@@ -472,8 +472,6 @@ export class inventory {
     if ($event.target.tagName != 'I' || ! this.transactions.length)
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
-    console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);
-
     const term = this.term.replace('Pending ', '')
 
     this.repack.vialQty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
@@ -482,15 +480,20 @@ export class inventory {
     for (let transaction of this.transactions) {
       if (transaction.isChecked) {
 
-        if (this.repack.drug == null)
+        if (this.repack.drug == null) {
           this.repack.drug = transaction.drug
-        else if (this.repack.drug._id != transaction.drug._id) //Can only repack drugs with same NDC.  TODO Show Error?
+          console.log('this.repack.drug is null', this.repack.drug)
+        } else if (this.repack.drug._id != transaction.drug._id) {//Can only repack drugs with same NDC.  TODO Show Error?
+          console.log('this.repack.drug mismatch', this.repack.drug, transaction.drug)
           this.repack.drug = false
+        }
 
         this.repack.totalQty += transaction.qty.to
         this.repack.exp  = this.repack.exp && this.repack.exp < transaction.exp.to ? this.repack.exp : transaction.exp.to
       }
     }
+
+    console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);
 
     this.setRepackVials()
   }

@@ -2307,8 +2307,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.openMenu = function openMenu($event) {
       if ($event.target.tagName != 'I' || !this.transactions.length) return true;
 
-      console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);
-
       var term = this.term.replace('Pending ', '');
 
       this.repack.vialQty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90;
@@ -2329,12 +2327,20 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         if (_transaction.isChecked) {
 
-          if (this.repack.drug == null) this.repack.drug = _transaction.drug;else if (this.repack.drug._id != _transaction.drug._id) this.repack.drug = false;
+          if (this.repack.drug == null) {
+            this.repack.drug = _transaction.drug;
+            console.log('this.repack.drug is null', this.repack.drug);
+          } else if (this.repack.drug._id != _transaction.drug._id) {
+            console.log('this.repack.drug mismatch', this.repack.drug, _transaction.drug);
+            this.repack.drug = false;
+          }
 
           this.repack.totalQty += _transaction.qty.to;
           this.repack.exp = this.repack.exp && this.repack.exp < _transaction.exp.to ? this.repack.exp : _transaction.exp.to;
         }
       }
+
+      console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);
 
       this.setRepackVials();
     };
