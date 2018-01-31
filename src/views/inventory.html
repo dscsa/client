@@ -144,7 +144,7 @@
         <form>
           <li form
             name="pro_repack_selected"
-            disabled.bind=" ! filter.checked.count"
+            disabled.bind="repack.drug && ! filter.checked.count"
             click.delegate="repackInventory()">
             Repack Selected
           </li>
