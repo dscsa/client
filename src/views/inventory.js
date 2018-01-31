@@ -75,47 +75,6 @@ export class inventory {
       this.focusInput(`#exp_0`)
   }
 
-  sortTransactions(transactions) {
-    return transactions.sort((a, b) => {
-
-      let aDrug  = a.drug.generic
-      let bDrug  = b.drug.generic
-
-      if (aDrug > bDrug) return 1
-      if (aDrug < bDrug) return -1
-
-      let aPack = this.isRepacked(a)
-      let bPack = this.isRepacked(b)
-
-      //For repacked, sort repacked first (descending)
-      if (aPack > bPack) return -1
-      if (aPack < bPack) return 1
-
-      let aBin  = a.bin ? a.bin[0]+a.bin[2]+a.bin[1]+(a.bin[3] || '') : ''
-      let bBin  = b.bin ? b.bin[0]+b.bin[2]+b.bin[1]+(b.bin[3] || '') : ''
-
-      //For bin sory acsending alphabetically
-      //Swap second (row) and third (column) digits.  Because it's easier to
-      //to shop by column first because it doesn't require the shopper to move
-      if (aBin > bBin) return 1
-      if (aBin < bBin) return -1
-
-      let aExp  = a.exp.to || a.exp.from || ''
-      let bExp  = b.exp.to || b.exp.from || ''
-
-      if (aExp < bExp) return 1
-      if (aExp > bExp) return -1
-
-      let aQty  = a.qty.to || a.qty.from || ''
-      let bQty  = b.qty.to || b.qty.from || ''
-
-      if (aQty > bQty) return 1
-      if (aQty < bQty) return -1
-
-      return 0
-    })
-  }
-
   toggleCheck(transaction) {
     console.log('toggleCheck transaction',  transaction)
     this.setCheck(transaction, ! transaction.isChecked)
@@ -165,7 +124,7 @@ export class inventory {
     if (transactions.length == this.limit)
       this.snackbar.show(`Displaying first 100 results`)
 
-    this.transactions = this.sortTransactions(transactions)
+    this.transactions = transactions
     console.log('reset filter')
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
   }
