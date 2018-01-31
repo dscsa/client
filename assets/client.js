@@ -1918,6 +1918,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       return transactions.sort(function (a, b) {
 
+        var aDrug = a.drug.generic;
+        var bDrug = b.drug.generic;
+
+        if (aDrug > bDrug) return 1;
+        if (aDrug < bDrug) return -1;
+
         var aPack = _this4.isRepacked(a);
         var bPack = _this4.isRepacked(b);
 

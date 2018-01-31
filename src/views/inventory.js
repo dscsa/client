@@ -78,6 +78,12 @@ export class inventory {
   sortTransactions(transactions) {
     return transactions.sort((a, b) => {
 
+      let aDrug  = a.drug.generic
+      let bDrug  = b.drug.generic
+
+      if (aDrug > bDrug) return 1
+      if (aDrug < bDrug) return -1
+
       let aPack = this.isRepacked(a)
       let bPack = this.isRepacked(b)
 
