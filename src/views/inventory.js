@@ -123,7 +123,8 @@ export class inventory {
     if (transactions.length == limit) {
       this.type = type
       this.snackbar.show(`Displaying first 100 results`)
-    }
+    } else
+      this.type = null
 
     this.transactions = transactions
     console.log('reset filter')
