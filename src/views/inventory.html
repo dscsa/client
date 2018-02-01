@@ -79,6 +79,9 @@
           <div style="width:18%; display:inline-block; vertical-align:top">${form.val.count}</div>
         </div>
       </div>
+      <div class="mdl-card__actions">
+        <md-button show.bind="type" click.delegate="selectInventory(type, term)">Show All Results</md-button>
+      </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
       <md-autocomplete

@@ -11,7 +11,6 @@ export class inventory {
     this.db     = db
     this.router = router
     this.csv    = csv
-    this.limit  = 100
     this.repack = {}
     this.transactions = []
     this.pending = {}
@@ -120,9 +119,11 @@ export class inventory {
     return transaction.bin && transaction.bin.length == 3
   }
 
-  setTransactions(transactions = []) {
-    if (transactions.length == this.limit)
+  setTransactions(transactions = [], type, limit) {
+    if (transactions.length == limit) {
+      this.type = type
       this.snackbar.show(`Displaying first 100 results`)
+    }
 
     this.transactions = transactions
     console.log('reset filter')
@@ -164,10 +165,10 @@ export class inventory {
     this.toggleDrawer()
   }
 
-  selectInventory(type, key) {
+  selectInventory(type, key, limit) {
     this.term = key
 
-    let opts = {include_docs:true, limit:this.limit, reduce:false}
+    let opts = {include_docs:true, limit, reduce:false}
 
     if (type == 'bin') {
       opts.startkey = [this.account, key.slice(0,3), key.slice(3)]
@@ -184,7 +185,7 @@ export class inventory {
       opts.endkey   = [this.account, key, '\uffff']
     }
 
-    const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc))
+    const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc), type, limit)
     this.db.transaction.query('inventory.'+type, opts).then(setTransactions)
   }
 
@@ -194,7 +195,7 @@ export class inventory {
 
     type == 'pending'
       ? this.selectPending(key)
-      : this.selectInventory(type, key)
+      : this.selectInventory(type, key, 100)
 
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
   }
