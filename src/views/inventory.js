@@ -126,7 +126,7 @@ export class inventory {
     } else
       this.type = null
 
-    if (type == 'inventory.drug.generic') //server sorts by Exp then Bin (for query reasons), but for shopping Bin should be primary sort field
+    if (type == 'drug.generic') //server sorts by Exp then Bin (for query reasons), but for shopping Bin should be primary sort field
       transactions.sort(this.sortTransactions)
 
     this.transactions = transactions
