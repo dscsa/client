@@ -126,24 +126,9 @@ export class inventory {
     } else
       this.type = null
 
-    console.log('type', type)
-    if (type == 'drug.generic') //server sorts by Exp then Bin (for query reasons), but for shopping Bin should be primary sort field
-      transactions.sort(this.sortTransactions)
-
     this.transactions = transactions
     console.log('reset filter')
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
-  }
-
-  sortTransactions(a, b) {
-
-    var aBin = a.bin ? a.bin[0] + a.bin[2] + a.bin[1] + (a.bin[3] || '') : ''
-    var bBin = b.bin ? b.bin[0] + b.bin[2] + b.bin[1] + (b.bin[3] || '') : ''
-    console.log('abin', a.bin, aBin, 'bbin', b.bin, bBin)
-    if (aBin > bBin) return 1
-    if (aBin < bBin) return -1
-
-    return 0
   }
 
   search() {

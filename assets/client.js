@@ -1976,23 +1976,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         this.snackbar.show('Displaying first 100 results');
       } else this.type = null;
 
-      console.log('type', type);
-      if (type == 'drug.generic') transactions.sort(this.sortTransactions);
-
       this.transactions = transactions;
       console.log('reset filter');
       this.filter = {};
-    };
-
-    inventory.prototype.sortTransactions = function sortTransactions(a, b) {
-
-      var aBin = a.bin ? a.bin[0] + a.bin[2] + a.bin[1] + (a.bin[3] || '') : '';
-      var bBin = b.bin ? b.bin[0] + b.bin[2] + b.bin[1] + (b.bin[3] || '') : '';
-      console.log('abin', a.bin, aBin, 'bbin', b.bin, bBin);
-      if (aBin > bBin) return 1;
-      if (aBin < bBin) return -1;
-
-      return 0;
     };
 
     inventory.prototype.search = function search() {
