@@ -145,6 +145,12 @@
           Pend to New
         </li>
         <form>
+          <li
+            name="pro_print_selected"
+            disabled.bind=" ! filter.checked.count"
+            click.delegate="printLabels(transactions.filter(t => t.isChecked))">
+            Print Selected
+          </li>
           <li form
             name="pro_repack_selected"
             disabled.bind=" ! repack.drug || ! filter.checked.count"

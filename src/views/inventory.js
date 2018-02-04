@@ -353,7 +353,7 @@ export class inventory {
     //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
     //because we don't know where the extra pills came from.  If 0 still keep record in case we need to
     //adjust it after the fact (on sever with reconcileRepackQty)
-    newTransactions.push(this.db.transaction.post({
+    newTransactions.unshift(this.db.transaction.post({
       exp:{to:this.repack.exp, from:null},
       qty:{to:excessQty, from:null},
       user:{_id:this.user},
@@ -365,35 +365,42 @@ export class inventory {
     //Once we have the new _ids insert them into the next property of the checked transactions
     Promise.all(newTransactions).then(newTransactions => {
 
-      let label = [
-        `<p style="page-break-after:always;">`,
-        `<strong>${this.transactions[0].drug.generic}</strong>`,
-        `Ndc ${this.transactions[0].drug._id}`,
-        `Exp ${this.repack.exp.slice(0, 7)}`,
-        `Bin ${this.repack.bin}`,
-        `Qty ${this.repack.vialQty}`,
-        `Pharmacist ________________`,
-        `</p>`
-      ]
-
       const next = newTransactions.map(newTransaction => {
         return {transaction:{_id:newTransaction.id}, createdAt}
       })
 
       this.updateSelected(transaction => transaction.next = next)
 
-      let win = window.open()
-      if ( ! win)
-        return this.snackbar.show(`Enable browser pop-ups to print repack labels`)
-
-      win.document.write(label.join('<br>').repeat(this.repack.vials))
-      win.print()
-      win.close()
+      this.printLabels(newTransactions.slice(1)) //don't include the "excess" one
 
     }).catch(err => {
       console.error(err)
       this.snackbar.show(`Transactions could not repackaged: ${err.reason}`)
     })
+  }
+
+  printLabels(transactions) {
+
+    let labels = transactions.map(transaction => {
+      return [
+        `<p style="page-break-after:always;">`,
+        `<strong>${transaction.drug.generic}</strong>`,
+        `Ndc ${transaction.drug._id}`,
+        `Exp ${transaction.exp.to.slice(0, 7)}`,
+        `Bin ${transaction.bin}`,
+        `Qty ${transaction.qty.to}`,
+        `Pharmacist ________________`,
+        `</p>`
+      ].join('<br>')
+    })
+
+    let win = window.open()
+    if ( ! win)
+      return this.snackbar.show(`Enable browser pop-ups to print vial labels`)
+
+    win.document.write(labels.join(''))
+    win.print()
+    win.close()
   }
 
   //Upon repacking, excess forced to be >= 0 and is recorded as a new transaction that was "disposed"
