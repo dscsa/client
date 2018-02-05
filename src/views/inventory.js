@@ -381,6 +381,8 @@ export class inventory {
 
   printLabels(transactions) {
 
+    transactions = transactions || this.transactions.filter(t => t.isChecked)
+
     let labels = transactions.map(transaction => {
       return [
         `<p style="page-break-after:always;">`,
