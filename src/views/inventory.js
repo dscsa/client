@@ -353,7 +353,7 @@ export class inventory {
     //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
     //because we don't know where the extra pills came from.  If 0 still keep record in case we need to
     //adjust it after the fact (on sever with reconcileRepackQty)
-    newTransactions.unshift(this.db.transaction.post({
+    newTransactions.push(this.db.transaction.post({
       exp:{to:this.repack.exp, from:null},
       qty:{to:excessQty, from:null},
       user:{_id:this.user},
@@ -362,17 +362,18 @@ export class inventory {
       next:[] //Keep it pending if we are on pending screen
     }))
 
-    //Once we have the new _ids insert them into the next property of the checked transactions
-    Promise.all(newTransactions).then(newTransactions => {
+    this.printLabels(this.transactions.slice(0, this.repack.vials)) //don't include the "excess" one
 
-      const next = newTransactions.map(newTransaction => {
-        return {transaction:{_id:newTransaction.id}, createdAt}
+    //Once we have the new _ids insert them into the next property of the checked transactions
+    Promise.all(newTransactions).then(res => {
+
+      console.log('Repacked vials have been created')
+
+      const next = res.map(row => {
+        return {transaction:{_id:row.id}, createdAt}
       })
 
       this.updateSelected(transaction => transaction.next = next)
-
-      this.printLabels(newTransactions.slice(1)) //don't include the "excess" one
-
     }).catch(err => {
       console.error(err)
       this.snackbar.show(`Transactions could not repackaged: ${err.reason}`)

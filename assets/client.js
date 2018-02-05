@@ -2203,7 +2203,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         newTransactions.push(this.db.transaction.post(newTransaction));
       }
 
-      newTransactions.unshift(this.db.transaction.post({
+      newTransactions.push(this.db.transaction.post({
         exp: { to: this.repack.exp, from: null },
         qty: { to: excessQty, from: null },
         user: { _id: this.user },
@@ -2211,17 +2211,18 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         drug: this.repack.drug,
         next: [] }));
 
-      Promise.all(newTransactions).then(function (newTransactions) {
+      this.printLabels(this.transactions.slice(0, this.repack.vials));
+      Promise.all(newTransactions).then(function (res) {
 
-        var next = newTransactions.map(function (newTransaction) {
-          return { transaction: { _id: newTransaction.id }, createdAt: createdAt };
+        console.log('Repacked vials have been created');
+
+        var next = res.map(function (row) {
+          return { transaction: { _id: row.id }, createdAt: createdAt };
         });
 
         _this9.updateSelected(function (transaction) {
           return transaction.next = next;
         });
-
-        _this9.printLabels(newTransactions.slice(1));
       }).catch(function (err) {
         console.error(err);
         _this9.snackbar.show('Transactions could not repackaged: ' + err.reason);
