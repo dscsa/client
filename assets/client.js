@@ -1879,22 +1879,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           return _this2.ordered = account.ordered;
         });
         _this2.db.transaction.query('inventory.pendingAt', { include_docs: true, startkey: [_this2.account], endkey: [_this2.account, {}] }).then(function (res) {
-          for (var _iterator = res.rows, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-            var _ref;
-
-            if (_isArray) {
-              if (_i >= _iterator.length) break;
-              _ref = _iterator[_i++];
-            } else {
-              _i = _iterator.next();
-              if (_i.done) break;
-              _ref = _i.value;
-            }
-
-            var row = _ref;
-
-            _this2.setPending(row.doc);
-          }_this2.refreshPending();
+          _this2.setPending(res.rows(function (row) {
+            return row.doc;
+          }));
+          _this2.refreshPending();
         }).then(function (_) {
           var keys = Object.keys(params);
           if (keys[0]) _this2.selectTerm(keys[0], params[keys[0]]);
@@ -1926,19 +1914,19 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var filtered = inventoryFilterValueConverter.prototype.toView(this.transactions, this.filter);
 
-      for (var _iterator2 = filtered, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-        var _ref2;
+      for (var _iterator = filtered, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
 
-        if (_isArray2) {
-          if (_i2 >= _iterator2.length) break;
-          _ref2 = _iterator2[_i2++];
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref = _iterator[_i++];
         } else {
-          _i2 = _iterator2.next();
-          if (_i2.done) break;
-          _ref2 = _i2.value;
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref = _i.value;
         }
 
-        var transaction = _ref2;
+        var transaction = _ref;
 
         this.setCheck(transaction, isChecked);
       }this.filter.checked.visible = isChecked;
@@ -2120,27 +2108,60 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.pendInventory = function pendInventory() {
-      var _this8 = this;
-
       var createdAt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new Date().toJSON();
 
       var term = this.transactions[0].drug.generic + ': ' + createdAt;
+      var toPend = [];
       this.updateSelected(function (transaction) {
         transaction.isChecked = false;
         transaction.next = [{ pending: {}, createdAt: createdAt }];
-        _this8.setPending(transaction);
+        toPend.push(transaction);
       });
 
+      this.setPending(toPend.sort(this.sortPending));
       this.selectTerm('pending', term);
     };
 
-    inventory.prototype.setPending = function setPending(transaction) {
-      var generic = transaction.drug.generic;
-      var pendedAt = transaction.next[0].createdAt;
+    inventory.prototype.sortPending = function sortPending(a, b) {
 
-      this.pending[generic] = this.pending[generic] || {};
-      this.pending[generic][pendedAt] = this.pending[generic][pendedAt] || [];
-      this.pending[generic][pendedAt].push(transaction);
+      var aPack = this.isRepacked(a);
+      var bPack = this.isRepacked(b);
+
+      if (aPack > bPack) return -1;
+      if (aPack < bPack) return 1;
+
+      var aBin = a.bin[0] + a.bin[2] + a.bin[1] + (a.bin[3] || '');
+      var bBin = b.bin[0] + b.bin[2] + b.bin[1] + (b.bin[3] || '');
+
+      if (aBin > bBin) return 1;
+      if (aBin < bBin) return -1;
+
+      return 0;
+    };
+
+    inventory.prototype.setPending = function setPending(transactions) {
+
+      for (var _iterator2 = transations, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+        var _ref2;
+
+        if (_isArray2) {
+          if (_i2 >= _iterator2.length) break;
+          _ref2 = _iterator2[_i2++];
+        } else {
+          _i2 = _iterator2.next();
+          if (_i2.done) break;
+          _ref2 = _i2.value;
+        }
+
+        var _transaction = _ref2;
+
+        var generic = _transaction.drug.generic;
+        var pendedAt = _transaction.next[0].createdAt;
+
+        this.pending[generic] = this.pending[generic] || {};
+        this.pending[generic][pendedAt] = this.pending[generic][pendedAt] || [];
+        this.pending[generic][pendedAt].push(_transaction);
+      }
     };
 
     inventory.prototype.unsetPending = function unsetPending(transaction) {
@@ -2174,7 +2195,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.repackInventory = function repackInventory() {
-      var _this9 = this;
+      var _this8 = this;
 
       var repackQty = this.repack.vialQty * this.repack.vials;
       var excessQty = this.repack.totalQty - repackQty;
@@ -2184,6 +2205,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var newTransactions = [],
           next = [],
           createdAt = new Date().toJSON();
+
+      newTransactions.push({
+        exp: { to: this.repack.exp, from: null },
+        qty: { to: excessQty, from: null },
+        user: { _id: this.user },
+        shipment: { _id: this.account },
+        drug: this.repack.drug,
+        next: [] });
 
       for (var i = 0; i < this.repack.vials; i++) {
 
@@ -2200,32 +2229,25 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         if (this.term.slice(0, 7) != 'Pending') this.transactions.unshift(newTransaction);
 
-        newTransactions.push(this.db.transaction.post(newTransaction));
+        newTransactions.push(newTransaction);
       }
 
-      newTransactions.push(this.db.transaction.post({
-        exp: { to: this.repack.exp, from: null },
-        qty: { to: excessQty, from: null },
-        user: { _id: this.user },
-        shipment: { _id: this.account },
-        drug: this.repack.drug,
-        next: [] }));
+      this.db.transaction.bulkDocs(newTransactions).then(function (rows) {
 
-      this.printLabels(this.transactions.slice(0, this.repack.vials));
-      Promise.all(newTransactions).then(function (res) {
+        console.log('Repacked vials have been created', res);
 
-        console.log('Repacked vials have been created');
-
-        var next = res.map(function (row) {
+        var next = rows.map(function (row) {
           return { transaction: { _id: row.id }, createdAt: createdAt };
         });
 
-        _this9.updateSelected(function (transaction) {
+        _this8.updateSelected(function (transaction) {
           return transaction.next = next;
         });
+
+        _this8.printLabels(newTransactions.slice(1));
       }).catch(function (err) {
         console.error(err);
-        _this9.snackbar.show('Transactions could not repackaged: ' + err.reason);
+        _this8.snackbar.show('Transactions could not repackaged: ' + err.reason);
       });
     };
 
@@ -2248,7 +2270,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.saveAndReconcileTransaction = function saveAndReconcileTransaction(transaction) {
-      var _this10 = this;
+      var _this9 = this;
 
       console.log('saveAndReconcileTransaction');
 
@@ -2256,27 +2278,27 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var qtyChange = transaction.qty.to - repack.qty.to;
 
         if (!qtyChange) {
-          return _this10.saveTransaction(transaction);
+          return _this9.saveTransaction(transaction);
         }
 
-        return _this10.db.transaction.query('next.transaction._id', { key: [_this10.account, transaction._id], include_docs: true }).then(function (res) {
+        return _this9.db.transaction.query('next.transaction._id', { key: [_this9.account, transaction._id], include_docs: true }).then(function (res) {
 
           if (!res.rows.length) {
-            return _this10.saveTransaction(transaction);
+            return _this9.saveTransaction(transaction);
           }
 
           var excess = res.rows.pop().doc.next.pop().transaction._id;
 
-          return _this10.db.transaction.get(excess).then(function (excess) {
+          return _this9.db.transaction.get(excess).then(function (excess) {
             excess.qty.to -= qtyChange;
 
             if (excess.qty.to < 0) {
               transaction.qty.to = repack.qty.to;
-              return _this10.snackbar.show('Cannot set repack qty to be more than qty orginally repacked, ' + (repack.qty.to + excess.qty.to + qtyChange));
+              return _this9.snackbar.show('Cannot set repack qty to be more than qty orginally repacked, ' + (repack.qty.to + excess.qty.to + qtyChange));
             }
 
-            _this10.db.transaction.put(excess);
-            return _this10.saveTransaction(transaction);
+            _this9.db.transaction.put(excess);
+            return _this9.saveTransaction(transaction);
           });
         });
       });
@@ -2306,20 +2328,20 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           _ref3 = _i3.value;
         }
 
-        var _transaction = _ref3;
+        var _transaction2 = _ref3;
 
-        if (_transaction.isChecked) {
+        if (_transaction2.isChecked) {
 
           if (this.repack.drug == null) {
-            this.repack.drug = _transaction.drug;
+            this.repack.drug = _transaction2.drug;
             console.log('this.repack.drug is null', this.repack.drug);
-          } else if (this.repack.drug._id != _transaction.drug._id) {
-            console.log('this.repack.drug mismatch', this.repack.drug, _transaction.drug);
+          } else if (this.repack.drug._id != _transaction2.drug._id) {
+            console.log('this.repack.drug mismatch', this.repack.drug, _transaction2.drug);
             this.repack.drug = false;
           }
 
-          this.repack.totalQty += _transaction.qty.to;
-          this.repack.exp = this.repack.exp && this.repack.exp < _transaction.exp.to ? this.repack.exp : _transaction.exp.to;
+          this.repack.totalQty += _transaction2.qty.to;
+          this.repack.exp = this.repack.exp && this.repack.exp < _transaction2.exp.to ? this.repack.exp : _transaction2.exp.to;
         }
       }
 
@@ -2339,13 +2361,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.showHistoryDialog = function showHistoryDialog(id) {
-      var _this11 = this;
+      var _this10 = this;
 
       console.log('getHistory', id);
       this.dialog.showModal();
       this.getHistory(id).then(function (history) {
         console.log(history);
-        _this11.history = history;
+        _this10.history = history;
       });
     };
 

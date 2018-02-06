@@ -54,9 +54,7 @@ export class inventory {
       this.db.account.get(this.account).then(account => this.ordered = account.ordered)
       this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
       .then(res => {
-        for (let row of res.rows)
-          this.setPending(row.doc)
-
+        this.setPending(res.rows(row => row.doc))
         this.refreshPending() //not needed on development without this on production, blank drawer on inital load
       })
       .then(_ => {
@@ -261,25 +259,50 @@ export class inventory {
 
   pendInventory(createdAt = new Date().toJSON()) {
     const term = this.transactions[0].drug.generic+': '+createdAt
+    let toPend = []
     this.updateSelected(transaction => {
       transaction.isChecked = false
       transaction.next = [{pending:{}, createdAt}]
-      this.setPending(transaction) //this must happen last so we have next info
+      toPend.push(transaction) //this must happen last so we have next info
     })
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
+    //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
+    //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
+    this.setPending(toPend.sort(this.sortPending))
     this.selectTerm('pending', term)
+  }
+
+  sortPending(a, b) {
+
+    var aPack = this.isRepacked(a)
+    var bPack = this.isRepacked(b)
+
+    if (aPack > bPack) return -1
+    if (aPack < bPack) return 1
+
+    //Flip columns and rows for sorting, since shopping is easier if you never move backwards
+    let aBin = a.bin[0]+a.bin[2]+a.bin[1]+(a.bin[3] || '')
+    let bBin = b.bin[0]+b.bin[2]+b.bin[1]+(b.bin[3] || '')
+
+    if (aBin > bBin) return 1
+    if (aBin < bBin) return -1
+
+    return 0
   }
 
   //Group pending into this structure {drug:{pendedAt1:[...drugs], pendedAt2:[...drugs]}}
   //this will allow easy functionality of the "Pend to" feature in case someone forgot to
   //pend a drug with the original group.
-  setPending(transaction) {
-    const generic  = transaction.drug.generic
-    const pendedAt = transaction.next[0].createdAt
+  setPending(transactions) {
 
-    this.pending[generic] = this.pending[generic] || {}
-    this.pending[generic][pendedAt] = this.pending[generic][pendedAt] || []
-    this.pending[generic][pendedAt].push(transaction)
+    for (let transaction of transations) {
+      const generic  = transaction.drug.generic
+      const pendedAt = transaction.next[0].createdAt
+
+      this.pending[generic] = this.pending[generic] || {}
+      this.pending[generic][pendedAt] = this.pending[generic][pendedAt] || []
+      this.pending[generic][pendedAt].push(transaction)
+    }
   }
 
   unsetPending(transaction) {
@@ -327,6 +350,20 @@ export class inventory {
         next = [],
         createdAt = new Date().toJSON()
 
+
+    //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
+    //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
+    //because we don't know where the extra pills came from.  If 0 still keep record in case we need to
+    //adjust it after the fact (on sever with reconcileRepackQty)
+    newTransactions.push({
+      exp:{to:this.repack.exp, from:null},
+      qty:{to:excessQty, from:null},
+      user:{_id:this.user},
+      shipment:{_id:this.account},
+      drug:this.repack.drug,
+      next:[] //Keep it pending if we are on pending screen
+    })
+
     //Create the new (repacked) transactions
     for (let i=0; i<this.repack.vials; i++) {
 
@@ -346,34 +383,22 @@ export class inventory {
       if (this.term.slice(0,7) != 'Pending')
         this.transactions.unshift(newTransaction)
 
-      newTransactions.push(this.db.transaction.post(newTransaction))
+      newTransactions.push(newTransaction)
     }
 
-    //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
-    //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
-    //because we don't know where the extra pills came from.  If 0 still keep record in case we need to
-    //adjust it after the fact (on sever with reconcileRepackQty)
-    newTransactions.push(this.db.transaction.post({
-      exp:{to:this.repack.exp, from:null},
-      qty:{to:excessQty, from:null},
-      user:{_id:this.user},
-      shipment:{_id:this.account},
-      drug:this.repack.drug,
-      next:[] //Keep it pending if we are on pending screen
-    }))
-
-    this.printLabels(this.transactions.slice(0, this.repack.vials)) //don't include the "excess" one
-
     //Once we have the new _ids insert them into the next property of the checked transactions
-    Promise.all(newTransactions).then(res => {
+    this.db.transaction.bulkDocs(newTransactions).then(rows => {
 
-      console.log('Repacked vials have been created')
+      console.log('Repacked vials have been created', res)
 
-      const next = res.map(row => {
+      const next = rows.map(row => {
         return {transaction:{_id:row.id}, createdAt}
       })
 
       this.updateSelected(transaction => transaction.next = next)
+
+      this.printLabels(newTransactions.slice(1)) //don't include the "excess" one
+
     }).catch(err => {
       console.error(err)
       this.snackbar.show(`Transactions could not repackaged: ${err.reason}`)
