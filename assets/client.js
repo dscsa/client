@@ -2234,7 +2234,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.db.transaction.bulkDocs(newTransactions).then(function (rows) {
 
-        console.log('Repacked vials have been created', res);
+        console.log('Repacked vials have been created', rows);
 
         var next = rows.map(function (row) {
           return { transaction: { _id: row.id }, createdAt: createdAt };

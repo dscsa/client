@@ -389,7 +389,7 @@ export class inventory {
     //Once we have the new _ids insert them into the next property of the checked transactions
     this.db.transaction.bulkDocs(newTransactions).then(rows => {
 
-      console.log('Repacked vials have been created', res)
+      console.log('Repacked vials have been created', rows)
 
       const next = rows.map(row => {
         return {transaction:{_id:row.id}, createdAt}
