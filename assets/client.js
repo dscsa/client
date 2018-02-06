@@ -2141,7 +2141,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.setPending = function setPending(transactions) {
 
-      for (var _iterator2 = transations, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+      for (var _iterator2 = transactions, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
         var _ref2;
 
         if (_isArray2) {

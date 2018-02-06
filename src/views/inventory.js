@@ -295,7 +295,7 @@ export class inventory {
   //pend a drug with the original group.
   setPending(transactions) {
 
-    for (let transaction of transations) {
+    for (let transaction of transactions) {
       const generic  = transaction.drug.generic
       const pendedAt = transaction.next[0].createdAt
 
