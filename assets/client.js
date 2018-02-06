@@ -2118,7 +2118,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         toPend.push(transaction);
       });
 
-      this.setPending(toPend.sort(this.sortPending));
+      this.setPending(toPend.sort(this.sortPending.bind(this)));
       this.selectTerm('pending', term);
     };
 

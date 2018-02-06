@@ -268,7 +268,7 @@ export class inventory {
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
-    this.setPending(toPend.sort(this.sortPending))
+    this.setPending(toPend.sort(this.sortPending.bind(this)))
     this.selectTerm('pending', term)
   }
 
