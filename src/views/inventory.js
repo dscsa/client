@@ -248,7 +248,7 @@ export class inventory {
   }
 
   unpendInventory() {
-    const term = this.transactions[0].drug.generic
+    const term = this.repack.drug.generic
     this.updateSelected(transaction => {
       transaction.isChecked = false
       transaction.next = []
@@ -258,7 +258,7 @@ export class inventory {
   }
 
   pendInventory(createdAt = new Date().toJSON()) {
-    const term = this.transactions[0].drug.generic+': '+createdAt
+    const term = this.repack.drug.generic+': '+createdAt
     let toPend = []
     this.updateSelected(transaction => {
       transaction.isChecked = false
@@ -497,7 +497,7 @@ export class inventory {
       }
     }
 
-    console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);
+    console.log('openMenu', this.ordered[this.term], this.repack);
 
     this.setRepackVials()
   }
