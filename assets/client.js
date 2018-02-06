@@ -2098,7 +2098,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.unpendInventory = function unpendInventory() {
       var _this7 = this;
 
-      var term = this.transactions[0].drug.generic;
+      var term = this.repack.drug.generic;
       this.updateSelected(function (transaction) {
         transaction.isChecked = false;
         transaction.next = [];
@@ -2110,7 +2110,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.pendInventory = function pendInventory() {
       var createdAt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new Date().toJSON();
 
-      var term = this.transactions[0].drug.generic + ': ' + createdAt;
+      var term = this.repack.drug.generic + ': ' + createdAt;
       var toPend = [];
       this.updateSelected(function (transaction) {
         transaction.isChecked = false;
@@ -2118,7 +2118,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         toPend.push(transaction);
       });
 
-      this.setPending(toPend.sort(this.sortPending.bind(this)));
+      this.setPending(toPend);
       this.selectTerm('pending', term);
     };
 
@@ -2161,6 +2161,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         this.pending[generic] = this.pending[generic] || {};
         this.pending[generic][pendedAt] = this.pending[generic][pendedAt] || [];
         this.pending[generic][pendedAt].push(_transaction);
+        this.pending[generic][pendedAt].sort(this.sortPending.bind(this));
       }
     };
 
@@ -2345,7 +2346,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         }
       }
 
-      console.log('openMenu', this.ordered[this.term], this.repack, this.transactions[0]);
+      console.log('openMenu', this.ordered[this.term], this.repack);
 
       this.setRepackVials();
     };

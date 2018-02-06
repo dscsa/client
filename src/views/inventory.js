@@ -268,7 +268,7 @@ export class inventory {
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
-    this.setPending(toPend.sort(this.sortPending.bind(this)))
+    this.setPending(toPend)
     this.selectTerm('pending', term)
   }
 
@@ -302,6 +302,7 @@ export class inventory {
       this.pending[generic] = this.pending[generic] || {}
       this.pending[generic][pendedAt] = this.pending[generic][pendedAt] || []
       this.pending[generic][pendedAt].push(transaction)
+      this.pending[generic][pendedAt].sort(this.sortPending.bind(this)) //seems wasteful but this seems like overkill https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
     }
   }
 
