@@ -66,6 +66,12 @@ export class drugs {
     this.group && this.scrollSelect($event, this.drug, this.group.drugs, this.selectDrug)
   }
 
+  addDays(days) {
+    let date  = new Date()
+    date.setDate(+days + date.getDate())
+    return date.toJSON().slice(0, 10)
+  }
+
   //Three entrances.
   //1) User searches and then selects group from autocomplete (group already supplied)
   //2) selectDrawer and we need to find the group with that particular generic name
@@ -75,10 +81,9 @@ export class drugs {
 
     this.term = group.name
 
-    let minDays = this.account.ordered[group.name].minDays || this.account.default.minDays
-    let indate  = new Date()
-    indate.setDate(+minDays + indate.getDate())
-    indate = indate.toJSON().slice(0, 10)
+    let minDays   = this.account.ordered[group.name].minDays || this.account.default.minDays
+    let indate    = this.addDays(minDays)
+    let unexpired = this.addDays(30)
 
     this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, indate], endkey:[this.account._id, group.name, {}]})
     .then(inventory => {
@@ -87,7 +92,7 @@ export class drugs {
       console.log('indate inventory', this.indateInventory)
     })
 
-    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name], endkey:[this.account._id, group.name, indate]})
+    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, unexpired], endkey:[this.account._id, group.name, indate]})
     .then(inventory => {
       console.log('outdate inventory', indate, inventory)
       this.outdateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0

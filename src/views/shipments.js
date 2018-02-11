@@ -431,12 +431,17 @@ export class shipments {
     //We set current inventory when adding a new transaction.  This is a tradeoff of frequency vs accurracy.  This will be inaccurate
     //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
     //this is rare enough to be okay.  We also don't want to have to fetch current inventory on every input event.
-    order && this.db.transaction.query('inventory', {startkey:[this.account._id, drug.generic], endkey:[this.account._id, drug.generic+'\uffff']})
-    .then(inventory => {
-      console.log('inventory', inventory)
-      order.inventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] : 0
-      console.log('order.inventory', order.inventory)
-    })
+    if (order) {
+      let date  = new Date()
+      date.setDate(+order.minDays + date.getDate())
+
+      this.db.transaction.query('inventory', {startkey:[this.account._id, drug.generic, date.toJSON().slice(0, 10)], endkey:[this.account._id, drug.generic, {}]})
+      .then(inventory => {
+        console.log('inventory', inventory)
+        order.inventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0
+        console.log('order.inventory', order.inventory)
+      })
+    }
 
     isPharMerica && ! order //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
       ? this.snackbar.show(`Destroy, record already exists`)

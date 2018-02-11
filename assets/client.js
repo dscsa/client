@@ -1520,6 +1520,12 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       this.group && this.scrollSelect($event, this.drug, this.group.drugs, this.selectDrug);
     };
 
+    drugs.prototype.addDays = function addDays(days) {
+      var date = new Date();
+      date.setDate(+days + date.getDate());
+      return date.toJSON().slice(0, 10);
+    };
+
     drugs.prototype.selectGroup = function selectGroup(group, autoselectDrug) {
       var _this3 = this;
 
@@ -1528,9 +1534,8 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       this.term = group.name;
 
       var minDays = this.account.ordered[group.name].minDays || this.account.default.minDays;
-      var indate = new Date();
-      indate.setDate(+minDays + indate.getDate());
-      indate = indate.toJSON().slice(0, 10);
+      var indate = this.addDays(minDays);
+      var unexpired = this.addDays(30);
 
       this.db.transaction.query('inventory', { startkey: [this.account._id, group.name, indate], endkey: [this.account._id, group.name, {}] }).then(function (inventory) {
         console.log('indate inventory', indate, inventory);
@@ -1538,7 +1543,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
         console.log('indate inventory', _this3.indateInventory);
       });
 
-      this.db.transaction.query('inventory', { startkey: [this.account._id, group.name], endkey: [this.account._id, group.name, indate] }).then(function (inventory) {
+      this.db.transaction.query('inventory', { startkey: [this.account._id, group.name, unexpired], endkey: [this.account._id, group.name, indate] }).then(function (inventory) {
         console.log('outdate inventory', indate, inventory);
         _this3.outdateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0;
         console.log('outdate inventory', _this3.outdateInventory);
@@ -3049,11 +3054,16 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
 
       var order = this.getOrder(transaction);
       var isPharMerica = false;
-      order && this.db.transaction.query('inventory', { startkey: [this.account._id, drug.generic], endkey: [this.account._id, drug.generic + '\uFFFF'] }).then(function (inventory) {
-        console.log('inventory', inventory);
-        order.inventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] : 0;
-        console.log('order.inventory', order.inventory);
-      });
+      if (order) {
+        var date = new Date();
+        date.setDate(+order.minDays + date.getDate());
+
+        this.db.transaction.query('inventory', { startkey: [this.account._id, drug.generic, date.toJSON().slice(0, 10)], endkey: [this.account._id, drug.generic, {}] }).then(function (inventory) {
+          console.log('inventory', inventory);
+          order.inventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0;
+          console.log('order.inventory', order.inventory);
+        });
+      }
 
       isPharMerica && !order ? this.snackbar.show('Destroy, record already exists') : setTimeout(function (_) {
         return _this9.focusInput('#exp_0');
