@@ -1523,12 +1523,12 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     drugs.prototype.selectGroup = function selectGroup(group, autoselectDrug) {
       var _this3 = this;
 
-      console.log('selectGroup()', group.name, this.drug && this.drug.generic);
+      console.log('selectGroup()', group, this.drug && this.drug.generic);
 
       this.term = group.name;
 
       var indate = new Date();
-      indate.setDate(indate.getDate() + group.minDays);
+      indate.setDate(indate.getDate() + group.minDays || 0);
       indate = indate.toJSON().slice(0, 10);
 
       this.db.transaction.query('inventory', { startkey: [this.account._id, group.name, indate], endkey: [this.account._id, group.name, {}] }).then(function (inventory) {

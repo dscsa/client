@@ -71,12 +71,12 @@ export class drugs {
   //2) selectDrawer and we need to find the group with that particular generic name
   //3) selectDrug and we need to find the group with that particular generic name
   selectGroup(group, autoselectDrug) {
-    console.log('selectGroup()', group.name, this.drug && this.drug.generic)
+    console.log('selectGroup()', group, this.drug && this.drug.generic)
 
     this.term = group.name
 
     let indate = new Date()
-    indate.setDate(indate.getDate() + group.minDays)
+    indate.setDate(indate.getDate() + group.minDays || 0)
     indate = indate.toJSON().slice(0, 10)
 
     this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, indate], endkey:[this.account._id, group.name, {}]})
