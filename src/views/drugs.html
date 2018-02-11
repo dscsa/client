@@ -239,20 +239,20 @@
             disabled
             type="number"
             value.bind="outdateInventory">
-            Inventory < ${ (account.ordered[group.name] || {}).minDays || account.default.minDays } Days
+            Qty < ${ (account.ordered[group.name] || {}).minDays || account.default.minDays } Days
           </md-input>
           <md-input
             disabled
             type="number"
             value.bind="indateInventory">
-            Inventory > ${ (account.ordered[group.name] || {}).minDays || account.default.minDays } Days
+            Qty > ${ (account.ordered[group.name] || {}).minDays || account.default.minDays } Days
           </md-input>
           <md-input
             type="number"
             value.bind="(account.ordered[group.name] || {}).maxInventory"
             placeholder="${account.default.maxInventory}"
             style="width:100%">
-            Max Inventory > ${ (account.ordered[group.name] || {}).minDays || account.default.minDays } Days
+            Max Qty > ${ (account.ordered[group.name] || {}).minDays || account.default.minDays } Days
           </md-input>
           <md-input
             type="number"
