@@ -2913,7 +2913,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     };
 
     shipments.prototype.belowMaxInventory = function belowMaxInventory(order, transaction) {
-      var newInventory = transaction.qty[this.role.shipments] + order.inventory;
+      var newInventory = transaction.qty[this.role.shipments] + order.indateInventory;
       var maxInventory = order.maxInventory || this.account.default.maxInventory;
       var belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory;
       if (!belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory);
@@ -3055,13 +3055,15 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       var order = this.getOrder(transaction);
       var isPharMerica = false;
       if (order) {
+
+        var minDays = order.minDays || this.account.default.minDays;
         var date = new Date();
-        date.setDate(+order.minDays + date.getDate());
+        date.setDate(+minDays + date.getDate());
 
         this.db.transaction.query('inventory', { startkey: [this.account._id, drug.generic, date.toJSON().slice(0, 10)], endkey: [this.account._id, drug.generic, {}] }).then(function (inventory) {
           console.log('inventory', inventory);
-          order.inventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0;
-          console.log('order.inventory', order.inventory);
+          order.indateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0;
+          console.log('order.indateInventory', order.indateInventory);
         });
       }
 

@@ -276,7 +276,7 @@ export class shipments {
   }
 
   belowMaxInventory(order, transaction) {
-    let newInventory = transaction.qty[this.role.shipments] + order.inventory
+    let newInventory = transaction.qty[this.role.shipments] + order.indateInventory
     let maxInventory = order.maxInventory || this.account.default.maxInventory
     let belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory //in case of an inventory error let's keep the drug
     if ( ! belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory) //
@@ -432,14 +432,16 @@ export class shipments {
     //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
     //this is rare enough to be okay.  We also don't want to have to fetch current inventory on every input event.
     if (order) {
+
+      let minDays = order.minDays || this.account.default.minDays
       let date  = new Date()
-      date.setDate(+order.minDays + date.getDate())
+      date.setDate(+minDays + date.getDate())
 
       this.db.transaction.query('inventory', {startkey:[this.account._id, drug.generic, date.toJSON().slice(0, 10)], endkey:[this.account._id, drug.generic, {}]})
       .then(inventory => {
         console.log('inventory', inventory)
-        order.inventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0
-        console.log('order.inventory', order.inventory)
+        order.indateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0
+        console.log('order.indateInventory', order.indateInventory)
       })
     }
 
