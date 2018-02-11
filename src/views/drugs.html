@@ -238,23 +238,21 @@
           <md-input
             disabled
             type="number"
-            value.bind="qtyBinned"
-            style="width:48%">
-            Inventory
+            value.bind="outdateInventory">
+            Outdate Inventory
           </md-input>
           <md-input
             disabled
             type="number"
-            value.bind="qtyRepacked"
-            style="width:48%">
-            Repacked
+            value.bind="indateInventory">
+            Indate Inventory
           </md-input>
           <md-input
             type="number"
             value.bind="(account.ordered[group.name] || {}).maxInventory"
             placeholder="${account.default.maxInventory}"
             style="width:100%">
-            Max Inventory
+            Max Indate Inventory
           </md-input>
           <md-input
             type="number"

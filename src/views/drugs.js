@@ -75,12 +75,21 @@ export class drugs {
 
     this.term = group.name
 
-    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name], endkey:[this.account._id, group.name+'\uffff']})
+    let indate = new Date()
+    indate.setDate(indate.getDate() + group.minDays)
+
+    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, indate], endkey:[this.account._id, group.name, {}]})
     .then(inventory => {
-      console.log('inventory', inventory)
-      this.qtyBinned   = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] : 0
-      this.qtyRepacked = inventory.rows[0] ? inventory.rows[0].value['qty.repacked'] : 0
-      console.log('inventory',this.qtyBinned, this.qtyRepacked)
+      console.log('indate inventory', inventory)
+      this.indateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] + inventory.rows[0].value['qty.repacked'] : 0
+      console.log('indate inventory',this.indateInventory)
+    })
+
+    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name], endkey:[this.account._id, group.name, indate]})
+    .then(inventory => {
+      console.log('outdate inventory', inventory)
+      this.outdateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] + inventory.rows[0].value['qty.repacked'] : 0
+      console.log('outdate inventory',this.outdateInventory)
     })
 
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
