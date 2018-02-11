@@ -76,7 +76,7 @@ export class drugs {
     this.term = group.name
 
     let indate = new Date()
-    indate.setDate(indate.getDate() + group.minDays || 0)
+    indate.setDate(indate.getDate() + group.minDays || account.default.minDays)
     indate = indate.toJSON().slice(0, 10)
 
     this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, indate], endkey:[this.account._id, group.name, {}]})
