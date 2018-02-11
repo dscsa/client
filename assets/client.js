@@ -1528,18 +1528,18 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       this.term = group.name;
 
       var indate = new Date();
-      indate.setDate(indate.getDate() + group.minDays || this.account.default.minDays);
+      indate.setDate(indate.getDate() + (group.minDays || this.account.default.minDays));
       indate = indate.toJSON().slice(0, 10);
 
       this.db.transaction.query('inventory', { startkey: [this.account._id, group.name, indate], endkey: [this.account._id, group.name, {}] }).then(function (inventory) {
         console.log('indate inventory', indate, inventory);
-        _this3.indateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] + inventory.rows[0].value['qty.repacked'] : 0;
+        _this3.indateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0;
         console.log('indate inventory', _this3.indateInventory);
       });
 
       this.db.transaction.query('inventory', { startkey: [this.account._id, group.name], endkey: [this.account._id, group.name, indate] }).then(function (inventory) {
         console.log('outdate inventory', indate, inventory);
-        _this3.outdateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] + inventory.rows[0].value['qty.repacked'] : 0;
+        _this3.outdateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0;
         console.log('outdate inventory', _this3.outdateInventory);
       });
 
