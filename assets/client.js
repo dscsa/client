@@ -1528,7 +1528,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       this.term = group.name;
 
       var indate = new Date();
-      indate.setDate(indate.getDate() + group.minDays || account.default.minDays);
+      indate.setDate(indate.getDate() + group.minDays || this.account.default.minDays);
       indate = indate.toJSON().slice(0, 10);
 
       this.db.transaction.query('inventory', { startkey: [this.account._id, group.name, indate], endkey: [this.account._id, group.name, {}] }).then(function (inventory) {
