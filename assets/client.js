@@ -1527,10 +1527,13 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       this.term = group.name;
 
+      var minDays = this.account.ordered[group.name].minDays || this.account.default.minDays;
       var indate = new Date();
-      indate.setDate(indate.getDate() + (group.minDays || this.account.default.minDays));
+      console.log('indate 1', indate, indate.getDate(), indate.getDate() + minDays);
+      indate.setDate(indate.getDate() + minDays);
+      console.log('indate 2', indate, indate.getDate(), indate.toJSON());
       indate = indate.toJSON().slice(0, 10);
-      console.log('indate', group.minDays, this.account.default.minDays, group.minDays || this.account.default.minDays, indate);
+      console.log('indate 3', this.account.ordered[group.name].minDays, this.account.default.minDays, minDays, indate);
 
       this.db.transaction.query('inventory', { startkey: [this.account._id, group.name, indate], endkey: [this.account._id, group.name, {}] }).then(function (inventory) {
         console.log('indate inventory', indate, inventory);

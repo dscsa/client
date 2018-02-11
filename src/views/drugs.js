@@ -75,23 +75,26 @@ export class drugs {
 
     this.term = group.name
 
-    let indate = new Date()
-    indate.setDate(indate.getDate() + (group.minDays || this.account.default.minDays))
+    let minDays = this.account.ordered[group.name].minDays || this.account.default.minDays
+    let indate  = new Date()
+    console.log('indate 1', indate, indate.getDate(), indate.getDate() + minDays)
+    indate.setDate(indate.getDate() + minDays)
+    console.log('indate 2', indate, indate.getDate(), indate.toJSON())
     indate = indate.toJSON().slice(0, 10)
-    console.log('indate', group.minDays, this.account.default.minDays, group.minDays || this.account.default.minDays, indate)
+    console.log('indate 3', this.account.ordered[group.name].minDays, this.account.default.minDays, minDays, indate)
 
     this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, indate], endkey:[this.account._id, group.name, {}]})
     .then(inventory => {
       console.log('indate inventory', indate, inventory)
       this.indateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0
-      console.log('indate inventory',this.indateInventory)
+      console.log('indate inventory', this.indateInventory)
     })
 
     this.db.transaction.query('inventory', {startkey:[this.account._id, group.name], endkey:[this.account._id, group.name, indate]})
     .then(inventory => {
       console.log('outdate inventory', indate, inventory)
       this.outdateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0
-      console.log('outdate inventory',this.outdateInventory)
+      console.log('outdate inventory', this.outdateInventory)
     })
 
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
