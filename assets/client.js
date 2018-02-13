@@ -1893,7 +1893,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         _this2.db.account.get(_this2.account).then(function (account) {
           return _this2.ordered = account.ordered;
         });
-        _this2.db.transaction.query('inventory.pendingAt', { include_docs: true, startkey: [_this2.account], endkey: [_this2.account, {}] }).then(function (res) {
+        _this2.db.transaction.query('inventory.pendingAt', { include_docs: true, startkey: [_this2.account], endkey: [_this2.account], descending: true }).then(function (res) {
           _this2.setPending(res.rows.map(function (row) {
             return row.doc;
           }));
