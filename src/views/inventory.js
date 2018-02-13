@@ -52,7 +52,7 @@ export class inventory {
       this.account = session.account._id
 
       this.db.account.get(this.account).then(account => this.ordered = account.ordered)
-      this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account], endkey:[this.account], descending:true})
+      this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account, {}], endkey:[this.account], descending:true})
       .then(res => {
         this.setPending(res.rows.map(row => row.doc))
         this.refreshPending() //not needed on development without this on production, blank drawer on inital load
