@@ -2215,9 +2215,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.repackInventory = function repackInventory() {
       var _this8 = this;
 
-      if (!this.repacks.drug) return this.snackbar.show('Cannot repack more than one NDC at a time');
-
       if (!this.filter.checked.count) return this.snackbar.show('You must select at least one item to repack');
+
+      if (!this.repacks.drug) return this.snackbar.show('Cannot repack more than one NDC at a time');
 
       var excessQty = this.repacks.maxQty - this.filter.qty;
 
@@ -2357,6 +2357,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var term = this.term.replace('Pending ', '');
 
+      this.repacks = [];
       this.repacks.qty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90;
       this.repacks.exp = '';
       this.repacks.drug = null;

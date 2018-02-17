@@ -340,11 +340,11 @@ export class inventory {
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
 
-    if ( ! this.repacks.drug)
-     return this.snackbar.show(`Cannot repack more than one NDC at a time`)
-
     if ( ! this.filter.checked.count)
      return this.snackbar.show(`You must select at least one item to repack`)
+
+    if ( ! this.repacks.drug)
+     return this.snackbar.show(`Cannot repack more than one NDC at a time`)
 
     let excessQty = this.repacks.maxQty - this.filter.qty
 
@@ -497,6 +497,7 @@ export class inventory {
 
     const term = this.term.replace('Pending ', '')
 
+    this.repacks      = []
     this.repacks.qty  = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
     this.repacks.exp  = ''
     this.repacks.drug = null
