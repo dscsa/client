@@ -163,8 +163,8 @@
               required
               type="number"
               name = "pro_repack_qty"
-              value.bind="repack.qty"
-              max.bind="repack.qty | number + repacks.excessQty | number"
+              value.bind="repack.qty | number"
+              max.bind="repack.qty + repacks.excessQty"
               input.delegate="setRepackRows(repack, $last, $index) & debounce:500"
               disabled.bind=" ! filter.checked.count"
               style="width:40px;">
