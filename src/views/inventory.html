@@ -165,7 +165,7 @@
               name = "pro_repack_qty"
               value.bind="repack.qty"
               max.bind="repack.qty + repacks.maxQty - repacks.totalQty"
-              input.delegate="setRepackRows(repack, $last, $index) & debounce:2000"
+              input.delegate="setRepackRows(repack, $last, $index) & debounce:1000"
               disabled.bind=" ! filter.checked.count"
               style="width:40px;">
               Qty
