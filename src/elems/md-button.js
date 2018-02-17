@@ -16,8 +16,7 @@ export class MdButtonCustomElement {
 
   //click.trigger won't trigger when button is disabled, but delegate will
   //but we cant use trigger because $parent's delegate will still fire regardless
-  //so use delegate, but for some reason delegate stops bubbling even if we do
-  //"return true" so we need to to refire the event.
+  //so use delegate, 
   click($event) {
     this.disabled && $event.stopPropagation()
   }

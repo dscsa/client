@@ -531,7 +531,6 @@ export class inventory {
     let qtyRemainder = this.filter.checked.qty - qtyNearest30
     qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
     qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
-    //if (qtyNearest30 || qtyRemainder) setTimeout(_ => this.menu.show(), 1000) //Recalculate menu height
 
     console.log('openMenu', this.ordered[this.term], this.repacks)
 

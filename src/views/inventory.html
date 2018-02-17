@@ -171,7 +171,7 @@
               Qty
             </md-input>
             <md-input
-              required.bind=" ! $last"
+              required.bind="repack.qty"
               name = "pro_repack_exp"
               value.bind="repack.exp | date"
               disabled.bind=" ! filter.checked.count"
@@ -179,7 +179,7 @@
               Exp
             </md-input>
             <md-input
-              required.bind=" ! $last"
+              required.bind="repack.qty"
               name = "pro_repack_bin"
               value.bind="repack.bin"
               pattern="[A-Z]\d{2}"

@@ -16,21 +16,41 @@ import {inject, bindable, bindingMode} from 'aurelia-framework';
 export class MdInputCustomElement {
 
   valueChanged() {
-    setTimeout(_=> {
-      if ( ! this.div || ! this.div.MaterialTextfield) return
-      this.div.MaterialTextfield.checkDirty()
-      this.div.MaterialTextfield.checkValidity()
-      this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', {bubbles:true})) //this is to trigger formCustomAttribute and others to reevaluate
-    }, 1000) //500 was too short
+    this.changed('checkDirty')
   }
 
   disabledChanged() {
-    setTimeout(_ => {
+    this.changed('checkDisabled')
+  }
+
+  maxChanged() {
+    console.log('md-input maxChanged()')
+    this.changed()
+  }
+
+  minChanged() {
+    this.changed()
+  }
+
+  maxlengthChanged() {
+    this.changed()
+  }
+
+  minlengthChanged() {
+    this.changed()
+  }
+
+  requiredChanged() {
+    this.changed()
+  }
+
+  changed(methodName) {
+    setTimeout(_=> {
       if ( ! this.div || ! this.div.MaterialTextfield) return
-      this.div.MaterialTextfield.checkDisabled()
+      methodName && this.div.MaterialTextfield[methodName]()
       this.div.MaterialTextfield.checkValidity()
       this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', {bubbles:true})) //this is to trigger formCustomAttribute and others to reevaluate
-    })  //disabled hasn't actually been changed yet so wait for the change and then check
+    })
   }
 
   attached() {
