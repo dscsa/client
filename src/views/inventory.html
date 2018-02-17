@@ -108,8 +108,9 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu name="pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px; width:180px">
+      <md-menu name="pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <li
+          style ="width:160px"
           name = "pro_dispense"
           disabled.bind=" ! filter.checked.count"
           click.delegate="dispenseInventory()">

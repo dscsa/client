@@ -475,7 +475,7 @@ export class inventory {
 
   setRepackRows(repack, $index, $last) {
 
-    console.log('setRepackRows', repack, $index, $last)
+    console.log('setRepackRows', repack, $index, $last, this.repacks)
 
     //If user fills in last repack then add another for them copying over exp and bin
     if (repack.qty && $last)
@@ -491,7 +491,7 @@ export class inventory {
 
   setRepackQty() {
     this.repacks.totalQty = this.repacks.reduce((totalQty, repack) => +repack.qty + totalQty, 0)
-    console.log('setRepackQty', this.repacks.totalQty)
+    console.log('setRepackQty', this.repacks.totalQty, this.repacks)
   }
 
   openMenu($event) {
@@ -520,7 +520,7 @@ export class inventory {
     }
 
     let qtyNearest30 = 30*Math.floor(this.filter.checked.qty/30)
-    let qtyRemainder = qtyNearest30 - this.filter.checked.qty
+    let qtyRemainder = this.filter.checked.qty - qtyNearest30
     qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
     qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
 
