@@ -21,7 +21,7 @@ export class MdInputCustomElement {
       this.div.MaterialTextfield.checkDirty()
       this.div.MaterialTextfield.checkValidity()
       this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', {bubbles:true})) //this is to trigger formCustomAttribute and others to reevaluate
-    }, 1000)
+    }, 500) //100 was too short
   }
 
   disabledChanged() {

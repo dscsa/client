@@ -342,7 +342,7 @@ define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (e
         _this.div.MaterialTextfield.checkDirty();
         _this.div.MaterialTextfield.checkValidity();
         _this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', { bubbles: true }));
-      }, 1000);
+      }, 500);
     };
 
     MdInputCustomElement.prototype.disabledChanged = function disabledChanged() {
