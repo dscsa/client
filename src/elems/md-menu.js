@@ -37,12 +37,13 @@ export class MdMenuCustomElement {
     }
 
     this.element.show = opts => {
-      console.log('this.element.show', this.element, opts)
-      return this.element.MaterialMenu.show(opts)
+      console.log('mdl-menu show')
+      console.dir(this.ul)
+      return this.ul.MaterialMenu.show(opts)
     }
 
     this.element.hide = opts => {
-      return this.element.MaterialMenu.hide(opts)
+      return this.ul.MaterialMenu.hide(opts)
     }
 
   }

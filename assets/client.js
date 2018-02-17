@@ -470,12 +470,13 @@ define('client/src/elems/md-menu',['exports', 'aurelia-framework'], function (ex
       }
 
       this.element.show = function (opts) {
-        console.log('this.element.show', _this.element, opts);
-        return _this.element.MaterialMenu.show(opts);
+        console.log('mdl-menu show');
+        console.dir(_this.ul);
+        return _this.ul.MaterialMenu.show(opts);
       };
 
       this.element.hide = function (opts) {
-        return _this.element.MaterialMenu.hide(opts);
+        return _this.ul.MaterialMenu.hide(opts);
       };
     };
 
