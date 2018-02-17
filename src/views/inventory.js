@@ -340,6 +340,12 @@ export class inventory {
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
 
+    if ( ! this.repacks.drug)
+     return this.snackbar.show(`Cannot repack more than one NDC at a time`)
+
+    if ( ! this.filter.checked.count)
+     return this.snackbar.show(`You must select at least one item to repack`)
+
     let excessQty = this.repacks.maxQty - this.filter.qty
 
     if (excessQty < 0) //html validation should prevent this, but some seemed to slip passed
@@ -482,7 +488,7 @@ export class inventory {
   }
 
   setRepackQty() {
-    this.repacks.totalQty = this.repacks.reduce((totalQty, repack) => totalQty + repack.qty, 0)
+    this.repacks.totalQty = this.repacks.reduce((totalQty, repack) => +repack.qty + totalQty, 0)
   }
 
   openMenu($event) {
