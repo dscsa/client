@@ -2353,24 +2353,22 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.setRepackRows = function setRepackRows(repack, $last, $index) {
 
-      console.log('setRepackRows', repack, $index, $last, this.repacks);
+      console.log('setRepackRows', repack, $index, $last, this.repacks.length);
 
-      if (repack.qty && $last) {
-        this.repacks.push({ exp: repack.exp, bin: repack.bin });
-      }
+      if (repack.qty && $last) this.repacks.push({ exp: repack.exp, bin: repack.bin });
 
-      if (!repack.qty && !$last) {
-        this.repacks.splice($index, 1);
-      }
+      if (!repack.qty && !$last) this.repacks.splice($index, 1);
 
       this.setRepackQty();
+
+      this.menu.show();
     };
 
     inventory.prototype.setRepackQty = function setRepackQty() {
       this.repacks.totalQty = this.repacks.reduce(function (totalQty, repack) {
         return +repack.qty + totalQty;
       }, 0);
-      console.log('setRepackQty', this.repacks.totalQty, this.repacks);
+      console.log('setRepackQty', this.repacks.totalQty, this.repacks.length);
     };
 
     inventory.prototype.openMenu = function openMenu($event) {
@@ -2418,8 +2416,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       console.log('openMenu', this.ordered[this.term], this.repacks);
 
       this.setRepackQty();
-
-      this.menu.show($event);
     };
 
     inventory.prototype.qtyShortcutsInput = function qtyShortcutsInput($event, $index) {

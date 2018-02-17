@@ -477,25 +477,26 @@ export class inventory {
 
   setRepackRows(repack, $last, $index) {
 
-    console.log('setRepackRows', repack, $index, $last, this.repacks)
+    console.log('setRepackRows', repack, $index, $last, this.repacks.length)
 
     //If user fills in last repack then add another for them copying over exp and bin
-    if (repack.qty && $last) {
+    if (repack.qty && $last)
       this.repacks.push({exp:repack.exp, bin:repack.bin})
-    }
 
     //Last repack is the only empty one.  Remove any others that are empty
-    if ( ! repack.qty && ! $last) {
+    if ( ! repack.qty && ! $last)
       this.repacks.splice($index, 1)
-    }
 
     //Recalculate total
     this.setRepackQty()
+
+    //Recalculate menu height
+    this.menu.show()
   }
 
   setRepackQty() {
     this.repacks.totalQty = this.repacks.reduce((totalQty, repack) => +repack.qty + totalQty, 0)
-    console.log('setRepackQty', this.repacks.totalQty, this.repacks)
+    console.log('setRepackQty', this.repacks.totalQty, this.repacks.length)
   }
 
   openMenu($event) {
@@ -531,8 +532,6 @@ export class inventory {
     console.log('openMenu', this.ordered[this.term], this.repacks)
 
     this.setRepackQty()
-
-    this.menu.show($event)
   }
 
   //Split functionality into Keydown and Input listeners because (keydown is set in constructor)
