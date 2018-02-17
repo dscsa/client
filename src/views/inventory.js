@@ -494,8 +494,8 @@ export class inventory {
   }
 
   setRepackQty() {
-    this.repacks.excessQty = this.filter.checked.qty - this.repacks.reduce((totalQty, repack) => +repack.qty + totalQty, 0)
-    console.log('setRepackQty', this.repacks.totalQty, this.repacks.length)
+    this.repacks.excessQty = +this.filter.checked.qty - this.repacks.reduce((totalQty, repack) => +repack.qty + totalQty, 0)
+    console.log('setRepackQty', this.filter.checked.qty, +this.filter.checked.qty, this.repacks.reduce((totalQty, repack) => +repack.qty + totalQty, 0))
   }
 
   openMenu($event) {
