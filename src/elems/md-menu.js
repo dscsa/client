@@ -34,12 +34,12 @@ export class MdMenuCustomElement {
      var width = this.ul.getBoundingClientRect().width
 
      console.log('resize', height, width)
-     console.dir(this.ul)
+     //console.dir(this.ul)
      // Apply the inner element's size to the container and outline.
-     this.ul.container_.style.width = width + 'px'
-     this.ul.container_.style.height = height + 'px'
-     this.ul.outline_.style.width = width + 'px'
-     this.ul.outline_.style.height = height + 'px'
+     this.ul.MaterialMenu.container_.style.width = width + 'px'
+     this.ul.MaterialMenu.container_.style.height = height + 'px'
+     this.ul.MaterialMenu.outline_.style.width = width + 'px'
+     this.ul.MaterialMenu.outline_.style.height = height + 'px'
      this.ul.style.clip = 'rect(0 ' + width + 'px ' + height + 'px 0)'
   }
 
