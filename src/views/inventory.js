@@ -346,7 +346,9 @@ export class inventory {
     if ( ! this.repacks.drug)
      return this.snackbar.show(`Cannot repack more than one NDC at a time`)
 
-    let excessQty = this.repacks.maxQty - this.filter.qty
+    this.setRepackQty() //in case user changed the defaults in the menus
+
+    let excessQty = this.repacks.maxQty - this.repacks.totalQty
 
     if (excessQty < 0) //html validation should prevent this, but some seemed to slip passed
       return this.snackbar.show(`Selected qty of ${this.repacks.totalQty} more than the ${this.repacks.maxQty} available`)

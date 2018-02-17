@@ -108,9 +108,9 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu name="pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
+      <md-menu name="pro_menu" click.trigger="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <li
-          style ="width:160px"
+          style ="width:150px"
           name = "pro_dispense"
           disabled.bind=" ! filter.checked.count"
           click.delegate="dispenseInventory()">
@@ -158,7 +158,7 @@
             click.delegate="repackInventory()">
             Repack Selected
           </li>
-          <li repeat.for="repack of repacks">
+          <li repeat.for="repack of repacks" style="padding:0 16px">
             <md-input
               required
               type="number"
