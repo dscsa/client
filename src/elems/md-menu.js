@@ -53,7 +53,7 @@ export class MdMenuCustomElement {
     }
 
     this.element.resize = opts => {
-      return this.resize(opts)
+      return setTimeout(_ => this.resize(opts), 100) //give Aurelia time to readjust its for.repeats
     }
 
   }

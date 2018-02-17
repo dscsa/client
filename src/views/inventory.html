@@ -108,7 +108,7 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu ref="menu" name="pro_menu" mousedown.trigger="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
+      <md-menu ref="menu" name="pro_menu" mousedown.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <li
           style ="width:150px"
           name = "pro_dispense"
@@ -145,7 +145,7 @@
           class="mdl-menu__item--full-bleed-divider">
           Pend to New
         </li>
-        <form style="padding-bottom:50px">
+        <form>
           <li
             name="pro_print_selected"
             disabled.bind=" ! filter.checked.count"
