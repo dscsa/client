@@ -470,14 +470,18 @@ export class inventory {
   setRepackRows(repack, $index, $last) {
 
     //If user fills in last repack then add another for them copying over exp and bin
-    if ($last && repack.qty)
+    if (repack.qty && $last)
       this.repacks.push({exp:repack.exp, bin:repack.bin})
 
     //Last repack is the only empty one.  Remove any others that are empty
-    if ( ! $last && ! repack.qty)
+    if ( ! repack.qty && ! $last)
       this.repacks.splice($index, 1)
 
     //Recalculate total
+    this.setRepackQty()
+  }
+
+  setRepackQty() {
     this.repacks.totalQty = this.repacks.reduce((totalQty, repack) => totalQty + repack.qty, 0)
   }
 
@@ -512,7 +516,7 @@ export class inventory {
 
     console.log('openMenu', this.ordered[this.term], this.repacks);
 
-    this.setRepackRows()
+    this.setRepackQty()
   }
 
   //Split functionality into Keydown and Input listeners because (keydown is set in constructor)
