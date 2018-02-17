@@ -532,7 +532,7 @@ export class inventory {
 
     this.setRepackQty()
 
-    this.menu.MaterialMenu.show($event)
+    this.menu.show($event)
   }
 
   //Split functionality into Keydown and Input listeners because (keydown is set in constructor)

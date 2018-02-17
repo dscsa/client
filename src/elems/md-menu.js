@@ -35,5 +35,15 @@ export class MdMenuCustomElement {
         this.setDisabled(li, disabled)
       })
     }
+
+    this.element.show = opts => {
+      console.log('this.element.show', this.element, opts)
+      return this.element.MaterialMenu.show(opts)
+    }
+
+    this.element.hide = opts => {
+      return this.element.MaterialMenu.hide(opts)
+    }
+
   }
 }
