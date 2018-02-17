@@ -373,6 +373,9 @@ export class inventory {
     //Create the new (repacked) transactions
     for (let repack of this.repacks) {
 
+      if ( ! repack.bin || ! repack.exp || ! repack.qty) //ignore last row
+        continue
+
       let newTransaction = {
         verifiedAt:createdAt,
         exp:{to:repack.exp, from:null},
