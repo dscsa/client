@@ -348,10 +348,10 @@ export class inventory {
 
     this.setRepackQty() //in case user changed the defaults in the menus
 
-    let excessQty = this.repacks.maxQty - this.repacks.totalQty
+    let excessQty = this.filter.checked.qty - this.repacks.totalQty
 
     if (excessQty < 0) //html validation should prevent this, but some seemed to slip passed
-      return this.snackbar.show(`Selected qty of ${this.repacks.totalQty} more than the ${this.repacks.maxQty} available`)
+      return this.snackbar.show(`Selected qty of ${this.repacks.totalQty} more than the ${this.filter.checked.qty} available`)
 
 
     let newTransactions = [],
