@@ -164,7 +164,7 @@
               type="number"
               name = "pro_repack_qty"
               value.bind="repack.qty"
-              max.bind="+filter.checked.qty + repack.qty - repacks.totalQty"
+              max.bind="(+filter.checked.qty) + repack.qty - repacks.totalQty"
               input.delegate="setRepackRows(repack, $last, $index) & debounce:500"
               disabled.bind=" ! filter.checked.count"
               style="width:40px;">
