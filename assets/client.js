@@ -2376,10 +2376,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.setRepackQty = function setRepackQty() {
-      this.repacks.excessQty = this.filter.checked.qty - this.repacks.reduce(function (totalQty, repack) {
+      this.repacks.excessQty = +this.filter.checked.qty - this.repacks.reduce(function (totalQty, repack) {
         return +repack.qty + totalQty;
       }, 0);
-      console.log('setRepackQty', this.repacks.totalQty, this.repacks.length);
+      console.log('setRepackQty', this.filter.checked.qty, '|', +this.filter.checked.qty, '|', this.repacks.reduce(function (totalQty, repack) {
+        return +repack.qty + totalQty;
+      }, 0));
     };
 
     inventory.prototype.openMenu = function openMenu($event) {
