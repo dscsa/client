@@ -34,6 +34,7 @@ export class MdMenuCustomElement {
      var width = this.ul.getBoundingClientRect().width
 
      console.log('resize', height, width)
+     console.dir(this.ul)
      // Apply the inner element's size to the container and outline.
      this.ul.container_.style.width = width + 'px'
      this.ul.container_.style.height = height + 'px'
