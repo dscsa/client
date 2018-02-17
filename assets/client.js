@@ -2382,14 +2382,18 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       console.log('setRepackRows', repack, $index, $last, this.repacks.length);
 
-      if (repack.qty && $last) {
-        this.repacks.push({ exp: repack.exp, bin: repack.bin });
+      if (!$last && !repack.qty) {
+        this.repacks.splice($index, 1);
         this.menu.resize();
       }
 
-      if (!repack.qty && !$last) {
-        this.repacks.splice($index, 1);
+      if ($last && repack.qty) {
+        this.repacks.push({});
         this.menu.resize();
+        if (!repack.exp && !repack.bin) {
+          repack.exp = this.repacks[$index - 1].exp;
+          repack.bin = this.repacks[$index - 1].bin;
+        }
       }
 
       this.setExcessQty();

@@ -480,16 +480,22 @@ export class inventory {
 
     console.log('setRepackRows', repack, $index, $last, this.repacks.length)
 
-    //If user fills in last repack then add another for them copying over exp and bin
-    if (repack.qty && $last) {
-      this.repacks.push({exp:repack.exp, bin:repack.bin})
+    //Last repack is the only empty one.  Remove any others that are empty
+    if ( ! $last && ! repack.qty) {
+      this.repacks.splice($index, 1)
       this.menu.resize() //Recalculate menu height
     }
 
-    //Last repack is the only empty one.  Remove any others that are empty
-    if ( ! repack.qty && ! $last) {
-      this.repacks.splice($index, 1)
+    //If user fills in last repack then add another for them copying over exp and bin
+    if ($last && repack.qty) {
+      this.repacks.push({})
       this.menu.resize() //Recalculate menu height
+
+      //If qty is set on last row, then fill in exp and bin automatically using the previous rows info
+      if ( ! repack.exp && ! repack.bin) {
+        repack.exp = this.repacks[$index-1].exp
+        repack.bin = this.repacks[$index-1].bin
+      }
     }
 
     //Recalculate total
