@@ -439,6 +439,19 @@ define('client/src/elems/md-menu',['exports', 'aurelia-framework'], function (ex
       disabled ? li.setAttribute('disabled', '') : li.removeAttribute('disabled');
     };
 
+    MdMenuCustomElement.prototype.resize = function resize() {
+      var height = this.ul.getBoundingClientRect().height;
+      var width = this.ul.getBoundingClientRect().width;
+
+      console.log('resize', height, width);
+
+      this.ul.container_.style.width = width + 'px';
+      this.ul.container_.style.height = height + 'px';
+      this.ul.outline_.style.width = width + 'px';
+      this.ul.outline_.style.height = height + 'px';
+      this.ul.style.clip = 'rect(0 ' + width + 'px ' + height + 'px 0)';
+    };
+
     MdMenuCustomElement.prototype.attached = function attached() {
       var _this = this;
 
@@ -469,14 +482,8 @@ define('client/src/elems/md-menu',['exports', 'aurelia-framework'], function (ex
         if (_ret === 'break') break;
       }
 
-      this.element.show = function (opts) {
-        console.log('mdl-menu show');
-        console.dir(_this.ul);
-        return _this.ul.MaterialMenu.show(opts);
-      };
-
-      this.element.hide = function (opts) {
-        return _this.ul.MaterialMenu.hide(opts);
+      this.element.resize = function (opts) {
+        return _this.resize(opts);
       };
     };
 
@@ -2357,12 +2364,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       if (repack.qty && $last) {
         this.repacks.push({ exp: repack.exp, bin: repack.bin });
-        this.menu.show();
+        this.menu.resize();
       }
 
       if (!repack.qty && !$last) {
         this.repacks.splice($index, 1);
-        this.menu.show();
+        this.menu.resize();
       }
 
       this.setRepackQty();

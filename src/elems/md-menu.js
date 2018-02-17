@@ -27,6 +27,21 @@ export class MdMenuCustomElement {
       : li.removeAttribute('disabled')
   }
 
+  //Copied code without animation from
+  //https://github.com/google/material-design-lite/blob/mdl-1.x/src/menu/menu.js
+  resize() {
+     var height = this.ul.getBoundingClientRect().height
+     var width = this.ul.getBoundingClientRect().width
+
+     console.log('resize', height, width)
+     // Apply the inner element's size to the container and outline.
+     this.ul.container_.style.width = width + 'px'
+     this.ul.container_.style.height = height + 'px'
+     this.ul.outline_.style.width = width + 'px'
+     this.ul.outline_.style.height = height + 'px'
+     this.ul.style.clip = 'rect(0 ' + width + 'px ' + height + 'px 0)'
+  }
+
   attached() {
     for (let li of this.element.querySelectorAll('li')) {
       li.classList.add('mdl-menu__item')
@@ -36,14 +51,8 @@ export class MdMenuCustomElement {
       })
     }
 
-    this.element.show = opts => {
-      console.log('mdl-menu show')
-      console.dir(this.ul)
-      return this.ul.MaterialMenu.show(opts)
-    }
-
-    this.element.hide = opts => {
-      return this.ul.MaterialMenu.hide(opts)
+    this.element.resize = opts => {
+      return this.resize(opts)
     }
 
   }

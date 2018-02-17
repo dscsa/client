@@ -482,13 +482,13 @@ export class inventory {
     //If user fills in last repack then add another for them copying over exp and bin
     if (repack.qty && $last) {
       this.repacks.push({exp:repack.exp, bin:repack.bin})
-      this.menu.show() //Recalculate menu height
+      this.menu.resize() //Recalculate menu height
     }
 
     //Last repack is the only empty one.  Remove any others that are empty
     if ( ! repack.qty && ! $last) {
       this.repacks.splice($index, 1)
-      this.menu.show() //Recalculate menu height
+      this.menu.resize() //Recalculate menu height
     }
 
     //Recalculate total
