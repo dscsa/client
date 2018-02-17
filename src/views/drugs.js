@@ -245,15 +245,17 @@ export class drugs {
     .catch(err => this.snackbar.error('Import Error', err))
   }
 
-  addGeneric() {
-    this.drug.generics.push({name:'', strength:''})
-    return true
-  }
+  setGenericRows(generic, $index, $last) {
 
-  removeGeneric() {
-    this.drug.generics.pop()
-    setTimeout(_ => document.forms[0].dispatchEvent(new Event('change')))
-    return true
+    //If user fills in last repack then add another for them copying over exp and bin
+    if ($last && generic.name)
+      this.drug.generics.push({name:'', strength:''})
+
+    //Last repack is the only empty one.  Remove any others that are empty
+    if ( ! $last && ! generic.name) {
+      this.drug.generics.splice($index, 1)
+      setTimeout(_ => document.forms[0].dispatchEvent(new Event('change')))
+    }
   }
 
   // addPkgSize() {
@@ -300,7 +302,12 @@ export class drugs {
 
   saveDrug() {
     this._savingDrug = true
-    this.db.drug.put(this.drug)
+
+    //Don't save the extra generic row
+    let drug = JSON.parse(JSON.stringify(this.drug))
+    drug.generics.pop()
+
+    this.db.drug.put(drug)
     .then(res => {
       //If we move the last drug out of the group, make sure we unorder it
       if (

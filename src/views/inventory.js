@@ -8,10 +8,10 @@ import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, increm
 export class inventory {
 
   constructor(db, router){
-    this.db     = db
-    this.router = router
-    this.csv    = csv
-    this.repack = {}
+    this.db      = db
+    this.router  = router
+    this.csv     = csv
+    this.repacks = []
     this.transactions = []
     this.pending = {}
 
@@ -248,7 +248,7 @@ export class inventory {
   }
 
   unpendInventory() {
-    const term = this.repack.drug.generic
+    const term = this.repacks.drug.generic
     this.updateSelected(transaction => {
       transaction.isChecked = false
       transaction.next = []
@@ -258,7 +258,7 @@ export class inventory {
   }
 
   pendInventory(createdAt = new Date().toJSON()) {
-    const term = this.repack.drug.generic+': '+createdAt
+    const term = this.repacks.drug.generic+': '+createdAt
     let toPend = []
     this.updateSelected(transaction => {
       transaction.isChecked = false
@@ -340,11 +340,10 @@ export class inventory {
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
 
-    let repackQty = this.repack.vialQty * this.repack.vials
-    let excessQty = this.repack.totalQty - repackQty
+    let excessQty = this.repacks.maxQty - this.filter.qty
 
     if (excessQty < 0) //html validation should prevent this, but some seemed to slip passed
-      return this.snackbar.show(`Selected qty of ${this.repack.totalQty} less than the ${ repackQty } needed`)
+      return this.snackbar.show(`Selected qty of ${this.repacks.totalQty} more than the ${this.repacks.maxQty} available`)
 
 
     let newTransactions = [],
@@ -357,25 +356,25 @@ export class inventory {
     //because we don't know where the extra pills came from.  If 0 still keep record in case we need to
     //adjust it after the fact (on sever with reconcileRepackQty)
     newTransactions.push({
-      exp:{to:this.repack.exp, from:null},
+      exp:{to:this.repacks[0].exp, from:null},
       qty:{to:excessQty, from:null},
       user:{_id:this.user},
       shipment:{_id:this.account},
-      drug:this.repack.drug,
+      drug:this.repacks.drug,
       next:[] //Keep it pending if we are on pending screen
     })
 
     //Create the new (repacked) transactions
-    for (let i=0; i<this.repack.vials; i++) {
+    for (let repack of this.repacks) {
 
       let newTransaction = {
         verifiedAt:createdAt,
-        exp:{to:this.repack.exp, from:null},
-        qty:{to:+this.repack.vialQty, from:null},
+        exp:{to:repack.exp, from:null},
+        qty:{to:+repack.qty, from:null},
         user:{_id:this.user},
         shipment:{_id:this.account},
-        bin:this.repack.bin,
-        drug:this.repack.drug,
+        bin:repack.bin,
+        drug:this.repacks.drug,
         next:next
       }
 
@@ -468,8 +467,18 @@ export class inventory {
     })
   }
 
-  setRepackVials() {
-    this.repack.vials = this.repack.totalQty && +this.repack.vialQty ? Math.floor(this.repack.totalQty / this.repack.vialQty) : ''
+  setRepackRows(repack, $index, $last) {
+
+    //If user fills in last repack then add another for them copying over exp and bin
+    if ($last && repack.qty)
+      this.repacks.push({exp:repack.exp, bin:repack.bin})
+
+    //Last repack is the only empty one.  Remove any others that are empty
+    if ( ! $last && ! repack.qty)
+      this.repacks.splice($index, 1)
+
+    //Recalculate total
+    this.repacks.totalQty = this.repacks.reduce((totalQty, repack) => totalQty + repack.qty, 0)
   }
 
   openMenu($event) {
@@ -478,29 +487,32 @@ export class inventory {
 
     const term = this.term.replace('Pending ', '')
 
-    this.repack.vialQty  = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
-    this.repack.totalQty = 0,
-    this.repack.exp      = ''
-    this.repack.drug     = null
+    this.repacks.qty  = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
+    this.repacks.exp  = ''
+    this.repacks.drug = null
     for (let transaction of this.transactions) {
-      if (transaction.isChecked) {
 
-        if (this.repack.drug == null) {
-          this.repack.drug = transaction.drug
-          console.log('this.repack.drug is null', this.repack.drug)
-        } else if (this.repack.drug._id != transaction.drug._id) {//Can only repack drugs with same NDC.  TODO Show Error?
-          console.log('this.repack.drug mismatch', this.repack.drug, transaction.drug)
-          this.repack.drug = false
-        }
+      if ( ! transaction.isChecked) continue
 
-        this.repack.totalQty += transaction.qty.to
-        this.repack.exp  = this.repack.exp && this.repack.exp < transaction.exp.to ? this.repack.exp : transaction.exp.to
+      if (this.repacks.drug == null) {
+        this.repacks.drug = transaction.drug
+        console.log('this.repacks.drug is null', this.repacks.drug)
+      } else if (this.repacks.drug._id != transaction.drug._id) {//Can only repack drugs with same NDC.  TODO Show Error?
+        console.log('this.repacks.drug mismatch', this.repacks.drug, transaction.drug)
+        this.repacks.drug = false
       }
+
+      this.repacks.exp  = this.repacks.exp && this.repacks.exp < transaction.exp.to ? this.repacks.exp : transaction.exp.to
     }
 
-    console.log('openMenu', this.ordered[this.term], this.repack);
+    let qtyNearest30 = 30*Math.floor(this.filter.checked.qty/30)
+    let qtyRemainder = qtyNearest30 - this.filter.checked.qty
+    qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
+    qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
 
-    this.setRepackVials()
+    console.log('openMenu', this.ordered[this.term], this.repacks);
+
+    this.setRepackRows()
   }
 
   //Split functionality into Keydown and Input listeners because (keydown is set in constructor)

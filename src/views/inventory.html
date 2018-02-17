@@ -157,35 +157,24 @@
             click.delegate="repackInventory()">
             Repack Selected
           </li>
-          <li>
+          <li repeat.for="repack of repacks">
             <md-input
               required
               type="number"
               name = "pro_repack_qty"
-              value.bind="repack.vialQty"
-              max.bind="repack.totalQty/(repack.vials >= 1 ? repack.vials : 1)"
-              input.delegate="setRepackVials()"
+              value.bind="repack.qty"
+              max.bind="repack.qty + repacks.maxQty - filter.checked.qty"
+              input.delegate="setRepackRows(repack, $index, $last) & debounce:2000"
               disabled.bind=" ! filter.checked.count"
-              style="width:40px;">
+              style="width:50px;">
               Qty
-            </md-input>
-            <md-input
-              required
-              type="number"
-              name = "pro_repack_vials"
-              value.bind="repack.vials"
-              max.bind="repack.totalQty/repack.vialQty"
-              min="1"
-              disabled.bind=" ! filter.checked.count"
-              style="width:40px;">
-              Vials
             </md-input>
             <md-input
               required
               name = "pro_repack_exp"
               value.bind="repack.exp | date"
               disabled.bind=" ! filter.checked.count"
-              style="width:40px;">
+              style="width:50px;">
               Exp
             </md-input>
             <md-input
@@ -194,7 +183,7 @@
               value.bind="repack.bin"
               pattern="[A-Z]\d{2}"
               disabled.bind=" ! filter.checked.count"
-              style="width:40px;">
+              style="width:50px;">
               Bin
             </md-input>
           </li>
