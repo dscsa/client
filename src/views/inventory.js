@@ -494,8 +494,8 @@ export class inventory {
   }
 
   setRepackQty() {
-    this.repacks.excessQty = +this.filter.checked.qty - this.repacks.reduce((totalQty, repack) => +repack.qty || 0 + totalQty, 0)
-    console.log('setRepackQty', this.filter.checked.qty, '|', +this.filter.checked.qty, '|', this.repacks.reduce((totalQty, repack) => +repack.qty || 0 + totalQty, 0))
+    this.repacks.excessQty = +this.filter.checked.qty - this.repacks.reduce((totalQty, repack) => (+repack.qty || 0) + totalQty, 0)
+    console.log('setRepackQty', this.filter.checked.qty, '|', +this.filter.checked.qty, '|', this.repacks.reduce((totalQty, repack) => (+repack.qty || 0) + totalQty, 0))
   }
 
   openMenu($event) {

@@ -2377,10 +2377,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.setRepackQty = function setRepackQty() {
       this.repacks.excessQty = +this.filter.checked.qty - this.repacks.reduce(function (totalQty, repack) {
-        return +repack.qty || 0 + totalQty;
+        return (+repack.qty || 0) + totalQty;
       }, 0);
       console.log('setRepackQty', this.filter.checked.qty, '|', +this.filter.checked.qty, '|', this.repacks.reduce(function (totalQty, repack) {
-        return +repack.qty || 0 + totalQty;
+        return (+repack.qty || 0) + totalQty;
       }, 0));
     };
 
