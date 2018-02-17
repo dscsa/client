@@ -346,7 +346,7 @@ export class inventory {
     if ( ! this.repacks.drug)
      return this.snackbar.show(`Cannot repack more than one NDC at a time`)
 
-    this.setRepackQty() //in case user changed the defaults in the menus
+    this.setExcessQty() //in case user changed the defaults in the menus
 
     if (this.repacks.excessQty < 0) //html validation should prevent this, but some seemed to slip passed
       return this.snackbar.show(`Selected qty is ${-this.repacks.excessQty} more than the ${this.filter.checked.qty} selected`)
@@ -490,12 +490,13 @@ export class inventory {
     }
 
     //Recalculate total
-    this.setRepackQty()
+    this.setExcessQty()
   }
 
-  setRepackQty() {
-    this.repacks.excessQty = +this.filter.checked.qty - this.repacks.reduce((totalQty, repack) => (+repack.qty || 0) + totalQty, 0)
-    console.log('setRepackQty', this.filter.checked.qty, '|', +this.filter.checked.qty, '|', this.repacks.reduce((totalQty, repack) => (+repack.qty || 0) + totalQty, 0))
+  setExcessQty() {
+    let repackQty = this.repacks.reduce((totalQty, repack) => (+repack.qty || 0) + totalQty, 0)
+    this.repacks.excessQty = this.filter.checked.qty - repackQty
+    console.log('setExcessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty)
   }
 
   openMenu($event) {
@@ -531,7 +532,7 @@ export class inventory {
 
     console.log('openMenu', this.ordered[this.term], this.repacks)
 
-    this.setRepackQty()
+    this.setExcessQty()
   }
 
   //Split functionality into Keydown and Input listeners because (keydown is set in constructor)
