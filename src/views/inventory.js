@@ -348,10 +348,8 @@ export class inventory {
 
     this.setRepackQty() //in case user changed the defaults in the menus
 
-    let excessQty = this.filter.checked.qty - this.repacks.totalQty
-
-    if (excessQty < 0) //html validation should prevent this, but some seemed to slip passed
-      return this.snackbar.show(`Selected qty of ${this.repacks.totalQty} more than the ${this.filter.checked.qty} available`)
+    if (this.repacks.excessQty < 0) //html validation should prevent this, but some seemed to slip passed
+      return this.snackbar.show(`Selected qty is ${-this.repacks.excessQty} more than the ${this.filter.checked.qty} selected`)
 
 
     let newTransactions = [],
@@ -365,7 +363,7 @@ export class inventory {
     //adjust it after the fact (on sever with reconcileRepackQty)
     newTransactions.push({
       exp:{to:this.repacks[0].exp, from:null},
-      qty:{to:excessQty, from:null},
+      qty:{to:this.repacks.excessQty, from:null},
       user:{_id:this.user},
       shipment:{_id:this.account},
       drug:this.repacks.drug,
@@ -496,7 +494,7 @@ export class inventory {
   }
 
   setRepackQty() {
-    this.repacks.totalQty = this.repacks.reduce((totalQty, repack) => +repack.qty + totalQty, 0)
+    this.repacks.excessQty = this.filter.checked.qty - this.repacks.reduce((totalQty, repack) => +repack.qty + totalQty, 0)
     console.log('setRepackQty', this.repacks.totalQty, this.repacks.length)
   }
 
