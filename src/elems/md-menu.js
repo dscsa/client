@@ -14,6 +14,7 @@ export class MdMenuCustomElement {
   }
 
   click($event) {
+    console.log('md-menu', $event.target.disabled, $event.target.tagName, $event.target, $event)
     if ($event.target.tagName == 'INPUT' || $event.target.disabled)
       $event.stopImmediatePropagation()
 
