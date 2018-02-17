@@ -108,7 +108,7 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu name="pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
+      <md-menu name="pro_menu" click.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px; width:180px">
         <li
           name = "pro_dispense"
           disabled.bind=" ! filter.checked.count"
@@ -166,7 +166,7 @@
               max.bind="repack.qty + repacks.maxQty - filter.checked.qty"
               input.delegate="setRepackRows(repack, $index, $last) & debounce:2000"
               disabled.bind=" ! filter.checked.count"
-              style="width:50px;">
+              style="width:40px;">
               Qty
             </md-input>
             <md-input
@@ -174,7 +174,7 @@
               name = "pro_repack_exp"
               value.bind="repack.exp | date"
               disabled.bind=" ! filter.checked.count"
-              style="width:50px;">
+              style="width:40px;">
               Exp
             </md-input>
             <md-input
@@ -183,7 +183,7 @@
               value.bind="repack.bin"
               pattern="[A-Z]\d{2}"
               disabled.bind=" ! filter.checked.count"
-              style="width:50px;">
+              style="width:40px;">
               Bin
             </md-input>
           </li>
