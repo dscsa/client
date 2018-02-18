@@ -1559,8 +1559,9 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     };
 
     drugs.prototype.addDays = function addDays(days) {
+      days = +days || 0;
       var date = new Date();
-      date.setDate(+days || 0 + date.getDate());
+      date.setDate(days + date.getDate());
       return date.toJSON().slice(0, 10);
     };
 
