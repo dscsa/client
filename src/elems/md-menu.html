@@ -9,7 +9,7 @@
     class="mdl-button mdl-js-button mdl-button--icon">
     <i class="material-icons">more_vert</i>
   </button>
-  <ul click.delegate="click($event)" ref="ul" class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" data-mdl-for.one-time="id">
+  <ul click.trigger="click($event)" ref="ul" class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" data-mdl-for.one-time="id">
     <div><slot></slot></div> <!-- the <div> is necessary for menu to close when click menu item. Not sure why -->
   </ul>
 </template>
