@@ -448,9 +448,9 @@ define('client/src/elems/md-menu',['exports', 'aurelia-framework'], function (ex
 
     MdMenuCustomElement.prototype.click = function click($event) {
       console.log('md-menu', $event.target.disabled, $event.target.tagName, $event.target, $event);
-      if ($event.target.tagName == 'INPUT' || $event.target.disabled) $event.stopImmediatePropagation();
+      if ($event.target.tagName != 'INPUT' && !$event.target.disabled) return true;
 
-      return true;
+      $event.stopImmediatePropagation();
     };
 
     MdMenuCustomElement.prototype.setDisabled = function setDisabled(li, disabled) {

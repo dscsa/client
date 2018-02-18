@@ -15,10 +15,10 @@ export class MdMenuCustomElement {
 
   click($event) {
     console.log('md-menu', $event.target.disabled, $event.target.tagName, $event.target, $event)
-    if ($event.target.tagName == 'INPUT' || $event.target.disabled)
-      $event.stopImmediatePropagation()
+    if ($event.target.tagName != 'INPUT' && ! $event.target.disabled)
+      return true //needed to continue a propogation of an <a> link
 
-    return true //needed to continue a propogation of an <a> link
+    $event.stopImmediatePropagation()
   }
 
   setDisabled(li, disabled) {
