@@ -67,8 +67,9 @@ export class drugs {
   }
 
   addDays(days) {
+    days = +days || 0
     let date  = new Date()
-    date.setDate(+days || 0 + date.getDate())
+    date.setDate(days + date.getDate())
     return date.toJSON().slice(0, 10)
   }
 
