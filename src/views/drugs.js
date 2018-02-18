@@ -67,9 +67,8 @@ export class drugs {
   }
 
   addDays(days) {
-    days = +days || 0
     let date  = new Date()
-    date.setDate(days + date.getDate())
+    date.setDate(+days + date.getDate())
     return date.toJSON().slice(0, 10)
   }
 
@@ -84,7 +83,7 @@ export class drugs {
 
     let order     = this.account.ordered[group.name]
     let minDays   = order ? order.minDays : this.account.default.minDays
-    let indate    = this.addDays(minDays)
+    let indate    = this.addDays(minDays || 30)
     let unexpired = this.addDays(30)
 
     this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, indate], endkey:[this.account._id, group.name, {}]})
@@ -97,7 +96,7 @@ export class drugs {
 
     this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, unexpired], endkey:[this.account._id, group.name, indate]})
     .then(inventory => {
-      console.log('outdate inventory', indate, inventory)
+      console.log('outdate inventory', unexpired, inventory)
       let row = inventory.rows[0]
       this.outdateInventory = row ? row.value['qty.binned'] || 0 + row.value['qty.repacked'] || 0 : 0
       console.log('outdate inventory', this.outdateInventory)

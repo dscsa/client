@@ -1559,9 +1559,8 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     };
 
     drugs.prototype.addDays = function addDays(days) {
-      days = +days || 0;
       var date = new Date();
-      date.setDate(days + date.getDate());
+      date.setDate(+days + date.getDate());
       return date.toJSON().slice(0, 10);
     };
 
@@ -1574,7 +1573,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       var order = this.account.ordered[group.name];
       var minDays = order ? order.minDays : this.account.default.minDays;
-      var indate = this.addDays(minDays);
+      var indate = this.addDays(minDays || 30);
       var unexpired = this.addDays(30);
 
       this.db.transaction.query('inventory', { startkey: [this.account._id, group.name, indate], endkey: [this.account._id, group.name, {}] }).then(function (inventory) {
@@ -1585,7 +1584,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       });
 
       this.db.transaction.query('inventory', { startkey: [this.account._id, group.name, unexpired], endkey: [this.account._id, group.name, indate] }).then(function (inventory) {
-        console.log('outdate inventory', indate, inventory);
+        console.log('outdate inventory', unexpired, inventory);
         var row = inventory.rows[0];
         _this3.outdateInventory = row ? row.value['qty.binned'] || 0 + row.value['qty.repacked'] || 0 : 0;
         console.log('outdate inventory', _this3.outdateInventory);
