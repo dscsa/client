@@ -48,7 +48,7 @@
           [1-9]{0,2} is for Vitamins which do not have 0 or 10 and can be up to two digits
           -->
           <md-input
-            required
+            required.bind=" ! $last"
             name = "pro_gen_field"
             style="width:75%"
             pattern="([A-Z][1-9]{0,2}[a-z]*\s?)+\b"

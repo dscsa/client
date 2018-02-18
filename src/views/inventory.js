@@ -492,10 +492,11 @@ export class inventory {
       this.menu.resize() //Recalculate menu height
 
       //If qty is set on last row, then fill in exp and bin automatically using the previous rows info
-      if ( ! repack.exp && ! repack.bin) {
+      if ( ! repack.exp)
         repack.exp = this.repacks[$index-1].exp
+
+      if ( ! repack.bin)
         repack.bin = this.repacks[$index-1].bin
-      }
     }
 
     //Recalculate total
@@ -533,10 +534,12 @@ export class inventory {
       this.repacks.exp  = this.repacks.exp && this.repacks.exp < transaction.exp.to ? this.repacks.exp : transaction.exp.to
     }
 
-    let qtyNearest30 = 30*Math.floor(this.filter.checked.qty/30)
-    let qtyRemainder = this.filter.checked.qty - qtyNearest30
-    qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
-    qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
+    if (this.repacks.drug) {
+      let qtyNearest30 = 30*Math.floor(this.filter.checked.qty/30)
+      let qtyRemainder = this.filter.checked.qty - qtyNearest30
+      qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
+      qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
+    }
 
     console.log('openMenu', this.ordered[this.term], this.repacks)
 
