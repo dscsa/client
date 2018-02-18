@@ -15,7 +15,6 @@ export class MdMenuCustomElement {
 
   //.trigger is needed in html rather than .delegate to make sure it is called before parent delegates that may have been attached first
   click($event) {
-    console.log('md-menu', $event.target.disabled, $event.target.tagName, $event.target, $event)
     if ($event.target.tagName != 'INPUT' && ! $event.target.disabled)
       return true //needed to continue a propogation of an <a> link
 

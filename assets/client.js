@@ -447,7 +447,6 @@ define('client/src/elems/md-menu',['exports', 'aurelia-framework'], function (ex
     }
 
     MdMenuCustomElement.prototype.click = function click($event) {
-      console.log('md-menu', $event.target.disabled, $event.target.tagName, $event.target, $event);
       if ($event.target.tagName != 'INPUT' && !$event.target.disabled) return true;
 
       $event.stopImmediatePropagation();
@@ -2256,14 +2255,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.repackInventory = function repackInventory() {
       var _this8 = this;
-
-      if (!this.filter.checked.count) return this.snackbar.show('You must select at least one item to repack');
-
-      if (!this.repacks.drug) return this.snackbar.show('Cannot repack more than one NDC at a time');
-
-      this.setExcessQty();
-
-      if (this.repacks.excessQty < 0) return this.snackbar.show('Selected qty is ' + -this.repacks.excessQty + ' more than the ' + this.filter.checked.qty + ' selected');
 
       var newTransactions = [],
           next = [],
