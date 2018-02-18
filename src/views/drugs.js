@@ -81,21 +81,24 @@ export class drugs {
 
     this.term = group.name
 
-    let minDays   = this.account.ordered[group.name].minDays || this.account.default.minDays
+    let order     = this.account.ordered[group.name]
+    let minDays   = order ? order.minDays : this.account.default.minDays
     let indate    = this.addDays(minDays)
     let unexpired = this.addDays(30)
 
     this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, indate], endkey:[this.account._id, group.name, {}]})
     .then(inventory => {
       console.log('indate inventory', indate, inventory)
-      this.indateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0
+      let row = inventory.rows[0]
+      this.indateInventory = row ? row.value['qty.binned'] || 0 + row.value['qty.repacked'] || 0 : 0
       console.log('indate inventory', this.indateInventory)
     })
 
     this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, unexpired], endkey:[this.account._id, group.name, indate]})
     .then(inventory => {
       console.log('outdate inventory', indate, inventory)
-      this.outdateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0
+      let row = inventory.rows[0]
+      this.outdateInventory = row ? row.value['qty.binned'] || 0 + row.value['qty.repacked'] || 0 : 0
       console.log('outdate inventory', this.outdateInventory)
     })
 
