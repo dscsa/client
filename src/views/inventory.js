@@ -554,6 +554,7 @@ export class inventory {
 
   showHistoryDialog(id) {
     console.log('getHistory', id)
+    this.history = 'Loading...'
     this.dialog.showModal()
     this.getHistory(id).then(history => {
       console.log(history)
@@ -563,7 +564,6 @@ export class inventory {
 
   closeHistoryDialog() {
     this.dialog.close()
-    this.history = ''
   }
 }
 

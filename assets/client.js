@@ -2464,6 +2464,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var _this10 = this;
 
       console.log('getHistory', id);
+      this.history = 'Loading...';
       this.dialog.showModal();
       this.getHistory(id).then(function (history) {
         console.log(history);
@@ -2473,7 +2474,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.closeHistoryDialog = function closeHistoryDialog() {
       this.dialog.close();
-      this.history = '';
     };
 
     return inventory;
