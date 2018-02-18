@@ -310,10 +310,9 @@ export class drugs {
     this._savingDrug = true
 
     //Don't save the extra generic row
-    let drug = JSON.parse(JSON.stringify(this.drug))
-    drug.generics.pop()
+    this.drug.generics.pop()
 
-    this.db.drug.put(drug)
+    this.db.drug.put(this.drug)
     .then(res => {
       //If we move the last drug out of the group, make sure we unorder it
       if (

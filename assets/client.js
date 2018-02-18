@@ -1831,10 +1831,9 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       this._savingDrug = true;
 
-      var drug = JSON.parse(JSON.stringify(this.drug));
-      drug.generics.pop();
+      this.drug.generics.pop();
 
-      this.db.drug.put(drug).then(function (res) {
+      this.db.drug.put(this.drug).then(function (res) {
         if (_this10.group.name != _this10.drug.generic && _this10.group.drugs.length == 1 && _this10.account.ordered[_this10.group.name]) _this10.order();
 
         _this10.selectDrug(_this10.drug, true);
