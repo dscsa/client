@@ -1782,9 +1782,9 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     };
 
     drugs.prototype.setGenericRows = function setGenericRows(generic, $index, $last) {
-      if ($last && generic.name) this.drug.generics.push({ name: '', strength: '' });
+      if ($last && generic.name) this.drug.generics.push({});
 
-      if (!$last && !generic.name) {
+      if (!$last && !generic.name && !generic.strength) {
         this.drug.generics.splice($index, 1);
         setTimeout(function (_) {
           return document.forms[0].dispatchEvent(new Event('change'));

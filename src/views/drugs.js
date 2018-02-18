@@ -255,10 +255,10 @@ export class drugs {
 
     //If user fills in last repack then add another for them copying over exp and bin
     if ($last && generic.name)
-      this.drug.generics.push({name:'', strength:''})
+      this.drug.generics.push({})
 
     //Last repack is the only empty one.  Remove any others that are empty
-    if ( ! $last && ! generic.name) {
+    if ( ! $last && ! generic.name && ! generic.strength) {
       this.drug.generics.splice($index, 1)
       setTimeout(_ => document.forms[0].dispatchEvent(new Event('change')))
     }
