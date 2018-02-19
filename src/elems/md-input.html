@@ -30,6 +30,6 @@
       step.bind="step"
       placeholder.bind="placeholder || ''"
       style="padding:0; min-height:inherit; line-height:inherit; font-size:inherit; font-weight:inherit; text-transform:inherit; text-overflow:inherit; "/>
-    <label ref="label" style.bind="value ? '' : 'top:23px'" class="mdl-textfield__label"><slot></slot></label> <!-- top aligns placeholder height with surronding text -->
+    <label ref="label" style.bind="(type == 'date' || value || placeholder) ? '' : 'top:23px'" class="mdl-textfield__label"><slot></slot></label> <!-- top aligns placeholder height with surronding text -->
   </div>
 </template>

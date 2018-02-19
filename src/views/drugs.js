@@ -129,7 +129,7 @@ export class drugs {
     }
 
     //Add blank row so user can add more ingredients
-    this.drug.generics.push({})
+    if (drug) this.drug.generics.push({})
 
     let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })

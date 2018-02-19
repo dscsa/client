@@ -52,7 +52,7 @@ export class inventory {
       this.account = session.account._id
 
       this.db.account.get(this.account).then(account => this.ordered = account.ordered)
-      this.db.transaction.query('inventory.pendingAt', {include_docs:true, startkey:[this.account, {}], endkey:[this.account], descending:true})
+      this.db.transaction.query('inventory.pending', {include_docs:true, startkey:[this.account, {}], endkey:[this.account], descending:true})
       .then(res => {
         this.setPending(res.rows.map(row => row.doc))
         this.refreshPending() //not needed on development without this on production, blank drawer on inital load
@@ -257,12 +257,13 @@ export class inventory {
    .then(_ => this.selectTerm('drug.generic', term))
   }
 
-  pendInventory() {
+  pendInventory(_id) {
+    _id = _id || this.pendId
     const createdAt = new Date().toJSON()
     let toPend = []
     this.updateSelected(transaction => {
       transaction.isChecked = false
-      transaction.next = [{pending:{_id:this.pendId}, createdAt}]
+      transaction.next = [{pending:{_id}, createdAt}]
       toPend.unshift(transaction) //this must happen last so we have next info
     })
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
