@@ -257,19 +257,19 @@ export class inventory {
    .then(_ => this.selectTerm('drug.generic', term))
   }
 
-  pendInventory(createdAt = new Date().toJSON()) {
-    const term = this.repacks.drug.generic+': '+createdAt
+  pendInventory() {
+    const createdAt = new Date().toJSON()
     let toPend = []
     this.updateSelected(transaction => {
       transaction.isChecked = false
-      transaction.next = [{pending:{}, createdAt}]
+      transaction.next = [{pending:{_id:this.pendId}, createdAt}]
       toPend.push(transaction) //this must happen last so we have next info
     })
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
     this.setPending(toPend)
-    this.selectTerm('pending', term)
+    this.selectTerm('pending', this.repacks.drug.generic+': '+createdAt)
   }
 
   sortPending(a, b) {
@@ -296,13 +296,13 @@ export class inventory {
   setPending(transactions) {
 
     for (let transaction of transactions) {
-      const generic  = transaction.drug.generic
-      const pendedAt = transaction.next[0].createdAt
+      const generic = transaction.drug.generic
+      const name    = transaction.next[0].pending._id || transaction.next[0].createdAt
 
       this.pending[generic] = this.pending[generic] || {}
-      this.pending[generic][pendedAt] = this.pending[generic][pendedAt] || []
-      this.pending[generic][pendedAt].push(transaction)
-      this.pending[generic][pendedAt].sort(this.sortPending.bind(this)) //seems wasteful but this seems like overkill https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
+      this.pending[generic][name] = this.pending[generic][name] || []
+      this.pending[generic][name].push(transaction)
+      this.pending[generic][name].sort(this.sortPending.bind(this)) //seems wasteful but this seems like overkill https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
     }
   }
 

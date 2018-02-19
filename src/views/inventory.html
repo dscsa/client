@@ -143,7 +143,13 @@
           disabled.bind=" ! filter.checked.count"
           click.delegate="pendInventory()"
           class="mdl-menu__item--full-bleed-divider">
-          Pend to New
+          Pend
+          <md-input
+            value.bind="pendId"
+            disabled.bind=" ! filter.checked.count"
+            style="width:80px;">
+            New
+          </md-input>
         </li>
         <form>
           <li
