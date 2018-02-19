@@ -297,7 +297,7 @@ export class inventory {
 
     for (let transaction of transactions) {
       const generic = transaction.drug.generic
-      const name    = transaction.next[0].pending._id || transaction.next[0].createdAt
+      const name    = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
 
       this.pending[generic] = this.pending[generic] || {}
       this.pending[generic][name] = this.pending[generic][name] || []

@@ -29,7 +29,7 @@
         click.delegate="selectTerm('pending', pendingDrug.key+': '+pendingAt.key)"
         class="mdl-navigation__link ${ term == 'Pending '+pendingDrug.key+': '+pendingAt.key.slice(5, 19) ? 'mdl-navigation__link--current' : ''}"
         style="cursor:pointer; padding-top:2px; padding-bottom:2px">
-        ${ pendingAt.key.slice(5, 16).replace('T', ' ') }, ${ pendingAt.val.length } items
+        ${ pendingAt.key }, ${ pendingAt.val.length } items
       </div>
     </div>
   </md-drawer>
@@ -136,19 +136,19 @@
           name="pro_pend"
           class="mdl-menu__item"
           click.delegate="pendInventory(group.key)">
-          Pend to ${group.key.slice(5, 16).replace('T', ' ') }
+          Pend to ${group.key }
         </li>
         <li
           name="pro_pend"
           disabled.bind=" ! filter.checked.count"
           click.delegate="pendInventory()"
           class="mdl-menu__item--full-bleed-divider">
-          Pend
+          Pend New
           <md-input
             value.bind="pendId"
             disabled.bind=" ! filter.checked.count"
-            style="width:80px;">
-            New
+            style="width:80px; font-size:14px">
+            Name
           </md-input>
         </li>
         <form>
