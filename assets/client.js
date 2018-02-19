@@ -2173,7 +2173,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.updateSelected(function (transaction) {
         transaction.isChecked = false;
         transaction.next = [{ pending: { _id: _this8.pendId }, createdAt: createdAt }];
-        toPend.push(transaction);
+        toPend.unshift(transaction);
       });
 
       this.setPending(toPend);

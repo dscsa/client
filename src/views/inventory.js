@@ -263,7 +263,7 @@ export class inventory {
     this.updateSelected(transaction => {
       transaction.isChecked = false
       transaction.next = [{pending:{_id:this.pendId}, createdAt}]
-      toPend.push(transaction) //this must happen last so we have next info
+      toPend.unshift(transaction) //this must happen last so we have next info
     })
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
