@@ -157,7 +157,7 @@ export class inventory {
     let transactions = this.pending[generic] ? this.pending[generic][pendingAt] : []
 
     if (transactions)
-      this.term = 'Pending '+generic+': '+pendingAt.slice(5, 19)
+      this.term = 'Pending '+generic+': '+pendingAt
 
     console.log('select pending', this.term)
     this.setTransactions(transactions)
@@ -410,6 +410,7 @@ export class inventory {
       return [
         `<p style="page-break-after:always;">`,
         `<strong>${transaction.drug.generic}</strong>`,
+        transaction.next[0] && transaction.next[0].pending && transaction.next[0].pending._id,
         `Ndc ${transaction.drug._id}`,
         `Exp ${transaction.exp.to.slice(0, 7)}`,
         `Bin ${transaction.bin}`,
@@ -502,7 +503,7 @@ export class inventory {
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
     const term = this.term.replace('Pending ', '')
-    
+
     this.pendId       = ''
     this.repacks      = []
     this.repacks.qty  = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90

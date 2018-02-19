@@ -27,7 +27,7 @@
         name="pro_pended_items"
         repeat.for="pendingAt of pendingDrug.val | toArray"
         click.delegate="selectTerm('pending', pendingDrug.key+': '+pendingAt.key)"
-        class="mdl-navigation__link ${ term == 'Pending '+pendingDrug.key+': '+pendingAt.key.slice(5, 19) ? 'mdl-navigation__link--current' : ''}"
+        class="mdl-navigation__link ${ term == 'Pending '+pendingDrug.key+': '+pendingAt.key ? 'mdl-navigation__link--current' : ''}"
         style="cursor:pointer; padding-top:2px; padding-bottom:2px">
         ${ pendingAt.key }, ${ pendingAt.val.length } items
       </div>
@@ -132,7 +132,7 @@
         </li>
         <li
           repeat.for="group of pending[repacks.drug.generic] | toArray"
-          show.bind="filter.checked.count && (term != 'Pending '+repacks.drug.generic+': '+group.key.slice(5, 19))"
+          show.bind="filter.checked.count && (term != 'Pending '+repacks.drug.generic+': '+group.key)"
           name="pro_pend"
           class="mdl-menu__item"
           click.delegate="pendInventory(group.key)">
