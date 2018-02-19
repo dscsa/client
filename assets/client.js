@@ -2227,13 +2227,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       if (!transaction.next[0] || !transaction.next[0].pending) return;
 
-      var pendingAt = transaction.next[0].createdAt;
       var generic = transaction.drug.generic;
-      console.log('unsetPending', pendingAt, generic);
+      var name = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ');
+
+      console.log('unsetPending', generic, name);
 
       this.refreshPending();
 
-      if (!this.pending[generic][pendingAt].length) delete this.pending[generic][pendingAt];
+      if (!this.pending[generic][name].length) delete this.pending[generic][name];
 
       if (!Object.keys(this.pending[generic]).length) delete this.pending[generic];
     };

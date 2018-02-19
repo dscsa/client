@@ -311,14 +311,15 @@ export class inventory {
     if ( ! transaction.next[0] || ! transaction.next[0].pending)
       return //called indiscriminately from updateSelected
 
-    const pendingAt = transaction.next[0].createdAt
     const generic = transaction.drug.generic
-    console.log('unsetPending', pendingAt, generic)
+    const name    = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
+
+    console.log('unsetPending', generic, name)
     //Don't need to splice the pendingAt array because updateSelected does that automatically
     this.refreshPending() //updateFn may pend some items
 
-    if ( ! this.pending[generic][pendingAt].length)
-      delete this.pending[generic][pendingAt]
+    if ( ! this.pending[generic][name].length)
+      delete this.pending[generic][name]
 
     if ( ! Object.keys(this.pending[generic]).length)
       delete this.pending[generic]
