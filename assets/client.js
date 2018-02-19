@@ -2406,6 +2406,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var term = this.term.replace('Pending ', '');
 
+      this.pendId = '';
       this.repacks = [];
       this.repacks.qty = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90;
       this.repacks.exp = '';

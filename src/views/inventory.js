@@ -502,7 +502,8 @@ export class inventory {
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
     const term = this.term.replace('Pending ', '')
-
+    
+    this.pendId       = ''
     this.repacks      = []
     this.repacks.qty  = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
     this.repacks.exp  = ''
