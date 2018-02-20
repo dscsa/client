@@ -699,3 +699,27 @@ export class inventoryFilterValueConverter {
     return transactions
   }
 }
+
+//Allow user to search by pendId OR generic name
+export class pendingFilterValueConverter {
+  toView(pending = {}, term){
+    let matches = [] //an array of arrays
+    for (let pendId in pending) {
+      if ( ~ pendId.indexOf(term)) {
+        matches.push({key:pendId, val:pending[pendId]})
+        continue
+      }
+
+      let genericMatches = {}
+
+      for (let generic in pending[pendId])
+        if ( ~ generic.indexOf(term))
+          genericMatches[generic] = pending[pendId][generic]
+
+      if (Object.keys(genericMatches).length)
+        matches.push({key:pendId, val:genericMatches})
+    }
+
+    return matches
+  }
+}
