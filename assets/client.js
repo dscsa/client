@@ -1818,6 +1818,9 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       var _this9 = this;
 
       this._savingDrug = true;
+
+      this.drug.generics.pop();
+
       this.db.drug.post(this.drug).then(function (res) {
         _this9.drug._rev = res.rev;
         _this9.selectDrug(_this9.drug, true);
@@ -1834,16 +1837,9 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       this._savingDrug = true;
 
-      console.log('SaveDrug 1', this.drug.generics.length, this.drug);
-
       this.drug.generics.pop();
 
-      console.log('SaveDrug 2', this.drug.generics.length, this.drug);
-
       this.db.drug.put(this.drug).then(function (res) {
-
-        console.log('SaveDrug 3', _this10.drug.generics.length, _this10.drug);
-
         if (_this10.group.name != _this10.drug.generic && _this10.group.drugs.length == 1 && _this10.account.ordered[_this10.group.name]) _this10.order();
 
         _this10.selectDrug(_this10.drug, true);

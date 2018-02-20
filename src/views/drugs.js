@@ -297,6 +297,10 @@ export class drugs {
 
   addDrug() {
     this._savingDrug = true
+
+    //Don't save the extra generic row
+    this.drug.generics.pop()
+
     this.db.drug.post(this.drug)
     .then(res => {
       this.drug._rev = res.rev
@@ -313,16 +317,11 @@ export class drugs {
   saveDrug() {
     this._savingDrug = true
 
-    console.log('SaveDrug 1', this.drug.generics.length, this.drug)
     //Don't save the extra generic row
     this.drug.generics.pop()
 
-    console.log('SaveDrug 2', this.drug.generics.length, this.drug)
-
     this.db.drug.put(this.drug)
     .then(res => {
-
-      console.log('SaveDrug 3', this.drug.generics.length, this.drug)
       //If we move the last drug out of the group, make sure we unorder it
       if (
         this.group.name != this.drug.generic &&
