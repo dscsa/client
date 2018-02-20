@@ -417,7 +417,7 @@ export class inventory {
       return [
         `<p style="page-break-after:always;">`,
         `<strong>${transaction.drug.generic}</strong>`,
-        pendId //needs to work for X00 bins that are technically no longer pended, default to this? -> transaction.next[0] && transaction.next[0].pending && transaction.next[0].pending._id,
+        pendId, //needs to work for X00 bins that are technically no longer pended, default to this? -> transaction.next[0] && transaction.next[0].pending && transaction.next[0].pending._id,
         `Ndc ${transaction.drug._id}`,
         `Exp ${transaction.exp.to.slice(0, 7)}`,
         `Bin ${transaction.bin}`,

@@ -1880,13 +1880,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
   });
   exports.pendingFilterValueConverter = exports.inventoryFilterValueConverter = exports.inventory = undefined;
 
-  var _templateObject = _taggedTemplateLiteralLoose(['Ndc ', ''], ['Ndc ', '']);
-
-  function _taggedTemplateLiteralLoose(strings, raw) {
-    strings.raw = raw;
-    return strings;
-  }
-
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -2340,7 +2333,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var pendId = this.term.split(': ')[1] || '';
 
       var labels = transactions.map(function (transaction) {
-        return ['<p style="page-break-after:always;">', '<strong>' + transaction.drug.generic + '</strong>', pendId(_templateObject, transaction.drug._id), 'Exp ' + transaction.exp.to.slice(0, 7), 'Bin ' + transaction.bin, 'Qty ' + transaction.qty.to, 'Pharmacist ________________', '</p>'].join('<br>');
+        return ['<p style="page-break-after:always;">', '<strong>' + transaction.drug.generic + '</strong>', pendId, 'Ndc ' + transaction.drug._id, 'Exp ' + transaction.exp.to.slice(0, 7), 'Bin ' + transaction.bin, 'Qty ' + transaction.qty.to, 'Pharmacist ________________', '</p>'].join('<br>');
       });
 
       var win = window.open();
