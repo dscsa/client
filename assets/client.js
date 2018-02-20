@@ -2176,7 +2176,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       });
 
       this.setPending(toPend);
-      this.selectTerm('pending', this.repacks.drug.generic + ': ' + createdAt);
+      this.selectTerm('pending', this.repacks.drug.generic + ': ' + (_id || createdAt));
     };
 
     inventory.prototype.sortPending = function sortPending(a, b) {

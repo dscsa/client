@@ -270,7 +270,7 @@ export class inventory {
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
     this.setPending(toPend)
-    this.selectTerm('pending', this.repacks.drug.generic+': '+createdAt)
+    this.selectTerm('pending', this.repacks.drug.generic+': '+(_id || createdAt))
   }
 
   sortPending(a, b) {
