@@ -1611,11 +1611,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
         form: this.drug && this.drug.form
       };
 
-      console.log('selectDrug 1', this.drug.generics.length, this.drug);
-
       if (drug) this.drug.generics.push({});
-
-      console.log('selectDrug 2', this.drug.generics.length, this.drug);
 
       var url = this.drug._id ? 'drugs/' + this.drug._id : 'drugs';
       this.router.navigate(url, { trigger: false });
