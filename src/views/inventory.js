@@ -703,9 +703,10 @@ export class inventoryFilterValueConverter {
 //Allow user to search by pendId OR generic name
 export class pendingFilterValueConverter {
   toView(pending = {}, term = ''){
+    term = term.toLowerCase()
     let matches = [] //an array of arrays
     for (let pendId in pending) {
-      if ( ~ pendId.indexOf(term)) {
+      if ( ~ pendId.toLowerCase().indexOf(term)) {
         matches.push({key:pendId, val:pending[pendId]})
         continue
       }
@@ -713,7 +714,7 @@ export class pendingFilterValueConverter {
       let genericMatches = {}
 
       for (let generic in pending[pendId])
-        if ( ~ generic.indexOf(term))
+        if ( ~ generic.toLowerCase().indexOf(term))
           genericMatches[generic] = pending[pendId][generic]
 
       if (Object.keys(genericMatches).length)
