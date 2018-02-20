@@ -128,12 +128,8 @@ export class drugs {
       form:this.drug && this.drug.form
     }
 
-    console.log('selectDrug 1', this.drug.generics.length, this.drug)
-
     //Add blank row so user can add more ingredients
     if (drug) this.drug.generics.push({})
-
-    console.log('selectDrug 2', this.drug.generics.length, this.drug)
 
     let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
