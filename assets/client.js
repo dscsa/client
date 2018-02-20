@@ -2617,7 +2617,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     pendingFilterValueConverter.prototype.toView = function toView() {
       var pending = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var term = arguments[1];
+      var term = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
       var matches = [];
       for (var pendId in pending) {
@@ -2633,6 +2633,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         }if (Object.keys(genericMatches).length) matches.push({ key: pendId, val: genericMatches });
       }
 
+      console.log(term, matches.length, matches, pending);
       return matches;
     };
 

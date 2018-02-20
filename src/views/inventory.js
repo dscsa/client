@@ -702,7 +702,7 @@ export class inventoryFilterValueConverter {
 
 //Allow user to search by pendId OR generic name
 export class pendingFilterValueConverter {
-  toView(pending = {}, term){
+  toView(pending = {}, term = ''){
     let matches = [] //an array of arrays
     for (let pendId in pending) {
       if ( ~ pendId.indexOf(term)) {
@@ -720,6 +720,7 @@ export class pendingFilterValueConverter {
         matches.push({key:pendId, val:genericMatches})
     }
 
+    console.log(term, matches.length, matches, pending)
     return matches
   }
 }
