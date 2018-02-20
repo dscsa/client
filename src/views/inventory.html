@@ -29,8 +29,8 @@
         repeat.for="pendingDrug of pend.val | toArray"
         click.delegate="selectTerm('pending', pendingDrug.key+': '+pend.key)"
         class="mdl-navigation__link ${ term == 'Pending '+pendingDrug.key+': '+pend.key ? 'mdl-navigation__link--current' : ''}"
-        style="font-size:12px; cursor:pointer; padding-top:2px; padding-bottom:2px">
-        ${ ('0'+pendingDrug.val.length).slice(-2) }# ${ pendingDrug.key }
+        style="font-size:12px; cursor:pointer; padding-top:2px; padding-bottom:2px; padding-left:12px">
+        #${ ('0'+pendingDrug.val.length).slice(-2) } ${ pendingDrug.key }
       </div>
     </div>
   </md-drawer>
@@ -145,10 +145,10 @@
           class="mdl-menu__item--full-bleed-divider">
           Pend New
           <md-input
+            placeholder="Name"
             value.bind="newPendId"
             disabled.bind=" ! filter.checked.count"
             style="width:80px; font-size:14px">
-            Name
           </md-input>
         </li>
         <form>

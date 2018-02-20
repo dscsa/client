@@ -519,7 +519,7 @@ export class inventory {
       let qtyRemainder = this.filter.checked.qty - qtyNearest30
       qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
       qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
-      this.matches = this.setMatchingPends(this.repacks.drug)
+      this.matches = this.setMatchingPends(this.repacks.drug.generic)
     }
 
     console.log('openMenu', this.ordered[this.term], this.repacks)
@@ -720,7 +720,6 @@ export class pendingFilterValueConverter {
         matches.push({key:pendId, val:genericMatches})
     }
 
-    console.log(term, matches.length, matches, pending)
     return matches
   }
 }
