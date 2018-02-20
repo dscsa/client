@@ -1611,7 +1611,11 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
         form: this.drug && this.drug.form
       };
 
+      console.log('selectDrug 1', this.drug.generics.length, this.drug);
+
       if (drug) this.drug.generics.push({});
+
+      console.log('selectDrug 2', this.drug.generics.length, this.drug);
 
       var url = this.drug._id ? 'drugs/' + this.drug._id : 'drugs';
       this.router.navigate(url, { trigger: false });
@@ -1830,9 +1834,16 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       this._savingDrug = true;
 
+      console.log('SaveDrug 1', this.drug.generics.length, this.drug);
+
       this.drug.generics.pop();
 
+      console.log('SaveDrug 2', this.drug.generics.length, this.drug);
+
       this.db.drug.put(this.drug).then(function (res) {
+
+        console.log('SaveDrug 3', _this10.drug.generics.length, _this10.drug);
+
         if (_this10.group.name != _this10.drug.generic && _this10.group.drugs.length == 1 && _this10.account.ordered[_this10.group.name]) _this10.order();
 
         _this10.selectDrug(_this10.drug, true);

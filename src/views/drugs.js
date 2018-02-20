@@ -128,8 +128,12 @@ export class drugs {
       form:this.drug && this.drug.form
     }
 
+    console.log('selectDrug 1', this.drug.generics.length, this.drug)
+
     //Add blank row so user can add more ingredients
     if (drug) this.drug.generics.push({})
+
+    console.log('selectDrug 2', this.drug.generics.length, this.drug)
 
     let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
@@ -309,11 +313,16 @@ export class drugs {
   saveDrug() {
     this._savingDrug = true
 
+    console.log('SaveDrug 1', this.drug.generics.length, this.drug)
     //Don't save the extra generic row
     this.drug.generics.pop()
 
+    console.log('SaveDrug 2', this.drug.generics.length, this.drug)
+
     this.db.drug.put(this.drug)
     .then(res => {
+
+      console.log('SaveDrug 3', this.drug.generics.length, this.drug)
       //If we move the last drug out of the group, make sure we unorder it
       if (
         this.group.name != this.drug.generic &&
