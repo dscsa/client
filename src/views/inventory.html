@@ -131,12 +131,11 @@
           Unpend Selected
         </li>
         <li
-          repeat.for="group of pending[repacks.drug.generic] | toArray"
-          show.bind="filter.checked.count && (term != 'Pending '+repacks.drug.generic+': '+group.key)"
+          repeat.for="pendId of matches"
           name="pro_pend"
           class="mdl-menu__item"
-          click.delegate="pendInventory(group.key)">
-          Pend to ${group.key}
+          click.delegate="pendInventory(pendId)">
+          Pend to ${pendId}
         </li>
         <li
           name="pro_pend"
@@ -145,7 +144,7 @@
           class="mdl-menu__item--full-bleed-divider">
           Pend New
           <md-input
-            value.bind="pendId"
+            value.bind="newPendId"
             disabled.bind=" ! filter.checked.count"
             style="width:80px; font-size:14px">
             Name

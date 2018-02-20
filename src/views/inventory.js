@@ -152,12 +152,12 @@ export class inventory {
 
   selectPending(pendingKey) {
 
-    const [generic, pendingAt] = pendingKey.split(': ')
+    const [generic, pendId] = pendingKey.split(': ')
 
-    let transactions = this.pending[generic] ? this.pending[generic][pendingAt] : []
+    let transactions = this.pending[pendId] ? this.pending[pendId][generic] : []
 
     if (transactions)
-      this.term = 'Pending '+generic+': '+pendingAt
+      this.term = 'Pending '+generic+': '+pendId
 
     console.log('select pending', this.term)
     this.setTransactions(transactions)
@@ -257,20 +257,24 @@ export class inventory {
    .then(_ => this.selectTerm('drug.generic', term))
   }
 
-  pendInventory(_id) {
-    _id = _id || this.pendId
+  //Three OPTIONS
+  //1) They pick an existing pendId and _id is passed as rest_request_parameter_order
+  //2) They type in their own pendId and this.newPendId is already set
+  //3) They do Pend New without a pendId in which case the createdAt date will be used later
+  pendInventory(pendId) {
+    if (pendId) this.newPendId = pendId
     const createdAt = new Date().toJSON()
     let toPend = []
     this.updateSelected(transaction => {
       transaction.isChecked = false
-      transaction.next = [{pending:{_id}, createdAt}]
+      transaction.next = [{pending:{_id:this.newPendId}, createdAt}]
       toPend.unshift(transaction) //this must happen last so we have next info
     })
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
     this.setPending(toPend)
-    this.selectTerm('pending', this.repacks.drug.generic+': '+(_id || createdAt))
+    this.selectTerm('pending', this.repacks.drug.generic+': '+(this.newPendId || createdAt))
   }
 
   sortPending(a, b) {
@@ -298,12 +302,12 @@ export class inventory {
 
     for (let transaction of transactions) {
       const generic = transaction.drug.generic
-      const name    = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
+      const pendId  = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
 
-      this.pending[generic] = this.pending[generic] || {}
-      this.pending[generic][name] = this.pending[generic][name] || []
-      this.pending[generic][name].push(transaction)
-      this.pending[generic][name].sort(this.sortPending.bind(this)) //seems wasteful but this seems like overkill https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
+      this.pending[pendId] = this.pending[pendId] || {}
+      this.pending[pendId][generic] = this.pending[pendId][generic] || []
+      this.pending[pendId][generic].push(transaction)
+      this.pending[pendId][generic].sort(this.sortPending.bind(this)) //seems wasteful but this seems like overkill https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
     }
   }
 
@@ -313,17 +317,17 @@ export class inventory {
       return //called indiscriminately from updateSelected
 
     const generic = transaction.drug.generic
-    const name    = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
+    const pendId  = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
 
-    console.log('unsetPending', generic, name)
+    console.log('unsetPending', generic, pendId)
     //Don't need to splice the pendingAt array because updateSelected does that automatically
     this.refreshPending() //updateFn may pend some items
 
-    if ( ! this.pending[generic][name].length)
-      delete this.pending[generic][name]
+    if ( ! this.pending[pendId][generic].length)
+      delete this.pending[pendId][generic]
 
-    if ( ! Object.keys(this.pending[generic]).length)
-      delete this.pending[generic]
+    if ( ! Object.keys(this.pending[pendId]).length)
+      delete this.pending[pendId]
   }
 
   dispenseInventory() {
@@ -407,12 +411,13 @@ export class inventory {
   printLabels(transactions) {
 
     transactions = transactions || this.transactions.filter(t => t.isChecked)
+    let pendId   = this.term.split(': ')[1] || ''
 
     let labels = transactions.map(transaction => {
       return [
         `<p style="page-break-after:always;">`,
         `<strong>${transaction.drug.generic}</strong>`,
-        transaction.next[0] && transaction.next[0].pending && transaction.next[0].pending._id,
+        pendId //needs to work for X00 bins that are technically no longer pended, default to this? -> transaction.next[0] && transaction.next[0].pending && transaction.next[0].pending._id,
         `Ndc ${transaction.drug._id}`,
         `Exp ${transaction.exp.to.slice(0, 7)}`,
         `Bin ${transaction.bin}`,
@@ -506,36 +511,57 @@ export class inventory {
 
     const term = this.term.replace('Pending ', '')
 
-    this.pendId       = ''
-    this.repacks      = []
-    this.repacks.qty  = this.ordered[term] && this.ordered[term].vialQty ? this.ordered[term].vialQty : 90
-    this.repacks.exp  = ''
-    this.repacks.drug = null
-    for (let transaction of this.transactions) {
-
-      if ( ! transaction.isChecked) continue
-
-      if (this.repacks.drug == null) {
-        this.repacks.drug = transaction.drug
-        console.log('this.repacks.drug is null', this.repacks.drug)
-      } else if (this.repacks.drug._id != transaction.drug._id) {//Can only repack drugs with same NDC.  TODO Show Error?
-        console.log('this.repacks.drug mismatch', this.repacks.drug, transaction.drug)
-        this.repacks.drug = false
-      }
-
-      this.repacks.exp  = this.repacks.exp && this.repacks.exp < transaction.exp.to ? this.repacks.exp : transaction.exp.to
-    }
+    this.newPendId = ''
+    this.repacks   = this.setRepacks()
 
     if (this.repacks.drug) {
       let qtyNearest30 = 30*Math.floor(this.filter.checked.qty/30)
       let qtyRemainder = this.filter.checked.qty - qtyNearest30
       qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
       qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
+      this.matches = this.setMatchingPends(this.repacks.drug)
     }
 
     console.log('openMenu', this.ordered[this.term], this.repacks)
 
     this.setExcessQty()
+  }
+
+  setMatchingPends(generic) {
+
+    let matches = []
+    for (let pendId in this.pending)
+      if (generic in this.pending[pendId])
+        matches.push(pendId)
+
+    return matches
+  }
+
+  setRepacks() {
+    let repacks = []
+    repacks.exp  = '' //hacky but effective to set properties to array here
+    repacks.drug = null
+    //Filter Selected and then two reduces, one for drug, one for exp.
+    //1) If all same drug then repacks.drug is the generic name, otherwise dscsa_default_post_value
+    //2) Repacks.exp is the minimum expiration date of the transactions selected
+    for (let transaction of this.transactions) {
+
+      if ( ! transaction.isChecked) continue
+
+      if (repacks.drug == null) {
+        repacks.drug = transaction.drug
+        console.log('this.repacks.drug is null', repacks.drug)
+      } else if (repacks.drug._id != transaction.drug._id) {//Can only repack drugs with same NDC.  TODO Show Error?
+        repacks.drug = false
+        console.log('this.repacks.drug mismatch', repacks.drug, transaction.drug)
+      }
+
+      repacks.exp = repacks.exp && repacks.exp < transaction.exp.to
+        ? repacks.exp
+        : transaction.exp.to
+    }
+
+    return repacks
   }
 
   //Split functionality into Keydown and Input listeners because (keydown is set in constructor)
