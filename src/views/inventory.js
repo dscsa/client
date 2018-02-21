@@ -259,22 +259,22 @@ export class inventory {
 
   //Three OPTIONS
   //1) They pick an existing pendId and _id is passed as rest_request_parameter_order
-  //2) They type in their own pendId and this.newPendId is already set
+  //2) They type in their own pendId and this.pendToId is already set
   //3) They do Pend New without a pendId in which case the createdAt date will be used later
   pendInventory(pendId) {
-    if (pendId) this.newPendId = pendId
+    if (pendId) this.pendToId = pendId
     const createdAt = new Date().toJSON()
     let toPend = []
     this.updateSelected(transaction => {
       transaction.isChecked = false
-      transaction.next = [{pending:{_id:this.newPendId}, createdAt}]
+      transaction.next = [{pending:{_id:this.pendToId}, createdAt}]
       toPend.unshift(transaction) //this must happen last so we have next info
     })
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
     this.setPending(toPend)
-    this.selectTerm('pending', this.repacks.drug.generic+': '+(this.newPendId || createdAt))
+    this.selectTerm('pending', this.repacks.drug.generic+': '+(this.pendToId || createdAt))
   }
 
   sortPending(a, b) {
@@ -408,10 +408,15 @@ export class inventory {
     })
   }
 
+  //Hacky. Maybe we should set these individually rather than splitting them.
+  getPendId() {
+    return this.term.split(': ')[1] || ''
+  }
+
   printLabels(transactions) {
 
     transactions = transactions || this.transactions.filter(t => t.isChecked)
-    let pendId   = this.term.split(': ')[1] || ''
+    let pendId   = this.getPendId()
 
     let labels = transactions.map(transaction => {
       return [
@@ -511,15 +516,16 @@ export class inventory {
 
     const term = this.term.replace('Pending ', '')
 
-    this.newPendId = ''
-    this.repacks   = this.setRepacks()
+    this.pendToId = ''
+    this.repacks  = this.setRepacks()
+    this.matches  = this.setMatchingPends(this.repacks.drug)
 
     if (this.repacks.drug) {
       let qtyNearest30 = 30*Math.floor(this.filter.checked.qty/30)
       let qtyRemainder = this.filter.checked.qty - qtyNearest30
       qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
       qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
-      this.matches = this.setMatchingPends(this.repacks.drug.generic)
+
     }
 
     console.log('openMenu', this.ordered[this.term], this.repacks)
@@ -527,12 +533,15 @@ export class inventory {
     this.setExcessQty()
   }
 
-  setMatchingPends(generic) {
+  setMatchingPends(drug) {
 
-    let matches = []
-    for (let pendId in this.pending)
-      if (generic in this.pending[pendId])
-        matches.push(pendId)
+    let matches     = []
+    let pendId  = this.getPendId()
+
+    if (drug)
+      for (let pendToId in this.pending)
+        if (pendId != pendToId && drug.generic in this.pending[pendToId])
+          matches.push(pendToId)
 
     return matches
   }
