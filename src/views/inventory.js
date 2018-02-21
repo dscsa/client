@@ -319,15 +319,15 @@ export class inventory {
     const generic = transaction.drug.generic
     const pendId  = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
 
-    console.log('unsetPending', generic, pendId)
-    //Don't need to splice the pendingAt array because updateSelected does that automatically
-    this.refreshPending() //updateFn may pend some items
-
     if ( ! this.pending[pendId][generic].length)
       delete this.pending[pendId][generic]
 
     if ( ! Object.keys(this.pending[pendId]).length)
       delete this.pending[pendId]
+
+    console.log('unsetPending', generic, pendId)
+    //Don't need to splice the pendingAt array because updateSelected does that automatically
+    this.refreshPending() //updateFn may pend some items
   }
 
   dispenseInventory() {

@@ -2234,13 +2234,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var generic = transaction.drug.generic;
       var pendId = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ');
 
-      console.log('unsetPending', generic, pendId);
-
-      this.refreshPending();
-
       if (!this.pending[pendId][generic].length) delete this.pending[pendId][generic];
 
       if (!Object.keys(this.pending[pendId]).length) delete this.pending[pendId];
+
+      console.log('unsetPending', generic, pendId);
+
+      this.refreshPending();
     };
 
     inventory.prototype.dispenseInventory = function dispenseInventory() {
