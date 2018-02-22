@@ -2687,6 +2687,7 @@ define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router'
     join.prototype.join = function join() {
       var _this = this;
 
+      this.disabled = true;
       this.user.account = { _id: this.account.phone };
 
       this.db.user.post(this.user).then(function (res) {
@@ -2702,7 +2703,6 @@ define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router'
       }).then(function (loading) {
         console.log('this.db.user.session.post success', loading);
 
-        _this.disabled = true;
         _this.loading = loading.resources;
         _this.progress = loading.progress;
 
@@ -2711,7 +2711,8 @@ define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router'
         console.log('join success', _);
         return _this.router.navigate('shipments');
       }).catch(function (err) {
-        return _this.snackbar.error('Join failed', { err: err, account: _this.account, user: _this.user });
+        _this.disabled = false;
+        _this.snackbar.error('Join failed', { err: err, account: _this.account, user: _this.user });
       });
     };
 

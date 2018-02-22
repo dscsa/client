@@ -32,6 +32,7 @@ export class join {
 
   join() {
 
+    this.disabled = true
     this.user.account = {_id:this.account.phone}
 
     this.db.user.post(this.user)
@@ -51,7 +52,6 @@ export class join {
     .then(loading => {
       console.log('this.db.user.session.post success', loading)
       //wait for all resources except 'drugs' to sync .filter(r => r.name != 'drugs')
-      this.disabled = true
       this.loading  = loading.resources
       this.progress = loading.progress
 
@@ -61,6 +61,9 @@ export class join {
       console.log('join success', _)
       return this.router.navigate('shipments')
     })
-    .catch(err => this.snackbar.error('Join failed', {err, account:this.account, user:this.user}))
+    .catch(err => {
+      this.disabled = false
+      this.snackbar.error('Join failed', {err, account:this.account, user:this.user})
+    })
   }
 }
