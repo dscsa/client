@@ -23,8 +23,8 @@
         <md-input value.bind="account.street" name = "pro_street" required>Street</md-input>
         <div class="mdl-grid" style="padding:0; margin:0 -8px">
           <md-input value.bind="account.city" name = "pro_city" class="mdl-cell mdl-cell--7-col" required>City</md-input>
-          <md-input value.bind="account.state" name = "pro_state" class="mdl-cell mdl-cell--2-col" required>State</md-input>
-          <md-input value.bind="account.zip" name = "pro_zip" class="mdl-cell mdl-cell--3-col" required>Zip</md-input>
+          <md-input value.bind="account.state" name = "pro_state" pattern="^[A-Z]{2}$" class="mdl-cell mdl-cell--2-col" required>State</md-input>
+          <md-input value.bind="account.zip" name = "pro_zip" pattern="^\d{5}$" class="mdl-cell mdl-cell--3-col" required>Zip</md-input>
         </div>
         <span class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px; margin-bottom:-8px">${ loading }</span>
       </div>
