@@ -258,23 +258,22 @@ export class inventory {
   }
 
   //Three OPTIONS
-  //1) They pick an existing pendId and _id is passed as rest_request_parameter_order
-  //2) They type in their own pendId and this.pendToId is already set
+  //1) They pick an existing pendId and _id is passed as parameter
+  //2) They type in their own pendId and pendToId.value is passed as parameter
   //3) They do Pend New without a pendId in which case the createdAt date will be used later
-  pendInventory(pendId) {
-    if (pendId) this.pendToId = pendId
-    const createdAt = new Date().toJSON()
+  pendInventory(_id) {
     let toPend = []
+    let next = [{pending:{_id}, createdAt:new Date().toJSON()}]
     this.updateSelected(transaction => {
       transaction.isChecked = false
-      transaction.next = [{pending:{_id:this.pendToId}, createdAt}]
+      transaction.next = next
       toPend.unshift(transaction) //this must happen last so we have next info
     })
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
     this.setPending(toPend)
-    this.selectTerm('pending', this.repacks.drug.generic+': '+(this.pendToId || createdAt))
+    this.selectTerm('pending', this.repacks.drug.generic+': '+this.getPendId({next}))
   }
 
   sortPending(a, b) {
@@ -302,7 +301,7 @@ export class inventory {
 
     for (let transaction of transactions) {
       const generic = transaction.drug.generic
-      const pendId  = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
+      const pendId  = this.getPendId(transaction)
 
       this.pending[pendId] = this.pending[pendId] || {}
       this.pending[pendId][generic] = this.pending[pendId][generic] || []
@@ -317,7 +316,7 @@ export class inventory {
       return //called indiscriminately from updateSelected
 
     const generic = transaction.drug.generic
-    const pendId  = transaction.next[0].pending._id || transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
+    const pendId  = this.getPendId(transaction)
 
     if ( ! this.pending[pendId][generic].length)
       delete this.pending[pendId][generic]
@@ -408,8 +407,17 @@ export class inventory {
     })
   }
 
-  //Hacky. Maybe we should set these individually rather than splitting them.
-  getPendId() {
+  getPendId(transaction) {
+
+    //getPendId from a transaction
+    if (transaction) {
+      const pendId  = transaction.next[0].pending._id
+      const created = transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
+      return pendId ? pendId+' - '+created : created
+    }
+
+    //Get the currectly selected pendId
+    //Hacky. Maybe we should set these individually rather than splitting them.
     return this.term.split(': ')[1] || ''
   }
 
@@ -516,7 +524,6 @@ export class inventory {
 
     const term = this.term.replace('Pending ', '')
 
-    this.pendToId = ''
     this.repacks  = this.setRepacks()
     this.matches  = this.setMatchingPends(this.repacks.drug)
 
