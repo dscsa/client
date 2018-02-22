@@ -141,11 +141,11 @@
         <li
           name="pro_pend"
           disabled.bind=" ! filter.checked.count"
-          click.delegate="pendInventory(pendToId.value)"
+          click.delegate="pendInventory(pendToId)"
           class="mdl-menu__item--full-bleed-divider">
           Pend New
           <md-input
-            ref="pendToId"
+            value.bind="pendToId"
             placeholder="Name"
             disabled.bind=" ! filter.checked.count"
             style="width:80px; font-size:14px">

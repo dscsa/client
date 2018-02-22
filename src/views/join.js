@@ -32,27 +32,24 @@ export class join {
 
   join() {
 
-    this.db.account.post(this.account)
+    this.user.account = {_id:this.account.phone}
+
+    this.db.user.post(this.user)
     .then(res => {
-      this.user.account = {_id:res.id}
-      console.log('this.account.phone', this.account.phone, res)
-      let password = this.user.password
-      return this.db.user.post(this.user)
-      .then(res => this.user.password = password, res)
+      console.log('this.db.user.post success', res, this.user)
+      return this.db.account.post(this.account)
     })
     .then(res => {
-      console.log('this.user.phone', this.user.phone, res)
+      console.log('this.db.account.post success', res, this.account)
       //local user is created but now replicator must call bulk docs which then triggers creation of a
       //_user login. Since, we don't know exactly how long this will take so we must do a timeout here
       return new Promise(resolve => setTimeout(resolve, 2000))
     })
     .then(_ => {
-      console.log(2)
-
       return this.db.user.session.post(this.user)
     })
     .then(loading => {
-      console.log(3)
+      console.log('this.db.user.session.post success', loading)
       //wait for all resources except 'drugs' to sync .filter(r => r.name != 'drugs')
       this.disabled = true
       this.loading  = loading.resources

@@ -413,7 +413,7 @@ export class inventory {
     if (transaction) {
       const pendId  = transaction.next[0].pending._id
       const created = transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
-      return pendId ? pendId+' - '+created : created
+      return pendId || created
     }
 
     //Get the currectly selected pendId
@@ -524,6 +524,7 @@ export class inventory {
 
     const term = this.term.replace('Pending ', '')
 
+    this.pendToId = ''
     this.repacks  = this.setRepacks()
     this.matches  = this.setMatchingPends(this.repacks.drug)
 
