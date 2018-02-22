@@ -1939,7 +1939,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         _this2.db.account.get(_this2.account).then(function (account) {
           return _this2.ordered = account.ordered;
         });
-        _this2.db.transaction.query('inventory.pending', { include_docs: true, startkey: [_this2.account, {}], endkey: [_this2.account], descending: true }).then(function (res) {
+
+        _this2.db.transaction.query('inventory.pending', { include_docs: true, startkey: [_this2.account], endkey: [_this2.account, {}] }).then(function (res) {
           _this2.setPending(res.rows.map(function (row) {
             return row.doc;
           }));
@@ -2174,7 +2175,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.updateSelected(function (transaction) {
         transaction.isChecked = false;
         transaction.next = next;
-        toPend.unshift(transaction);
+        toPend.push(transaction);
       });
 
       this.setPending(toPend);
@@ -2625,7 +2626,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var matches = [];
       for (var pendId in pending) {
         if (~pendId.toLowerCase().indexOf(term)) {
-          matches.push({ key: pendId, val: pending[pendId] });
+          matches.unshift({ key: pendId, val: pending[pendId] });
           continue;
         }
 
@@ -2633,7 +2634,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         for (var generic in pending[pendId]) {
           if (~generic.toLowerCase().indexOf(term)) genericMatches[generic] = pending[pendId][generic];
-        }if (Object.keys(genericMatches).length) matches.push({ key: pendId, val: genericMatches });
+        }if (Object.keys(genericMatches).length) matches.unshift({ key: pendId, val: genericMatches });
       }
 
       return matches;

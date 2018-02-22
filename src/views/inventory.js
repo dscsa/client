@@ -52,7 +52,13 @@ export class inventory {
       this.account = session.account._id
 
       this.db.account.get(this.account).then(account => this.ordered = account.ordered)
-      this.db.transaction.query('inventory.pending', {include_docs:true, startkey:[this.account, {}], endkey:[this.account], descending:true})
+
+      //Since pending are set into an object rather than array we don't have control to append to
+      //beginning or end (object keys are iterated in the order they are added), this will always
+      //push new pended keys to the last keys in the object.  But we want new keys to be listed first
+      //in the pending drawer so we use unshift to reverse the order inside the pendingFilter which means
+      //we do NOT want to reverse the order here (they would be reversed twice which would negate it)
+      this.db.transaction.query('inventory.pending', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
       .then(res => {
         this.setPending(res.rows.map(row => row.doc))
         this.refreshPending() //not needed on development without this on production, blank drawer on inital load
@@ -267,7 +273,7 @@ export class inventory {
     this.updateSelected(transaction => {
       transaction.isChecked = false
       transaction.next = next
-      toPend.unshift(transaction) //this must happen last so we have next info
+      toPend.push(transaction)
     })
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
@@ -302,6 +308,7 @@ export class inventory {
     for (let transaction of transactions) {
       const generic = transaction.drug.generic
       const pendId  = this.getPendId(transaction)
+
 
       this.pending[pendId] = this.pending[pendId] || {}
       this.pending[pendId][generic] = this.pending[pendId][generic] || []
@@ -533,7 +540,6 @@ export class inventory {
       let qtyRemainder = this.filter.checked.qty - qtyNearest30
       qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
       qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
-
     }
 
     console.log('openMenu', this.ordered[this.term], this.repacks)
@@ -724,7 +730,7 @@ export class pendingFilterValueConverter {
     let matches = [] //an array of arrays
     for (let pendId in pending) {
       if ( ~ pendId.toLowerCase().indexOf(term)) {
-        matches.push({key:pendId, val:pending[pendId]})
+        matches.unshift({key:pendId, val:pending[pendId]})
         continue
       }
 
@@ -735,7 +741,7 @@ export class pendingFilterValueConverter {
           genericMatches[generic] = pending[pendId][generic]
 
       if (Object.keys(genericMatches).length)
-        matches.push({key:pendId, val:genericMatches})
+        matches.unshift({key:pendId, val:genericMatches})
     }
 
     return matches
