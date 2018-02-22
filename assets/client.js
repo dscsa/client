@@ -2693,9 +2693,8 @@ define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router'
         return _this.db.account.post(_this.account);
       }).then(function (res) {
         console.log('this.db.account.post success', res, _this.account);
-
         return new Promise(function (resolve) {
-          return setTimeout(resolve, 2000);
+          return setTimeout(resolve, 3000);
         });
       }).then(function (_) {
         return _this.db.user.session.post(_this.user);
