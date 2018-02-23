@@ -2172,8 +2172,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.pendInventory = function pendInventory(_id) {
+
       var toPend = [];
       var next = [{ pending: { _id: _id }, createdAt: new Date().toJSON() }];
+
       this.updateSelected(function (transaction) {
         transaction.isChecked = false;
         transaction.next = next;
@@ -2181,7 +2183,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       });
 
       this.setPending(toPend);
-      this.selectTerm('pending', this.repacks.drug.generic + ': ' + this.getPendId({ next: next }));
+
+      var pendId = this.getPendId({ next: next });
+      var label = this.pending[pendId][this.repacks.drug.generic].label;
+
+      this.selectTerm('pending', pendId + ': ' + label);
     };
 
     inventory.prototype.sortPending = function sortPending(a, b) {

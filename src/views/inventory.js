@@ -266,11 +266,13 @@ export class inventory {
 
   //Three OPTIONS
   //1) They pick an existing pendId and _id is passed as parameter
-  //2) They type in their own pendId and pendToId.value is passed as parameter
+  //2) They type in their own pendId and pendToId is passed as parameter
   //3) They do Pend New without a pendId in which case the createdAt date will be used later
   pendInventory(_id) {
+
     let toPend = []
     let next = [{pending:{_id}, createdAt:new Date().toJSON()}]
+
     this.updateSelected(transaction => {
       transaction.isChecked = false
       transaction.next = next
@@ -280,7 +282,11 @@ export class inventory {
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
     this.setPending(toPend)
-    this.selectTerm('pending', this.repacks.drug.generic+': '+this.getPendId({next}))
+
+    let pendId = this.getPendId({next})
+    let label  = this.pending[pendId][this.repacks.drug.generic].label
+
+    this.selectTerm('pending', pendId+': '+label)
   }
 
   sortPending(a, b) {
