@@ -2346,7 +2346,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         return pendId || created.slice(5, 16).replace('T', ' ');
       }
 
-      return this.term.split(': ')[0] || '';
+      return this.term.replace('Pending ', '').split(': ')[0];
     };
 
     inventory.prototype.printLabels = function printLabels(transactions) {

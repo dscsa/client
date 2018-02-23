@@ -440,7 +440,7 @@ export class inventory {
 
     //Get the currectly selected pendId
     //Hacky. Maybe we should set these individually rather than splitting them.
-    return this.term.split(': ')[0] || ''
+    return this.term.replace('Pending ', '').split(': ')[0]
   }
 
   printLabels(transactions) {
