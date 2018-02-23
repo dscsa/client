@@ -158,7 +158,7 @@ export class inventory {
 
   selectPending(pendingKey) {
 
-    const [generic, pendId] = pendingKey.split(': ')
+    const [pendId, generic] = pendingKey.split(': ')
 
     let transactions = this.pending[pendId] ? this.pending[pendId][generic] : []
 
@@ -306,10 +306,17 @@ export class inventory {
   setPending(transactions) {
 
     for (let transaction of transactions) {
-      const generic = transaction.drug.generic
-      const pendId  = this.getPendId(transaction)
 
+      let pendId  = this.getPendId(transaction)
+      let generic = transaction.drug.generic
+      let index   = pendId.indexOf(' - ')
 
+      //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
+      if ( ~ index) {
+        generic += pendId.slice(index)
+        pendId   = pendId.slice(0, index)
+      }
+    
       this.pending[pendId] = this.pending[pendId] || {}
       this.pending[pendId][generic] = this.pending[pendId][generic] || []
       this.pending[pendId][generic].push(transaction)
@@ -419,13 +426,13 @@ export class inventory {
     //getPendId from a transaction
     if (transaction) {
       const pendId  = transaction.next[0].pending._id
-      const created = transaction.next[0].createdAt.slice(5, 16).replace('T', ' ')
-      return pendId || created
+      const created = transaction.next[0].createdAt
+      return pendId || created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
     }
 
     //Get the currectly selected pendId
     //Hacky. Maybe we should set these individually rather than splitting them.
-    return this.term.split(': ')[1] || ''
+    return this.term.split(': ')[0] || ''
   }
 
   printLabels(transactions) {
