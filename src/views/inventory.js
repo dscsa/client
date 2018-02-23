@@ -161,10 +161,10 @@ export class inventory {
     const [pendId, label] = pendingKey.split(': ')
     const generic         = label.split(' - ')[0]
 
-    let transactions = this.pending[pendId] ? this.pending[pendId][generic] : []
+    let transactions = this.pending[pendId] ? this.pending[pendId][generic].transactions : []
 
     if (transactions)
-      this.term = 'Pending '+pendId+': '+label
+      this.term = 'Pending '+pendingKey
 
     console.log('select pending', this.term)
     this.setTransactions(transactions)
@@ -334,7 +334,7 @@ export class inventory {
     const generic = transaction.drug.generic
     const pendId  = this.getPendId(transaction)
 
-    if ( ! this.pending[pendId][generic].length)
+    if ( ! this.pending[pendId][generic].transactions.length)
       delete this.pending[pendId][generic]
 
     if ( ! Object.keys(this.pending[pendId]).length)

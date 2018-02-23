@@ -2064,9 +2064,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var generic = label.split(' - ')[0];
 
-      var transactions = this.pending[pendId] ? this.pending[pendId][generic] : [];
+      var transactions = this.pending[pendId] ? this.pending[pendId][generic].transactions : [];
 
-      if (transactions) this.term = 'Pending ' + pendId + ': ' + label;
+      if (transactions) this.term = 'Pending ' + pendingKey;
 
       console.log('select pending', this.term);
       this.setTransactions(transactions);
@@ -2242,7 +2242,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var generic = transaction.drug.generic;
       var pendId = this.getPendId(transaction);
 
-      if (!this.pending[pendId][generic].length) delete this.pending[pendId][generic];
+      if (!this.pending[pendId][generic].transactions.length) delete this.pending[pendId][generic];
 
       if (!Object.keys(this.pending[pendId]).length) delete this.pending[pendId];
 
