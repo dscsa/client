@@ -158,12 +158,13 @@ export class inventory {
 
   selectPending(pendingKey) {
 
-    const [pendId, generic] = pendingKey.split(': ')
+    const [pendId, label] = pendingKey.split(': ')
+    const generic         = label.split(' - ')[0]
 
     let transactions = this.pending[pendId] ? this.pending[pendId][generic] : []
 
     if (transactions)
-      this.term = 'Pending '+pendId+': '+generic
+      this.term = 'Pending '+pendId+': '+label
 
     console.log('select pending', this.term)
     this.setTransactions(transactions)
@@ -309,18 +310,19 @@ export class inventory {
 
       let pendId  = this.getPendId(transaction)
       let generic = transaction.drug.generic
+      let label   = generic
       let index   = pendId.indexOf(' - ')
 
       //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
       if ( ~ index) {
-        generic += pendId.slice(index)
-        pendId   = pendId.slice(0, index)
+        label  += pendId.slice(index)
+        pendId  = pendId.slice(0, index)
       }
 
       this.pending[pendId] = this.pending[pendId] || {}
-      this.pending[pendId][generic] = this.pending[pendId][generic] || []
-      this.pending[pendId][generic].push(transaction)
-      this.pending[pendId][generic].sort(this.sortPending.bind(this)) //seems wasteful but this seems like overkill https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
+      this.pending[pendId][generic] = this.pending[pendId][generic] || {label, transactions:[]}
+      this.pending[pendId][generic].transactions.push(transaction)
+      this.pending[pendId][generic].transactions.sort(this.sortPending.bind(this)) //seems wasteful but this seems like overkill https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
     }
   }
 
@@ -559,7 +561,7 @@ export class inventory {
 
   setMatchingPends(drug) {
 
-    let matches     = []
+    let matches = []
     let pendId  = this.getPendId()
 
     if (drug)

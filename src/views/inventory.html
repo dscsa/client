@@ -27,10 +27,10 @@
       <div
         name="pro_pended_items"
         repeat.for="pendingDrug of pend.val | toArray"
-        click.delegate="selectTerm('pending', pend.key+': '+pendingDrug.key)"
-        class="mdl-navigation__link ${ term == 'Pending '+pend.key+': '+pendingDrug.key ? 'mdl-navigation__link--current' : ''}"
+        click.delegate="selectTerm('pending', pend.key+': '+pendingDrug.val.label)"
+        class="mdl-navigation__link ${ term == 'Pending '+pend.key+': '+pendingDrug.val.label ? 'mdl-navigation__link--current' : ''}"
         style="font-size:12px; cursor:pointer; padding-top:2px; padding-bottom:2px; padding-left:12px">
-        ${ ('0'+pendingDrug.val.length).slice(-2) } ${ pendingDrug.key }
+        ${ ('0'+pendingDrug.val.transactions.length).slice(-2) } ${ pendingDrug.val.label }
       </div>
     </div>
   </md-drawer>
