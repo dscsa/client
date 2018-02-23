@@ -159,13 +159,13 @@
             style="width:40px; font-size:14px">
           </md-input>
         </li>
+        <li
+          name="pro_print_selected"
+          disabled.bind=" ! filter.checked.count"
+          click.delegate="printLabels()">
+          Print Selected
+        </li>
         <form>
-          <li
-            name="pro_print_selected"
-            disabled.bind=" ! filter.checked.count"
-            click.delegate="printLabels()">
-            Print Selected
-          </li>
           <li form
             name="pro_repack_selected"
             disabled.bind=" ! repacks.drug || ! filter.checked.count"

@@ -565,9 +565,10 @@ export class inventory {
 
     const term = this.term.replace('Pending ', '')
 
-    this.pendToId = ''
-    this.repacks  = this.setRepacks()
-    this.matches  = this.setMatchingPends(this.repacks.drug)
+    this.pendToId  = ''
+    this.pendToQty = ''
+    this.repacks   = this.setRepacks()
+    this.matches   = this.setMatchingPends(this.repacks.drug)
 
     if (this.repacks.drug) {
       this.setRepackQty()
