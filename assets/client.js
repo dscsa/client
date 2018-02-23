@@ -2414,6 +2414,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.setExcessQty();
     };
 
+    inventory.prototype.setRepackQty = function setRepackQty() {
+      var qtyInPendId = this.term.split(' - ')[1] || 30 * Math.floor(this.filter.checked.qty / 30);
+      var qtyRemainder = this.filter.checked.qty - qtyInPendId;
+      qtyInPendId && this.repacks.push({ exp: this.repacks.exp, qty: qtyInPendId });
+      qtyRemainder && this.repacks.push({ exp: this.repacks.exp, qty: qtyRemainder });
+    };
+
     inventory.prototype.setExcessQty = function setExcessQty() {
       var repackQty = this.repacks.reduce(function (totalQty, repack) {
         return (+repack.qty || 0) + totalQty;
@@ -2432,15 +2439,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.matches = this.setMatchingPends(this.repacks.drug);
 
       if (this.repacks.drug) {
-        var qtyNearest30 = 30 * Math.floor(this.filter.checked.qty / 30);
-        var qtyRemainder = this.filter.checked.qty - qtyNearest30;
-        qtyNearest30 && this.repacks.push({ exp: this.repacks.exp, qty: qtyNearest30 });
-        qtyRemainder && this.repacks.push({ exp: this.repacks.exp, qty: qtyRemainder });
+        this.setRepackQty();
+        this.setExcessQty();
       }
 
       console.log('openMenu', this.ordered[this.term], this.repacks);
-
-      this.setExcessQty();
     };
 
     inventory.prototype.setMatchingPends = function setMatchingPends(drug) {

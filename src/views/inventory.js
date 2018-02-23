@@ -526,6 +526,13 @@ export class inventory {
     this.setExcessQty()
   }
 
+  setRepackQty() {
+    let qtyInPendId  = this.term.split(' - ')[1] || 30*Math.floor(this.filter.checked.qty/30) //default to rounding nearest 30
+    let qtyRemainder = this.filter.checked.qty - qtyInPendId
+    qtyInPendId  && this.repacks.push({exp:this.repacks.exp, qty:qtyInPendId})
+    qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
+  }
+
   setExcessQty() {
     let repackQty = this.repacks.reduce((totalQty, repack) => (+repack.qty || 0) + totalQty, 0)
     this.repacks.excessQty = this.filter.checked.qty - repackQty
@@ -543,15 +550,11 @@ export class inventory {
     this.matches  = this.setMatchingPends(this.repacks.drug)
 
     if (this.repacks.drug) {
-      let qtyNearest30 = 30*Math.floor(this.filter.checked.qty/30)
-      let qtyRemainder = this.filter.checked.qty - qtyNearest30
-      qtyNearest30 && this.repacks.push({exp:this.repacks.exp, qty:qtyNearest30})
-      qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
+      this.setRepackQty()
+      this.setExcessQty()
     }
 
     console.log('openMenu', this.ordered[this.term], this.repacks)
-
-    this.setExcessQty()
   }
 
   setMatchingPends(drug) {
