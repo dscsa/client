@@ -24,7 +24,6 @@ export class MdInputCustomElement {
   }
 
   maxChanged() {
-    console.log('md-input maxChanged()')
     this.changed()
   }
 

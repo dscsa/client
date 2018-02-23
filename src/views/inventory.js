@@ -340,13 +340,14 @@ export class inventory {
     const generic = transaction.drug.generic
     const pendId  = this.getPendId(transaction)
 
+    console.log('unsetPending', pendId, generic, this.pending[pendId], transaction)
+
     if ( ! this.pending[pendId][generic].transactions.length)
       delete this.pending[pendId][generic]
 
     if ( ! Object.keys(this.pending[pendId]).length)
       delete this.pending[pendId]
 
-    console.log('unsetPending', generic, pendId)
     //Don't need to splice the pendingAt array because updateSelected does that automatically
     this.refreshPending() //updateFn may pend some items
   }
@@ -542,7 +543,7 @@ export class inventory {
   }
 
   setExcessQty() {
-    let repackQty = this.repacks.reduce((totalQty, repack) => Math.max(0, +repack.qty || 0) + totalQty, 0)
+    let repackQty = this.repacks.reduce((totalQty, repack) => Math.max(0, repack.qty) + totalQty, 0)
     this.repacks.excessQty = this.filter.checked.qty - repackQty
     console.log('setExcessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty)
   }

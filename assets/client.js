@@ -343,7 +343,6 @@ define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (e
     };
 
     MdInputCustomElement.prototype.maxChanged = function maxChanged() {
-      console.log('md-input maxChanged()');
       this.changed();
     };
 
@@ -2248,11 +2247,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var generic = transaction.drug.generic;
       var pendId = this.getPendId(transaction);
 
+      console.log('unsetPending', pendId, generic, this.pending[pendId], transaction);
+
       if (!this.pending[pendId][generic].transactions.length) delete this.pending[pendId][generic];
 
       if (!Object.keys(this.pending[pendId]).length) delete this.pending[pendId];
-
-      console.log('unsetPending', generic, pendId);
 
       this.refreshPending();
     };
@@ -2432,7 +2431,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.setExcessQty = function setExcessQty() {
       var repackQty = this.repacks.reduce(function (totalQty, repack) {
-        return Math.max(0, +repack.qty || 0) + totalQty;
+        return Math.max(0, repack.qty) + totalQty;
       }, 0);
       this.repacks.excessQty = this.filter.checked.qty - repackQty;
       console.log('setExcessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty);
