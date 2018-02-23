@@ -2026,7 +2026,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       } else this.type = null;
 
       this.transactions = transactions;
-      console.log('reset filter');
       this.filter = {};
     };
 
@@ -2067,7 +2066,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       if (transactions) this.term = 'Pending ' + pendingKey;
 
-      console.log('select pending', this.term);
       this.setTransactions(transactions);
       this.toggleDrawer();
     };
@@ -2174,16 +2172,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var next = [{ pending: { _id: _id }, createdAt: new Date().toJSON() }];
       var pendId = this.getPendId({ next: next });
 
-      if (pendQty) next[0].pending._id += ' - ' + pendQty;
+      if (pendQty) next[0].pending._id = pendId + ' - ' + pendQty;
 
       this.updateSelected(function (transaction) {
         transaction.isChecked = false;
         transaction.next = next;
-        console.log('transaction', transaction);
         toPend.push(transaction);
       });
-
-      console.log('next', next, 'pendId', pendId, 'generic', this.repacks.drug.generic, 'toPend', toPend, 'this.pending', this.pending);
 
       this.setPending(toPend);
 
@@ -2438,7 +2433,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         return Math.max(0, repack.qty) + totalQty;
       }, 0);
       this.repacks.excessQty = this.filter.checked.qty - repackQty;
-      console.log('setExcessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty);
     };
 
     inventory.prototype.openMenu = function openMenu($event) {

@@ -131,7 +131,6 @@ export class inventory {
       this.type = null
 
     this.transactions = transactions
-    console.log('reset filter')
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
   }
 
@@ -166,7 +165,6 @@ export class inventory {
     if (transactions)
       this.term = 'Pending '+pendingKey
 
-    console.log('select pending', this.term)
     this.setTransactions(transactions)
     this.toggleDrawer()
   }
@@ -274,16 +272,14 @@ export class inventory {
     let pendId = this.getPendId({next})
 
     if (pendQty)
-      next[0].pending._id += ' - '+pendQty
+      next[0].pending._id = pendId+' - '+pendQty
 
     this.updateSelected(transaction => {
       transaction.isChecked = false
       transaction.next = next
-      console.log('transaction', transaction)
       toPend.push(transaction)
     })
 
-    console.log('next', next, 'pendId', pendId, 'generic', this.repacks.drug.generic, 'toPend', toPend, 'this.pending', this.pending)
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
@@ -555,7 +551,6 @@ export class inventory {
   setExcessQty() {
     let repackQty = this.repacks.reduce((totalQty, repack) => Math.max(0, repack.qty) + totalQty, 0)
     this.repacks.excessQty = this.filter.checked.qty - repackQty
-    console.log('setExcessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty)
   }
 
   openMenu($event) {
