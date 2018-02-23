@@ -163,7 +163,7 @@ export class inventory {
     let transactions = this.pending[pendId] ? this.pending[pendId][generic] : []
 
     if (transactions)
-      this.term = 'Pending '+generic+': '+pendId
+      this.term = 'Pending '+pendId+': '+generic
 
     console.log('select pending', this.term)
     this.setTransactions(transactions)
@@ -316,7 +316,7 @@ export class inventory {
         generic += pendId.slice(index)
         pendId   = pendId.slice(0, index)
       }
-    
+
       this.pending[pendId] = this.pending[pendId] || {}
       this.pending[pendId][generic] = this.pending[pendId][generic] || []
       this.pending[pendId][generic].push(transaction)

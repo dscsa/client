@@ -2064,7 +2064,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var transactions = this.pending[pendId] ? this.pending[pendId][generic] : [];
 
-      if (transactions) this.term = 'Pending ' + generic + ': ' + pendId;
+      if (transactions) this.term = 'Pending ' + pendId + ': ' + generic;
 
       console.log('select pending', this.term);
       this.setTransactions(transactions);
