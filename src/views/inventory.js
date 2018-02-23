@@ -268,14 +268,15 @@ export class inventory {
   //1) They pick an existing pendId and _id is passed as parameter
   //2) They type in their own pendId and pendToId is passed as parameter
   //3) They do Pend New without a pendId in which case the createdAt date will be used later
-  pendInventory(pendId, pendQty) {
+  pendInventory(_id, pendQty) {
 
-    if (pendId)
-      pendId += pendQty ? ' - '+pendQty : ''
-
-    let label
     let toPend = []
-    let next = [{pending:{_id:pendId}, createdAt:new Date().toJSON()}]
+    let next   = [{pending:{_id}, createdAt:new Date().toJSON()}]
+    let pendId = this.getPendId({next})
+
+
+    if (pendQty)
+      next[0].pending._id += ' - '+pendQty
 
     this.updateSelected(transaction => {
       transaction.isChecked = false
@@ -287,8 +288,7 @@ export class inventory {
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
     this.setPending(toPend)
 
-    pendId = this.getPendId({next})
-    label  = this.pending[pendId][this.repacks.drug.generic].label
+    let label = this.pending[pendId][this.repacks.drug.generic].label //must wait until after setPending
 
     this.selectTerm('pending', pendId+': '+label)
   }

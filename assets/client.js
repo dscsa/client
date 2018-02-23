@@ -2170,13 +2170,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       });
     };
 
-    inventory.prototype.pendInventory = function pendInventory(pendId, pendQty) {
+    inventory.prototype.pendInventory = function pendInventory(_id, pendQty) {
 
-      if (pendId) pendId += pendQty ? ' - ' + pendQty : '';
-
-      var label = void 0;
       var toPend = [];
-      var next = [{ pending: { _id: pendId }, createdAt: new Date().toJSON() }];
+      var next = [{ pending: { _id: _id }, createdAt: new Date().toJSON() }];
+      var pendId = this.getPendId({ next: next });
+
+      if (pendQty) next[0].pending._id += ' - ' + pendQty;
 
       this.updateSelected(function (transaction) {
         transaction.isChecked = false;
@@ -2186,8 +2186,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.setPending(toPend);
 
-      pendId = this.getPendId({ next: next });
-      label = this.pending[pendId][this.repacks.drug.generic].label;
+      var label = this.pending[pendId][this.repacks.drug.generic].label;
 
       this.selectTerm('pending', pendId + ': ' + label);
     };
