@@ -2186,6 +2186,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.setPending(toPend);
 
+      console.log('next', next, 'pendId', pendId, this.repacks.drug.generic, this.pending);
+
       var label = this.pending[pendId][this.repacks.drug.generic].label;
 
       this.selectTerm('pending', pendId + ': ' + label);
