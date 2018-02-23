@@ -2222,16 +2222,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         var _transaction = _ref2;
 
-
         var pendId = this.getPendId(_transaction);
+        var pendQty = this.getPendQty(_transaction);
         var generic = _transaction.drug.generic;
-        var label = generic;
-        var index = pendId.indexOf(' - ');
-
-        if (~index) {
-          label += pendId.slice(index);
-          pendId = pendId.slice(0, index);
-        }
+        var label = generic + (pendQty ? ' - ' + pendQty : '');
 
         this.pending[pendId] = this.pending[pendId] || {};
         this.pending[pendId][generic] = this.pending[pendId][generic] || { label: label, transactions: [] };
@@ -2342,10 +2336,19 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       if (transaction) {
         var pendId = transaction.next[0].pending._id;
         var created = transaction.next[0].createdAt;
-        return pendId || created.slice(5, 16).replace('T', ' ');
+        return pendId ? pendId.split(' - ')[0] : created.slice(5, 16).replace('T', ' ');
       }
 
       return this.term.replace('Pending ', '').split(': ')[0];
+    };
+
+    inventory.prototype.getPendQty = function getPendQty(transaction) {
+      if (transaction) {
+        var pendId = transaction.next[0].pending._id;
+        return pendId ? pendId.split(' - ')[1] : undefined;
+      }
+
+      return this.term.split(' - ')[1];
     };
 
     inventory.prototype.printLabels = function printLabels(transactions) {
@@ -2423,7 +2426,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.setRepackQty = function setRepackQty() {
-      var qtyInPendId = this.term.split(' - ')[1] || 30 * Math.floor(this.filter.checked.qty / 30);
+      var qtyInPendId = this.getPendQty() || 30 * Math.floor(this.filter.checked.qty / 30);
       var qtyRemainder = this.filter.checked.qty - qtyInPendId;
       qtyInPendId && this.repacks.push({ exp: this.repacks.exp, qty: qtyInPendId });
       qtyRemainder && this.repacks.push({ exp: this.repacks.exp, qty: qtyRemainder });

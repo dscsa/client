@@ -314,16 +314,11 @@ export class inventory {
 
     for (let transaction of transactions) {
 
-      let pendId  = this.getPendId(transaction)
-      let generic = transaction.drug.generic
-      let label   = generic
-      let index   = pendId.indexOf(' - ')
-
       //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
-      if ( ~ index) {
-        label  += pendId.slice(index)
-        pendId  = pendId.slice(0, index)
-      }
+      let pendId  = this.getPendId(transaction)
+      let pendQty = this.getPendQty(transaction)
+      let generic = transaction.drug.generic
+      let label   = generic + (pendQty ? ' - '+pendQty : '')
 
       this.pending[pendId] = this.pending[pendId] || {}
       this.pending[pendId][generic] = this.pending[pendId][generic] || {label, transactions:[]}
@@ -436,13 +431,25 @@ export class inventory {
     if (transaction) {
       const pendId  = transaction.next[0].pending._id
       const created = transaction.next[0].createdAt
-      return pendId || created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
+      return pendId ? pendId.split(' - ')[0] : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
     }
 
     //Get the currectly selected pendId
     //Hacky. Maybe we should set these individually rather than splitting them.
     return this.term.replace('Pending ', '').split(': ')[0]
   }
+
+  getPendQty(transaction) {
+
+    //getPendId from a transaction
+    if (transaction) {
+      const pendId  = transaction.next[0].pending._id
+      return pendId ? pendId.split(' - ')[1] : undefined
+    }
+
+    return this.term.split(' - ')[1]
+  }
+
 
   printLabels(transactions) {
 
@@ -536,7 +543,7 @@ export class inventory {
   }
 
   setRepackQty() {
-    let qtyInPendId  = this.term.split(' - ')[1] || 30*Math.floor(this.filter.checked.qty/30) //default to rounding nearest 30
+    let qtyInPendId  = this.getPendQty() || 30*Math.floor(this.filter.checked.qty/30) //default to rounding nearest 30
     let qtyRemainder = this.filter.checked.qty - qtyInPendId
     qtyInPendId  && this.repacks.push({exp:this.repacks.exp, qty:qtyInPendId})
     qtyRemainder && this.repacks.push({exp:this.repacks.exp, qty:qtyRemainder})
