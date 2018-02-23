@@ -212,7 +212,6 @@ export class inventory {
   }
 
   refreshPending() {
-    console.log('refreshPending')
     //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
     //to trigger and update using Object.assign rather than just adding a property
     this.pending = Object.assign({}, this.pending)
@@ -274,21 +273,21 @@ export class inventory {
     let next   = [{pending:{_id}, createdAt:new Date().toJSON()}]
     let pendId = this.getPendId({next})
 
-
     if (pendQty)
       next[0].pending._id += ' - '+pendQty
 
     this.updateSelected(transaction => {
       transaction.isChecked = false
       transaction.next = next
+      console.log('transaction', transaction)
       toPend.push(transaction)
     })
+
+    console.log('next', next, 'pendId', pendId, 'generic', this.repacks.drug.generic, 'toPend', toPend, 'this.pending', this.pending)
     //Since transactions pushed to pendying syncronously we get need to wait for the save to complete
     //Generic search is sorted primarily by EXP and not BIN.  This is correct on refresh but since we
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
     this.setPending(toPend)
-
-    console.log('next', next, 'pendId', pendId, this.repacks.drug.generic, this.pending)
 
     let label = this.pending[pendId][this.repacks.drug.generic].label //must wait until after setPending
 
@@ -340,8 +339,6 @@ export class inventory {
 
     const generic = transaction.drug.generic
     const pendId  = this.getPendId(transaction)
-
-    console.log('unsetPending', pendId, generic, this.pending[pendId], transaction)
 
     if ( ! this.pending[pendId][generic].transactions.length)
       delete this.pending[pendId][generic]

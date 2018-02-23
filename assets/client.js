@@ -2115,8 +2115,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.refreshPending = function refreshPending() {
-      console.log('refreshPending');
-
       this.pending = Object.assign({}, this.pending);
     };
 
@@ -2181,12 +2179,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.updateSelected(function (transaction) {
         transaction.isChecked = false;
         transaction.next = next;
+        console.log('transaction', transaction);
         toPend.push(transaction);
       });
 
-      this.setPending(toPend);
+      console.log('next', next, 'pendId', pendId, 'generic', this.repacks.drug.generic, 'toPend', toPend, 'this.pending', this.pending);
 
-      console.log('next', next, 'pendId', pendId, this.repacks.drug.generic, this.pending);
+      this.setPending(toPend);
 
       var label = this.pending[pendId][this.repacks.drug.generic].label;
 
@@ -2244,8 +2243,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var generic = transaction.drug.generic;
       var pendId = this.getPendId(transaction);
-
-      console.log('unsetPending', pendId, generic, this.pending[pendId], transaction);
 
       if (!this.pending[pendId][generic].transactions.length) delete this.pending[pendId][generic];
 
