@@ -288,6 +288,8 @@ export class inventory {
     //want pending queue to be ordered by BIN instantly we need to mimic the server sort on the client
     this.setPending(toPend)
 
+    console.log('next', next, 'pendId', pendId, this.repacks.drug.generic, this.pending)
+
     let label = this.pending[pendId][this.repacks.drug.generic].label //must wait until after setPending
 
     this.selectTerm('pending', pendId+': '+label)
