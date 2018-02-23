@@ -2432,7 +2432,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.setExcessQty = function setExcessQty() {
       var repackQty = this.repacks.reduce(function (totalQty, repack) {
-        return (+repack.qty || 0) + totalQty;
+        return Math.max(0, +repack.qty || 0) + totalQty;
       }, 0);
       this.repacks.excessQty = this.filter.checked.qty - repackQty;
       console.log('setExcessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty);

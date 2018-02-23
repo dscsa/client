@@ -542,7 +542,7 @@ export class inventory {
   }
 
   setExcessQty() {
-    let repackQty = this.repacks.reduce((totalQty, repack) => (+repack.qty || 0) + totalQty, 0)
+    let repackQty = this.repacks.reduce((totalQty, repack) => Math.max(0, +repack.qty || 0) + totalQty, 0)
     this.repacks.excessQty = this.filter.checked.qty - repackQty
     console.log('setExcessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty)
   }
