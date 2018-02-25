@@ -208,7 +208,7 @@
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div class="table-wrap">
         <div show.bind="noResults" style="margin:24px">No Results</div>
-        <table show.bind=" ! noResults && transaction.length" md-table>
+        <table show.bind=" ! noResults && transactions.length" md-table>
           <thead>
             <tr>
               <th style="width:50px; padding:0"></th>
