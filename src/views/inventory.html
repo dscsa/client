@@ -207,8 +207,8 @@
       </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div class="table-wrap">
-        <div show.bind=" ! hasResults" style="margin:24px">No Results</div>
-        <table show.bind="hasResults" md-table>
+        <div show.bind="noResults" style="margin:24px">No Results</div>
+        <table show.bind=" ! noResults" md-table>
           <thead>
             <tr>
               <th style="width:50px; padding:0"></th>
