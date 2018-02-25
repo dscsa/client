@@ -131,6 +131,7 @@ export class inventory {
       this.type = null
 
     this.transactions = transactions
+    this.hasResults   = !! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
   }
 
