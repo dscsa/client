@@ -2028,6 +2028,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.transactions = transactions;
       this.noResults = this.term && !transactions.length;
       this.filter = {};
+      console.log(transactions.length, transactions);
     };
 
     inventory.prototype.search = function search() {
@@ -2100,6 +2101,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.selectTerm = function selectTerm(type, key) {
+
+      console.log('selectTerm', type, key);
 
       this.setVisibleChecks(false);
 
