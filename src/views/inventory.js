@@ -133,6 +133,7 @@ export class inventory {
     this.transactions = transactions
     this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
+    console.log(transactions.length, transactions)
   }
 
   search() {
@@ -195,6 +196,8 @@ export class inventory {
   }
 
   selectTerm(type, key) {
+
+    console.log('selectTerm', type, key)
 
     this.setVisibleChecks(false) //reset selected qty back to 0
 
