@@ -559,12 +559,11 @@ export class inventory {
 
   openMenu($event) {
     console.log('openMenu called', $event.target.tagName, this.transactions.length, $event.target.tagName != 'I', ! this.transactions.length, this.repacks)
-    if ($event.target.tagName != 'I')
+    if ($event.target.tagName != 'I' || $event.target.tagName != 'BUTTON')
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
     if ( ! this.transactions.length) {
-      console.log('openMenu resetting repacks', this.repacks)
-      this.repacks.drug = null //just in case transactions have not yet loaded, we don't want to accidentally use previous repack (Cindy had issues with v2 putting repacks under the previous drug name)
+      console.log('openMenu transactions.length == 0', this.repacks)
       return true
     }
 
