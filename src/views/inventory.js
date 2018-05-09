@@ -590,7 +590,7 @@ export class inventory {
     if (drug)
       for (let pendToId in this.pending)
         if (pendId != pendToId && drug.generic in this.pending[pendToId])
-          matches.push(pendToId)
+          matches.push(this.pending[pendToId][drug.generic].label)
 
     return matches
   }

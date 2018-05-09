@@ -132,11 +132,11 @@
           Unpend Selected
         </li>
         <li
-          repeat.for="pendId of matches"
+          repeat.for="pendLabel of matches"
           name="pro_pend"
           class="mdl-menu__item"
-          click.delegate="pendInventory(pendId)">
-          Pend to ${pendId}
+          click.delegate="pendInventory(pendLabel)">
+          Pend to ${pendLabel}
         </li>
         <li
           name="pro_pend"
