@@ -1046,9 +1046,12 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   function parseUserDate(date) {
 
     date = (date || '').split('/');
-    if (date[1] || date[0].length < 4) return { month: date.shift(), year: date.pop() };
 
-    return { month: date[0].slice(0, 2), year: date[0].slice(-2) };
+    var year = '';
+
+    if (date.length > 1) year = date.pop().slice(-2);else if (date[0].length > 3) year = date[0].slice(-2);
+
+    return { month: date[0].slice(0, 2), year: year };
   }
 
   function toJsonDate(_ref4) {
@@ -1305,26 +1308,22 @@ define('client/src/resources/value-converters',['exports', '../resources/helpers
 
       if (date.includes('*')) return null;
 
-      var add = date.includes('+') || date.includes('=');
-      var sub = date.includes('-');
-
       var _parseUserDate = (0, _helpers.parseUserDate)(date.replace(/\+|\-|\=/g, '')),
           month = _parseUserDate.month,
           year = _parseUserDate.year;
 
-      if (year.length > 2) year = year.slice(0, 2);
+      if (date.includes('+') || date.includes('=')) month++;
 
-      if (add) month++;
-      if (sub) month--;
+      if (date.includes('-')) month--;
 
-      if (month == 0) {
-        month = 12;
+      if (month < 1) {
         year--;
+        month = 12;
       }
 
-      if (month == 13) {
-        month = 1;
+      if (month > 12) {
         year++;
+        month = 1;
       }
 
       this.view = ("00" + month).slice(-2) + '/' + year;

@@ -89,25 +89,22 @@ export class dateValueConverter {
     if (date.includes('*'))
       return null
 
-    let add = date.includes('+') || date.includes('=')
-    let sub = date.includes('-')
-
     let {month, year} = parseUserDate(date.replace(/\+|\-|\=/g, ''))
 
-    if (year.length > 2) //without this if user accidentally typed an extra character it would cause ongoing save error
-      year = year.slice(0, 2)
+    if (date.includes('+') || date.includes('='))
+      month++
 
-    if (add) month++
-    if (sub) month--
+    if(date.includes('-'))
+      month--
 
-    if (month == 0) {
-      month = 12
+    if (month < 1) {
       year--
+      month = 12
     }
 
-    if (month == 13) {
-      month = 1
+    if (month > 12) {
       year++
+      month = 1
     }
 
     //Keep zerp padding in front of the month which is lost when month changes

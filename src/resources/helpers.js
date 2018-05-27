@@ -43,8 +43,8 @@ export function incrementBin($event, transaction) {
   if ( ! increment)
     return clearIfAsterick($event)
 
-  var binLetter = transaction.bin[0]
-  var binNumber = +transaction.bin.slice(1)+increment
+  let binLetter = transaction.bin[0]
+  let binNumber = +transaction.bin.slice(1)+increment
 
   if (binNumber < 0 || binNumber > 699) {
     binLetter = String.fromCharCode(binLetter.charCodeAt() + increment)
@@ -219,11 +219,14 @@ export function parseUserDate(date) {
 
   date = (date || '').split('/') //sometimes null is passed so default arg doesn't always work
 
+  let year = ''
   //Three digits seems ambiguous even with advanced logic 121 -> 12/18 || 01/21.
-  if (date[1] || date[0].length < 4)
-    return { month:date.shift(), year:date.pop() }
+  if (date.length > 1)
+    year = date.pop().slice(-2)
+  else if (date[0].length > 3)
+    year = date[0].slice(-2)
 
-  return { month:date[0].slice(0, 2), year:date[0].slice(-2) }
+  return { month:date[0].slice(0, 2), year }
 }
 
 //To get last day in month, set it to next month and subtract a day
