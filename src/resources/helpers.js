@@ -40,22 +40,20 @@ export function incrementBin($event, transaction) {
   if ($event.which == 109 || $event.which == 189) // - key on numpad, keyboard
     var increment = -1
 
-  if (increment) {
+  if ( ! increment)
+    return clearIfAsterick($event)
 
-    var binLetter = transaction.bin[0]
-    var binNumber = +transaction.bin.slice(1)+increment
+  var binLetter = transaction.bin[0]
+  var binNumber = +transaction.bin.slice(1)+increment
 
-    if (binNumber < 0 || binNumber > 699) {
-      binLetter = String.fromCharCode(binLetter.charCodeAt() + increment)
-      binNumber = (binNumber+700) % 700
-    }
-
-    transaction.bin = binLetter+('00'+binNumber).slice(-3) //left pad upto three places
-    saveTransaction.call(this, transaction)
-    return false //don't actually add the +
+  if (binNumber < 0 || binNumber > 699) {
+    binLetter = String.fromCharCode(binLetter.charCodeAt() + increment)
+    binNumber = (binNumber+700) % 700
   }
 
-  return clearIfAsterick($event)
+  transaction.bin = binLetter+('00'+binNumber).slice(-3) //left pad upto three places
+  saveTransaction.call(this, transaction)
+  return false //don't actually add the +
 }
 
 function clearIfAsterick($event) {
