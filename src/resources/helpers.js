@@ -206,12 +206,12 @@ export function drugSearch() {
   })
 }
 
-//whether mm/yy or mm/dd/yy, month is always first and year is always last
+//whether mm/yy, mmyy, or mm/dd/yy, month is always first and year is always last
 export function parseUserDate(date) {
-  date = (date || "").split('/') //can't do default arugment because can be null as well as undefined
+  date = date || "" //can't do default arugment because can be null as well as undefined
   return {
-    year:date.pop(),
-    month:date.shift()
+    year:date.slice(-2),
+    month:date.slice(0, 2).replace('/', '') //in case of a one digit month
   }
 }
 
