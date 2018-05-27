@@ -206,13 +206,16 @@ export function drugSearch() {
   })
 }
 
-//whether mm/yy, mmyy, or mm/dd/yy, month is always first and year is always last
+//Accepted formats mm/yy, mmyy, mm/dd/yy, or mmddyy month is always first and year is always last
 export function parseUserDate(date) {
-  date = date || "" //can't do default arugment because can be null as well as undefined
-  return {
-    year:date.slice(-2),
-    month:date.slice(0, 2).replace('/', '') //in case of a one digit month
-  }
+
+  date = (date || '').split('/') //sometimes null is passed so default arg doesn't always work
+
+  //Three digits seems ambiguous even with advanced logic 121 -> 12/18 || 01/21. 
+  if (date[1] || date[0].length < 4)
+    return { year:date.pop(), month:date.shift() }
+
+  return { year:date[0].slice(-2), month:date[0].slice(0, 2)}
 }
 
 //To get last day in month, set it to next month and subtract a day
