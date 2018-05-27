@@ -211,11 +211,11 @@ export function parseUserDate(date) {
 
   date = (date || '').split('/') //sometimes null is passed so default arg doesn't always work
 
-  //Three digits seems ambiguous even with advanced logic 121 -> 12/18 || 01/21. 
+  //Three digits seems ambiguous even with advanced logic 121 -> 12/18 || 01/21.
   if (date[1] || date[0].length < 4)
-    return { year:date.pop(), month:date.shift() }
+    return { month:date.shift(), year:date.pop() }
 
-  return { year:date[0].slice(-2), month:date[0].slice(0, 2)}
+  return { month:date[0].slice(0, 2), year:date[0].slice(-2) }
 }
 
 //To get last day in month, set it to next month and subtract a day

@@ -1041,9 +1041,9 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   function parseUserDate(date) {
 
     date = (date || '').split('/');
-    if (date[1] || date[0].length < 4) return { year: date.pop(), month: date.shift() };
+    if (date[1] || date[0].length < 4) return { month: date.shift(), year: date.pop() };
 
-    return { year: date[0].slice(-2), month: date[0].slice(0, 2) };
+    return { month: date[0].slice(0, 2), year: date[0].slice(-2) };
   }
 
   function toJsonDate(_ref4) {
