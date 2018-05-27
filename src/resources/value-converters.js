@@ -107,8 +107,8 @@ export class dateValueConverter {
       month = 1
     }
 
-    //Keep zerp padding in front of the month which is lost when month changes
-    this.view = ("00"+month).slice(-2)+'/'+year
+    //Keep zero padding in front of the month which is lost when month changes
+    this.view = date.length == 1 ? month : ("00"+month).slice(-2)+'/'+year
 
     return this.model = toJsonDate({month, year})
   }

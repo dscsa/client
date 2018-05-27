@@ -1326,7 +1326,7 @@ define('client/src/resources/value-converters',['exports', '../resources/helpers
         month = 1;
       }
 
-      this.view = ("00" + month).slice(-2) + '/' + year;
+      this.view = date.length == 1 ? month : ("00" + month).slice(-2) + '/' + year;
 
       return this.model = (0, _helpers.toJsonDate)({ month: month, year: year });
     };
