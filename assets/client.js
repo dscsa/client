@@ -3140,7 +3140,6 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     shipments.prototype.toggleVerifiedCheck = function toggleVerifiedCheck(transaction) {
 
       var verifiedAt = transaction.verifiedAt;
-      var bin = transaction.bin;
 
       if (verifiedAt) {
         transaction.verifiedAt = null;
@@ -3151,9 +3150,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       }
 
       this.saveTransaction(transaction).catch(function (err) {
-        transaction.isChecked = !transaction.isChecked;
         transaction.verifiedAt = verifiedAt;
-        transaction.bin = bin;
       });
     };
 

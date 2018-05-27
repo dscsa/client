@@ -340,7 +340,6 @@ export class shipments {
   toggleVerifiedCheck(transaction) {
 
     let verifiedAt = transaction.verifiedAt
-    let bin = transaction.bin
 
     if (verifiedAt) {
       transaction.verifiedAt = null
@@ -351,9 +350,7 @@ export class shipments {
     }
 
     this.saveTransaction(transaction).catch(err => {
-      transaction.isChecked  = ! transaction.isChecked
-      transaction.verifiedAt = verifiedAt
-      transaction.bin = bin
+      transaction.verifiedAt = verifiedAt //Don't save the verified date since save didn't work
     })
   }
 
