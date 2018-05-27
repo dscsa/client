@@ -33,16 +33,26 @@ export function removeTransactionIfQty0($event, $index) {
 }
 
 export function incrementBin($event, transaction) {
-  if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
-    transaction.bin = transaction.bin[0]+('00'+(+transaction.bin.slice(1)+1)).slice(-3)
+
+  if ($event.which == 107 || $event.which == 187) // + key on numpad, keyboard
+    var increment = 1
+
+  if ($event.which == 109 || $event.which == 189) // - key on numpad, keyboard
+    var increment = -1
+
+  if (increment) {
+
+    var binLetter = transaction.bin[0]
+    var binNumber = +transaction.bin.slice(1)+increment
+
+    if (binNumber < 0 || binNumber > 699) {
+      binLetter = String.fromCharCode(binLetter.charCodeAt() + increment)
+      binNumber = (binNumber+700) % 700
+    }
+
+    transaction.bin = binLetter+('00'+binNumber).slice(-3) //left pad upto three places
     saveTransaction.call(this, transaction)
     return false //don't actually add the +
-  }
-
-  if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
-    transaction.bin = transaction.bin[0]+('00'+(+transaction.bin.slice(1)-1)).slice(-3)
-    saveTransaction.call(this, transaction)
-    return false //don't actually add the -
   }
 
   return clearIfAsterick($event)
