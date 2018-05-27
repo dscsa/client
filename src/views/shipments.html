@@ -244,7 +244,7 @@
                   keydown.delegate="expShortcutsKeydown($event, $index)"
                   input.trigger="expShortcutsInput($index)"
                   disabled.bind="transaction.next.length"
-                  pattern="(0?[1-9]|1[012])/?\d{2}"
+                  pattern="(0[1-9]|1[012])/?\d{2}"
                   value.bind="transaction.exp[role.shipments] | date"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
