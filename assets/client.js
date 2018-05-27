@@ -849,13 +849,13 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
   function incrementBin($event, transaction) {
     if ($event.which == 107 || $event.which == 187) {
-      transaction.bin = transaction.bin[0] + ('00' + (transaction.bin.slice(1) + 1)).slice(-2);
+      transaction.bin = transaction.bin[0] + ('00' + (transaction.bin.slice(1) + 1)).slice(-3);
       saveTransaction.call(this, transaction);
       return false;
     }
 
     if ($event.which == 109 || $event.which == 189) {
-      transaction.bin = transaction.bin[0] + ('00' + (transaction.bin.slice(1) - 1)).slice(-2);
+      transaction.bin = transaction.bin[0] + ('00' + (transaction.bin.slice(1) - 1)).slice(-3);
       saveTransaction.call(this, transaction);
       return false;
     }

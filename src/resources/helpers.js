@@ -34,13 +34,13 @@ export function removeTransactionIfQty0($event, $index) {
 
 export function incrementBin($event, transaction) {
   if ($event.which == 107 || $event.which == 187) { // + key on numpad, keyboard
-    transaction.bin = transaction.bin[0]+('00'+(transaction.bin.slice(1)+1)).slice(-2)
+    transaction.bin = transaction.bin[0]+('00'+(transaction.bin.slice(1)+1)).slice(-3)
     saveTransaction.call(this, transaction)
     return false //don't actually add the +
   }
 
   if ($event.which == 109 || $event.which == 189) {// - key on numpad, keyboard
-    transaction.bin = transaction.bin[0]+('00'+(transaction.bin.slice(1)-1)).slice(-2)
+    transaction.bin = transaction.bin[0]+('00'+(transaction.bin.slice(1)-1)).slice(-3)
     saveTransaction.call(this, transaction)
     return false //don't actually add the -
   }
