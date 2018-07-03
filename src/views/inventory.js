@@ -180,7 +180,7 @@ export class inventory {
       opts.startkey = [this.account, ! key.slice(3), key.slice(0,3), key.slice(3)]
       opts.endkey   = [this.account, ! key.slice(3), key.slice(0,3), key.slice(3)+'\uffff']
     } else if (type == 'exp') {
-      //opts.startkey = [this.account, key] to help pulling expireds show <= Exp rather than just = Exp
+      opts.startkey = [this.account, key]
       opts.endkey   = [this.account, key+'\uffff']
     } else {
       //Only show medicine at least one month from expiration

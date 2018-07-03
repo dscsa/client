@@ -2087,6 +2087,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         opts.startkey = [this.account, !key.slice(3), key.slice(0, 3), key.slice(3)];
         opts.endkey = [this.account, !key.slice(3), key.slice(0, 3), key.slice(3) + '\uFFFF'];
       } else if (type == 'exp') {
+        opts.startkey = [this.account, key];
         opts.endkey = [this.account, key + '\uFFFF'];
       } else {
         var minExp = new Date();
