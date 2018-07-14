@@ -360,8 +360,12 @@ export class inventory {
     if ( ! this.pending[pendId][generic].transactions.length)
       delete this.pending[pendId][generic]
 
-    if ( ! Object.keys(this.pending[pendId]).length)
+    let isPend = Object.keys(this.pending[pendId]).length
+
+    if ( ! isPend)
       delete this.pending[pendId]
+
+    console.log(pendId, isPend, this.pending[pendId])
 
     //Don't need to splice the pendingAt array because updateSelected does that automatically
     this.refreshPending() //updateFn may pend some items
