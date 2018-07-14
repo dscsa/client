@@ -2072,6 +2072,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       if (transactions) this.term = 'Pending ' + pendingKey;
 
+      transactions.sort(this.sortPending.bind(this));
+
       this.setTransactions(transactions);
       this.toggleDrawer();
     };
@@ -2161,7 +2163,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         transaction.isChecked = false;
         transaction.next = [];
       }).then(function (_) {
-        return term && _this7.selectTerm('drug.generic', term);
+        return term ? _this7.selectTerm('drug.generic', term) : _this7.term = '';
       });
     };
 
@@ -2229,7 +2231,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         this.pending[pendId] = this.pending[pendId] || {};
         this.pending[pendId][generic] = this.pending[pendId][generic] || { label: label, transactions: [] };
         this.pending[pendId][generic].transactions.push(transaction);
-        this.pending[pendId][generic].transactions.sort(this.sortPending.bind(this));
       }
     };
 

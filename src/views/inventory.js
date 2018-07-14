@@ -168,6 +168,8 @@ export class inventory {
     if (transactions)
       this.term = 'Pending '+pendingKey
 
+    transactions.sort(this.sortPending.bind(this))
+
     this.setTransactions(transactions)
     this.toggleDrawer()
   }
@@ -275,7 +277,7 @@ export class inventory {
       transaction.next = []
     })
     //We must let these transactions save without next for them to appear back in inventory
-   .then(_ => term && this.selectTerm('drug.generic', term))
+   .then(_ => term ? this.selectTerm('drug.generic', term) : this.term = '')
   }
 
   //Three OPTIONS
@@ -344,7 +346,6 @@ export class inventory {
       this.pending[pendId] = this.pending[pendId] || {}
       this.pending[pendId][generic] = this.pending[pendId][generic] || {label, transactions:[]}
       this.pending[pendId][generic].transactions.push(transaction)
-      this.pending[pendId][generic].transactions.sort(this.sortPending.bind(this)) //seems wasteful but this seems like overkill https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
     }
   }
 
