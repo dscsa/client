@@ -358,9 +358,9 @@ export class inventory {
 
     let i = this.pending[pendId][generic].transactions.indexOf(transaction)
 
-    console.log(pendId, generic, i, 'of', this.pending[pendId][generic].transactions.length)
-
     this.pending[pendId][generic].transactions.splice(i, 1) //Assume transaction is found and i is not false
+
+    console.log(pendId, generic, i, 'of', this.pending[pendId][generic].transactions.length)
 
     if ( ! this.pending[pendId][generic].transactions.length)
       delete this.pending[pendId][generic]
@@ -368,8 +368,7 @@ export class inventory {
     if ( ! Object.keys(this.pending[pendId]).length)
       delete this.pending[pendId]
 
-    //Don't need to splice the pendingAt array because updateSelected does that automatically
-    this.refreshPending() //updateFn may pend some items
+    //NOTE Developer should call this.refreshPending() after all transactions are unpended
   }
 
   dispenseInventory() {

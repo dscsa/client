@@ -2242,15 +2242,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var i = this.pending[pendId][generic].transactions.indexOf(transaction);
 
-      console.log(pendId, generic, i, 'of', this.pending[pendId][generic].transactions.length);
-
       this.pending[pendId][generic].transactions.splice(i, 1);
+
+      console.log(pendId, generic, i, 'of', this.pending[pendId][generic].transactions.length);
 
       if (!this.pending[pendId][generic].transactions.length) delete this.pending[pendId][generic];
 
       if (!Object.keys(this.pending[pendId]).length) delete this.pending[pendId];
-
-      this.refreshPending();
     };
 
     inventory.prototype.dispenseInventory = function dispenseInventory() {
