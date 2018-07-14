@@ -275,7 +275,7 @@ export class inventory {
       transaction.next = []
     })
     //We must let these transactions save without next for them to appear back in inventory
-   .then(_ => this.selectTerm('drug.generic', term))
+   .then(_ => term && this.selectTerm('drug.generic', term))
   }
 
   //Three OPTIONS
@@ -360,7 +360,7 @@ export class inventory {
 
     this.pending[pendId][generic].transactions.splice(i, 1) //Assume transaction is found and i is not false
 
-    console.log(pendId, generic, i, 'of', this.pending[pendId][generic].transactions.length)
+    //console.log(pendId, generic, i, 'of', this.pending[pendId][generic].transactions.length)
 
     if ( ! this.pending[pendId][generic].transactions.length)
       delete this.pending[pendId][generic]
