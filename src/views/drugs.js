@@ -124,13 +124,12 @@ export class drugs {
     //Default is for Add Drug menu item in view
     console.log('selectDrug()', this.group && this.group.name, drug && drug.generic)
     this.drug = drug || {
-      generics:this.drug ? this.drug.generics : [{strength:''}],
+      generics:this.drug ? this.drug.generics : [], //keep default strenght from showing up as "undefined"
       form:this.drug && this.drug.form
     }
 
     //If needed, add blank row so user can add more ingredients
-    if (this.drug.generics.slice(-1)[0].name) 
-      this.drug.generics.push({strength:''}) //keep default strenght from showing up as "undefined"
+    this.setGenericRows(this.drug.generics.slice(-1)[0], 0, true)
 
     let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
@@ -256,7 +255,7 @@ export class drugs {
 
     //If user fills in last repack then add another for them copying over exp and bin
     if ($last && generic.name)
-      this.drug.generics.push({})
+      this.drug.generics.push({strength:''}) //keep default strenght from showing up as "undefined"
 
     //Last repack is the only empty one.  Remove any others that are empty
     if ( ! $last && ! generic.name && ! generic.strength) {

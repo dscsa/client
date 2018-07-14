@@ -1610,11 +1610,11 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     drugs.prototype.selectDrug = function selectDrug(drug, autoselectGroup) {
       console.log('selectDrug()', this.group && this.group.name, drug && drug.generic);
       this.drug = drug || {
-        generics: this.drug ? this.drug.generics : [{ strength: '' }],
+        generics: this.drug ? this.drug.generics : [],
         form: this.drug && this.drug.form
       };
 
-      if (this.drug.generics.slice(-1)[0].name) this.drug.generics.push({ strength: '' });
+      this.setGenericRows(this.drug.generics.slice(-1)[0], 0, true);
 
       var url = this.drug._id ? 'drugs/' + this.drug._id : 'drugs';
       this.router.navigate(url, { trigger: false });
@@ -1784,8 +1784,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     };
 
     drugs.prototype.setGenericRows = function setGenericRows(generic, $index, $last) {
-      if ($last && generic.name) this.drug.generics.push({});
-
+      if ($last && generic.name) this.drug.generics.push({ strength: '' });
       if (!$last && !generic.name && !generic.strength) {
         this.drug.generics.splice($index, 1);
         setTimeout(function (_) {
