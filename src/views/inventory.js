@@ -238,38 +238,34 @@ export class inventory {
 
   updateSelected(updateFn) {
     const length = this.transactions.length
-    let all = []
+    let checkedTransactions = []
     //since we may be deleting as we go, loop backward
     for (let i = length - 1; i >= 0; i--)  {
       let transaction = this.transactions[i]
 
       if ( ! transaction.isChecked) continue
 
+      checkedTransactions.unshift(transaction)
+
       //Remove from transactions displayed. This currently works because all actions
       //pend, unpend, dispense, and repack remove transaction from the current list
       //if we add another action where this is not true, we will need to pass an additional parameter.
       this.setCheck(transaction, false)
-      this.transactions.splice(i, 1)
+      this.transactions.splice(i, 1) //optimistic UI
 
       //If pending we want to move it.  Dispense/disposed/unpend all remove from pending
       this.unsetPending(transaction)
 
       updateFn(transaction)
-
-      //Save the transaction
-      all.unshift(this.db.transaction.put(transaction)
-      .catch(err => {
-        transaction.next.pop()
-        this.transactions.splice(i, 0, transaction)
-        this.snackbar.error('Error removing inventory', err)
-      }))
     }
 
     this.refreshPending() //unsetPending and updateFn may (un)pend some items
 
     this.filter.checked.visible = false
 
-    return Promise.all(all)
+    //Save the transactions.  TODO should we preverse order by saving i from loop above?
+    return this.db.transaction.bulkDocs(checkedTransactions)
+    .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
   unpendInventory() {

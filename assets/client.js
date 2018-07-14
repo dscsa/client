@@ -2128,38 +2128,29 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var _this6 = this;
 
       var length = this.transactions.length;
-      var all = [];
-
-      var _loop = function _loop(i) {
-        var transaction = _this6.transactions[i];
-
-        if (!transaction.isChecked) return 'continue';
-
-        _this6.setCheck(transaction, false);
-        _this6.transactions.splice(i, 1);
-
-        _this6.unsetPending(transaction);
-
-        updateFn(transaction);
-
-        all.unshift(_this6.db.transaction.put(transaction).catch(function (err) {
-          transaction.next.pop();
-          _this6.transactions.splice(i, 0, transaction);
-          _this6.snackbar.error('Error removing inventory', err);
-        }));
-      };
+      var checkedTransactions = [];
 
       for (var i = length - 1; i >= 0; i--) {
-        var _ret = _loop(i);
+        var transaction = this.transactions[i];
 
-        if (_ret === 'continue') continue;
+        if (!transaction.isChecked) continue;
+
+        checkedTransactions.unshift(transaction);
+
+        this.setCheck(transaction, false);
+        this.transactions.splice(i, 1);
+        this.unsetPending(transaction);
+
+        updateFn(transaction);
       }
 
       this.refreshPending();
 
       this.filter.checked.visible = false;
 
-      return Promise.all(all);
+      return this.db.transaction.bulkDocs(checkedTransactions).catch(function (err) {
+        return _this6.snackbar.error('Error removing inventory. Please reload and try again', err);
+      });
     };
 
     inventory.prototype.unpendInventory = function unpendInventory() {
@@ -2228,16 +2219,16 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           _ref2 = _i2.value;
         }
 
-        var _transaction = _ref2;
+        var transaction = _ref2;
 
-        var pendId = this.getPendId(_transaction);
-        var pendQty = this.getPendQty(_transaction);
-        var generic = _transaction.drug.generic;
+        var pendId = this.getPendId(transaction);
+        var pendQty = this.getPendQty(transaction);
+        var generic = transaction.drug.generic;
         var label = generic + (pendQty ? ' - ' + pendQty : '');
 
         this.pending[pendId] = this.pending[pendId] || {};
         this.pending[pendId][generic] = this.pending[pendId][generic] || { label: label, transactions: [] };
-        this.pending[pendId][generic].transactions.push(_transaction);
+        this.pending[pendId][generic].transactions.push(transaction);
         this.pending[pendId][generic].transactions.sort(this.sortPending.bind(this));
       }
     };
@@ -2504,20 +2495,20 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           _ref4 = _i4.value;
         }
 
-        var _transaction2 = _ref4;
+        var transaction = _ref4;
 
 
-        if (!_transaction2.isChecked) continue;
+        if (!transaction.isChecked) continue;
 
         if (repacks.drug == null) {
-          repacks.drug = _transaction2.drug;
+          repacks.drug = transaction.drug;
           console.log('this.repacks.drug is null', repacks.drug);
-        } else if (repacks.drug._id != _transaction2.drug._id) {
+        } else if (repacks.drug._id != transaction.drug._id) {
           repacks.drug = false;
-          console.log('this.repacks.drug mismatch', repacks.drug, _transaction2.drug);
+          console.log('this.repacks.drug mismatch', repacks.drug, transaction.drug);
         }
 
-        repacks.exp = repacks.exp && repacks.exp < _transaction2.exp.to ? repacks.exp : _transaction2.exp.to;
+        repacks.exp = repacks.exp && repacks.exp < transaction.exp.to ? repacks.exp : transaction.exp.to;
       }
 
       return repacks;
