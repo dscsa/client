@@ -124,12 +124,13 @@ export class drugs {
     //Default is for Add Drug menu item in view
     console.log('selectDrug()', this.group && this.group.name, drug && drug.generic)
     this.drug = drug || {
-      generics:this.drug ? this.drug.generics : [{}],
+      generics:this.drug ? this.drug.generics : [{strength:''}],
       form:this.drug && this.drug.form
     }
 
-    //Add blank row so user can add more ingredients
-    if (drug) this.drug.generics.push({})
+    //If needed, add blank row so user can add more ingredients
+    if (this.drug.generics.slice(-1)[0].name) 
+      this.drug.generics.push({strength:''}) //keep default strenght from showing up as "undefined"
 
     let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
