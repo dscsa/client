@@ -2190,9 +2190,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.setPending(toPend);
 
-      var label = this.pending[pendId][this.repacks.drug.generic].label;
+      var label = pendId;
 
-      this.selectTerm('pending', pendId + ': ' + label);
+      if (this.repacks.drug.generic) label += ': ' + this.pending[pendId][this.repacks.drug.generic].label;
+
+      this.selectTerm('pending', label);
     };
 
     inventory.prototype.sortPending = function sortPending(a, b) {
@@ -2242,18 +2244,20 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.unsetPending = function unsetPending(transaction) {
 
-      if (!transaction.next[0] || !transaction.next[0].pending) return;
-
       var generic = transaction.drug.generic;
       var pendId = this.getPendId(transaction);
 
+      var i = this.pending[pendId][generic].transactions.indexOf(transaction);
+
+      console.log(pendId, generic, i, 'of', this.pending[pendId][generic].transactions.length);
+
+      if (!~i || !transaction.next[0] || !transaction.next[0].pending) return;
+
+      this.pending[pendId][generic].transactions.splice(i, 1);
+
       if (!this.pending[pendId][generic].transactions.length) delete this.pending[pendId][generic];
 
-      var isPend = Object.keys(this.pending[pendId]).length;
-
-      if (!isPend) delete this.pending[pendId];
-
-      console.log(pendId, isPend, this.pending[pendId]);
+      if (!Object.keys(this.pending[pendId]).length) delete this.pending[pendId];
 
       this.refreshPending();
     };
