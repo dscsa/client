@@ -51,7 +51,7 @@
             required.bind=" ! $last"
             name = "pro_gen_field"
             style="width:75%"
-            pattern="([A-Z][1-9]{0,2}[a-z]*\s?)+\b"
+            pattern="([A-Z][0-9]{0,2}[a-z]*\s?)+\b"
             value.bind="generic.name"
             input.delegate="setGenericRows(generic, $index, $last) & debounce:500">
             ${ $first ? 'Generic Names & Strengths' : ''}

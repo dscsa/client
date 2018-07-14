@@ -23,7 +23,12 @@
       Filter pending inventory
     </md-input>
     <div repeat.for="pend of pending | pendingFilter:pendingFilter">
-      <div class="mdl-typography--title" style="font-size:13px; font-weight:600; cursor:default; color:#757575; padding:8px">${pend.key}</div>
+      <div
+        click.delegate="selectTerm('pending', pend.key)"
+        class="mdl-typography--title ${ term == 'Pending '+pend.key ? 'mdl-navigation__link--current' : ''}"
+        style="font-size:13px; font-weight:600; cursor:pointer; color:#757575; padding:8px">
+        ${pend.key}
+      </div>
       <div
         name="pro_pended_items"
         repeat.for="pendingDrug of pend.val | toArray"

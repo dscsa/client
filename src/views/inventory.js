@@ -160,6 +160,22 @@ export class inventory {
   selectPending(pendingKey) {
 
     const [pendId, label] = pendingKey.split(': ')
+
+    let transactions = Object.values(this.pending[pendId]).reduce(arr, pend => {
+         return ! label || pend.label == label ? arr.concat(pend.transactions) : arr
+    }, [])
+
+    if (transactions)
+      this.term = 'Pending '+pendingKey
+
+    this.setTransactions(transactions)
+    this.toggleDrawer()
+  }
+
+/*
+  selectPending(pendingKey) {
+
+    const [pendId, label] = pendingKey.split(': ')
     const generic         = label.split(' - ')[0]
 
     let transactions = this.pending[pendId] ? this.pending[pendId][generic].transactions : []
@@ -170,6 +186,7 @@ export class inventory {
     this.setTransactions(transactions)
     this.toggleDrawer()
   }
+*/
 
   selectInventory(type, key, limit) {
     this.term = key
