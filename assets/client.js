@@ -2066,7 +2066,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           pendId = _pendingKey$split[0],
           label = _pendingKey$split[1];
 
-      var transactions = Object.values(this.pending[pendId]).reduce(arr, function (pend) {
+      var transactions = Object.values(this.pending[pendId]).reduce(function (arr, pend) {
         return !label || pend.label == label ? arr.concat(pend.transactions) : arr;
       }, []);
 

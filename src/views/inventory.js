@@ -161,7 +161,7 @@ export class inventory {
 
     const [pendId, label] = pendingKey.split(': ')
 
-    let transactions = Object.values(this.pending[pendId]).reduce(arr, pend => {
+    let transactions = Object.values(this.pending[pendId]).reduce((arr, pend) => {
          return ! label || pend.label == label ? arr.concat(pend.transactions) : arr
     }, [])
 
