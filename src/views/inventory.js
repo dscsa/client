@@ -354,6 +354,9 @@ export class inventory {
 
   unsetPending(transaction) {
 
+    if ( ! transaction.next[0] || ! transaction.next[0].pending)
+      return //called indiscriminately from updateSelected
+
     const generic = transaction.drug.generic
     const pendId  = this.getPendId(transaction)
 
@@ -361,10 +364,7 @@ export class inventory {
 
     console.log(pendId, generic, i, 'of', this.pending[pendId][generic].transactions.length)
 
-    if ( ! ~ i || ! transaction.next[0] || ! transaction.next[0].pending)
-      return //called indiscriminately from updateSelected
-
-    this.pending[pendId][generic].transactions.splice(i, 1)
+    this.pending[pendId][generic].transactions.splice(i, 1) //Assume transaction is found and i is not false
 
     if ( ! this.pending[pendId][generic].transactions.length)
       delete this.pending[pendId][generic]

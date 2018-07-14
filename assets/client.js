@@ -2244,14 +2244,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.unsetPending = function unsetPending(transaction) {
 
+      if (!transaction.next[0] || !transaction.next[0].pending) return;
+
       var generic = transaction.drug.generic;
       var pendId = this.getPendId(transaction);
 
       var i = this.pending[pendId][generic].transactions.indexOf(transaction);
 
       console.log(pendId, generic, i, 'of', this.pending[pendId][generic].transactions.length);
-
-      if (!~i || !transaction.next[0] || !transaction.next[0].pending) return;
 
       this.pending[pendId][generic].transactions.splice(i, 1);
 
