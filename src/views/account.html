@@ -79,17 +79,17 @@
         <table md-table>
           <thead>
             <tr>
-              <th class="mdl-data-table__cell--non-numeric">Authorized</th>
-              <th class="mdl-data-table__cell--non-numeric">
+              <th style="width:75px" class="mdl-data-table__cell--non-numeric">Authorized</th>
+              <th style="overflow:hidden" class="mdl-data-table__cell--non-numeric">
                 <md-select
                   value.bind="type"
                   options.bind="['From', 'To']"
                   style="width:50px; font-weight:bold; margin-bottom:-26px">
                 </md-select>
               </th>
-              <th class="mdl-data-table__cell--non-numeric">License</th>
-              <th class="mdl-data-table__cell--non-numeric">Joined</th>
-              <th class="mdl-data-table__cell--non-numeric">Location</th>
+              <th style="width:120px" class="mdl-data-table__cell--non-numeric">License</th>
+              <th style="width:60px" class="mdl-data-table__cell--non-numeric">Joined</th>
+              <th style="width:170px" class="mdl-data-table__cell--non-numeric">Location</th>
             </tr>
           </thead>
           <tr name = "pro_account" repeat.for="account of accounts" if.bind="account != $parent.account">
