@@ -194,6 +194,7 @@
               required.bind="repack.qty"
               name = "pro_repack_exp"
               value.bind="repack.exp | date"
+              pattern="(0?[1-9]|1[012])/(1\d|2\d)"
               disabled.bind=" ! filter.checked.count"
               style="width:40px;">
               Exp
@@ -239,7 +240,7 @@
                 id.bind="'exp_'+$index"
                 required
                 keydown.delegate="expShortcuts($event, $index)"
-                pattern="(0?[1-9]|1[012])/\d{2}"
+                pattern="(0?[1-9]|1[012])/(1\d|2\d)"
                 value.bind="transaction.exp.to | date"
                 style="width:40px; margin-bottom:-8px"
                 placeholder>
