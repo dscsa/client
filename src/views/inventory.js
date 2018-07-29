@@ -143,6 +143,9 @@ export class inventory {
     if (this.isExp(this.term))
       return this.selectTerm('exp', this.term, true)
 
+    if (this.isExpYtd(this.term))
+      return this.selectTerm('exp.ytd', this.term, true)
+
     //Drug search is by NDC and we want to group by generic
     this.drugSearch().then(drugs => {
       this.terms = drugs.map(drug => drug.generic).filter((generic, index, generics) => generics.indexOf(generic) == index);
@@ -155,6 +158,10 @@ export class inventory {
 
   isExp(term) {
     return /20\d\d-\d\d-?\d?\d?/.test(term)
+  }
+
+  isExpYtd(term) {
+    return /<20\d\d-\d\d-?\d?\d?/.test(term)
   }
 
   selectPending(pendingKey) {
