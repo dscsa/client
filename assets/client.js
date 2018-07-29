@@ -2097,6 +2097,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       } else if (type == 'exp') {
         opts.startkey = [this.account, key];
         opts.endkey = [this.account, key + '\uFFFF'];
+      } else if (type == 'exp.ytd') {
+        opts.startkey = [this.account, key.slice(1)];
+        opts.endkey = [this.account, key.slice(1) + '\uFFFF'];
       } else {
         var minExp = new Date();
         minExp.setMonth(minExp.getMonth() + 1);

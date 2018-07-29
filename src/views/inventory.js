@@ -208,6 +208,9 @@ export class inventory {
     } else if (type == 'exp') {
       opts.startkey = [this.account, key]
       opts.endkey   = [this.account, key+'\uffff']
+    } else if (type == 'exp.ytd') {
+      opts.startkey = [this.account, key.slice(1)]
+      opts.endkey   = [this.account, key.slice(1)+'\uffff']
     } else {
       //Only show medicine at least one month from expiration
       //just in case there is a lot of it and limit prevent us from seeing more
