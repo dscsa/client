@@ -698,7 +698,7 @@ export class inventoryFilterValueConverter {
     let repackFilter  = {}
     let formFilter    = {}
     let checkVisible  = true
-    let defaultCheck  = inventory.prototype.isExp(term) || inventory.prototype.isBin(term)
+    let defaultCheck  = inventory.prototype.isExp(term) || inventory.prototype.isBin(term) || inventory.prototype.isExpYtd(term)
 
     filter.checked = filter.checked || {}
     filter.checked.qty = filter.checked.qty || 0

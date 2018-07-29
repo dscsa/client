@@ -2564,7 +2564,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var repackFilter = {};
       var formFilter = {};
       var checkVisible = true;
-      var defaultCheck = inventory.prototype.isExp(term) || inventory.prototype.isBin(term);
+      var defaultCheck = inventory.prototype.isExp(term) || inventory.prototype.isBin(term) || inventory.prototype.isExpYtd(term);
 
       filter.checked = filter.checked || {};
       filter.checked.qty = filter.checked.qty || 0;
