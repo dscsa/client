@@ -224,7 +224,7 @@
               <th style="text-align:left; width:60px;">Exp</th>
               <th style="text-align:left; width:60px;">Qty</th>
               <th style="text-align:left; width:60px;">Bin</th>
-              <th style="width:40px"></th>
+              <th style="width:48px"></th>
             </tr>
           </thead>
           <tr name = "pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter:term" input.delegate="saveAndReconcileTransaction(transaction) & debounce:1000">
