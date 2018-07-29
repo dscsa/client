@@ -153,15 +153,15 @@ export class inventory {
   }
 
   isBin(term) {
-    return /[A-Za-z][0-9]{2,3}/.test(term)
+    return /^[A-Za-z][0-9]{2,3}$/.test(term)
   }
 
   isExp(term) {
-    return /20\d\d-\d\d-?\d?\d?/.test(term)
+    return /^20\d\d-\d\d-?\d?\d?$/.test(term)
   }
 
   isExpYtd(term) {
-    return /<20\d\d-\d\d-?\d?\d?/.test(term)
+    return /^<20\d\d-\d\d-?\d?\d?$/.test(term)
   }
 
   selectPending(pendingKey) {

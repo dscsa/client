@@ -2053,17 +2053,17 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.isBin = function isBin(term) {
-      return (/[A-Za-z][0-9]{2,3}/.test(term)
+      return (/^[A-Za-z][0-9]{2,3}$/.test(term)
       );
     };
 
     inventory.prototype.isExp = function isExp(term) {
-      return (/20\d\d-\d\d-?\d?\d?/.test(term)
+      return (/^20\d\d-\d\d-?\d?\d?$/.test(term)
       );
     };
 
     inventory.prototype.isExpYtd = function isExpYtd(term) {
-      return (/<20\d\d-\d\d-?\d?\d?/.test(term)
+      return (/^<20\d\d-\d\d-?\d?\d?$/.test(term)
       );
     };
 
