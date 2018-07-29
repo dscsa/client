@@ -14,7 +14,7 @@
     /*table-wrap needed because overflow:scroll doesn't work directly on table.  Also it is a conveneint place to do display:flex */
     .table-wrap { overflow-y:scroll; height:100%; display:flex}
     /*use flex instead of height:100% because latter was causing the parent md-card to have a scroll bar */
-    [md-table]  { width:100%; flex:1;}
+    [md-table]  { width:100%; flex:1; table-layout:fixed; }
     /* want hover shadow to be 100% of width, so need to do padding within the tr (which needs this hack) rather than in table-wrap */
     [md-table] th:first-child { padding-left:24px !important}
     [md-table] td:first-child { padding-left:24px !important}

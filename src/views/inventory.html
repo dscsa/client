@@ -219,19 +219,19 @@
             <tr>
               <th style="width:50px; padding:0"></th>
               <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
-              <th class="mdl-data-table__cell--non-numeric">Form</th>
-              <th class="mdl-data-table__cell--non-numeric">Ndc</th>
+              <th style="width:80px" class="mdl-data-table__cell--non-numeric">Form</th>
+              <th style="width:80px" class="mdl-data-table__cell--non-numeric">Ndc</th>
               <th style="text-align:left; width:60px;">Exp</th>
               <th style="text-align:left; width:60px;">Qty</th>
               <th style="text-align:left; width:60px;">Bin</th>
-              <th style="width:60px"></th>
+              <th style="width:40px"></th>
             </tr>
           </thead>
           <tr name = "pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter:term" input.delegate="saveAndReconcileTransaction(transaction) & debounce:1000">
             <td style="padding:0">
               <md-checkbox name = "pro_transaction_checkbox" click.delegate="toggleCheck(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
             </td>
-            <td class="mdl-data-table__cell--non-numeric" style="padding-left:0">${ transaction.drug.generic }</td>
+            <td class="mdl-data-table__cell--non-numeric" style="padding-left:0; overflow:hidden">${ transaction.drug.generic }</td>
             <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
             <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>
             <td style="padding:0">
