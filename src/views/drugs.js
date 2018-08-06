@@ -81,25 +81,26 @@ export class drugs {
 
     this.term = group.name
 
-    let order     = this.account.ordered[group.name]
-    let minDays   = order ? order.minDays : this.account.default.minDays
-    let indate    = this.addDays(minDays || 30)
-    let unexpired = this.addDays(30)
+    let order     = this.account.ordered[group.name] || {}
+    let minDays   = order.minDays || (this.account.default && this.account.default.minDays)
+    let indate    = this.addDays(minDays || 30).split('-')
+    let unexpired = this.addDays(30).split('-')
 
-    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, indate], endkey:[this.account._id, group.name, {}]})
+    //[to_id, 'month', year, month, doc.drug.generic, stage, sortedDrug]
+    this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', indate[0], indate[1], group.name], endkey:[this.account._id, 'month', indate[0], indate[1], group.name, {}]})
     .then(inventory => {
-      console.log('indate inventory', indate, inventory)
+      console.log('indate inventory', minDays, indate, inventory)
       let row = inventory.rows[0]
-      this.indateInventory = row ? row.value['qty.binned'] || 0 + row.value['qty.repacked'] || 0 : 0
+      this.indateInventory = row ? row.value.sum : 0
       console.log('indate inventory', this.indateInventory)
-    })
 
-    this.db.transaction.query('inventory', {startkey:[this.account._id, group.name, unexpired], endkey:[this.account._id, group.name, indate]})
-    .then(inventory => {
-      console.log('outdate inventory', unexpired, inventory)
-      let row = inventory.rows[0]
-      this.outdateInventory = row ? row.value['qty.binned'] || 0 + row.value['qty.repacked'] || 0 : 0
-      console.log('outdate inventory', this.outdateInventory)
+      this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.name], endkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.name, {}]})
+      .then(inventory => {
+        console.log('outdate inventory', unexpired, inventory)
+        let row = inventory.rows[0]
+        this.outdateInventory = row ? row.value.sum - this.indateInventory: 0
+        console.log('outdate inventory', this.outdateInventory)
+      })
     })
 
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
@@ -123,6 +124,7 @@ export class drugs {
   selectDrug(drug, autoselectGroup) {
     //Default is for Add Drug menu item in view
     console.log('selectDrug()', this.group && this.group.name, drug && drug.generic)
+
     this.drug = drug || {
       generics:this.drug ? this.drug.generics : [], //keep default strenght from showing up as "undefined"
       form:this.drug && this.drug.form
@@ -254,7 +256,7 @@ export class drugs {
   setGenericRows(generic, $index, $last) {
 
     //If user fills in last repack then add another for them copying over exp and bin
-    if ($last && generic.name)
+    if ( ! generic || generic.name && $last)
       this.drug.generics.push({strength:''}) //keep default strenght from showing up as "undefined"
 
     //Last repack is the only empty one.  Remove any others that are empty

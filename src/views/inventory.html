@@ -18,24 +18,24 @@
   <md-drawer>
     <md-input
       autoselect
-      value.bind="pendingFilter"
+      value.bind="pendedFilter"
       style="padding:0 8px; width:auto">
-      Filter pending inventory
+      Filter pended inventory
     </md-input>
-    <div repeat.for="pend of pending | pendingFilter:pendingFilter">
+    <div repeat.for="pend of pended | pendedFilter:pendedFilter">
       <div
-        click.delegate="selectTerm('pending', pend.key)"
-        class="mdl-typography--title ${ term == 'Pending '+pend.key ? 'mdl-navigation__link--current' : ''}"
+        click.delegate="selectTerm('pended', pend.key)"
+        class="mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}"
         style="font-size:13px; font-weight:600; cursor:pointer; color:#757575; padding:8px">
         ${pend.key}
       </div>
       <div
         name="pro_pended_items"
-        repeat.for="pendingDrug of pend.val | toArray"
-        click.delegate="selectTerm('pending', pend.key+': '+pendingDrug.val.label)"
-        class="mdl-navigation__link ${ term == 'Pending '+pend.key+': '+pendingDrug.val.label ? 'mdl-navigation__link--current' : ''}"
+        repeat.for="pendedDrug of pend.val | toArray"
+        click.delegate="selectTerm('pended', pend.key+': '+pendedDrug.val.label)"
+        class="mdl-navigation__link ${ term == 'Pended '+pend.key+': '+pendedDrug.val.label ? 'mdl-navigation__link--current' : ''}"
         style="font-size:12px; cursor:pointer; padding-top:2px; padding-bottom:2px; padding-left:12px">
-        ${ ('0'+pendingDrug.val.transactions.length).slice(-2) } ${ pendingDrug.val.label }
+        ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
       </div>
     </div>
   </md-drawer>
@@ -101,7 +101,7 @@
           <tr
             name = "pro_search_res"
             repeat.for="term of terms"
-            click.delegate="selectTerm('drug.generic', term)"
+            click.delegate="selectTerm('generic', term)"
             class="${ term == $parent.term && 'is-selected'}">
             <td
               style="white-space:normal; max-width:70%"
@@ -131,7 +131,7 @@
         <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->
         <li
           name="pro_pend"
-          show.bind="term.slice(0,7) == 'Pending'"
+          show.bind="term.slice(0,6) == 'Pended'"
           disabled.bind=" ! filter.checked.count"
           click.delegate="unpendInventory()">
           Unpend Selected
@@ -253,7 +253,7 @@
                 required
                 keydown.delegate="qtyShortcutsKeydown($event, $index)"
                 input.trigger="qtyShortcutsInput($event, $index)"
-                disabled.bind="transaction.next[0] && ! transaction.next[0].pending"
+                disabled.bind="transaction.next[0] && ! transaction.next[0].pended"
                 type="number"
                 value.bind="transaction.qty.to | number"
                 style="width:40px; margin-bottom:-8px"

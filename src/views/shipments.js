@@ -169,7 +169,8 @@ export class shipments {
 
   setCheckboxes() {
     for (let transaction of this.transactions) {
-      transaction.isChecked = this.shipmentId == this.shipment._id ? transaction.verifiedAt : null
+      //Verified will be set even with disposed == true, if we accepted on shipment page but then disposed it on inventory page. 
+      transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt ? ! transaction.next[0] || ! transaction.next[0].disposed : null
     }
   }
 
@@ -339,18 +340,22 @@ export class shipments {
 
   toggleVerifiedCheck(transaction) {
 
+    let next = transaction.next
     let verifiedAt = transaction.verifiedAt
 
     if (verifiedAt) {
       transaction.verifiedAt = null
+      transaction.next = [{disposed:{}, createdAt:new Date().toJSON()}]
       transaction.bin = null
     } else {
       transaction.verifiedAt = new Date().toJSON()
-      transaction.bin = this.getBin(transaction)
+      transaction.next = []
+      transaction.bin = transaction.bin || this.getBin(transaction)
     }
 
     this.saveTransaction(transaction).catch(err => {
-      transaction.verifiedAt = verifiedAt //Don't save the verified date since save didn't work
+      transaction.next = next //Don't save the verified date since save didn't work
+      transaction.verifiedAt = verifiedAt
     })
   }
 
@@ -401,7 +406,8 @@ export class shipments {
       exp:{
         from:this.transactions[0] ? this.transactions[0].exp.from : null,
         to:this.transactions[0] ? this.transactions[0].exp.to : null
-      }
+      },
+      next:[{disposed:{}, createdAt:new Date().toJSON()}],
     }
 
     transaction.drug = {
@@ -414,6 +420,7 @@ export class shipments {
       pkg:drug.pkg
     }
 
+    //Unlike others these will override any CSV import values
     transaction.user       = {_id:this.user}
     transaction.shipment   = {_id:this.shipment._id || this.account._id}
 
