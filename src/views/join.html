@@ -26,7 +26,6 @@
           <md-input value.bind="account.state" name = "pro_state" pattern="^[A-Z]{2}$" class="mdl-cell mdl-cell--2-col" required>State</md-input>
           <md-input value.bind="account.zip" name = "pro_zip" pattern="^\d{5}$" class="mdl-cell mdl-cell--3-col" required>Zip</md-input>
         </div>
-        <span class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px; margin-bottom:-8px">${ loading }</span>
       </div>
       <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col" style="padding:16px">
         <div class="mdl-grid" style="padding:0; margin:-8px">
@@ -38,7 +37,8 @@
         <md-input value.bind="user.password" name = "pro_password" required>Password</md-input>
         <md-checkbox checked.bind="accept" name = "pro_checkbox" style="margin:20px 0 28px" required>I accept the terms of use</md-checkbox>
         <md-button raised color form disabled.bind="disabled" name = "pro_install" click.delegate="join()">Install</md-button>
-        <md-loading value.bind="progress.last_seq/progress.update_seq * 100"></md-loading>
+        <md-loading value.bind="progress.docs_read/progress.doc_count * 100"></md-loading>
+        <span class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px; margin-bottom:-8px">${ progress.percent } ${ loading }</span>
       </div>
     </form>
   </section>

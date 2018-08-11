@@ -95,26 +95,33 @@
         placeholder.bind="placeholder"
         value.bind="term"
         input.delegate="search() & debounce"
-        keyup.delegate="scrollTerms($event)"
+        keyup.delegate="scrollGroups($event) & debounce:50"
         style="margin:0px 24px; padding-right:15px">
         <table md-table>
           <tr
             name = "pro_search_res"
-            repeat.for="term of terms"
-            click.delegate="selectTerm('generic', term)"
-            class="${ term == $parent.term && 'is-selected'}">
+            repeat.for="group of groups"
+            click.delegate="selectTerm('drug', group.generic)"
+            class="${ group.generic == term && 'is-selected'}">
             <td
-              style="white-space:normal; max-width:70%"
+              style="min-width:70%"
               class="mdl-data-table__cell--non-numeric"
-              innerHTML.bind="term | bold:$parent.term">
+              innerHTML.bind="group.name | bold:term">
             </td>
             <td style="max-width:30%">
-              ${ ordered[term] ? 'Price:$'+(ordered[term].price30 ? ordered[term].price30+'/30' : ordered[term].price90+'/90')+' days, Min Qty:'+(ordered[term].minQty || 1) +', Min Days:'+(ordered[term].minDays || 60) : ''}
+              ${ account.ordered[group.generic] ? 'Price:$'+(account.ordered[group.generic].price30 ? account.ordered[group.generic].price30+'/30' : account.ordered[group.generic].price90+'/90')+' days, Min Qty:'+(account.ordered[group.generic].minQty || account.default.minQty) +', Min Days:'+(ordered[group.generic].minDays ||  account.default.minDays) : ''}
             </td>
           </tr>
         </table>
       </md-autocomplete>
       <md-menu ref="menu" name="pro_menu" mousedown.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
+        <li
+          class="mdl-menu__item--full-bleed-divider"
+          style ="width:150px"
+          name = "pro_export"
+          click.delegate="exportCSV()">
+          Export Inventory
+        </li>
         <li
           style ="width:150px"
           name = "pro_dispense"
@@ -252,7 +259,7 @@
                 id.bind="'qty_'+$index"
                 required
                 keydown.delegate="qtyShortcutsKeydown($event, $index)"
-                input.trigger="qtyShortcutsInput($event, $index)"
+                input.trigger="qtyShortcutsInput($event, $index) & debounce:300"
                 disabled.bind="transaction.next[0] && ! transaction.next[0].pended"
                 type="number"
                 value.bind="transaction.qty.to | number"

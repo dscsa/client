@@ -17,8 +17,8 @@
         style="padding-top:16px">
         Login
       </md-button>
-      <md-loading value.bind="progress.last_seq/progress.update_seq * 100"></md-loading>
-      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ loading ? (progress.last_seq/progress.update_seq * 100).toFixed(0)+'%': '' } ${ loading }</p>
+      <md-loading value.bind="progress.docs_read/progress.doc_count * 100"></md-loading>
+      <p class="mdl-color-text--grey-600" style="margin-top:10px; height:20px; font-size:9px">${ progress.percent } ${ loading }</p>
     </form>
   </section>
   <md-snackbar ref="snackbar"></md-snackbar>

@@ -102,24 +102,24 @@ export function toggleDrawer() {
 }
 
 
-let search = {
-  generic(generic, clearCache) {
+let _drugSearch = {
+  name(term, clearCache) {
     const start = Date.now()
-    const terms = generic.toLowerCase().replace('.', '\\.').split(/, |[, ]/g)
+    const terms = term.toLowerCase().replace('.', '\\.').split(/, |[, ]/g)
 
     //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
-    if (generic.startsWith(search._term) && ! clearCache) {
+    if (term.startsWith(_drugSearch._term) && ! clearCache) {
       const regex = RegExp('(?=.*'+terms.join(')(?=.*( |0)')+')', 'i') //Use lookaheads to search for each word separately (no order).  Even the first term might be the 2nd generic
-      return search._drugs.then(drugs => drugs.filter(drug => regex.test(drug.generic))).then(drugs => {
-        console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', generic, 'cache', search._term)
-        search._term = generic
+      return _drugSearch._drugs.then(drugs => drugs.filter(drug => regex.test(drug.generic+' '+drug.brand))).then(drugs => {
+        console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', term, 'cache', _drugSearch._term)
+        _drugSearch._term = term
         return drugs
       })
     }
 
-    search._term = generic
-
-    return search._drugs = this.db.drug.query('generics.name', search.range(terms[0])).then(search.map(start))
+    _drugSearch._term = term
+    console.log('drug search', term, _drugSearch.range(terms[0]))
+    return _drugSearch._drugs = this.db.drug.query('name', _drugSearch.range(terms[0])).then(_drugSearch.map(start))
   },
 
   addPkgCode(term, drug) {
@@ -158,30 +158,30 @@ let search = {
     var upc  = term.slice(0, 8)
 
     //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
-    if (term.startsWith(search._term) && ! clearCache) {
-      console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term)
-      return search._drugs.then(drugs => {
+    if (term.startsWith(_drugSearch._term) && ! clearCache) {
+      console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term)
+      return _drugSearch._drugs.then(drugs => {
         let filtered = drugs.filter(filter)
         return term.length == 9 || term.length == 11 ? filtered.reverse() : filtered
       })
     }
 
     function filter(drug) {
-      search.addPkgCode(term, drug)
-      //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc  which is cutoff at 8 digits will have false positives
+      _drugSearch.addPkgCode(term, drug)
+      //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc  which is cutoff at 8 digits will have false positives
       return drug.ndc9.startsWith(ndc9) || (drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc))
     }
 
-    console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', search._term)
+    console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term)
 
-    search._term = term
+    _drugSearch._term = term
 
-    ndc9 = this.db.drug.query('ndc9', search.range(ndc9)).then(search.map(start))
+    ndc9 = this.db.drug.query('ndc9', _drugSearch.range(ndc9)).then(_drugSearch.map(start))
 
-    upc = this.db.drug.query('upc', search.range(upc)).then(search.map(start))
+    upc = this.db.drug.query('upc', _drugSearch.range(upc)).then(_drugSearch.map(start))
 
     //TODO add in ES6 destructuing
-    return search._drugs = Promise.all([ndc9, upc]).then(([ndc9, upc]) => {
+    return _drugSearch._drugs = Promise.all([ndc9, upc]).then(([ndc9, upc]) => {
 
       let unique = {}
 
@@ -189,10 +189,10 @@ let search = {
         unique[drug._id] = drug
 
       for (const drug of upc)
-        if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should yield a match, otherwise the upc which is cutoff at 8 digits will have false positives
+        if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc which is cutoff at 8 digits will have false positives
           unique[drug._id] = drug
 
-      unique = Object.keys(unique).map(key => search.addPkgCode(term, unique[key]))
+      unique = Object.keys(unique).map(key => _drugSearch.addPkgCode(term, unique[key]))
       console.log('query returned', unique.length, 'rows and took', Date.now() - start)
       return unique
     })
@@ -210,9 +210,35 @@ export function drugSearch() {
 
   //always do searches serially
   return this._search = Promise.resolve(this._search).then(_ => {
-    return search[/^[\d-]+$/.test(term) ? 'ndc' : 'generic'].call(this, term, clearCache)
+    return _drugSearch[/^[\d-]+$/.test(term) ? 'ndc' : 'name'].call(this, term, clearCache)
   })
 }
+
+export function groupDrugs(drugs, ordered) {
+
+  let groups = {}
+  for (let drug of drugs) {
+    let generic = drug.generic
+    groups[generic] = groups[generic] || {generic, name:drugName(drug, ordered), drugs:[]}
+    groups[generic].drugs.push(drug)
+  }
+
+  return Object.keys(groups).map(key => groups[key])
+}
+
+export function drugName(drug, ordered) {
+  let name = drug.generic
+  let desc = []
+
+  let display = ordered[name] && ordered[name].displayMessage
+  if (drug.brand) desc.push(drug.brand)
+  if (display) desc.push(display)
+
+  if (desc.length) name += ` (${desc.join(', ')})`
+
+  return name
+}
+
 
 //Accepted formats mm/yy, mmyy, mm/dd/yy, or mmddyy month is always first and year is always last
 export function parseUserDate(date) {

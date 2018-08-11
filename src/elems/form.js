@@ -17,24 +17,15 @@ export class FormCustomAttribute {
     //Here we cached response because assigning to elem.disabled everytime
     //does not work if more than one input toggles on disabled (e.g., repacking form)
     const valid = this.formElement && this.formElement.checkValidity()
-
-    if ( ! valid && ! this.cache) {
-      this.cache = ! this.inputElement.disabled
-      this.inputElement.disabled = true
-    }
-
-    if ( valid && this.cache) {
-      this.cache = false
-      this.inputElement.disabled = false
-    }
+    this.inputElement.disabled = ! valid
   }
 
   attached() {
     //TODO allow attribute value to specify the form by name.
     //TODO a detached method.  Are these event listeners leaking?
     this.formElement = this.element.closest('form')
-    this.formElement.addEventListener('change', this.change)
-    this.formElement.addEventListener('input', this.change)
+    this.formElement.addEventListener('change', this.debounce(this.change, 150))
+    this.formElement.addEventListener('input', this.debounce(this.change, 150))
 
     this.inputElement = this.element.querySelector('input,button,select') || this.element
 
@@ -55,5 +46,20 @@ export class FormCustomAttribute {
             s.push(option.value)
     }
     return s.join('&')
+  }
+
+  //https://davidwalsh.name/javascript-debounce-function
+  // Returns a function, that, as long as it continues to be invoked, will not
+  // be triggered. The function will be called after it stops being called for
+  // N milliseconds.
+  debounce(func, wait) {
+  	let timeout
+  	return function() {
+  		clearTimeout(timeout)
+  		timeout = setTimeout(_ => {
+  			timeout = null
+  			func.apply(this, arguments)
+  		}, wait)
+  	}
   }
 }

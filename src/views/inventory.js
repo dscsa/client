@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, scrollSelect, drugSearch, waitForDrugsToIndex, toggleDrawer, getHistory} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, drugSearch, groupDrugs, drugName, waitForDrugsToIndex, toggleDrawer, getHistory} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class inventory {
@@ -23,8 +23,9 @@ export class inventory {
     this.saveTransaction = saveTransaction
     this.incrementBin    = incrementBin
     this.focusInput      = focusInput
-    this.scrollSelect    = scrollSelect
     this.drugSearch      = drugSearch
+    this.drugName        = drugName
+    this.groupDrugs      = groupDrugs
     this.canActivate     = canActivate
     this.toggleDrawer    = toggleDrawer
     this.getHistory      = getHistory
@@ -49,34 +50,26 @@ export class inventory {
     this.db.user.session.get().then(session => {
 
       this.user    = session._id
-      this.account = session.account._id
+      this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
-      this.db.account.get(this.account).then(account => this.ordered = account.ordered)
+      this.db.account.get(session.account._id).then(account => this.account = account)
 
       //Since pended are set into an object rather than array we don't have control to append to
       //beginning or end (object keys are iterated in the order they are added), this will always
       //push new pended keys to the last keys in the object.  But we want new keys to be listed first
       //in the pended drawer so we use unshift to reverse the order inside the pendedFilter which means
       //we do NOT want to reverse the order here (they would be reversed twice which would negate it)
-      this.db.transaction.query('pended-by-name-bin', {include_docs:true, startkey:[this.account], endkey:[this.account, {}]})
+      this.db.transaction.query('pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
       .then(res => {
         this.setPended(res.rows.map(row => row.doc))
         this.refreshPended() //not needed on development without this on production, blank drawer on inital load
       })
       .then(_ => {
         let keys = Object.keys(params)
-        console.log('Here 1', keys)
         if (keys[0])
           this.selectTerm(keys[0], params[keys[0]])
       })
     })
-  }
-
-  scrollTerms($event) {
-    this.scrollSelect($event, this.term, this.terms, term => this.selectTerm('generic', term))
-
-    if ($event.which == 13)//Enter get rid of the results
-      this.focusInput(`#exp_0`)
   }
 
   toggleCheck(transaction) {
@@ -134,7 +127,6 @@ export class inventory {
     this.transactions = transactions
     this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
-    console.log(transactions.length, transactions)
   }
 
   search() {
@@ -152,7 +144,9 @@ export class inventory {
 
     //Drug search is by NDC and we want to group by generic
     this.drugSearch().then(drugs => {
-      this.terms = drugs.map(drug => drug.generic).filter((generic, index, generics) => generics.indexOf(generic) == index);
+      console.log(drugs.length, this.account.ordered, this.account)
+        this.groups = this.groupDrugs(drugs, this.account.ordered)
+        console.log(drugs.length, this.groups.length, this.groups)
     })
   }
 
@@ -185,22 +179,6 @@ export class inventory {
     this.toggleDrawer()
   }
 
-/*
-  selectPended(pendedKey) {
-
-    const [pendId, label] = pendedKey.split(': ')
-    const generic         = label.split(' - ')[0]
-
-    let transactions = this.pended[pendId] ? this.pended[pendId][generic].transactions : []
-
-    if (transactions)
-      this.term = 'Pended '+pendedKey
-
-    this.setTransactions(transactions)
-    this.toggleDrawer()
-  }
-*/
-
   selectInventory(type, key, limit) {
     this.term = key
 
@@ -208,26 +186,24 @@ export class inventory {
 
     if (type == 'binned') {
       var query = 'inventory-by-bin-verifiedat'
-      opts.startkey = [this.account, 'binned', key]
-      opts.endkey   = [this.account, 'binned', key+'\uffff']
+      opts.startkey = [this.account._id, 'binned', key]
+      opts.endkey   = [this.account._id, 'binned', key+'\uffff']
     } else if (type == 'repacked') {
       var query = 'inventory-by-bin-verifiedat'
-      opts.startkey = [this.account, 'repacked', key]
-      opts.endkey   = [this.account, 'repacked', key+'\uffff']
+      opts.startkey = [this.account._id, 'repacked', key]
+      opts.endkey   = [this.account._id, 'repacked', key+'\uffff']
     } else if (type == 'expired') {
       var query = 'expired.qty-by-bin'
       var [year, month] = key.split('-')
-      opts.startkey = [this.account, year, month]
-      opts.endkey   = [this.account, year, month+'\uffff']
-    } else if (type == 'generic') {
+      opts.startkey = [this.account._id, year, month]
+      opts.endkey   = [this.account._id, year, month+'\uffff']
+    } else if (type == 'drug') {
       //Only show medicine at least one month from expiration
       //just in case there is a lot of it and limit prevent us from seeing more
       var query = 'inventory.qty-by-generic'
-      var minExp = new Date()
-      minExp.setMonth(minExp.getMonth() + 1)
-      var [year, month] = minExp.toJSON().split('-')
-      opts.startkey = [this.account, 'month', year, month, key]
-      opts.endkey   = [this.account, 'month', year, month, key+'\uffff']
+      var [year, month] = this.currentDate(1)
+      opts.startkey = [this.account._id, 'month', year, month, key]
+      opts.endkey   = [this.account._id, 'month', year, month, key+'\uffff']
     }
 
     const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc), type, limit)
@@ -297,7 +273,7 @@ export class inventory {
       transaction.next = []
     })
     //We must let these transactions save without next for them to appear back in inventory
-   .then(_ => term ? this.selectTerm('generic', term) : this.term = '')
+   .then(_ => term ? this.selectTerm('drug', term) : this.term = '')
   }
 
   //Three OPTIONS
@@ -418,7 +394,7 @@ export class inventory {
       exp:{to:this.repacks[0].exp, from:null},
       qty:{to:this.repacks.excessQty, from:null},
       user:{_id:this.user},
-      shipment:{_id:this.account},
+      shipment:{_id:this.account._id},
       drug:this.repacks.drug,
       next:[{disposed:{}, createdAt}]
     })
@@ -433,7 +409,7 @@ export class inventory {
         exp:{to:repack.exp, from:null},
         qty:{to:+repack.qty, from:null},
         user:{_id:this.user},
-        shipment:{_id:this.account},
+        shipment:{_id:this.account._id},
         bin:repack.bin,
         drug:this.repacks.drug,
         next:next
@@ -447,8 +423,23 @@ export class inventory {
       newTransactions.push(newTransaction)
     }
 
+    console.log('newTransaction',  this.repacks.length, this.repacks, newTransactions.length, newTransactions)
+
     //Once we have the new _ids insert them into the next property of the checked transactions
     this.db.transaction.bulkDocs(newTransactions).then(rows => {
+
+      //Since removing from array go backwards to ensure that indexes remain in sync
+      let errors = []
+      for (let i = rows.length - 1; i >= 0; i--) {
+        if ( ! rows[i].error) continue
+        if ( ! errors.includes(rows[i].message)) errors.push(rows[i].message)
+        this.transactions.splice(i, 1)
+      }
+
+      if (errors.length) {
+        console.error('Repacked vials could not be created', errors, rows)
+        return this.snackbar.show(`Repack error `+errors.join(', '))
+      }
 
       console.log('Repacked vials have been created', rows)
 
@@ -506,6 +497,7 @@ export class inventory {
         `Exp ${transaction.exp.to.slice(0, 7)}`,
         `Bin ${transaction.bin}`,
         `Qty ${transaction.qty.to}`,
+        `Date ${transaction._id}`,
         `Pharmacist ________________`,
         `</p>`
       ].join('<br>')
@@ -533,7 +525,15 @@ export class inventory {
         return this.saveTransaction(transaction)
       }
 
-      return this.db.transaction.query('next.transaction._id', {key:[this.account, transaction._id], include_docs:true}).then(res => {
+      //Reload filter to get updated quantities
+      this.transactions = this.transactions.slice()
+
+      if (transaction.isChecked) //Update total selected
+        this.filter.checked.qty += qtyChange
+
+      console.log('saveAndReconcileTransaction', qtyChange, transaction.qty.to, repack.qty.to)
+
+      return this.db.transaction.query('next.transaction._id', {key:[this.account._id, transaction._id], include_docs:true}).then(res => {
 
         if ( ! res.rows.length) {
           return this.saveTransaction(transaction)
@@ -591,8 +591,44 @@ export class inventory {
   }
 
   setExcessQty() {
-    let repackQty = this.repacks.reduce((totalQty, repack) => Math.max(0, repack.qty) + totalQty, 0)
+    let repackQty = this.repacks.reduce((totalQty, repack) => {
+      //console.log('setExcessQty', totalQty, repack.qty, repack)
+      return Math.max(0, repack.qty || 0) + totalQty // default to 0 for the empty repack row otherwise undefined makes everything become NaN
+    }, 0)
     this.repacks.excessQty = this.filter.checked.qty - repackQty
+    //console.log('this.repacks.excessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty, this.repacks)
+  }
+
+  currentDate(addMonths) {
+    var minExp = new Date()
+    minExp.setMonth(minExp.getMonth() + addMonths)
+    return minExp.toJSON().split(/\-|T|:|\./)
+  }
+
+  exportCSV() {
+
+    let [year, month, day] = this.currentDate(1)
+    let name = `Inventory ${year}-${month}-${day}.csv`
+    let opts = {
+      reduce:false,
+      startkey:[this.account._id, 'month', year, month],
+      endkey:[this.account._id, 'month', year, month+'\uffff']
+    }
+
+    this.db.transaction.query('inventory.qty-by-generic', opts).then(transactions => {
+      this.csv.fromJSON(name, transactions.rows.map(row => {
+        var sortedDrug = row.key[6].split(' ')
+        return {
+          'drug.generic':row.key[4],
+          'drug._id':sortedDrug[1],
+          'exp.to':sortedDrug[0],
+          'qty.to':row.value,
+          'bin':row.key[7],
+          'stage':row.key[5],
+          '_id':row.id
+        }
+      }))
+    })
   }
 
   openMenu($event) {
@@ -617,7 +653,7 @@ export class inventory {
       this.setExcessQty()
     }
 
-    console.log('openMenu', this.ordered[this.term], this.repacks)
+    console.log('openMenu', this.account.ordered[this.term], this.repacks)
   }
 
   setMatchingPends(drug) {

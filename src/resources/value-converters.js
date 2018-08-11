@@ -11,6 +11,9 @@ export class numberValueConverter {
   fromView(str){
     return str === '' ? null : +str
   }
+  toView(num, decimals){
+    return num && decimals != null ? num.toFixed(decimals) : num
+  }
 }
 
 export class upperCaseValueConverter {

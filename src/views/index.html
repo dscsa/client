@@ -11,6 +11,9 @@
     body { background:#eee }
     a { color:rgb(0,88,123); text-decoration:none }
 
+    input[type=date]::-webkit-inner-spin-button, /* increment "spinners" */
+    input[type=date]::-webkit-clear-button { display: none; } /* clear "x" button" */
+
     /*table-wrap needed because overflow:scroll doesn't work directly on table.  Also it is a conveneint place to do display:flex */
     .table-wrap { overflow-y:scroll; height:100%; display:flex}
     /*use flex instead of height:100% because latter was causing the parent md-card to have a scroll bar */

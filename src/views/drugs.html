@@ -21,7 +21,7 @@
     <a
       repeat.for="ordered of drawer.ordered"
       style="font-size:12px; line-height:18px; padding:8px 8px"
-      class="mdl-navigation__link ${ ordered == group.name ? 'mdl-navigation__link--current' : ''}"
+      class="mdl-navigation__link ${ ordered == group.generic ? 'mdl-navigation__link--current' : ''}"
       click.delegate="selectDrawer(ordered)">
       ${ ordered }
     </a>
@@ -29,20 +29,6 @@
   <section class="mdl-grid au-animate">
     <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
       <div class="mdl-card__supporting-text" style="font-size:16px;">
-        <md-input
-          required
-          name = "pro_ndc_field"
-          style="width:49%"
-          value.bind="drug._id"
-          disabled.bind="drug._rev"
-          pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
-          Product NDC
-        </md-input>
-        <md-input style="width:49%"
-          value.one-way="drug._id ? ('00000'+drug._id.split('-').slice(0,1)).slice(-5)+('0000'+drug._id.split('-').slice(1)).slice(-4) : ''"
-          disabled="true">
-          NDC9
-        </md-input>
         <div repeat.for="generic of drug.generics">
           <!--
           [1-9]{0,2} is for Vitamins which do not have 0 or 10 and can be up to two digits
@@ -73,6 +59,14 @@
           </md-input>
         </div>
         <md-input
+          required
+          name = "pro_form_field"
+          style="width:49%"
+          pattern="([A-Z][a-z]+\s?)+\b"
+          value.bind="drug.form">
+          Form
+        </md-input>
+        <md-input
           style="width:49%"
           pattern="([A-Z][a-z]*\s?){1,2}\b"
           value.bind="drug.brand">
@@ -80,11 +74,26 @@
         </md-input>
         <md-input
           required
-          name = "pro_form_field"
-          style="width:49%"
-          pattern="([A-Z][a-z]+\s?)+\b"
-          value.bind="drug.form">
-          Form
+          name = "pro_ndc_field"
+          style="width:32%"
+          value.bind="drug._id"
+          disabled.bind="drug._rev"
+          pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
+          Product NDC
+        </md-input>
+        <md-input
+          style="width:32%"
+          value.one-way="drug._id ? ('00000'+drug._id.split('-').slice(0,1)).slice(-5)+('0000'+drug._id.split('-').slice(1)).slice(-4) : ''"
+          disabled="true">
+          NDC9
+        </md-input>
+        <md-input
+          style="width:32%"
+          value.bind="drug.gsn | number"
+          type="number"
+          min="1000"
+          max="99999">
+          GSN
         </md-input>
         <md-input
           style="width:49%"
@@ -166,10 +175,14 @@
             name = "pro_search_res"
             repeat.for="group of groups"
             click.delegate="selectGroup(group, true)"
-            class="${ group.name == $parent.group.name && 'is-selected'}">
+            class="${ group.generic == $parent.group.generic && 'is-selected'}">
             <td
+              style="min-width:70%"
               class="mdl-data-table__cell--non-numeric"
-              innerHTML.bind="group.name.replace(regex, '<strong>$1</strong>')">
+              innerHTML.bind="group.name | bold:term">
+            </td>
+            <td style="max-width:30%">
+              ${ account.ordered[group.generic] ? 'Price:$'+(account.ordered[group.generic].price30 ? account.ordered[group.generic].price30+'/30' : account.ordered[group.generic].price90+'/90')+' days, Min Qty:'+(account.ordered[group.generic].minQty || account.default.minQty) +', Min Days:'+(ordered[group.generic].minDays ||  account.default.minDays) : ''}
             </td>
           </tr>
         </table>
@@ -196,8 +209,8 @@
       <md-switch
         name = "pro_switch"
         style="position:absolute; right:25px; top:47px; z-index:2"
-        checked.one-way="account.ordered[group.name]"
-        disabled.bind="! account.ordered[group.name] && ! drug._rev"
+        checked.one-way="account.ordered[group.generic]"
+        disabled.bind="! account.ordered[group.generic] && ! drug._rev"
         click.delegate="order()">
       </md-switch>
       <div class="table-wrap">
@@ -207,84 +220,91 @@
               <th class="mdl-data-table__cell--non-numeric">Ndc</th>
               <th class="mdl-data-table__cell--non-numeric">Form</th>
               <th class="mdl-data-table__cell--non-numeric">Labeler</th>
-              <th class="mdl-data-table__cell--non-numeric">Brand</th>
-              <th style="text-align:left; width:48px; padding-left:0;">Price</th>
-              <th style="text-align:left; width:${ account.ordered[group.name] ? '40px' : '85px'}; padding-left:0;">Retail</th>
+              <th style="text-align:left; width:55px; padding-left:0;">GoodRx</th>
+              <th style="text-align:left; width:55px; padding-left:0;">Nadac</th>
+              <th style="text-align:left; width:${ account.ordered[group.generic] ? '40px' : '85px'}; padding-left:0;">Retail</th>
             </tr>
           </thead>
           <tr repeat.for="drug of group.drugs" click.delegate="selectDrug(drug)" class="${ drug._id == $parent.drug._id ? 'is-selected' : ''}">
             <td class="mdl-data-table__cell--non-numeric">${ drug._id }</td>
             <td class="mdl-data-table__cell--non-numeric">${ drug.form }</td>
-            <td class="mdl-data-table__cell--non-numeric">${ drug.labeler }</td>
-            <td class="mdl-data-table__cell--non-numeric">${ drug.brand }</td>
-            <td style="padding:0; text-align:left">${ (drug.price.goodrx || drug.price.nadac) | number:3 }</td>
-            <td style="padding:0; text-align:left">${ drug.price.retail | number:3 }</td>
+            <td style="overflow:hidden" class="mdl-data-table__cell--non-numeric">${ drug.labeler }</td>
+            <td style="padding:0; text-align:left">${ drug.price.goodrx | number:2 }</td>
+            <td style="padding:0; text-align:left">${ drug.price.nadac | number:2 }</td>
+            <td style="padding:0; text-align:left">${ drug.price.retail | number:2 }</td>
           </tr>
         </table>
-        <div show.bind="account.ordered[group.name]" input.delegate="saveAccount() & debounce:1000" style="background:white; z-index:1; width:200px; overflow:hidden; margin:10px 8px;">
+        <div show.bind="account.ordered[group.generic]" input.delegate="saveAccount() & debounce:1000" style="background:white; z-index:1; width:200px; margin:10px 8px;">
           <div style="width:100%">Ordered</div>
           <md-input
             disabled
             type="number"
-            value.bind="outdateInventory">
-            Qty < ${ (account.ordered[group.name] || {}).minDays || account.default.minDays } Days
+            style="width:49%"
+            value.bind="indateInventory">
+            Qty > ${ (account.ordered[group.generic] || {}).minDays || account.default.minDays } Days
           </md-input>
           <md-input
             disabled
             type="number"
-            value.bind="indateInventory">
-            Qty > ${ (account.ordered[group.name] || {}).minDays || account.default.minDays } Days
-          </md-input>
-          <md-input
-            type="number"
-            value.bind="(account.ordered[group.name] || {}).maxInventory"
-            placeholder="${account.default.maxInventory}"
-            style="width:100%">
-            Max Qty > ${ (account.ordered[group.name] || {}).minDays || account.default.minDays } Days
-          </md-input>
-          <md-input
-            type="number"
-            value.bind="(account.ordered[group.name] || {}).minDays"
-            placeholder="${account.default.minDays}"
-            style="width:100%">
-            Min Days
-          </md-input>
-          <md-input
-            type="number"
-            value.bind="(account.ordered[group.name] || {}).minQty"
-            placeholder="${account.default.minQty}"
-            style="width:100%">
-            Min Qty
-          </md-input>
-          <md-input
-            value.bind="(account.ordered[group.name] || {}).verifiedMessage"
-            style="width:100%; font-size:12px">
-            Verified Message
-          </md-input>
-          <md-input
-            value.bind="(account.ordered[group.name] || {}).destroyedMessage"
-            style="width:100%; font-size:12px">
-            Destroyed Message
-          </md-input>
-          <md-input
-            pattern="\w{1,4}"
-            value.bind="(account.ordered[group.name] || {}).defaultBin"
-            style="width:100%">
-            Default Bin
+            style="width:48%"
+            value.bind="outdateInventory">
+            < ${ (account.ordered[group.generic] || {}).minDays || account.default.minDays } Days
           </md-input>
           <md-input
             type="number"
             step="1"
-            value.bind="(account.ordered[group.name] || {}).price30"
+            value.bind="(account.ordered[group.generic] || {}).price30"
             style="width:49%">
             30 day price
           </md-input>
           <md-input
             type="number"
             step="1"
-            value.bind="(account.ordered[group.name] || {}).price90"
+            value.bind="(account.ordered[group.generic] || {}).price90"
             style="width:48%">
             90 day price
+          </md-input>
+          <md-input
+            type="number"
+            value.bind="(account.ordered[group.generic] || {}).minDays"
+            placeholder="${account.default.minDays}"
+            style="width:49%">
+            Min Days
+          </md-input>
+          <md-input
+            type="number"
+            value.bind="(account.ordered[group.generic] || {}).minQty"
+            placeholder="${account.default.minQty}"
+            style="width:48%">
+            Min Qty
+          </md-input>
+          <md-input
+            type="number"
+            value.bind="(account.ordered[group.generic] || {}).maxInventory"
+            placeholder="${account.default.maxInventory}"
+            style="width:100%">
+            Max Qty > ${ (account.ordered[group.generic] || {}).minDays || account.default.minDays } Days
+          </md-input>
+          <md-input
+            value.bind="(account.ordered[group.generic] || {}).displayMessage"
+            style="width:100%; font-size:12px">
+            Display Message
+          </md-input>
+          <md-input
+            value.bind="(account.ordered[group.generic] || {}).verifiedMessage"
+            style="width:100%; font-size:12px">
+            Verified Message
+          </md-input>
+          <md-input
+            value.bind="(account.ordered[group.generic] || {}).destroyedMessage"
+            style="width:100%; font-size:12px">
+            Destroyed Message
+          </md-input>
+          <md-input
+            pattern="\w{1,4}"
+            value.bind="(account.ordered[group.generic] || {}).defaultBin"
+            style="width:100%">
+            Default Bin
           </md-input>
         </div>
       </div>

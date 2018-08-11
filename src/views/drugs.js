@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
 import {Pouch}     from '../libs/pouch'
 import {csv}    from '../libs/csv'
-import {canActivate, scrollSelect, toggleDrawer, drugSearch} from '../resources/helpers'
+import {canActivate, scrollSelect, toggleDrawer, drugSearch, drugName, groupDrugs} from '../resources/helpers'
 
 
 //@pageState()
@@ -18,7 +18,9 @@ export class drugs {
     this.toggleDrawer = toggleDrawer
     this.scrollSelect = scrollSelect
     this.drugSearch   = drugSearch
-    this.canActivate = canActivate
+    this.groupDrugs   = groupDrugs
+    this.drugName     = drugName
+    this.canActivate  = canActivate
   }
 
   deactivate() {
@@ -72,29 +74,30 @@ export class drugs {
     return date.toJSON().slice(0, 10)
   }
 
-  //Three entrances.
-  //1) User searches and then selects group from autocomplete (group already supplied)
+  //Four entrances.
+  //1a) User searches and then selects group from autocomplete (group already supplied)
+  //1b) User scrolls through search results
   //2) selectDrawer and we need to find the group with that particular generic name
   //3) selectDrug and we need to find the group with that particular generic name
   selectGroup(group, autoselectDrug) {
     console.log('selectGroup()', group, this.drug && this.drug.generic)
 
-    this.term = group.name
+    this.term     = group.generic
 
-    let order     = this.account.ordered[group.name] || {}
+    let order     = this.account.ordered[group.generic] || {}
     let minDays   = order.minDays || (this.account.default && this.account.default.minDays)
     let indate    = this.addDays(minDays || 30).split('-')
     let unexpired = this.addDays(30).split('-')
 
     //[to_id, 'month', year, month, doc.drug.generic, stage, sortedDrug]
-    this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', indate[0], indate[1], group.name], endkey:[this.account._id, 'month', indate[0], indate[1], group.name, {}]})
+    this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', indate[0], indate[1], group.generic], endkey:[this.account._id, 'month', indate[0], indate[1], group.generic, {}]})
     .then(inventory => {
       console.log('indate inventory', minDays, indate, inventory)
       let row = inventory.rows[0]
       this.indateInventory = row ? row.value.sum : 0
       console.log('indate inventory', this.indateInventory)
 
-      this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.name], endkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.name, {}]})
+      this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.generic], endkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.generic, {}]})
       .then(inventory => {
         console.log('outdate inventory', unexpired, inventory)
         let row = inventory.rows[0]
@@ -106,13 +109,17 @@ export class drugs {
     if ( ! group.drugs) //Not set if called from selectDrug or selectDrawer
       group.drugs = this.search().then(_ => {
         //Use filter to get an exact match not just one ingredient
-        let filtered = this.groups.filter(group => this.term == group.name)
+        let filtered = this.groups.filter(group => {
+          console.log('Filtering drug seach for exact results', this.term, group.generic, group)
+          return this.term == group.generic
+        })
         return filtered.length ? filtered[0].drugs : []
       })
 
     Promise.resolve(group.drugs).then(drugs => {
       group.drugs = drugs
       this.group  = group
+
       //TODO if this was called by selectDrug then we should establish establish a reference
       //between the approriate this.group.drugs and this.drug so that changes to the drug
       //appear in realtime on the right hand side.  This works if selectGroup
@@ -123,11 +130,15 @@ export class drugs {
 
   selectDrug(drug, autoselectGroup) {
     //Default is for Add Drug menu item in view
-    console.log('selectDrug()', this.group && this.group.name, drug && drug.generic)
+    console.log('selectDrug()', this.group && this.group.name, this.group && this.group.generic, this.drug, drug)
 
+
+    ///Drug is not set if we are adding a new drug
     this.drug = drug || {
-      generics:this.drug ? this.drug.generics : [], //keep default strenght from showing up as "undefined"
-      form:this.drug && this.drug.form
+      generics:(this.drug && this.drug.generics) || [], //keep default strenght from showing up as "undefined"
+      form:this.drug && this.drug.form,
+      brand:this.drug && this.drug.brand,
+      gsn:this.drug && this.drug.gsn,
     }
 
     //If needed, add blank row so user can add more ingredients
@@ -137,43 +148,39 @@ export class drugs {
     this.router.navigate(url, { trigger: false })
 
     if (autoselectGroup)
-      this.selectGroup({name:this.drug.generic || this.term})
+      this.selectGroup({generic:this.drug.generic})
   }
 
   selectDrawer(generic) {
-    this.selectGroup({name:generic}, true)
+    this.selectGroup({generic}, true)
     this.toggleDrawer()
   }
 
   search() {
     return this.drugSearch().then(drugs => {
-      let groups = {}
-      for (let drug of drugs) {
-        groups[drug.generic] = groups[drug.generic] || {name:drug.generic, drugs:[]}
-        groups[drug.generic].drugs.push(drug)
-      }
-      this.groups = Object.keys(groups).map(key => groups[key])
+      this.groups = this.groupDrugs(drugs, this.account.ordered)
+      console.log(drugs.length, this.groups.length, this.groups, this.account.ordered)
     })
   }
 
   //We might make a separate database and API out of this one day, but for now just save on account object.
   //TODO: Warn on delete since we won't save save any of the preferences?
   order() {
-    console.log('before order()', this.group.name, this.drug.generic)
+    console.log('before order()', this.group.generic, this.drug.generic)
 
-    if (this.account.ordered[this.group.name]) {
+    if (this.account.ordered[this.group.generic]) {
       //Delete this group from the drawer drawer
       this.drawer.ordered = this.drawer.ordered.filter(generic => {
-        return generic != this.group.name
+        return generic != this.group.generic
       })
 
-      this.account.ordered[this.group.name] = undefined
+      this.account.ordered[this.group.generic] = undefined
     } else {
       //Add New Order but Keep Add New Item on Top
-      this.drawer.ordered.unshift(this.group.name)
-      this.account.ordered[this.group.name] = {}
+      this.drawer.ordered.unshift(this.group.generic)
+      this.account.ordered[this.group.generic] = {}
     }
-    console.log('after order()', this.group.name, this.drug.generic)
+    console.log('after order()', this.group.generic, this.drug.generic)
     this.saveAccount()
   }
 
@@ -277,9 +284,9 @@ export class drugs {
   // }
 
   saveAccount() {
-    console.log('before saveAccount()', this.group.name, this.drug.generic)
+    console.log('before saveAccount()', this.group.generic, this.drug.generic)
     return this.db.account.put(this.account).catch(_ => {
-      console.log('after saveAccount()', this.group.name, this.drug.generic)
+      console.log('after saveAccount()', this.group.generic, this.drug.generic)
       this.snackbar.show(`Error while saving: ${err.reason || err.message}`)
     })
   }
@@ -322,9 +329,9 @@ export class drugs {
     .then(res => {
       //If we move the last drug out of the group, make sure we unorder it
       if (
-        this.group.name != this.drug.generic &&
+        this.group.generic != this.drug.generic &&
         this.group.drugs.length == 1 &&
-        this.account.ordered[this.group.name]
+        this.account.ordered[this.group.generic]
       ) this.order()
 
       //Wait for the server PUT to replicate back to client

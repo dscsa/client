@@ -169,7 +169,7 @@ export class shipments {
 
   setCheckboxes() {
     for (let transaction of this.transactions) {
-      //Verified will be set even with disposed == true, if we accepted on shipment page but then disposed it on inventory page. 
+      //Verified will be set even with disposed == true, if we accepted on shipment page but then disposed it on inventory page.
       transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt ? ! transaction.next[0] || ! transaction.next[0].disposed : null
     }
   }
@@ -321,7 +321,7 @@ export class shipments {
       this.setDestroyedMessage(order)
 
     if ( ! isChecked) {//manual check has not switched the boolean yet
-      this.snackbar.show(order.verifiedMessage || 'Drug is ordered')
+      this.snackbar.show((order && order.verifiedMessage) || 'Drug is ordered')
       this.clearDestroyedMessage()
     }
 

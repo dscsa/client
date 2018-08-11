@@ -44,7 +44,7 @@ export class join {
       //local user is created but now replicator must call bulk docs which then triggers creation of a
       //_user login. Since, we don't know exactly how long this will take so we must do a timeout here
       console.log('this.db.account.post success', res, this.account)
-      return new Promise(resolve => setTimeout(resolve, 3000))
+      return new Promise(resolve => setTimeout(resolve, 5000))
     })
     .then(_ => {
       return this.db.user.session.post(this.user)
