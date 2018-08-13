@@ -203,7 +203,7 @@ export class inventory {
       var query = 'inventory.qty-by-generic'
       var [year, month] = this.currentDate(1)
       opts.startkey = [this.account._id, 'month', year, month, key]
-      opts.endkey   = [this.account._id, 'month', year, month, key+'\uffff']
+      opts.endkey   = [this.account._id, 'month', year, month, key,{}] //Use of {} rather than \uffff so we don't combine different drug.forms
     }
 
     const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc), type, limit)

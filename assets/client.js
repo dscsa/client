@@ -2144,7 +2144,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
             month = _currentDate[1];
 
         opts.startkey = [this.account._id, 'month', year, month, key];
-        opts.endkey = [this.account._id, 'month', year, month, key + '\uFFFF'];
+        opts.endkey = [this.account._id, 'month', year, month, key, {}];
       }
 
       var setTransactions = function setTransactions(res) {
