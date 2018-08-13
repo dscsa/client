@@ -89,11 +89,10 @@
         </md-input>
         <md-input
           style="width:32%"
-          value.bind="drug.gsn | number"
-          type="number"
-          min="1000"
+          value.bind="drug.gsns"
+          pattern="\d{4,5}(,\d{4,5})*"
           max="99999">
-          GSN
+          GSNs
         </md-input>
         <md-input
           style="width:49%"
@@ -255,14 +254,14 @@
             step="1"
             value.bind="(account.ordered[group.generic] || {}).price30"
             style="width:49%">
-            30 day price
+            Price 30 Day
           </md-input>
           <md-input
             type="number"
             step="1"
             value.bind="(account.ordered[group.generic] || {}).price90"
             style="width:48%">
-            90 day price
+            90 Day
           </md-input>
           <md-input
             type="number"
@@ -291,14 +290,21 @@
             Display Message
           </md-input>
           <md-input
-            value.bind="(account.ordered[group.generic] || {}).verifiedMessage"
-            style="width:100%; font-size:12px">
-            Verified Message
+            type="number"
+            placeholder="${account.default.repackQty}"
+            value.bind="(account.ordered[group.generic] || {}).repackQty"
+            style="width:100%">
+            Repack Qty
           </md-input>
           <md-input
             value.bind="(account.ordered[group.generic] || {}).destroyedMessage"
             style="width:100%; font-size:12px">
             Destroyed Message
+          </md-input>
+          <md-input
+            value.bind="(account.ordered[group.generic] || {}).verifiedMessage"
+            style="width:100%; font-size:12px">
+            Verified Message
           </md-input>
           <md-input
             pattern="\w{1,4}"
@@ -330,6 +336,12 @@
         value.bind="account.default.minDays"
         style="width:100%">
         Default Min Days
+      </md-input>
+      <md-input
+        type="number"
+        value.bind="account.default.repackQty"
+        style="width:100%">
+        Default Dispense Qty
       </md-input>
     </div>
     <div class="mdl-dialog__actions">
