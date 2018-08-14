@@ -113,10 +113,6 @@ export class inventory {
     return transaction.isChecked = isChecked
   }
 
-  isRepacked(transaction) {
-    return transaction.bin && transaction.bin.length == 3
-  }
-
   setTransactions(transactions = [], type, limit) {
     if (transactions.length == limit) {
       this.type = type
@@ -133,14 +129,11 @@ export class inventory {
 
     console.log('search', this.term)
 
-    if (this.isBinned(this.term))
-      return this.selectTerm('binned', this.term)
+    if (this.isBin(this.term))
+      return this.selectTerm('bin', this.term)
 
-    if (this.isRepacked(this.term))
-      return this.selectTerm('repacked', this.term)
-
-    if (this.isExpired(this.term))
-      return this.selectTerm('expired', this.term, true)
+    if (this.isExp(this.term))
+      return this.selectTerm('exp<', this.term, true)
 
     //Drug search is by NDC and we want to group by generic
     this.drugSearch().then(drugs => {
@@ -150,15 +143,15 @@ export class inventory {
     })
   }
 
-  isBinned(term) {
-    return /^[A-Za-z][0-9]{3}$/.test(term)
+  isRepack(transaction) {
+    return transaction.bin && transaction.bin.length == 3
   }
 
-  isRepacked(term) {
-    return /^[A-Za-z][0-9]{2}$/.test(term)
+  isBin(term) {
+    return /^[A-Za-z][0-6]?\d{2}$/.test(term)
   }
 
-  isExpired(term) {
+  isExp(term) {
     return /^20\d\d-\d\d-?\d?\d?$/.test(term)
   }
 
@@ -184,15 +177,11 @@ export class inventory {
 
     let opts = {include_docs:true, limit, reduce:false}
 
-    if (type == 'binned') {
+    if (type == 'bin') {
       var query = 'inventory-by-bin-verifiedat'
-      opts.startkey = [this.account._id, 'binned', key]
-      opts.endkey   = [this.account._id, 'binned', key+'\uffff']
-    } else if (type == 'repacked') {
-      var query = 'inventory-by-bin-verifiedat'
-      opts.startkey = [this.account._id, 'repacked', key]
-      opts.endkey   = [this.account._id, 'repacked', key+'\uffff']
-    } else if (type == 'expired') {
+      opts.startkey = [this.account._id, key]
+      opts.endkey   = [this.account._id, key+'\uffff']
+    } else if (type == 'exp<') {
       var query = 'expired.qty-by-bin'
       var [year, month] = key.split('-')
       opts.startkey = [this.account._id, year, month]
@@ -201,7 +190,7 @@ export class inventory {
       //Only show medicine at least one month from expiration
       //just in case there is a lot of it and limit prevent us from seeing more
       var query = 'inventory.qty-by-generic'
-      var [year, month] = this.currentDate(1)
+      var [year, month] = this.currentDate(1, true)
       opts.startkey = [this.account._id, 'month', year, month, key]
       opts.endkey   = [this.account._id, 'month', year, month, key,{}] //Use of {} rather than \uffff so we don't combine different drug.forms
     }
@@ -310,8 +299,8 @@ export class inventory {
 
   sortPended(a, b) {
 
-    var aPack = this.isRepacked(a)
-    var bPack = this.isRepacked(b)
+    var aPack = this.isRepack(a)
+    var bPack = this.isRepack(b)
 
     if (aPack > bPack) return -1
     if (aPack < bPack) return 1
@@ -599,15 +588,16 @@ export class inventory {
     //console.log('this.repacks.excessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty, this.repacks)
   }
 
-  currentDate(addMonths) {
+  currentDate(addMonths, split) {
     var minExp = new Date()
     minExp.setMonth(minExp.getMonth() + addMonths)
-    return minExp.toJSON().split(/\-|T|:|\./)
+    minExp = minExp.toJSON()
+    return split ? minExp.split(/\-|T|:|\./) : minExp
   }
 
   exportCSV() {
 
-    let [year, month, day] = this.currentDate(1)
+    let [year, month, day] = this.currentDate(1, true)
     let name = `Inventory ${year}-${month}-${day}.csv`
     let opts = {
       reduce:false,
@@ -747,7 +737,8 @@ export class inventoryFilterValueConverter {
     let repackFilter  = {}
     let formFilter    = {}
     let checkVisible  = true
-    let defaultCheck  = inventory.prototype.isBinned(term) || inventory.prototype.isRepacked(term) || inventory.prototype.isExpired(term)
+    let today = inventory.prototype.currentDate(1)
+    let defaultCheck  = inventory.prototype.isBin(term) || inventory.prototype.isRepack(term) || inventory.prototype.isExp(term)
 
     filter.checked = filter.checked || {}
     filter.checked.qty = filter.checked.qty || 0
@@ -760,12 +751,17 @@ export class inventoryFilterValueConverter {
       let exp    = transaction.exp.to || transaction.exp.from
       let ndc    = transaction.drug._id
       let form   = transaction.drug.form
-      let repack = inventory.prototype.isRepacked(transaction) ? 'Repacked' : 'Inventory'
+      let repack = inventory.prototype.isRepack(transaction) ? 'Repacked' : 'Inventory'
+      let isExp  = exp > today ? 'Unexpired' : 'Expired'
       let pended = transaction.next[0] && transaction.next[0].pended
 
       if ( ! expFilter[exp]) {
         //console.log('pended', !!pended, 'exp', exp, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked)
         expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : defaultCheck || pended || false, count:0, qty:0}
+      }
+
+      if ( ! expFilter[isExp]) {
+        expFilter[isExp] = {isChecked:filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : true, count:0, qty:0}
       }
 
       if ( ! ndcFilter[ndc])
@@ -785,6 +781,17 @@ export class inventoryFilterValueConverter {
 
         return inventory.prototype.setCheck.call({filter}, transaction, false)
       }
+
+      if ( ! expFilter[isExp].isChecked) {
+        console.log('expFilter[isExp].isChecked', exp, today)
+        if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+          expFilter[isExp].count++
+          expFilter[isExp].qty += qty
+        }
+
+        return inventory.prototype.setCheck.call({filter}, transaction, false)
+      }
+
       if ( ! ndcFilter[ndc].isChecked) {
         if (expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
           ndcFilter[ndc].count++
@@ -814,9 +821,11 @@ export class inventoryFilterValueConverter {
       if ( ! transaction.isChecked)
         checkVisible = false
 
-
       expFilter[exp].count++
       expFilter[exp].qty += qty
+
+      expFilter[isExp].count++
+      expFilter[isExp].qty += qty
 
       ndcFilter[ndc].count++
       ndcFilter[ndc].qty += qty
