@@ -186,7 +186,7 @@ export class inventory {
       var [year, month] = key.split('-')
       opts.startkey = [this.account._id, year, month]
       opts.endkey   = [this.account._id, year, month+'\uffff']
-    } else if (type == 'drug') {
+    } else if (type == 'generic') {
       //Only show medicine at least one month from expiration
       //just in case there is a lot of it and limit prevent us from seeing more
       var query = 'inventory.qty-by-generic'
@@ -262,7 +262,7 @@ export class inventory {
       transaction.next = []
     })
     //We must let these transactions save without next for them to appear back in inventory
-   .then(_ => term ? this.selectTerm('drug', term) : this.term = '')
+   .then(_ => term ? this.selectTerm('generic', term) : this.term = '')
   }
 
   //Three OPTIONS
