@@ -2655,8 +2655,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var repackFilter = {};
       var formFilter = {};
       var checkVisible = true;
-      var today = inventory.prototype.currentDate(1);
-      var defaultCheck = inventory.prototype.isBin(term) || inventory.prototype.isRepack(term) || inventory.prototype.isExp(term);
+      var oneMonthFromNow = inventory.prototype.currentDate(1);
+      var isBin = inventory.prototype.isBin(term);
+      var defaultCheck = isBin || inventory.prototype.isExp(term);
 
       filter.checked = filter.checked || {};
       filter.checked.qty = filter.checked.qty || 0;
@@ -2668,7 +2669,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var ndc = transaction.drug._id;
         var form = transaction.drug.form;
         var repack = inventory.prototype.isRepack(transaction) ? 'Repacked' : 'Inventory';
-        var isExp = exp > today ? 'Unexpired' : 'Expired';
+        var isExp = exp > oneMonthFromNow ? 'Unexpired' : 'Expired';
         var pended = transaction.next[0] && transaction.next[0].pended;
 
         if (!expFilter[exp]) {
@@ -2676,27 +2677,18 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         }
 
         if (!expFilter[isExp]) {
-          expFilter[isExp] = { isChecked: filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : true, count: 0, qty: 0 };
+          expFilter[isExp] = { isChecked: filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : isBin && isExp == 'Unexpired' ? false : true, count: 0, qty: 0 };
         }
 
         if (!ndcFilter[ndc]) ndcFilter[ndc] = { isChecked: filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : defaultCheck || pended || !i, count: 0, qty: 0 };
 
         if (!formFilter[form]) formFilter[form] = { isChecked: filter.form && filter.form[form] ? filter.form[form].isChecked : defaultCheck || pended || !i, count: 0, qty: 0 };
 
-        if (!repackFilter[repack]) repackFilter[repack] = { isChecked: filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : defaultCheck || pended || !repackFilter['Repacked'], count: 0, qty: 0 };
-
-        if (!expFilter[exp].isChecked) {
-          if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
-            expFilter[exp].count++;
-            expFilter[exp].qty += qty;
-          }
-
-          return inventory.prototype.setCheck.call({ filter: filter }, transaction, false);
-        }
+        if (!repackFilter[repack]) repackFilter[repack] = { isChecked: filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : isBin && repack == 'Repacked' ? false : true, count: 0, qty: 0 };
 
         if (!expFilter[isExp].isChecked) {
-          console.log('expFilter[isExp].isChecked', exp, today);
-          if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+          console.log('expFilter[isExp].isChecked', exp, oneMonthFromNow);
+          if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
             expFilter[isExp].count++;
             expFilter[isExp].qty += qty;
           }
@@ -2704,8 +2696,17 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           return inventory.prototype.setCheck.call({ filter: filter }, transaction, false);
         }
 
+        if (!expFilter[exp].isChecked) {
+          if (expFilter[isExp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+            expFilter[exp].count++;
+            expFilter[exp].qty += qty;
+          }
+
+          return inventory.prototype.setCheck.call({ filter: filter }, transaction, false);
+        }
+
         if (!ndcFilter[ndc].isChecked) {
-          if (expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+          if (expFilter[isExp].isChecked && expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
             ndcFilter[ndc].count++;
             ndcFilter[ndc].qty += qty;
           }
@@ -2714,7 +2715,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         }
 
         if (!formFilter[form].isChecked) {
-          if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && repackFilter[repack].isChecked) {
+          if (expFilter[isExp].isChecked && expFilter[exp].isChecked && ndcFilter[ndc].isChecked && repackFilter[repack].isChecked) {
             formFilter[form].count++;
             formFilter[form].qty += qty;
           }
@@ -2722,7 +2723,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         }
 
         if (!repackFilter[repack].isChecked) {
-          if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked) {
+          if (expFilter[isExp].isChecked && expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked) {
             repackFilter[repack].count++;
             repackFilter[repack].qty += qty;
           }
@@ -2732,11 +2733,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         if (!transaction.isChecked) checkVisible = false;
 
-        expFilter[exp].count++;
-        expFilter[exp].qty += qty;
-
         expFilter[isExp].count++;
         expFilter[isExp].qty += qty;
+
+        expFilter[exp].count++;
+        expFilter[exp].qty += qty;
 
         ndcFilter[ndc].count++;
         ndcFilter[ndc].qty += qty;

@@ -732,13 +732,14 @@ export class inventoryFilterValueConverter {
   toView(transactions = [], filter = {}, term = ''){
     //restart filter on transaction changes but keep checks
     //where they are if user is just modifying the filter
-    let ndcFilter     = {}
-    let expFilter     = {}
-    let repackFilter  = {}
-    let formFilter    = {}
-    let checkVisible  = true
-    let today = inventory.prototype.currentDate(1)
-    let defaultCheck  = inventory.prototype.isBin(term) || inventory.prototype.isRepack(term) || inventory.prototype.isExp(term)
+    let ndcFilter       = {}
+    let expFilter       = {}
+    let repackFilter    = {}
+    let formFilter      = {}
+    let checkVisible    = true
+    let oneMonthFromNow = inventory.prototype.currentDate(1)
+    let isBin           = inventory.prototype.isBin(term)
+    let defaultCheck    = isBin || inventory.prototype.isExp(term)
 
     filter.checked = filter.checked || {}
     filter.checked.qty = filter.checked.qty || 0
@@ -752,7 +753,7 @@ export class inventoryFilterValueConverter {
       let ndc    = transaction.drug._id
       let form   = transaction.drug.form
       let repack = inventory.prototype.isRepack(transaction) ? 'Repacked' : 'Inventory'
-      let isExp  = exp > today ? 'Unexpired' : 'Expired'
+      let isExp  = exp > oneMonthFromNow ? 'Unexpired' : 'Expired'
       let pended = transaction.next[0] && transaction.next[0].pended
 
       if ( ! expFilter[exp]) {
@@ -761,7 +762,7 @@ export class inventoryFilterValueConverter {
       }
 
       if ( ! expFilter[isExp]) {
-        expFilter[isExp] = {isChecked:filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : true, count:0, qty:0}
+        expFilter[isExp] = {isChecked:filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : ((isBin && isExp == 'Unexpired') ? false : true), count:0, qty:0} //if someone search for 'A00' show only the expired items by default (this will help data entry people purging expireds)
       }
 
       if ( ! ndcFilter[ndc])
@@ -771,20 +772,11 @@ export class inventoryFilterValueConverter {
         formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : defaultCheck || pended || ! i, count:0, qty:0}
 
       if ( ! repackFilter[repack])
-        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : defaultCheck || pended || ! repackFilter['Repacked'], count:0, qty:0}
-
-      if ( ! expFilter[exp].isChecked) {
-        if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
-          expFilter[exp].count++
-          expFilter[exp].qty += qty
-        }
-
-        return inventory.prototype.setCheck.call({filter}, transaction, false)
-      }
+        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : ((isBin && repack == 'Repacked') ? false : true), count:0, qty:0} //if someone search for 'A00' show the whole bin but not the repacks by default (this will help data entry people purging expireds)
 
       if ( ! expFilter[isExp].isChecked) {
-        console.log('expFilter[isExp].isChecked', exp, today)
-        if (ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+        console.log('expFilter[isExp].isChecked', exp, oneMonthFromNow)
+        if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
           expFilter[isExp].count++
           expFilter[isExp].qty += qty
         }
@@ -792,8 +784,17 @@ export class inventoryFilterValueConverter {
         return inventory.prototype.setCheck.call({filter}, transaction, false)
       }
 
+      if ( ! expFilter[exp].isChecked) {
+        if (expFilter[isExp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+          expFilter[exp].count++
+          expFilter[exp].qty += qty
+        }
+
+        return inventory.prototype.setCheck.call({filter}, transaction, false)
+      }
+
       if ( ! ndcFilter[ndc].isChecked) {
-        if (expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
+        if (expFilter[isExp].isChecked && expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
           ndcFilter[ndc].count++
           ndcFilter[ndc].qty += qty
         }
@@ -802,7 +803,7 @@ export class inventoryFilterValueConverter {
       }
 
       if ( ! formFilter[form].isChecked) {
-        if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && repackFilter[repack].isChecked) {
+        if (expFilter[isExp].isChecked && expFilter[exp].isChecked && ndcFilter[ndc].isChecked && repackFilter[repack].isChecked) {
           formFilter[form].count++
           formFilter[form].qty += qty
         }
@@ -810,7 +811,7 @@ export class inventoryFilterValueConverter {
       }
 
       if ( ! repackFilter[repack].isChecked) {
-        if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked) {
+        if (expFilter[isExp].isChecked && expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked) {
           repackFilter[repack].count++
           repackFilter[repack].qty += qty
         }
@@ -821,11 +822,11 @@ export class inventoryFilterValueConverter {
       if ( ! transaction.isChecked)
         checkVisible = false
 
-      expFilter[exp].count++
-      expFilter[exp].qty += qty
-
       expFilter[isExp].count++
       expFilter[isExp].qty += qty
+
+      expFilter[exp].count++
+      expFilter[exp].qty += qty
 
       ndcFilter[ndc].count++
       ndcFilter[ndc].qty += qty
