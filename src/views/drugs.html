@@ -251,6 +251,7 @@
           <md-input
             type="number"
             step="1"
+            placeholder="${ (account.ordered[group.generic] || {}).price90 ? '' : account.default.price30}"
             value.bind="(account.ordered[group.generic] || {}).price30"
             style="width:49%">
             Price 30 Day
@@ -258,6 +259,7 @@
           <md-input
             type="number"
             step="1"
+            placeholder="${ (account.ordered[group.generic] || {}).price30 ? '' : account.default.price90}"
             value.bind="(account.ordered[group.generic] || {}).price90"
             style="width:48%">
             90 Day
@@ -284,16 +286,16 @@
             Max Qty > ${ (account.ordered[group.generic] || {}).minDays || account.default.minDays } Days
           </md-input>
           <md-input
-            value.bind="(account.ordered[group.generic] || {}).displayMessage"
-            style="width:100%; font-size:12px">
-            Display Message
-          </md-input>
-          <md-input
             type="number"
             placeholder="${account.default.repackQty}"
             value.bind="(account.ordered[group.generic] || {}).repackQty"
             style="width:100%">
             Repack Qty
+          </md-input>
+          <md-input
+            value.bind="(account.ordered[group.generic] || {}).displayMessage"
+            style="width:100%; font-size:12px">
+            Display Message
           </md-input>
           <md-input
             value.bind="(account.ordered[group.generic] || {}).destroyedMessage"
@@ -304,12 +306,6 @@
             value.bind="(account.ordered[group.generic] || {}).verifiedMessage"
             style="width:100%; font-size:12px">
             Verified Message
-          </md-input>
-          <md-input
-            pattern="\w{1,4}"
-            value.bind="(account.ordered[group.generic] || {}).defaultBin"
-            style="width:100%">
-            Default Bin
           </md-input>
         </div>
       </div>
@@ -340,7 +336,21 @@
         type="number"
         value.bind="account.default.repackQty"
         style="width:100%">
-        Default Dispense Qty
+        Default Repack Qty
+      </md-input>
+      <md-input
+        type="number"
+        step="1"
+        value.bind="account.default.price30"
+        style="width:100%">
+        Default Price 30
+      </md-input>
+      <md-input
+        type="number"
+        step="1"
+        value.bind="account.default.price90"
+        style="width:100%">
+        Default Price 90
       </md-input>
     </div>
     <div class="mdl-dialog__actions">

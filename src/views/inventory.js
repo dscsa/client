@@ -607,14 +607,15 @@ export class inventory {
 
     this.db.transaction.query('inventory.qty-by-generic', opts).then(transactions => {
       this.csv.fromJSON(name, transactions.rows.map(row => {
-        var sortedDrug = row.key[6].split(' ')
+        var sortedDrug = row.key[8].split(' ')
         return {
           'drug.generic':row.key[4],
-          'drug._id':sortedDrug[1],
-          'exp.to':sortedDrug[0],
+          'drug.gsns':row.key[5],
+          'drug.brand':row.key[6],
+          'drug._id':row.key[7],
+          'exp.to':sortedDrug[1].slice(0,7),
           'qty.to':row.value,
-          'bin':row.key[7],
-          'stage':row.key[5],
+          'bin':row.key[9],
           '_id':row.id
         }
       }))
