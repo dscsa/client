@@ -3334,6 +3334,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       transaction.drug = {
         _id: drug._id,
         brand: drug.brand,
+        gsns: drug.gsns,
         generic: drug.generic,
         generics: drug.generics,
         form: drug.form,
