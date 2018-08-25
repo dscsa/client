@@ -66,36 +66,42 @@ sudo mkfs -t ext4 /dev/<volume>  #only make filesystem, if new empty volume.
 sudo mount /dev/<volume> /dscsa
 cd /dscsa
 
-#install couchdb
-sudo add-apt-repository ppa:couchdb/stable -y
-sudo apt-get update
-sudo apt-get install couchdb -y
+#install couchdb http://docs.couchdb.org/en/2.2.0/install/unix.html
+echo "deb https://apache.bintray.com/couchdb-deb xenial main" | sudo tee -a /etc/apt/sources.list #note: xenial is for Ubuntu 16
+curl -L https://couchdb.apache.org/repo/bintray-pubkey.asc | sudo apt-key add -
+sudo apt-get update && sudo apt-get install couchdb # select option for standalone, 0.0.0.0, set db password
+# goto <elastic-ip>:5984/_utils.  CouchDB should have been started automatically
 
-# start only if a new instance
-sudo mv /var/lib/couchdb /dscsa
-sudo mv /etc/couchdb/local.ini /dscsa/couchdb/local.ini
-sudo nano /dscsa/couchdb/local.ini
-#set [httpd] bind_address = 0.0.0.0,
-#add [compactions] _default = [{db_fragmentation, "40%"}, {view_fragmentation, "40%"}]
-#set [couch_httpd_auth]	allow_persistent_cookies = true
-#set [couch_httpd_auth] timeout = 31536000
-sudo service couchdb restart
-goto <elastic-ip>:5984/_utils
-# stop only if a new instance
+###
+#start if new instance, move files to non-bootable drive
+sudo mv /opt/couchdb /dscsa/couchdb
+sudo ln -s /dscsa/couchdb /opt/couchdb
+#after sudo service couchdb restart, fauxton should still work
 
-sudo ln -s /dscsa/couchdb /var/lib/couchdb
-sudo ln -s /dscsa/couchdb /etc/couchdb/local.ini
+sudo rm /opt/couchdb/data
+sudo mv /var/lib/couchdb /dscsa/couchdb/data
+sudo ln -s /dscsa/couchdb/data /var/lib/couchdb
+#after sudo service couchdb restart, fauxton should still work
+
+sudo mv /var/log/couchdb /dscsa/couchdb/log
+sudo ln -s /dscsa/couchdb/log /var/log/couchdb
+#after sudo service couchdb restart, fauxton should still work
+
+#login to fauxton, with username admin, password as set during installation
+#stop if new instance, move files to non-bootable drive
+###
 
 #install nodejs and application
-curl --silent --location https://deb.nodesource.com/setup_6.x | sudo bash -
+#goto https://deb.nodesource.com and find the latest version
+curl --silent --location https://deb.nodesource.com/setup_<VERSION>.x | sudo bash -
 sudo apt-get install nodejs -y
 sudo apt-get install git-core
-sudo npm install dscsa/server
+sudo npm install dscsa/server                  #make sure you are in the /dscsa directory!
 sudo npm install forever -g                    #to do make new repo with this dependency that runs this with npm start
 sudo node /dscsa/node_modules/server           #create server login
 ctrl c (to stop server)
 sudo forever start /dscsa/node_modules/server  #forever list, forever stop
-#log: sudo nano /var/log/couchdb/couch.log
+#log: sudo nano /dscsa/couchdb/log/couchdb.log
 ```
 
 ##### Testing Notes
