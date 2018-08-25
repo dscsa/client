@@ -73,25 +73,25 @@
           Brand Name
         </md-input>
         <md-input
+          style="width:100%"
+          value.bind="drug.gsns"
+          pattern="\d{1,5}(,\d{1,5})*">
+          GSNs
+        </md-input>
+        <md-input
           required
           name = "pro_ndc_field"
-          style="width:32%"
+          style="width:49%"
           value.bind="drug._id"
           disabled.bind="drug._rev"
           pattern="\d{4}-\d{4}|\d{5}-\d{3}|\d{5}-\d{4}">
           Product NDC
         </md-input>
         <md-input
-          style="width:32%"
+          style="width:49%"
           value.one-way="drug._id ? ('00000'+drug._id.split('-').slice(0,1)).slice(-5)+('0000'+drug._id.split('-').slice(1)).slice(-4) : ''"
           disabled="true">
           NDC9
-        </md-input>
-        <md-input
-          style="width:32%"
-          value.bind="drug.gsns"
-          pattern="\d{1,5}(,\d{1,5})*">
-          GSNs
         </md-input>
         <md-input
           style="width:49%"
