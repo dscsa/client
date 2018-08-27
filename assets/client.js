@@ -3355,6 +3355,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         var minDays = order.minDays || this.account.default && this.account.default.minDays || 30;
         var date = new Date();
         date.setDate(+minDays + date.getDate());
+        date = date.toJSON().slice(0, 10).split('-');
 
         this.db.transaction.query('inventory.qty-by-generic', { startkey: [this.account._id, 'month', date[0], date[1], drug.generic], endkey: [this.account._id, 'month', date[0], date[1], drug.generic, {}] }).then(function (inventory) {
           console.log('indate inventory', minDays, date, inventory);

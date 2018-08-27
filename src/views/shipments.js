@@ -441,6 +441,7 @@ export class shipments {
       let minDays = order.minDays || (this.account.default && this.account.default.minDays) || 30
       let date  = new Date()
       date.setDate(+minDays + date.getDate())
+      date = date.toJSON().slice(0, 10).split('-')
 
       //[to_id, 'month', year, month, doc.drug.generic, stage, sortedDrug]
       this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', date[0], date[1], drug.generic], endkey:[this.account._id, 'month', date[0], date[1], drug.generic, {}]})
