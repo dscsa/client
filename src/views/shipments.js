@@ -438,15 +438,17 @@ export class shipments {
     //this is rare enough to be okay.  We also don't want to have to fetch current inventory on every input event.
     if (order) {
 
-      let minDays = order.minDays || this.account.default.minDays
+      let minDays = order.minDays || (this.account.default && this.account.default.minDays) || 30
       let date  = new Date()
       date.setDate(+minDays + date.getDate())
 
-      this.db.transaction.query('inventory', {startkey:[this.account._id, drug.generic, date.toJSON().slice(0, 10)], endkey:[this.account._id, drug.generic, {}]})
+      //[to_id, 'month', year, month, doc.drug.generic, stage, sortedDrug]
+      this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', date[0], date[1], drug.generic], endkey:[this.account._id, 'month', date[0], date[1], drug.generic, {}]})
       .then(inventory => {
-        console.log('inventory', inventory)
-        order.indateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0
-        console.log('order.indateInventory', order.indateInventory)
+        console.log('indate inventory', minDays, date, inventory)
+        let row = inventory.rows[0]
+        order.indateInventory = row ? row.value.sum : 0
+        console.log('order.inventory', this.indateInventory)
       })
     }
 

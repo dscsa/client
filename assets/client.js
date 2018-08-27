@@ -3352,14 +3352,15 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       var isPharMerica = false;
       if (order) {
 
-        var minDays = order.minDays || this.account.default.minDays;
+        var minDays = order.minDays || this.account.default && this.account.default.minDays || 30;
         var date = new Date();
         date.setDate(+minDays + date.getDate());
 
-        this.db.transaction.query('inventory', { startkey: [this.account._id, drug.generic, date.toJSON().slice(0, 10)], endkey: [this.account._id, drug.generic, {}] }).then(function (inventory) {
-          console.log('inventory', inventory);
-          order.indateInventory = inventory.rows[0] ? inventory.rows[0].value['qty.binned'] || 0 + inventory.rows[0].value['qty.repacked'] || 0 : 0;
-          console.log('order.indateInventory', order.indateInventory);
+        this.db.transaction.query('inventory.qty-by-generic', { startkey: [this.account._id, 'month', date[0], date[1], drug.generic], endkey: [this.account._id, 'month', date[0], date[1], drug.generic, {}] }).then(function (inventory) {
+          console.log('indate inventory', minDays, date, inventory);
+          var row = inventory.rows[0];
+          order.indateInventory = row ? row.value.sum : 0;
+          console.log('order.inventory', _this9.indateInventory);
         });
       }
 
