@@ -179,8 +179,9 @@ export class inventory {
 
     if (type == 'bin') {
       var query  = 'inventory-by-bin-verifiedat'
-      opts.startkey = [this.account._id].concat(key.split(''))
-      opts.endkey   = opts.startkey.concat([{}])
+      var bin    = key.split('') //don't do concat because bins can be of length 3 or 4
+      opts.startkey = [this.account._id, bin[0], bin[1], bin[2], bin[3]]
+      opts.endkey   = [this.account._id, bin[0], bin[1], bin[2], bin[3] ? bin[3]+'\uffff' : {}]
     } else if (type == 'exp<') {
       var query = 'expired.qty-by-bin'
       var [year, month] = key.split('-')
@@ -192,7 +193,7 @@ export class inventory {
       var query = 'inventory.qty-by-generic'
       var [year, month] = this.currentDate(1, true)
       opts.startkey = [this.account._id, 'month', year, month, key]
-      opts.endkey   = [this.account._id, 'month', year, month, key,{}] //Use of {} rather than \uffff so we don't combine different drug.forms
+      opts.endkey   = [this.account._id, 'month', year, month, key, {}] //Use of {} rather than \uffff so we don't combine different drug.forms
     }
 
     const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc), type, limit)
@@ -624,7 +625,7 @@ export class inventory {
 
   openMenu($event) {
     console.log('openMenu called', $event.target.tagName, this.transactions.length, $event.target.tagName != 'I', ! this.transactions.length, this.repacks)
-    if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'MD-MENU') {
+    if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'MD-MENU')
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
     if ( ! this.transactions.length) {
@@ -776,7 +777,6 @@ export class inventoryFilterValueConverter {
         repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : ((isBin && repack == 'Repacked' && term != 'X00') ? false : true), count:0, qty:0} //if someone search for 'A00' show the whole bin but not the repacks by default (this will help data entry people purging expireds)
 
       if ( ! expFilter[isExp].isChecked) {
-        console.log('expFilter[isExp].isChecked', exp, oneMonthFromNow)
         if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
           expFilter[isExp].count++
           expFilter[isExp].qty += qty

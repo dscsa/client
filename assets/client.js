@@ -2114,8 +2114,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       if (type == 'bin') {
         var query = 'inventory-by-bin-verifiedat';
-        opts.startkey = [this.account._id].concat(key.split(''));
-        opts.endkey = opts.startkey.concat([{}]);
+        var bin = key.split('');
+        opts.startkey = [this.account._id, bin[0], bin[1], bin[2], bin[3]];
+        opts.endkey = [this.account._id, bin[0], bin[1], bin[2], bin[3] ? bin[3] + '\uFFFF' : {}];
       } else if (type == 'exp<') {
         var query = 'expired.qty-by-bin';
 
@@ -2536,7 +2537,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.openMenu = function openMenu($event) {
       console.log('openMenu called', $event.target.tagName, this.transactions.length, $event.target.tagName != 'I', !this.transactions.length, this.repacks);
-      if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON') return true;
+      if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'MD-MENU') return true;
 
       if (!this.transactions.length) {
         console.log('openMenu transactions.length == 0', this.repacks);
@@ -2688,7 +2689,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         if (!repackFilter[repack]) repackFilter[repack] = { isChecked: filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : isBin && repack == 'Repacked' && term != 'X00' ? false : true, count: 0, qty: 0 };
 
         if (!expFilter[isExp].isChecked) {
-          console.log('expFilter[isExp].isChecked', exp, oneMonthFromNow);
           if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
             expFilter[isExp].count++;
             expFilter[isExp].qty += qty;
