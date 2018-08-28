@@ -2114,8 +2114,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       if (type == 'bin') {
         var query = 'inventory-by-bin-verifiedat';
-        opts.startkey = [this.account._id, key];
-        opts.endkey = [this.account._id, key + '\uFFFF'];
+        opts.startkey = [this.account._id].concat(key.split(''));
+        opts.endkey = opts.startkey.concat([{}]);
       } else if (type == 'exp<') {
         var query = 'expired.qty-by-bin';
 

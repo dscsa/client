@@ -178,9 +178,9 @@ export class inventory {
     let opts = {include_docs:true, limit, reduce:false}
 
     if (type == 'bin') {
-      var query = 'inventory-by-bin-verifiedat'
-      opts.startkey = [this.account._id, key]
-      opts.endkey   = [this.account._id, key+'\uffff']
+      var query  = 'inventory-by-bin-verifiedat'
+      opts.startkey = [this.account._id].concat(key.split(''))
+      opts.endkey   = opts.startkey.concat([{}])
     } else if (type == 'exp<') {
       var query = 'expired.qty-by-bin'
       var [year, month] = key.split('-')
