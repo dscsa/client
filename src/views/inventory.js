@@ -120,6 +120,13 @@ export class inventory {
     } else
       this.type = null
 
+    //Sort X00 bin alphabetically per Cindy's request.
+    if (this.term == 'X00')
+      transactions = transactions.sort((a,b) => {
+        if (a.drug.generic < b.drug.generic) return -1
+        if (b.drug.generic < a.drug.generic) return 1
+      })
+    
     this.transactions = transactions
     this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
