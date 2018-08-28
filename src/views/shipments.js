@@ -423,7 +423,7 @@ export class shipments {
 
     //Unlike others these will override any CSV import values
     transaction.user       = {_id:this.user}
-    transaction.shipment   = {_id:this.shipment._id || this.account._id}
+    transaction.shipment   = {_id:this.shipment._rev ? this.shipment._id : this.account._id}
 
     this.term = '' //Reset search's auto-complete
 
