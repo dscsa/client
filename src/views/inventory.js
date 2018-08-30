@@ -126,7 +126,7 @@ export class inventory {
         if (a.drug.generic < b.drug.generic) return -1
         if (b.drug.generic < a.drug.generic) return 1
       })
-    
+
     this.transactions = transactions
     this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
@@ -621,9 +621,9 @@ export class inventory {
           'drug.gsns':row.key[5],
           'drug.brand':row.key[6],
           'drug._id':row.key[7],
-          'exp.to':sortedDrug[1].slice(0,7),
+          'exp.to':row.key[8],
           'qty.to':row.value,
-          'bin':row.key[9],
+          'bin':row.key[10], //key 9 is sortedBin
           '_id':row.id
         }
       }))

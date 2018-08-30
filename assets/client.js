@@ -2540,9 +2540,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
             'drug.gsns': row.key[5],
             'drug.brand': row.key[6],
             'drug._id': row.key[7],
-            'exp.to': sortedDrug[1].slice(0, 7),
+            'exp.to': row.key[8],
             'qty.to': row.value,
-            'bin': row.key[9],
+            'bin': row.key[10],
             '_id': row.id
           };
         }));
