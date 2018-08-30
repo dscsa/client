@@ -221,12 +221,13 @@
                 <md-checkbox
                   name = "pro_checkbox"
                   click.delegate="manualCheck($index)"
-                  disabled.bind=" ! moveItemsButton.offsetParent && ! newShipmentButton.offsetParent && transaction.next[0] && ! transaction.next[0].disposed"
+                  disabled.bind=" ! moveItemsButton.offsetParent && ! newShipmentButton.offsetParent && transaction.isChecked && transaction.next[0]"
                   checked.bind="transaction.isChecked">
                 </md-checkbox>
+
               </td>
               <td click.delegate="focusInput('#exp_'+$index)" class="mdl-data-table__cell--non-numeric" style="padding-left:0; overflow:hidden">
-                ${ transaction.drug.generic }
+                ${ transaction.next[0] | json } ${ transaction.drug.generic }
               </td>
               <td click.delegate="focusInput('#exp_'+$index)" class="mdl-data-table__cell--non-numeric" style="padding:0">
                 ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }
@@ -242,7 +243,7 @@
                   required
                   keydown.delegate="expShortcutsKeydown($event, $index)"
                   input.trigger="expShortcutsInput($index)"
-                  disabled.bind="transaction.next[0] && ! transaction.next[0].disposed"
+                  disabled.bind="transaction.isChecked && transaction.next[0]"
                   pattern="(0?[1-9]|1[012])/(1\d|2\d)"
                   value.bind="transaction.exp[role.shipments] | date"
                   style="width:40px; margin-bottom:-8px"
@@ -259,7 +260,7 @@
                     required
                     keydown.delegate="qtyShortcutsKeydown($event, $index)"
                     input.trigger="qtyShortcutsInput($event, $index)"
-                    disabled.bind="transaction.next[0] && ! transaction.next[0].disposed"
+                    disabled.bind="transaction.isChecked && transaction.next[0]"
                     type="number"
                     value.bind="transaction.qty[role.shipments] | number"
                     style="width:40px; margin-bottom:-8px"
@@ -267,12 +268,13 @@
                     placeholder>
                   </md-input>
               </td>
+              <!-- disable if not checked because we don't want a red required field unless we are keeping the item -->
               <td style="padding:0">
                 <md-input
                   name = "pro_bin"
                   id.bind="'bin_'+$index"
                   required
-                  disabled.bind=" ! transaction.isChecked || (transaction.next[0] && ! transaction.next[0].disposed)"
+                  disabled.bind=" ! transaction.isChecked || transaction.next[0]"
                   keyup.delegate="setBin(transaction) & debounce:1500"
                   keydown.delegate="binShortcuts($event, $index)"
                   pattern.bind="shipment._rev ? '[A-Za-z][0-6]\\d{2}' : '[A-Za-z][0-6]?\\d{2}'"

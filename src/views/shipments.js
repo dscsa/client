@@ -170,7 +170,7 @@ export class shipments {
   setCheckboxes() {
     for (let transaction of this.transactions) {
       //Verified will be set even with disposed == true, if we accepted on shipment page but then disposed it on inventory page.
-      transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt ? ! transaction.next[0] || ! transaction.next[0].disposed : null
+      transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt
     }
   }
 
