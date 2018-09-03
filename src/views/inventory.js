@@ -615,7 +615,6 @@ export class inventory {
 
     this.db.transaction.query('inventory.qty-by-generic', opts).then(transactions => {
       this.csv.fromJSON(name, transactions.rows.map(row => {
-        var sortedDrug = row.key[8].split(' ')
         return {
           'drug.generic':row.key[4],
           'drug.gsns':row.key[5],
