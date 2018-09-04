@@ -2131,7 +2131,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var bin = key.split('');
         opts.startkey = [this.account._id, '', bin[0], bin[1], bin[2]];
         opts.endkey = [this.account._id, '', bin[0], bin[1], bin[2] + '\uFFFF'];
-      } else if (type == 'bin' && bin[3] == '*') {
+      } else if (type == 'bin' && key[3] == '*') {
         var query = 'inventory-by-bin-verifiedat';
         var bin = key.split('');
         opts.startkey = [this.account._id, bin[0], bin[1], bin[2]];
@@ -2681,7 +2681,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var formFilter = {};
       var checkVisible = true;
       var oneMonthFromNow = inventory.prototype.currentDate(1);
-      var isBin = inventory.prototype.isBin(term);
+      var isBin = inventory.prototype.isBin(term.replace('*', ''));
       var defaultCheck = isBin || inventory.prototype.isExp(term);
 
       filter.checked = filter.checked || {};
@@ -2702,14 +2702,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         }
 
         if (!expFilter[isExp]) {
-          expFilter[isExp] = { isChecked: filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : isBin && isExp == 'Unexpired' && term != 'X00' ? false : true, count: 0, qty: 0 };
+          expFilter[isExp] = { isChecked: filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : isBin && isExp == 'Unexpired' && term[3] == '*' ? false : true, count: 0, qty: 0 };
         }
 
         if (!ndcFilter[ndc]) ndcFilter[ndc] = { isChecked: filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : defaultCheck || pended || !i, count: 0, qty: 0 };
 
         if (!formFilter[form]) formFilter[form] = { isChecked: filter.form && filter.form[form] ? filter.form[form].isChecked : defaultCheck || pended || !i, count: 0, qty: 0 };
 
-        if (!repackFilter[repack]) repackFilter[repack] = { isChecked: filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : isBin && repack == 'Repacked' && term != 'X00' ? false : true, count: 0, qty: 0 };
+        if (!repackFilter[repack]) repackFilter[repack] = { isChecked: filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : defaultCheck || pended || !repackFilter['Repacked'], count: 0, qty: 0 };
 
         if (!expFilter[isExp].isChecked) {
           if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {

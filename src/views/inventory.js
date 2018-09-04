@@ -186,10 +186,10 @@ export class inventory {
 
     if (type == 'bin' && key.length == 3) {
       var query  = 'inventory-by-bin-verifiedat'
-      var bin    = key.split('') 
+      var bin    = key.split('')
       opts.startkey = [this.account._id, '', bin[0], bin[1], bin[2]]
       opts.endkey   = [this.account._id, '', bin[0], bin[1], bin[2]+'\uffff']
-    } else if (type == 'bin' && bin[3] == '*') {
+    } else if (type == 'bin' && key[3] == '*') {
       var query  = 'inventory-by-bin-verifiedat'
       var bin    = key.split('')
       opts.startkey = [this.account._id, bin[0], bin[1], bin[2]]
@@ -756,7 +756,7 @@ export class inventoryFilterValueConverter {
     let formFilter      = {}
     let checkVisible    = true
     let oneMonthFromNow = inventory.prototype.currentDate(1)
-    let isBin           = inventory.prototype.isBin(term)
+    let isBin           = inventory.prototype.isBin(term.replace('*', ''))
     let defaultCheck    = isBin || inventory.prototype.isExp(term)
 
     filter.checked = filter.checked || {}
@@ -780,7 +780,7 @@ export class inventoryFilterValueConverter {
       }
 
       if ( ! expFilter[isExp]) {
-        expFilter[isExp] = {isChecked:filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : ((isBin && isExp == 'Unexpired' && term != 'X00') ? false : true), count:0, qty:0} //if someone search for 'A00' show only the expired items by default (this will help data entry people purging expireds)
+        expFilter[isExp] = {isChecked:filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : ((isBin && isExp == 'Unexpired' && term[3] == '*') ? false : true), count:0, qty:0} //if someone search for 'A00*' show only the expired items by default (this will help data entry people purging expireds)
       }
 
       if ( ! ndcFilter[ndc])
@@ -790,7 +790,7 @@ export class inventoryFilterValueConverter {
         formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : defaultCheck || pended || ! i, count:0, qty:0}
 
       if ( ! repackFilter[repack])
-        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : ((isBin && repack == 'Repacked' && term != 'X00') ? false : true), count:0, qty:0} //if someone search for 'A00' show the whole bin but not the repacks by default (this will help data entry people purging expireds)
+        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : defaultCheck || pended || ! repackFilter['Repacked'], count:0, qty:0}
 
       if ( ! expFilter[isExp].isChecked) {
         if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
