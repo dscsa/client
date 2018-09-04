@@ -154,8 +154,8 @@ export class inventory {
     return transaction.bin && transaction.bin.length == 3
   }
 
-  isBin(term) {
-    return /^[A-Za-z][0-6]?\d{2}$/.test(term)
+  isBin(term) { //unlike shipment page allow for B00* to search all sections within large B00 bin but don't include repacks
+    return /^[A-Za-z][0-6]?\d[\d*]$/.test(term)
   }
 
   isExp(term) {
@@ -756,7 +756,7 @@ export class inventoryFilterValueConverter {
     let formFilter      = {}
     let checkVisible    = true
     let oneMonthFromNow = inventory.prototype.currentDate(1)
-    let isBin           = inventory.prototype.isBin(term.replace('*', ''))
+    let isBin           = inventory.prototype.isBin(term)
     let defaultCheck    = isBin || inventory.prototype.isExp(term)
 
     filter.checked = filter.checked || {}

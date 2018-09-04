@@ -2093,7 +2093,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.isBin = function isBin(term) {
-      return (/^[A-Za-z][0-6]?\d{2}$/.test(term)
+      return (/^[A-Za-z][0-6]?\d[\d*]$/.test(term)
       );
     };
 
@@ -2681,7 +2681,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var formFilter = {};
       var checkVisible = true;
       var oneMonthFromNow = inventory.prototype.currentDate(1);
-      var isBin = inventory.prototype.isBin(term.replace('*', ''));
+      var isBin = inventory.prototype.isBin(term);
       var defaultCheck = isBin || inventory.prototype.isExp(term);
 
       filter.checked = filter.checked || {};
