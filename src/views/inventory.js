@@ -184,11 +184,21 @@ export class inventory {
 
     let opts = {include_docs:true, limit, reduce:false}
 
-    if (type == 'bin') {
+    if (type == 'bin' && key.length == 3) {
       var query  = 'inventory-by-bin-verifiedat'
-      var bin    = key.split('') //don't do concat because bins can be of length 3 or 4
+      var bin    = key.split('') 
+      opts.startkey = [this.account._id, '', bin[0], bin[1], bin[2]]
+      opts.endkey   = [this.account._id, '', bin[0], bin[1], bin[2]+'\uffff']
+    } else if (type == 'bin' && bin[3] == '*') {
+      var query  = 'inventory-by-bin-verifiedat'
+      var bin    = key.split('')
+      opts.startkey = [this.account._id, bin[0], bin[1], bin[2]]
+      opts.endkey   = [this.account._id, bin[0], bin[1], bin[2], {}]
+    } else if (type == 'bin' && key.length == 4) {
+      var query  = 'inventory-by-bin-verifiedat'
+      var bin    = key.split('')
       opts.startkey = [this.account._id, bin[0], bin[1], bin[2], bin[3]]
-      opts.endkey   = [this.account._id, bin[0], bin[1], bin[2], bin[3] ? bin[3]+'\uffff' : {}]
+      opts.endkey   = [this.account._id, bin[0], bin[1], bin[2], bin[3]+'\uffff']
     } else if (type == 'exp<') {
       var query = 'expired.qty-by-bin'
       var [year, month] = key.split('-')

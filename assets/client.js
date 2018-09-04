@@ -2126,11 +2126,21 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var opts = { include_docs: true, limit: limit, reduce: false };
 
-      if (type == 'bin') {
+      if (type == 'bin' && key.length == 3) {
+        var query = 'inventory-by-bin-verifiedat';
+        var bin = key.split('');
+        opts.startkey = [this.account._id, '', bin[0], bin[1], bin[2]];
+        opts.endkey = [this.account._id, '', bin[0], bin[1], bin[2] + '\uFFFF'];
+      } else if (type == 'bin' && bin[3] == '*') {
+        var query = 'inventory-by-bin-verifiedat';
+        var bin = key.split('');
+        opts.startkey = [this.account._id, bin[0], bin[1], bin[2]];
+        opts.endkey = [this.account._id, bin[0], bin[1], bin[2], {}];
+      } else if (type == 'bin' && key.length == 4) {
         var query = 'inventory-by-bin-verifiedat';
         var bin = key.split('');
         opts.startkey = [this.account._id, bin[0], bin[1], bin[2], bin[3]];
-        opts.endkey = [this.account._id, bin[0], bin[1], bin[2], bin[3] ? bin[3] + '\uFFFF' : {}];
+        opts.endkey = [this.account._id, bin[0], bin[1], bin[2], bin[3] + '\uFFFF'];
       } else if (type == 'exp<') {
         var query = 'expired.qty-by-bin';
 
