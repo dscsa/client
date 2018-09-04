@@ -2129,18 +2129,18 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       if (type == 'bin' && key.length == 3) {
         var query = 'inventory-by-bin-verifiedat';
         var bin = key.split('');
-        opts.startkey = [this.account._id, '', bin[0], bin[1], bin[2]];
-        opts.endkey = [this.account._id, '', bin[0], bin[1], bin[2] + '\uFFFF'];
+        opts.startkey = [this.account._id, '', bin[0], bin[2], bin[1]];
+        opts.endkey = [this.account._id, '', bin[0], bin[2], bin[1], {}];
       } else if (type == 'bin' && key[3] == '*') {
         var query = 'inventory-by-bin-verifiedat';
         var bin = key.split('');
-        opts.startkey = [this.account._id, bin[0], bin[1], bin[2]];
-        opts.endkey = [this.account._id, bin[0], bin[1], bin[2], {}];
+        opts.startkey = [this.account._id, bin[0], bin[2], bin[1]];
+        opts.endkey = [this.account._id, bin[0], bin[2], bin[1], {}];
       } else if (type == 'bin' && key.length == 4) {
         var query = 'inventory-by-bin-verifiedat';
         var bin = key.split('');
-        opts.startkey = [this.account._id, bin[0], bin[1], bin[2], bin[3]];
-        opts.endkey = [this.account._id, bin[0], bin[1], bin[2], bin[3] + '\uFFFF'];
+        opts.startkey = [this.account._id, bin[0], bin[2], bin[1], bin[3]];
+        opts.endkey = [this.account._id, bin[0], bin[2], bin[1], bin[3], {}];
       } else if (type == 'exp<') {
         var query = 'expired.qty-by-bin';
 
