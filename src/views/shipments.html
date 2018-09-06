@@ -227,7 +227,7 @@
 
               </td>
               <td click.delegate="focusInput('#exp_'+$index)" class="mdl-data-table__cell--non-numeric" style="padding-left:0; overflow:hidden">
-                ${ transaction.next[0] | json } ${ transaction.drug.generic }
+                ${ transaction.drug.generic }
               </td>
               <td click.delegate="focusInput('#exp_'+$index)" class="mdl-data-table__cell--non-numeric" style="padding:0">
                 ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') }
