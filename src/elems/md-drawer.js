@@ -8,8 +8,6 @@ drawer.classList.add("mdl-layout__drawer")
 export class MdDrawerCustomElement {
 
   constructor(element) {
-    this.element = element
-
     element.classList.add("mdl-navigation")
     element.style['padding-top'] = '6px'
 
@@ -23,7 +21,7 @@ export class MdDrawerCustomElement {
     this.header = document.querySelector('.mdl-layout__header')
     this.header.parentNode.insertBefore(drawer, this.header.nextSibling)
 
-    componentHandler.upgradeElement(this.element)
+    componentHandler.upgradeAllRegistered() ///tried upgradeElement on this.element, drawer, this.header, this.button but all caused the drawer menu button to disappear
     //componentHandler.upgradeDom()
 
     this.button = document.querySelector('.mdl-layout__drawer-button')
