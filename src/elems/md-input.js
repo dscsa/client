@@ -53,7 +53,7 @@ export class MdInputCustomElement {
   }
 
   changed(methodName) {
-    this.taskQueue.queueMicroTask(_=> {
+    this.taskQueue.queueTask(_=> {
       if ( ! this.div || ! this.div.MaterialTextfield) return
 
       methodName && this.div.MaterialTextfield[methodName]()

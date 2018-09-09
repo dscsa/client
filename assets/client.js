@@ -244,7 +244,7 @@ define('client/src/elems/md-checkbox',['exports', 'aurelia-framework'], function
       var _this2 = this;
 
       this.checked = !!this.checked;
-      this.taskQueue.queueMicroTask(function (_) {
+      this.taskQueue.queueTask(function (_) {
         return _this2.label && _this2.label.MaterialCheckbox && _this2.label.MaterialCheckbox.checkToggleState();
       });
     };
@@ -252,7 +252,7 @@ define('client/src/elems/md-checkbox',['exports', 'aurelia-framework'], function
     MdCheckboxCustomElement.prototype.disabledChanged = function disabledChanged() {
       var _this3 = this;
 
-      this.taskQueue.queueMicroTask(function (_) {
+      this.taskQueue.queueTask(function (_) {
         return _this3.label && _this3.label.MaterialCheckbox && _this3.label.MaterialCheckbox.checkDisabled();
       });
     };
@@ -376,7 +376,7 @@ define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (e
     MdInputCustomElement.prototype.changed = function changed(methodName) {
       var _this = this;
 
-      this.taskQueue.queueMicroTask(function (_) {
+      this.taskQueue.queueTask(function (_) {
         if (!_this.div || !_this.div.MaterialTextfield) return;
 
         methodName && _this.div.MaterialTextfield[methodName]();

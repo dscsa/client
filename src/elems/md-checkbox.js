@@ -25,11 +25,11 @@ export class MdCheckboxCustomElement {
 
   checkedChanged() {
     this.checked = !! this.checked //force boolean or we get weird behavior
-    this.taskQueue.queueMicroTask(_ => this.label && this.label.MaterialCheckbox && this.label.MaterialCheckbox.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
+    this.taskQueue.queueTask(_ => this.label && this.label.MaterialCheckbox && this.label.MaterialCheckbox.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
   }
 
   disabledChanged() {
-    this.taskQueue.queueMicroTask(_ => this.label && this.label.MaterialCheckbox && this.label.MaterialCheckbox.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
+    this.taskQueue.queueTask(_ => this.label && this.label.MaterialCheckbox && this.label.MaterialCheckbox.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
   }
 
   attached() {
