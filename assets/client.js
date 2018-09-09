@@ -222,13 +222,14 @@ define('client/src/elems/md-checkbox',['exports', 'aurelia-framework'], function
 
   var _dec, _dec2, _dec3, _dec4, _class;
 
-  var MdCheckboxCustomElement = exports.MdCheckboxCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
-    function MdCheckboxCustomElement(element) {
+  var MdCheckboxCustomElement = exports.MdCheckboxCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element, _aureliaFramework.TaskQueue), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
+    function MdCheckboxCustomElement(element, taskQueue) {
       var _this = this;
 
       _classCallCheck(this, MdCheckboxCustomElement);
 
       this.tabindex = element.tabIndex;
+      this.taskQueue = taskQueue;
 
       element.addEventListener('click', function (e) {
         return _this.disabled && e.stopPropagation();
@@ -243,7 +244,7 @@ define('client/src/elems/md-checkbox',['exports', 'aurelia-framework'], function
       var _this2 = this;
 
       this.checked = !!this.checked;
-      setTimeout(function (_) {
+      this.taskQueue.queueMicroTask(function (_) {
         return _this2.label && _this2.label.MaterialCheckbox && _this2.label.MaterialCheckbox.checkToggleState();
       });
     };
@@ -251,8 +252,8 @@ define('client/src/elems/md-checkbox',['exports', 'aurelia-framework'], function
     MdCheckboxCustomElement.prototype.disabledChanged = function disabledChanged() {
       var _this3 = this;
 
-      setTimeout(function (_) {
-        return _this3.label && _this3.label.MaterialCheckbox.checkDisabled();
+      this.taskQueue.queueMicroTask(function (_) {
+        return _this3.label && _this3.label.MaterialCheckbox && _this3.label.MaterialCheckbox.checkDisabled();
       });
     };
 
@@ -331,11 +332,13 @@ define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (e
     }
   }
 
-  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _class;
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _class;
 
-  var MdInputCustomElement = exports.MdInputCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('pattern'), _dec4 = (0, _aureliaFramework.bindable)('step'), _dec5 = (0, _aureliaFramework.bindable)('type'), _dec6 = (0, _aureliaFramework.bindable)('placeholder'), _dec7 = (0, _aureliaFramework.bindable)('input'), _dec8 = (0, _aureliaFramework.bindable)('max'), _dec9 = (0, _aureliaFramework.bindable)('min'), _dec10 = (0, _aureliaFramework.bindable)('required'), _dec11 = (0, _aureliaFramework.bindable)('minlength'), _dec12 = (0, _aureliaFramework.bindable)('maxlength'), _dec13 = (0, _aureliaFramework.bindable)('autofocus'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = _dec8(_class = _dec9(_class = _dec10(_class = _dec11(_class = _dec12(_class = _dec13(_class = function () {
-    function MdInputCustomElement() {
+  var MdInputCustomElement = exports.MdInputCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('pattern'), _dec4 = (0, _aureliaFramework.bindable)('step'), _dec5 = (0, _aureliaFramework.bindable)('type'), _dec6 = (0, _aureliaFramework.bindable)('placeholder'), _dec7 = (0, _aureliaFramework.bindable)('input'), _dec8 = (0, _aureliaFramework.bindable)('max'), _dec9 = (0, _aureliaFramework.bindable)('min'), _dec10 = (0, _aureliaFramework.bindable)('required'), _dec11 = (0, _aureliaFramework.bindable)('minlength'), _dec12 = (0, _aureliaFramework.bindable)('maxlength'), _dec13 = (0, _aureliaFramework.bindable)('autofocus'), _dec14 = (0, _aureliaFramework.inject)(_aureliaFramework.TaskQueue), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = _dec8(_class = _dec9(_class = _dec10(_class = _dec11(_class = _dec12(_class = _dec13(_class = _dec14(_class = function () {
+    function MdInputCustomElement(taskQueue) {
       _classCallCheck(this, MdInputCustomElement);
+
+      this.taskQueue = taskQueue;
     }
 
     MdInputCustomElement.prototype.valueChanged = function valueChanged() {
@@ -373,7 +376,7 @@ define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (e
     MdInputCustomElement.prototype.changed = function changed(methodName) {
       var _this = this;
 
-      setTimeout(function (_) {
+      this.taskQueue.queueMicroTask(function (_) {
         if (!_this.div || !_this.div.MaterialTextfield) return;
 
         methodName && _this.div.MaterialTextfield[methodName]();
@@ -395,7 +398,7 @@ define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (e
     };
 
     return MdInputCustomElement;
-  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
 });
 define('client/src/elems/md-loading',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';

@@ -1,13 +1,14 @@
-import {bindable, bindingMode, inject} from 'aurelia-framework';
+import {bindable, bindingMode, inject, TaskQueue} from 'aurelia-framework';
 
 @bindable({name:'checked', defaultBindingMode: bindingMode.twoWay})
 @bindable('disabled')
 @bindable('required')
-@inject(Element)
+@inject(Element, TaskQueue)
 export class MdCheckboxCustomElement {
 
-  constructor(element) {
-    this.tabindex = element.tabIndex
+  constructor(element, taskQueue) {
+    this.tabindex  = element.tabIndex
+    this.taskQueue = taskQueue
     //Can't do this with <template click.delegate> since that overwrites authors delegate fn
     element.addEventListener('click', e => this.disabled && e.stopPropagation())
   }
@@ -24,11 +25,11 @@ export class MdCheckboxCustomElement {
 
   checkedChanged() {
     this.checked = !! this.checked //force boolean or we get weird behavior
-    setTimeout(_ => this.label && this.label.MaterialCheckbox && this.label.MaterialCheckbox.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
+    this.taskQueue.queueMicroTask(_ => this.label && this.label.MaterialCheckbox && this.label.MaterialCheckbox.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
   }
 
   disabledChanged() {
-    setTimeout(_ => this.label && this.label.MaterialCheckbox.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
+    this.taskQueue.queueMicroTask(_ => this.label && this.label.MaterialCheckbox && this.label.MaterialCheckbox.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
   }
 
   attached() {

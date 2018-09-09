@@ -1,4 +1,4 @@
-import {inject, bindable, bindingMode} from 'aurelia-framework';
+import {inject, bindable, bindingMode, TaskQueue} from 'aurelia-framework';
 
 @bindable({name:'value', defaultBindingMode: bindingMode.twoWay})
 @bindable('disabled')
@@ -13,7 +13,12 @@ import {inject, bindable, bindingMode} from 'aurelia-framework';
 @bindable('minlength')
 @bindable('maxlength')
 @bindable('autofocus')
+@inject(TaskQueue)
 export class MdInputCustomElement {
+
+  constructor(taskQueue) {
+    this.taskQueue = taskQueue
+  }
 
   valueChanged() {
     this.changed('checkDirty')
@@ -48,7 +53,7 @@ export class MdInputCustomElement {
   }
 
   changed(methodName) {
-    setTimeout(_=> {
+    this.taskQueue.queueMicroTask(_=> {
       if ( ! this.div || ! this.div.MaterialTextfield) return
 
       methodName && this.div.MaterialTextfield[methodName]()
