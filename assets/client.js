@@ -259,7 +259,6 @@ define('client/src/elems/md-checkbox',['exports', 'aurelia-framework'], function
     MdCheckboxCustomElement.prototype.attached = function attached() {
       componentHandler.upgradeElement(this.label);
       this.checkedChanged();
-      this.disabledChanged();
     };
 
     return MdCheckboxCustomElement;

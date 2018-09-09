@@ -34,6 +34,6 @@ export class MdCheckboxCustomElement {
   attached() {
     componentHandler.upgradeElement(this.label)
     this.checkedChanged()
-    this.disabledChanged()
+    //this.disabledChanged() this appears to double the number of calls needed on load (34 items in shipment -> 68 calls)
   }
 }
