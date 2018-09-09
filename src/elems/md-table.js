@@ -26,7 +26,6 @@ export class MdTableCustomAttribute {
   }
 
   attached() {
-
-    componentHandler.upgradeAllRegistered()
+    componentHandler.upgradeElement(this.element)
   }
 }

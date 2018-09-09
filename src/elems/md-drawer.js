@@ -8,6 +8,8 @@ drawer.classList.add("mdl-layout__drawer")
 export class MdDrawerCustomElement {
 
   constructor(element) {
+    this.element = element
+
     element.classList.add("mdl-navigation")
     element.style['padding-top'] = '6px'
 
@@ -21,7 +23,7 @@ export class MdDrawerCustomElement {
     this.header = document.querySelector('.mdl-layout__header')
     this.header.parentNode.insertBefore(drawer, this.header.nextSibling)
 
-    componentHandler.upgradeAllRegistered()
+    componentHandler.upgradeElement(this.element)
     //componentHandler.upgradeDom()
 
     this.button = document.querySelector('.mdl-layout__drawer-button')

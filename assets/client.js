@@ -287,6 +287,8 @@ define('client/src/elems/md-drawer',['exports', 'aurelia-framework'], function (
     function MdDrawerCustomElement(element) {
       _classCallCheck(this, MdDrawerCustomElement);
 
+      this.element = element;
+
       element.classList.add("mdl-navigation");
       element.style['padding-top'] = '6px';
 
@@ -299,7 +301,7 @@ define('client/src/elems/md-drawer',['exports', 'aurelia-framework'], function (
       this.header = document.querySelector('.mdl-layout__header');
       this.header.parentNode.insertBefore(drawer, this.header.nextSibling);
 
-      componentHandler.upgradeAllRegistered();
+      componentHandler.upgradeElement(this.element);
 
 
       this.button = document.querySelector('.mdl-layout__drawer-button');
@@ -733,8 +735,7 @@ define('client/src/elems/md-table',["exports", "aurelia-framework"], function (e
     };
 
     MdTableCustomAttribute.prototype.attached = function attached() {
-
-      componentHandler.upgradeAllRegistered();
+      componentHandler.upgradeElement(this.element);
     };
 
     return MdTableCustomAttribute;
