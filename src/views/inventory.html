@@ -238,9 +238,9 @@
             <td style="padding:0">
               <md-checkbox name = "pro_transaction_checkbox" click.delegate="toggleCheck(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
             </td>
-            <td class="mdl-data-table__cell--non-numeric" style="padding-left:0; overflow:hidden">${ transaction.drug.generic }</td>
-            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form }</td>
-            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '')}</td>
+            <td class="mdl-data-table__cell--non-numeric" style="padding-left:0; overflow:hidden">${ transaction.drug.generic  & oneTime }</td>
+            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form  & oneTime }</td>
+            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') & oneTime }</td>
             <td style="padding:0">
               <md-input
                 name = "pro_transaction_exp"
