@@ -32,7 +32,7 @@ export class MdCheckboxCustomElement {
   }
 
   attached() {
-    componentHandler.upgradeAllRegistered()
+    componentHandler.upgradeElement(this.label)
     this.checkedChanged()
     this.disabledChanged()
   }
