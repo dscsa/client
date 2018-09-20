@@ -138,7 +138,7 @@ export class drugs {
       generics:(this.drug && this.drug.generics) || [], //keep default strenght from showing up as "undefined"
       form:this.drug && this.drug.form,
       brand:this.drug && this.drug.brand,
-      gsn:this.drug && this.drug.gsn,
+      gsns:this.drug && this.drug.gsns,
     }
 
     //If needed, add blank row so user can add more ingredients

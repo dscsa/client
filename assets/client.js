@@ -1677,7 +1677,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
         generics: this.drug && this.drug.generics || [],
         form: this.drug && this.drug.form,
         brand: this.drug && this.drug.brand,
-        gsn: this.drug && this.drug.gsn
+        gsns: this.drug && this.drug.gsns
       };
 
       this.setGenericRows(this.drug.generics.slice(-1)[0], 0, true);
