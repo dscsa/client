@@ -91,6 +91,11 @@ sudo ln -s /dscsa/couchdb/log /var/log/couchdb
 #stop if new instance, move files to non-bootable drive
 ###
 
+### Raise File Limits
+# Or you will get errors like '"{mochiweb_socket_server,341,{acceptor_error,{error,accept_failed}}} Accept failed error", "{error,emfile}"'
+# http://docs.couchdb.org/en/latest/maintenance/performance.html?highlight=ulimit#maximum-open-file-descriptors-ulimit
+# Current production server has them in /etc/security/limits.conf
+
 #install nodejs and application
 #goto https://deb.nodesource.com and find the latest version
 curl --silent --location https://deb.nodesource.com/setup_<VERSION>.x | sudo bash -
