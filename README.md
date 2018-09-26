@@ -70,7 +70,11 @@ cd /dscsa
 echo "deb https://apache.bintray.com/couchdb-deb xenial main" | sudo tee -a /etc/apt/sources.list #note: xenial is for Ubuntu 16
 curl -L https://couchdb.apache.org/repo/bintray-pubkey.asc | sudo apt-key add -
 sudo apt-get update && sudo apt-get install couchdb # select option for standalone, 0.0.0.0, set db password
+
+
 # goto <elastic-ip>:5984/_utils.  CouchDB should have been started automatically
+enable CORS
+[fabric] request_timeout 120000
 
 ###
 #start if new instance, move files to non-bootable drive
