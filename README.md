@@ -94,7 +94,25 @@ sudo ln -s /dscsa/couchdb/log /var/log/couchdb
 ### Raise File Limits
 # Or you will get errors like '"{mochiweb_socket_server,341,{acceptor_error,{error,accept_failed}}} Accept failed error", "{error,emfile}"'
 # http://docs.couchdb.org/en/latest/maintenance/performance.html?highlight=ulimit#maximum-open-file-descriptors-ulimit
-# Current production server has them in /etc/security/limits.conf
+#
+
+sudo nano /etc/security/limits.conf
+  couchdb      hard      nofile    200000
+  couchdb      soft      nofile    200000
+  root         hard      nofile    200000
+  root         soft      nofile    200000
+
+
+sudo nano /etc/systemd/system/multi-user.target.wants/couchdb.service
+  [Service]
+  LimitNOFILE=200000
+
+sudo nano /etc/pam.d/common-session
+  session required pam_limits.so
+
+#to test file limit was increased
+# sudo su couchdb; ulimit -n; exit
+
 
 #install nodejs and application
 #goto https://deb.nodesource.com and find the latest version
