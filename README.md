@@ -75,6 +75,7 @@ sudo apt-get update && sudo apt-get install couchdb # select option for standalo
 # goto <elastic-ip>:5984/_utils.  CouchDB should have been started automatically
 enable CORS
 [fabric] request_timeout 120000
+[compactions] _defaults [{db_fragmentation, "5%"}, {view_fragmentation, "5%"},{from, "00:00"}, {to, "04:00"}]
 
 ###
 #start if new instance, move files to non-bootable drive
