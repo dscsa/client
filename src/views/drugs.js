@@ -225,32 +225,55 @@ export class drugs {
         chain = chain
         .then(_ => {
           let drug = drugs[i]
+          if("update_message" in drug){ //So we're updating warning messages (probably to handle recalls)
+            console.log("Updating drug warning messages")
+            this.snackbar.show("Updating warning messages")
+            this.db.drug.query('ndc9', { id:drug._id, include_docs:true})
+            .then(drugs_found => {
 
-          drug = {
-            _id:trim(drug._id),
-            brand:trim(drug.brand),
-            form:capitalize(drug.form),
-            image:trim(drug.image),
-            labeler:capitalize(drug.labeler),
-            generics:drug.generics.split(";").filter(v => v).map(generic => {
-              let [name, strength] = generic.split(/(?= [\d.]+)/)
-              return {
-                name:capitalize(name),
-                strength:trim(strength || '').toLowerCase().replace(/ /g, '')
+              let item = drugs_found.rows[0].doc
+              console.log(item)
+
+              if("warning" in item){ //if there's already a warning
+                console.log(item.warning)
+                item.warning += ". " + drug.update_message
+              } else {
+                item.warning = drug.update_message
               }
-            }),
-            price:drug.price
-          }
+              return this.db.drug.post(item)
 
-          return this.db.drug.post(drug)
-          .catch(err => {
-            drug._err = 'Upload Error: '+JSON.stringify(err)
-            errs.push(drug)
-          })
-          .then(_ => {
-            if (+i && (i % 100 == 0))
-              this.snackbar.show(`Imported ${i} of ${drugs.length}`)
-          })
+            })
+            .catch(err =>{
+              console.log("Drug not found")
+            })
+
+          } else { //Otherwise, it's just that we're importing drugs
+            drug = {
+              _id:trim(drug._id),
+              brand:trim(drug.brand),
+              form:capitalize(drug.form),
+              image:trim(drug.image),
+              labeler:capitalize(drug.labeler),
+              generics:drug.generics.split(";").filter(v => v).map(generic => {
+                let [name, strength] = generic.split(/(?= [\d.]+)/)
+                return {
+                  name:capitalize(name),
+                  strength:trim(strength || '').toLowerCase().replace(/ /g, '')
+                }
+              }),
+              price:drug.price
+            }
+
+            return this.db.drug.post(drug)
+            .catch(err => {
+              drug._err = 'Upload Error: '+JSON.stringify(err)
+              errs.push(drug)
+            })
+            .then(_ => {
+              if (+i && (i % 100 == 0))
+                this.snackbar.show(`Imported ${i} of ${drugs.length}`)
+              })
+          }
         })
       }
 
