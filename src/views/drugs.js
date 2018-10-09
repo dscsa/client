@@ -215,7 +215,7 @@ export class drugs {
     function trim(text) {
       return text ? text.trim() : text
     }
-
+    let update_csv = false
     this.csv.toJSON(this.$file.files[0], drugs => {
       this.$file.value = ''
       let errs  = []
@@ -228,6 +228,9 @@ export class drugs {
           if("update_message" in drug){ //So we're updating warning messages (probably to handle recalls)
             console.log("Updating drug warning messages")
             this.snackbar.show("Updating warning messages")
+            update_csv = true
+
+            //TODO: Improve how we look up here
             this.db.drug.query('ndc9', { id:drug._id, include_docs:true})
             .then(drugs_found => {
 
@@ -241,6 +244,14 @@ export class drugs {
                 item.warning = drug.update_message
               }
               return this.db.drug.post(item)
+              .catch(err =>{
+                item._err = 'Upload Error: '+JSON.stringify(err)
+                errs.push(item)
+              })
+              .then(_ =>{
+                item._err = "Message added successfully"
+                errs.push(item)
+              })
 
             })
             .catch(err =>{
