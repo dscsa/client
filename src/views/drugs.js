@@ -215,7 +215,7 @@ export class drugs {
     function trim(text) {
       return text ? text.trim() : text
     }
-    let update_csv = false
+    
     this.csv.toJSON(this.$file.files[0], drugs => {
       this.$file.value = ''
       let errs  = []
@@ -223,42 +223,40 @@ export class drugs {
 
       for (let i in drugs) {
         chain = chain
+
         .then(_ => {
           let drug = drugs[i]
+
           if("update_message" in drug){ //So we're updating warning messages (probably to handle recalls)
+            
             console.log("Updating drug warning messages")
             this.snackbar.show("Updating warning messages")
-            update_csv = true
 
-            //TODO: Improve how we look up here
-            this.db.drug.query('ndc9', { id:drug._id, include_docs:true})
-            .then(drugs_found => {
+            //Lookup using same search functionality as the search bar
+            this.term = drug._id //lookup by NDC here
+            this.drugSearch().then(drugs_found => {
+              let item = drugs_found[0]
+              console.log("Drug found: " + item.generics[0].name + " " + item.generics[0].strength + ", NDC: " + item.ndc9)
 
-              let item = drugs_found.rows[0].doc
-              console.log(item)
-
-              if("warning" in item){ //if there's already a warning
-                console.log(item.warning)
-                item.warning += ". " + drug.update_message
+              if("warning" in item){ //if there's already a warning, prepend this to it.
+                item.warning =  drug.update_message + "; " + item.warning
               } else {
                 item.warning = drug.update_message
               }
-              return this.db.drug.post(item)
-              .catch(err =>{
-                item._err = 'Upload Error: '+JSON.stringify(err)
-                errs.push(item)
-              })
-              .then(_ =>{
-                item._err = "Message added successfully"
-                errs.push(item)
-              })
 
+              return this.db.drug.post(item) //then update the DB for this item
+              .then(_ =>{
+                console.log("Message saved")
+              })
+              .catch(err =>{
+                console.log("ERROR UPDATING MESSAGE:" + JSON.stringify(err))
+              })
             })
             .catch(err =>{
-              console.log("Drug not found")
+              console.log("Drug not found: " + JSON.stringify(err))
             })
 
-          } else { //Otherwise, it's just that we're importing drugs
+          } else { //Otherwise, it's just that we're importing drugs, this is the original simple adding code
             drug = {
               _id:trim(drug._id),
               brand:trim(drug.brand),
