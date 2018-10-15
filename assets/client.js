@@ -1593,7 +1593,6 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
         _this.drawer = {
           ordered: Object.keys(_this.account.ordered).sort()
         };
-
         if (params.id) return _this.db.drug.get(params.id).then(function (drug) {
           _this.selectDrug(drug, true);
         });
@@ -1786,33 +1785,58 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
           chain = chain.then(function (_) {
             var drug = drugs[i];
 
-            drug = {
-              _id: trim(drug._id),
-              brand: trim(drug.brand),
-              form: capitalize(drug.form),
-              image: trim(drug.image),
-              labeler: capitalize(drug.labeler),
-              generics: drug.generics.split(";").filter(function (v) {
-                return v;
-              }).map(function (generic) {
-                var _generic$split = generic.split(/(?= [\d.]+)/),
-                    name = _generic$split[0],
-                    strength = _generic$split[1];
+            if ("add_warning" in drug) {
 
-                return {
-                  name: capitalize(name),
-                  strength: trim(strength || '').toLowerCase().replace(/ /g, '')
-                };
-              }),
-              price: drug.price
-            };
+              console.log("Updating drug warning messages");
+              _this7.snackbar.show("Updating warning messages");
 
-            return _this7.db.drug.post(drug).catch(function (err) {
-              drug._err = 'Upload Error: ' + JSON.stringify(err);
-              errs.push(drug);
-            }).then(function (_) {
-              if (+i && i % 100 == 0) _this7.snackbar.show('Imported ' + i + ' of ' + drugs.length);
-            });
+              _this7.db.drug.get(drug._id).then(function (drugs_found) {
+                var item = drugs_found;
+                console.log("Drug found: " + item.generics[0].name + " " + item.generics[0].strength + ", NDC: " + item.ndc9);
+
+                if ("warning" in item) {
+                  item.warning = drug.add_warning + "; " + item.warning;
+                } else {
+                  item.warning = drug.add_warning;
+                }
+
+                return _this7.db.drug.post(item).then(function (_) {
+                  console.log("Message saved");
+                }).catch(function (err) {
+                  console.log("ERROR UPDATING MESSAGE:" + JSON.stringify(err));
+                });
+              }).catch(function (err) {
+                console.log("Drug not found: " + JSON.stringify(err));
+              });
+            } else {
+              drug = {
+                _id: trim(drug._id),
+                brand: trim(drug.brand),
+                form: capitalize(drug.form),
+                image: trim(drug.image),
+                labeler: capitalize(drug.labeler),
+                generics: drug.generics.split(";").filter(function (v) {
+                  return v;
+                }).map(function (generic) {
+                  var _generic$split = generic.split(/(?= [\d.]+)/),
+                      name = _generic$split[0],
+                      strength = _generic$split[1];
+
+                  return {
+                    name: capitalize(name),
+                    strength: trim(strength || '').toLowerCase().replace(/ /g, '')
+                  };
+                }),
+                price: drug.price
+              };
+
+              return _this7.db.drug.post(drug).catch(function (err) {
+                drug._err = 'Upload Error: ' + JSON.stringify(err);
+                errs.push(drug);
+              }).then(function (_) {
+                if (+i && i % 100 == 0) _this7.snackbar.show('Imported ' + i + ' of ' + drugs.length);
+              });
+            }
           });
         };
 
@@ -2886,7 +2910,13 @@ define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router'
         return _this.router.navigate('shipments');
       }).catch(function (err) {
         _this.disabled = false;
-        _this.snackbar.error('Join failed', { err: err, account: _this.account, user: _this.user });
+
+        err.account = _this.account;
+        err.user = _this.user;
+
+        if (err.message == "Document update conflict") err.message = "phone number must be unique";
+
+        _this.snackbar.error('Join failed', err);
       });
     };
 

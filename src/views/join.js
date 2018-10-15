@@ -63,7 +63,14 @@ export class join {
     })
     .catch(err => {
       this.disabled = false
-      this.snackbar.error('Join failed', {err, account:this.account, user:this.user})
+
+      err.account = this.account
+      err.user = this.user
+
+      if (err.message == "Document update conflict")
+        err.message = "phone number must be unique"
+        
+      this.snackbar.error('Join failed', err)
     })
   }
 }

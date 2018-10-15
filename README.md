@@ -99,6 +99,7 @@ sudo ln -s /dscsa/couchdb/log /var/log/couchdb
 ### Raise File Limits
 # Or you will get errors like '"{mochiweb_socket_server,341,{acceptor_error,{error,accept_failed}}} Accept failed error", "{error,emfile}"'
 # http://docs.couchdb.org/en/latest/maintenance/performance.html?highlight=ulimit#maximum-open-file-descriptors-ulimit
+# https://stackoverflow.com/questions/41103624/emfile-error-running-couchdb-on-ubuntu-16?noredirect=1&lq=1
 #
 
 sudo nano /etc/security/limits.conf
