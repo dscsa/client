@@ -39,7 +39,6 @@ export class drugs {
       this.drawer  = {
         ordered:Object.keys(this.account.ordered).sort()
       }
-
       if (params.id)
         return this.db.drug.get(params.id).then(drug => {
           this.selectDrug(drug, true)
@@ -227,21 +226,19 @@ export class drugs {
         .then(_ => {
           let drug = drugs[i]
 
-          if("update_message" in drug){ //So we're updating warning messages (probably to handle recalls)
+          if("add_warning" in drug){ //So we're updating warning messages (probably to handle recalls)
             
             console.log("Updating drug warning messages")
             this.snackbar.show("Updating warning messages")
 
-            //Lookup using same search functionality as the search bar
-            this.term = drug._id //lookup by NDC here
-            this.drugSearch().then(drugs_found => {
-              let item = drugs_found[0]
+            this.db.drug.get(drug._id).then(drugs_found => {
+              let item = drugs_found
               console.log("Drug found: " + item.generics[0].name + " " + item.generics[0].strength + ", NDC: " + item.ndc9)
 
               if("warning" in item){ //if there's already a warning, prepend this to it.
-                item.warning =  drug.update_message + "; " + item.warning
+                item.warning =  drug.add_warning + "; " + item.warning
               } else {
-                item.warning = drug.update_message
+                item.warning = drug.add_warning
               }
 
               return this.db.drug.post(item) //then update the DB for this item
