@@ -49,6 +49,10 @@ export class drugs {
 
       return this.selectDrug()
     })
+    .catch(err => {
+      console.error('Could not get session for user.  Please verify user registration and login are functioning properly')
+    })
+
   }
 
   scrollGroups($event) {
@@ -214,7 +218,7 @@ export class drugs {
     function trim(text) {
       return text ? text.trim() : text
     }
-    
+
     this.csv.toJSON(this.$file.files[0], drugs => {
       this.$file.value = ''
       let errs  = []
@@ -227,7 +231,7 @@ export class drugs {
           let drug = drugs[i]
 
           if("add_warning" in drug){ //So we're updating warning messages (probably to handle recalls)
-            
+
             console.log("Updating drug warning messages")
             this.snackbar.show("Updating warning messages")
 

@@ -115,6 +115,9 @@ export class shipments {
       //   this.db.shipment.get({'account.to._id':accounts[0]._id})
       // ])
     })
+    .catch(err => {
+      console.error('Could not get session for user.  Please verify user registration and login are functioning properly')
+    })
     // .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
     //
     // })

@@ -1600,6 +1600,8 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
         if (_this.drawer.ordered[0]) return _this.selectDrawer(_this.drawer.ordered[0]);
 
         return _this.selectDrug();
+      }).catch(function (err) {
+        console.error('Could not get session for user.  Please verify user registration and login are functioning properly');
       });
     };
 
@@ -2583,8 +2585,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.openMenu = function openMenu($event) {
-      console.log('openMenu called', $event.target.tagName, this.transactions.length, $event.target.tagName != 'I', !this.transactions.length, this.repacks);
-      if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'MD-MENU') return true;
+      console.log('openMenu called', $event.target.tagName, this.transactions.length, !this.transactions.length, this.repacks);
+      if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'LI' && $event.target.tagName != 'MD-MENU') return true;
 
       if (!this.transactions.length) {
         console.log('openMenu transactions.length == 0', this.repacks);
@@ -3094,6 +3096,8 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         }).catch(function (err) {
           return console.log('promise all err', err);
         });
+      }).catch(function (err) {
+        console.error('Could not get session for user.  Please verify user registration and login are functioning properly');
       });
     };
 
