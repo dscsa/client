@@ -2586,7 +2586,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.openMenu = function openMenu($event) {
       console.log('openMenu called', $event.target.tagName, this.transactions.length, !this.transactions.length, this.repacks);
-      if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'LI' && $event.target.tagName != 'MD-MENU') return true;
+      if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'MD-MENU') return true;
 
       if (!this.transactions.length) {
         console.log('openMenu transactions.length == 0', this.repacks);
