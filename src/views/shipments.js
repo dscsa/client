@@ -58,9 +58,14 @@ export class shipments {
         let selected, map = {to:{},from:{}}
 
         this.accounts  = {
-          from:[''].concat(senderAccounts.map(({doc}) => {
+          from:[''].concat(senderAccounts
+          .map(({doc}) => {
             this.ordered[doc._id] = doc.ordered
             return map.from[doc._id] = {_id:doc._id, name:doc.name}
+          })
+          .sort((a, b) => { //Sort by ascending name
+            if (a.name > b.name) return 1
+            if (a.name < b.name) return -1
           }))
         }
 

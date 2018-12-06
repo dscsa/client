@@ -135,19 +135,24 @@ export class drugs {
     //Default is for Add Drug menu item in view
     console.log('selectDrug()', this.group && this.group.name, this.group && this.group.generic, this.drug, drug)
 
-
+    let url
     ///Drug is not set if we are adding a new drug
-    this.drug = drug || {
-      generics:(this.drug && this.drug.generics) || [], //keep default strenght from showing up as "undefined"
-      form:this.drug && this.drug.form,
-      brand:this.drug && this.drug.brand,
-      gsns:this.drug && this.drug.gsns,
+    if (drug) {
+      this.drug = drug
+      url = 'drugs/'+this.drug._id
+    } else {
+      this.drug = {
+        generics:(this.drug && this.drug.generics) || [], //keep default strenght from showing up as "undefined"
+        form:this.drug && this.drug.form,
+        brand:this.drug && this.drug.brand,
+        gsns:this.drug && this.drug.gsns,
+      }
+      url = 'drugs'
+      this.ndcField.focus() //save time when entering new drugs
     }
 
     //If needed, add blank row so user can add more ingredients
     this.setGenericRows(this.drug.generics.slice(-1)[0], 0, true)
-
-    let url = this.drug._id ? 'drugs/'+this.drug._id : 'drugs'
     this.router.navigate(url, { trigger: false })
 
     if (autoselectGroup)
