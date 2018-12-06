@@ -83,13 +83,13 @@ export function scrollSelect($event, curr, list = [], cb) {
     cb.call(this, list[index < last ? index+1 : 0])
 }
 
-export function focusInput(selector, fallback) {
+export function focusInput(selector, force) {
   let elem = document.querySelector(`${selector} input`)
 
-  if (elem && ! elem.disabled)
+  if (elem && (force === true || ! elem.disabled))
     elem.focus()
-  else if (fallback)
-    document.querySelector(`${fallback} input`).focus()
+  else if (force)
+    document.querySelector(`${force} input`).focus()
   else
     console.log(`Cannot find ${selector} input`)
 

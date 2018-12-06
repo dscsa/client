@@ -912,10 +912,10 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     if ($event.which == 40) cb.call(this, list[index < last ? index + 1 : 0]);
   }
 
-  function focusInput(selector, fallback) {
+  function focusInput(selector, force) {
     var elem = document.querySelector(selector + ' input');
 
-    if (elem && !elem.disabled) elem.focus();else if (fallback) document.querySelector(fallback + ' input').focus();else console.log('Cannot find ' + selector + ' input');
+    if (elem && (force === true || !elem.disabled)) elem.focus();else if (force) document.querySelector(force + ' input').focus();else console.log('Cannot find ' + selector + ' input');
 
     return false;
   }
@@ -1688,7 +1688,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
           gsns: this.drug && this.drug.gsns
         };
         url = 'drugs';
-        this.focusInput('[name=pro_ndc_field]');
+        this.focusInput('[name=pro_ndc_field]', true);
       }
 
       this.setGenericRows(this.drug.generics.slice(-1)[0], 0, true);
