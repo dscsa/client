@@ -274,7 +274,7 @@
                   name = "pro_bin"
                   id.bind="'bin_'+$index"
                   required
-                  disabled.bind=" ! transaction.isChecked || transaction.next[0]"
+                  disabled.bind=" ! transaction.isChecked || transaction.next[0] || shipment._id != shipmentId"
                   keyup.delegate="setBin(transaction) & debounce:1500"
                   keydown.delegate="binShortcuts($event, $index)"
                   pattern.bind="shipment._rev ? '[A-Za-z][0-6]\\d{2}' : '[A-Za-z][0-6]?\\d{2}'"
