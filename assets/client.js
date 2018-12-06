@@ -1574,6 +1574,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       this.scrollSelect = _helpers.scrollSelect;
       this.drugSearch = _helpers.drugSearch;
       this.groupDrugs = _helpers.groupDrugs;
+      this.focusInput = _helpers.focusInput;
       this.drugName = _helpers.drugName;
       this.canActivate = _helpers.canActivate;
     }
@@ -1687,7 +1688,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
           gsns: this.drug && this.drug.gsns
         };
         url = 'drugs';
-        this.ndcField.focus();
+        this.focusInput('[name=pro_ndc_field]');
       }
 
       this.setGenericRows(this.drug.generics.slice(-1)[0], 0, true);

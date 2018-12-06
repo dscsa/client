@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
 import {Pouch}     from '../libs/pouch'
 import {csv}    from '../libs/csv'
-import {canActivate, scrollSelect, toggleDrawer, drugSearch, drugName, groupDrugs} from '../resources/helpers'
+import {canActivate, scrollSelect, toggleDrawer, drugSearch, drugName, groupDrugs, focusInput} from '../resources/helpers'
 
 
 //@pageState()
@@ -19,6 +19,7 @@ export class drugs {
     this.scrollSelect = scrollSelect
     this.drugSearch   = drugSearch
     this.groupDrugs   = groupDrugs
+    this.focusInput   = focusInput
     this.drugName     = drugName
     this.canActivate  = canActivate
   }
@@ -148,7 +149,7 @@ export class drugs {
         gsns:this.drug && this.drug.gsns,
       }
       url = 'drugs'
-      this.ndcField.focus() //save time when entering new drugs
+      this.focusInput('[name=pro_ndc_field]') //save time when entering new drugs
     }
 
     //If needed, add blank row so user can add more ingredients
