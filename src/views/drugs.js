@@ -149,7 +149,12 @@ export class drugs {
         gsns:this.drug && this.drug.gsns,
       }
       url = 'drugs'
-      this.focusInput('[name=pro_ndc_field]', true) //save time when entering new drugs
+      
+      //save time when entering new drugs.  Wait because field is disabled right now and will take a bit to enable.
+      setTimeout(_ => {
+        this.focusInput('[name=pro_ndc_field]')
+      }, 100)
+
     }
 
     //If needed, add blank row so user can add more ingredients
