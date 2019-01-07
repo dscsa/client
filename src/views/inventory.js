@@ -208,7 +208,7 @@ export class inventory {
       //Only show medicine at least one month from expiration
       //just in case there is a lot of it and limit prevent us from seeing more
       var query = 'inventory.qty-by-generic'
-      var [year, month] = this.currentDate(1, true)
+      var [year, month] = this.currentDate(0, true)
       opts.startkey = [this.account._id, 'month', year, month, key]
       opts.endkey   = [this.account._id, 'month', year, month, key, {}] //Use of {} rather than \uffff so we don't combine different drug.forms
     }
@@ -615,7 +615,7 @@ export class inventory {
 
   exportCSV() {
 
-    let [year, month, day] = this.currentDate(1, true)
+    let [year, month, day] = this.currentDate(0, true)
     let name = `Inventory ${year}-${month}-${day}.csv`
     let opts = {
       reduce:false,
