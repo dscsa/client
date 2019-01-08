@@ -222,7 +222,7 @@ export class inventory {
       //var removedAt  = require('nextAt')(doc) || require('expiredAt')(doc)
       //But not sure how this would affect other views.  Would need to test on test server
       let docs = []
-      for (let row of rows) {
+      for (let row of res.rows) {
         if ( ! row.doc.next.length) docs.push(row.doc)
         else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
       }

@@ -2202,7 +2202,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var setTransactions = function setTransactions(res) {
         var docs = [];
-        for (var _iterator2 = rows, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+        for (var _iterator2 = res.rows, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
           var _ref2;
 
           if (_isArray2) {
