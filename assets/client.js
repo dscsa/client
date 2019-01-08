@@ -2192,7 +2192,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       } else if (type == 'generic') {
         var query = 'inventory.qty-by-generic';
 
-        var _currentDate = this.currentDate(0, true),
+        var _currentDate = this.currentDate(limit ? 1 : -1, true),
             year = _currentDate[0],
             month = _currentDate[1];
 
@@ -2569,7 +2569,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.exportCSV = function exportCSV() {
       var _this9 = this;
 
-      var _currentDate2 = this.currentDate(0, true),
+      var _currentDate2 = this.currentDate(-1, true),
           year = _currentDate2[0],
           month = _currentDate2[1],
           day = _currentDate2[2];
