@@ -213,7 +213,23 @@ export class inventory {
       opts.endkey   = [this.account._id, 'month', year, month, key, {}] //Use of {} rather than \uffff so we don't combine different drug.forms
     }
 
-    const setTransactions = res => this.setTransactions(res.rows.map(row => row.doc), type, limit)
+    const setTransactions = res => {
+
+      //Service inventory.qty includes everything that WAS in inventory at that date if this
+      //is a past date some of these items may now be gone (e.g have a value in next property)
+      //In the future may want to make the Server's Inventory View Metafunction to be
+      //var removedAt  = require('nextAt')(doc) && (require('nextAt')(doc) < require('expiredAt')(doc)) ? require('nextAt')(doc) : require('expiredAt')(doc) rather than
+      //var removedAt  = require('nextAt')(doc) || require('expiredAt')(doc)
+      //But not sure how this would affect other views.  Would need to test on test server
+      let docs = []
+      for (let row of rows) {
+        if ( ! row.doc.next.length) docs.push(row.doc)
+        else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
+      }
+
+      return this.setTransactions(docs, type, limit)
+
+    }
     this.db.transaction.query(query, opts).then(setTransactions)
   }
 
