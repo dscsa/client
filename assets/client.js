@@ -2192,7 +2192,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       } else if (type == 'generic') {
         var query = 'inventory.qty-by-generic';
 
-        var _currentDate = this.currentDate(limit ? 1 : -1, true),
+        var _currentDate = this.currentDate(limit ? 1 : 0, true),
             year = _currentDate[0],
             month = _currentDate[1];
 
