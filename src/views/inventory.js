@@ -710,8 +710,10 @@ export class inventory {
         repacks.drug.price = {goodrx:0, nadac:0, retail:0, updatedAt:new Date().toJSON()} //need to do a weighted average price of everything being repacked
         console.log('this.repacks.drug is null', repacks.drug)
       } else if (repacks.drug._id != transaction.drug._id) {//Can only repack drugs with same NDC.  TODO Show Error?
-        repacks.drug = false
         console.error('this.repacks.drug mismatch', repacks.drug, transaction.drug)
+        repacks.drug = false
+        this.snackbar.show(`Warning: Mismatched NDCs`)
+        break
       }
 
       //Need to do a weighted average of prices (not just first/last transaction price), otherwise inventory.value in reports can change just because 2+ transactions are repacked into one

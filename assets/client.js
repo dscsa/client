@@ -8,6 +8,634 @@ define('client/src/environment',["exports"], function (exports) {
     debug: false,
     testing: false };
 });
+define('client/src/libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
+});
+define('client/src/libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Pouch = exports.Pouch = function Pouch() {
+    _classCallCheck(this, Pouch);
+
+    return pouchdbClient;
+  };
+});
+define('client/src/resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.expShortcuts = expShortcuts;
+  exports.qtyShortcuts = qtyShortcuts;
+  exports.removeTransactionIfQty0 = removeTransactionIfQty0;
+  exports.incrementBin = incrementBin;
+  exports.saveTransaction = saveTransaction;
+  exports.scrollSelect = scrollSelect;
+  exports.focusInput = focusInput;
+  exports.toggleDrawer = toggleDrawer;
+  exports.drugSearch = drugSearch;
+  exports.groupDrugs = groupDrugs;
+  exports.drugName = drugName;
+  exports.parseUserDate = parseUserDate;
+  exports.toJsonDate = toJsonDate;
+  exports.waitForDrugsToIndex = waitForDrugsToIndex;
+  exports.canActivate = canActivate;
+  exports.getHistory = getHistory;
+  function expShortcuts($event, $index) {
+    if ($event.which == 13) return this.focusInput('#qty_' + $index);
+
+    return true;
+  }
+
+  function qtyShortcuts($event, $index) {
+    if ($event.which == 13) return this.focusInput('#bin_' + $index, 'md-autocomplete');
+
+    return clearIfAsterick($event);
+  }
+
+  function removeTransactionIfQty0($event, $index) {
+
+    var transaction = this.transactions[$index];
+    var doneeDelete = !transaction.qty.from && transaction.qty.to === 0;
+    var donorDelete = !transaction.qty.to && transaction.qty.from === 0;
+
+    if (!donorDelete && !doneeDelete) return true;
+
+    this.drugs = [];
+    this.transactions.splice($index, 1);
+    this.db.transaction.remove(transaction);
+    this.focusInput('md-autocomplete');
+  }
+
+  function incrementBin($event, transaction) {
+
+    if ($event.which == 107 || $event.which == 187) var increment = 1;
+
+    if ($event.which == 109 || $event.which == 189) var increment = -1;
+
+    if (!increment) return clearIfAsterick($event);
+
+    var binLetter = transaction.bin[0];
+    var binNumber = +transaction.bin.slice(1) + increment;
+
+    if (binNumber < 0 || binNumber > 699) {
+      binLetter = String.fromCharCode(binLetter.charCodeAt() + increment);
+      binNumber = (binNumber + 700) % 700;
+    }
+
+    transaction.bin = binLetter + ('00' + binNumber).slice(-3);
+    saveTransaction.call(this, transaction);
+    return false;
+  }
+
+  function clearIfAsterick($event) {
+    return $event.which == 106 || $event.shiftKey && $event.which == 56 ? $event.target.value = "" : true;
+  }
+
+  function saveTransaction(transaction) {
+    var _this = this;
+
+    return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
+      return _this.db.transaction.put(transaction);
+    }).catch(function (err) {
+      delete _this._saveTransaction;
+      throw _this.snackbar.error(err);
+    });
+  }
+
+  function scrollSelect($event, curr) {
+    var list = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+    var cb = arguments[3];
+
+
+    var index = list.indexOf(curr);
+    var last = list.length - 1;
+
+    if ($event.which == 38) cb.call(this, list[index > 0 ? index - 1 : last]);
+
+    if ($event.which == 40) cb.call(this, list[index < last ? index + 1 : 0]);
+  }
+
+  function focusInput(selector, fallback) {
+    var elem = document.querySelector(selector + ' input');
+
+    if (elem && !elem.disabled) elem.focus();else if (fallback) document.querySelector(fallback + ' input').focus();else console.log('Cannot find ' + selector + ' input');
+
+    return false;
+  }
+
+  function toggleDrawer() {
+    var drawer = document.querySelector('.mdl-layout__header');
+    drawer && drawer.firstChild.click();
+  }
+
+  var _drugSearch = {
+    name: function name(term, clearCache) {
+      var start = Date.now();
+      var terms = term.toLowerCase().replace('.', '\\.').split(/, |[, ]/g);
+
+      if (term.startsWith(_drugSearch._term) && !clearCache) {
+        var regex = RegExp('(?=.*' + terms.join(')(?=.*( |0)') + ')', 'i');
+        return _drugSearch._drugs.then(function (drugs) {
+          return drugs.filter(function (drug) {
+            return regex.test(drug.generic + ' ' + drug.brand);
+          });
+        }).then(function (drugs) {
+          console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', term, 'cache', _drugSearch._term);
+          _drugSearch._term = term;
+          return drugs;
+        });
+      }
+
+      _drugSearch._term = term;
+      console.log('drug search', term, _drugSearch.range(terms[0]));
+      return _drugSearch._drugs = this.db.drug.query('name', _drugSearch.range(terms[0])).then(_drugSearch.map(start));
+    },
+    addPkgCode: function addPkgCode(term, drug) {
+      var pkg, ndc9, upc;
+      if (term.length > 8) {
+        ndc9 = '^' + drug.ndc9 + '(\\d{2})$';
+        upc = '^' + drug.upc + '(\\d{' + (10 - drug.upc.length) + '})$';
+        pkg = term.match(RegExp(ndc9 + '|' + upc));
+      }
+
+      drug.pkg = pkg ? pkg[1] || pkg[2] : '';
+      return drug;
+    },
+    range: function range(term) {
+      return { startkey: term, endkey: term + '\uFFFF', include_docs: true };
+    },
+    map: function map(start) {
+      return function (res) {
+        console.log('query returned', res.rows.length, 'rows and took', Date.now() - start);
+        return res.rows.map(function (row) {
+          return row.doc;
+        });
+      };
+    },
+    ndc: function ndc(_ndc, clearCache) {
+      var start = Date.now();
+      var term = _ndc.replace(/-/g, '');
+
+      if (term.length == 12 && term[0] == '3') term = term.slice(1, -1);
+
+      var ndc9 = term.slice(0, 9);
+      var upc = term.slice(0, 8);
+
+      if (term.startsWith(_drugSearch._term) && !clearCache) {
+        console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term);
+        return _drugSearch._drugs.then(function (drugs) {
+          var filtered = drugs.filter(filter);
+          return term.length == 9 || term.length == 11 ? filtered.reverse() : filtered;
+        });
+      }
+
+      function filter(drug) {
+        _drugSearch.addPkgCode(term, drug);
+
+        return drug.ndc9.startsWith(ndc9) || drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc);
+      }
+
+      console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term);
+
+      _drugSearch._term = term;
+
+      ndc9 = this.db.drug.query('ndc9', _drugSearch.range(ndc9)).then(_drugSearch.map(start));
+
+      upc = this.db.drug.query('upc', _drugSearch.range(upc)).then(_drugSearch.map(start));
+
+      return _drugSearch._drugs = Promise.all([ndc9, upc]).then(function (_ref) {
+        var ndc9 = _ref[0],
+            upc = _ref[1];
+
+
+        var unique = {};
+
+        for (var _iterator = ndc9, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+          var _ref2;
+
+          if (_isArray) {
+            if (_i >= _iterator.length) break;
+            _ref2 = _iterator[_i++];
+          } else {
+            _i = _iterator.next();
+            if (_i.done) break;
+            _ref2 = _i.value;
+          }
+
+          var drug = _ref2;
+
+          unique[drug._id] = drug;
+        }for (var _iterator2 = upc, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+          var _ref3;
+
+          if (_isArray2) {
+            if (_i2 >= _iterator2.length) break;
+            _ref3 = _iterator2[_i2++];
+          } else {
+            _i2 = _iterator2.next();
+            if (_i2.done) break;
+            _ref3 = _i2.value;
+          }
+
+          var _drug = _ref3;
+
+          if (_drug.upc.length != 9 && term.length != 11) unique[_drug._id] = _drug;
+        }unique = Object.keys(unique).map(function (key) {
+          return _drugSearch.addPkgCode(term, unique[key]);
+        });
+        console.log('query returned', unique.length, 'rows and took', Date.now() - start);
+        return unique;
+      });
+    }
+  };
+
+  function drugSearch() {
+    var _this2 = this;
+
+    if (!this.term || this.term.length < 3) return Promise.resolve([]);
+
+    var clearCache = this._savingDrug;
+    var term = this.term.trim();
+
+    return this._search = Promise.resolve(this._search).then(function (_) {
+      return _drugSearch[/^[\d-]+$/.test(term) ? 'ndc' : 'name'].call(_this2, term, clearCache);
+    });
+  }
+
+  function groupDrugs(drugs, ordered) {
+
+    var groups = {};
+    for (var _iterator3 = drugs, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+      var _ref4;
+
+      if (_isArray3) {
+        if (_i3 >= _iterator3.length) break;
+        _ref4 = _iterator3[_i3++];
+      } else {
+        _i3 = _iterator3.next();
+        if (_i3.done) break;
+        _ref4 = _i3.value;
+      }
+
+      var drug = _ref4;
+
+      var generic = drug.generic;
+      groups[generic] = groups[generic] || { generic: generic, name: drugName(drug, ordered), drugs: [] };
+      groups[generic].drugs.push(drug);
+    }
+
+    return Object.keys(groups).map(function (key) {
+      return groups[key];
+    });
+  }
+
+  function drugName(drug, ordered) {
+    var name = drug.generic;
+    var desc = [];
+
+    var display = ordered[name] && ordered[name].displayMessage;
+    if (drug.brand) desc.push(drug.brand);
+    if (display) desc.push(display);
+
+    if (desc.length) name += ' (' + desc.join(', ') + ')';
+
+    return name;
+  }
+
+  function parseUserDate(date) {
+
+    date = (date || '').split('/');
+
+    var year = '';
+
+    if (date.length > 1) year = date.pop().slice(-2);else if (date[0].length > 3) year = date[0].slice(-2);
+
+    return { month: date[0].slice(0, 2), year: year };
+  }
+
+  function toJsonDate(_ref5) {
+    var month = _ref5.month,
+        year = _ref5.year;
+
+    console.log('date', month, year, new Date('20' + year, month - 1, 1).toJSON());
+    return new Date('20' + year, month - 1, 1).toJSON();
+  }
+
+  function waitForDrugsToIndex() {
+    var _this3 = this;
+
+    this.db.drug.drugIsIndexed.get().then(function (_) {
+      _this3.drugsIndexed = true;
+      _this3.placeholder = "Search Drugs By Generic Name Or NDC...";
+    });
+  }
+
+  function canActivate(_, next, _ref6) {
+    var router = _ref6.router;
+
+    return this.db.user.session.get().then(function (session) {
+
+      var loggedIn = session && session.account;
+
+      for (var _iterator4 = router.navigation, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+        var _ref7;
+
+        if (_isArray4) {
+          if (_i4 >= _iterator4.length) break;
+          _ref7 = _iterator4[_i4++];
+        } else {
+          _i4 = _iterator4.next();
+          if (_i4.done) break;
+          _ref7 = _i4.value;
+        }
+
+        var route = _ref7;
+
+        route.isVisible = loggedIn ? route.config.roles && ~route.config.roles.indexOf('user') : !route.config.roles;
+      }var canActivate = next.navModel.isVisible || !next.nav;
+
+      return canActivate || router.currentInstruction ? canActivate : new _aureliaRouter.Redirect(loggedIn ? 'shipments' : 'login');
+    }).catch(function (err) {
+      return console.log('loginRequired error', err);
+    });
+  }
+
+  function getHistory(id) {
+    var _this4 = this;
+
+    return this.db.transaction.history.get(id).then(function (_history) {
+      console.log('history', id, _history);
+
+      function id(k, o) {
+        if (Array.isArray(o)) return o;
+        return o.shipment.from.name + ' ' + o._id;
+      }
+
+      function pad(word, num) {
+        return (word + ' '.repeat(num)).slice(0, num);
+      }
+      return JSON.stringify(_history, function (k, v) {
+        if (Array.isArray(v)) return v;
+
+        var status = _this4.status || 'pickup';
+        var href = '/#/shipments/' + v.shipment._id;
+        var fromName = 'From: ' + v.shipment.account.from.name;
+        var fromStreet = v.shipment.account.from.street;
+        var fromAddress = v.shipment.account.from.city + ', ' + v.shipment.account.from.state + ' ' + v.shipment.account.from.zip;
+        var date = '<a href=\'' + href + '\'>' + pad(v._id.slice(0, 10), 20) + '</a>';
+        var qty = pad('Quantity ' + (v.qty.to || v.qty.from), 20);
+        var tracking = pad(v.type, 20);
+        var toName = '';
+        var toStreet = '';
+        var toAddress = '';
+
+        if (v.shipment.account.to) {
+          toName = 'To: ' + v.shipment.account.to.name;
+          toStreet = v.shipment.account.to.street;
+          toAddress = v.shipment.account.to.city + ', ' + v.shipment.account.to.state + ' ' + v.shipment.account.to.zip;
+          tracking = '<a target=\'_blank\' href=\'https://www.fedex.com/apps/fedextrack/?tracknumbers=' + v.shipment.tracking + '\'>' + pad('FedEx Tracking', 20) + '</a>';
+        }
+
+        return date + pad(fromName, 35) + toName + "<br>" + qty + pad(fromStreet, 35) + toStreet + '<br>' + tracking + pad(fromAddress, 35) + toAddress;
+      }, "   ").replace(/\[\n?\s*/g, "<div style='margin-top:-12px'>").replace(/\n?\s*\],?/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
+    });
+  }
+});
+define('client/src/resources/value-converters',['exports', '../resources/helpers'], function (exports, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.toArrayValueConverter = exports.dateValueConverter = exports.boldValueConverter = exports.valueValueConverter = exports.userFilterValueConverter = exports.drugFilterValueConverter = exports.shipmentFilterValueConverter = exports.upperCaseValueConverter = exports.numberValueConverter = exports.jsonValueConverter = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var jsonValueConverter = exports.jsonValueConverter = function () {
+    function jsonValueConverter() {
+      _classCallCheck(this, jsonValueConverter);
+    }
+
+    jsonValueConverter.prototype.toView = function toView() {
+      var object = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+      return JSON.stringify(object, null, " ");
+    };
+
+    return jsonValueConverter;
+  }();
+
+  var numberValueConverter = exports.numberValueConverter = function () {
+    function numberValueConverter() {
+      _classCallCheck(this, numberValueConverter);
+    }
+
+    numberValueConverter.prototype.fromView = function fromView(str) {
+      return str === '' ? null : +str;
+    };
+
+    numberValueConverter.prototype.toView = function toView(num, decimals) {
+      return num && decimals != null ? num.toFixed(decimals) : num;
+    };
+
+    return numberValueConverter;
+  }();
+
+  var upperCaseValueConverter = exports.upperCaseValueConverter = function () {
+    function upperCaseValueConverter() {
+      _classCallCheck(this, upperCaseValueConverter);
+    }
+
+    upperCaseValueConverter.prototype.fromView = function fromView(str) {
+      return str == null ? null : str.toUpperCase();
+    };
+
+    return upperCaseValueConverter;
+  }();
+
+  var shipmentFilterValueConverter = exports.shipmentFilterValueConverter = function () {
+    function shipmentFilterValueConverter() {
+      _classCallCheck(this, shipmentFilterValueConverter);
+    }
+
+    shipmentFilterValueConverter.prototype.toView = function toView() {
+      var shipments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+      filter = filter.toLowerCase();
+      return shipments.filter(function (shipment) {
+        return ~(shipment.account.from.name + ' ' + shipment.account.to.name + ' ' + shipment.tracking + ' ' + shipment.status + ' ' + (shipment._id && shipment._id.slice(0, 10))).toLowerCase().indexOf(filter);
+      });
+    };
+
+    return shipmentFilterValueConverter;
+  }();
+
+  var drugFilterValueConverter = exports.drugFilterValueConverter = function () {
+    function drugFilterValueConverter() {
+      _classCallCheck(this, drugFilterValueConverter);
+    }
+
+    drugFilterValueConverter.prototype.toView = function toView() {
+      var drugs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+      filter = filter.replace('.', '\\.').split(/, |[, ]/g);
+      var regex = RegExp('(?=.*' + filter.join(')(?=.*( |0)') + ')', 'i');
+      return drugs.filter(function (drug) {
+        return regex.test(drug.generic);
+      });
+    };
+
+    return drugFilterValueConverter;
+  }();
+
+  var userFilterValueConverter = exports.userFilterValueConverter = function () {
+    function userFilterValueConverter() {
+      _classCallCheck(this, userFilterValueConverter);
+    }
+
+    userFilterValueConverter.prototype.toView = function toView() {
+      var users = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+      filter = filter.toLowerCase();
+      var res = users.filter(function (user) {
+        try {
+          return ~(user.name.first + ' ' + user.name.last).toLowerCase().indexOf(filter);
+        } catch (err) {
+          console.log('filter err', user, err);
+        }
+      });
+      return res;
+    };
+
+    return userFilterValueConverter;
+  }();
+
+  var valueValueConverter = exports.valueValueConverter = function () {
+    function valueValueConverter() {
+      _classCallCheck(this, valueValueConverter);
+    }
+
+    valueValueConverter.prototype.toView = function toView() {
+      var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var decimals = arguments[1];
+      var trigger = arguments[2];
+
+
+      transactions = Array.isArray(transactions) ? transactions : [transactions];
+
+      return transactions.reduce(function (total, transaction) {
+        if (!transaction.drug.price || !transaction.qty) return 0;
+        var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
+        var qty = transaction.qty.to || transaction.qty.from || 0;
+        return total + qty * price;
+      }, 0).toFixed(decimals);
+    };
+
+    return valueValueConverter;
+  }();
+
+  var boldValueConverter = exports.boldValueConverter = function () {
+    function boldValueConverter() {
+      _classCallCheck(this, boldValueConverter);
+    }
+
+    boldValueConverter.prototype.toView = function toView(text, bold) {
+      if (!bold || !text) return text;
+
+      if (typeof bold == 'string') bold = RegExp('(' + bold.replace(/ /g, '|').replace('.', '( | 0)?\\.') + ')', 'gi');
+
+      return text.replace(bold, '<strong>$1</strong>');
+    };
+
+    return boldValueConverter;
+  }();
+
+  var dateValueConverter = exports.dateValueConverter = function () {
+    function dateValueConverter() {
+      _classCallCheck(this, dateValueConverter);
+    }
+
+    dateValueConverter.prototype.toView = function toView(date) {
+      if (!date) return '';
+      return date != this.model ? date.slice(5, 7) + '/' + date.slice(2, 4) : this.view;
+    };
+
+    dateValueConverter.prototype.fromView = function fromView(date) {
+
+      if (date.includes('*')) return null;
+
+      var _parseUserDate = (0, _helpers.parseUserDate)(date.replace(/\+|\-|\=/g, '')),
+          month = _parseUserDate.month,
+          year = _parseUserDate.year;
+
+      if (date.includes('+') || date.includes('=')) month++;
+
+      if (date.includes('-')) month--;
+
+      if (month < 1) {
+        year--;
+        month = 12;
+      }
+
+      if (month > 12) {
+        year++;
+        month = 1;
+      }
+
+      this.view = date.length == 1 ? month : ("00" + month).slice(-2) + '/' + year;
+
+      return this.model = (0, _helpers.toJsonDate)({ month: month, year: year });
+    };
+
+    return dateValueConverter;
+  }();
+
+  var toArrayValueConverter = exports.toArrayValueConverter = function () {
+    function toArrayValueConverter() {
+      _classCallCheck(this, toArrayValueConverter);
+    }
+
+    toArrayValueConverter.prototype.toView = function toView() {
+      var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var sort = arguments[1];
+
+
+      var arr = Object.keys(obj);
+
+      if (sort) arr.sort().reverse();
+
+      return arr.map(function (key) {
+        return { key: key, val: obj[key] };
+      });
+    };
+
+    return toArrayValueConverter;
+  }();
+});
 define('client/src/elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';
 
@@ -787,634 +1415,6 @@ define('client/src/elems/md-text',['exports', 'aurelia-framework'], function (ex
 
     return MdTextCustomElement;
   }()) || _class) || _class) || _class) || _class) || _class);
-});
-define('client/src/libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
-});
-define('client/src/libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Pouch = exports.Pouch = function Pouch() {
-    _classCallCheck(this, Pouch);
-
-    return pouchdbClient;
-  };
-});
-define('client/src/resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.expShortcuts = expShortcuts;
-  exports.qtyShortcuts = qtyShortcuts;
-  exports.removeTransactionIfQty0 = removeTransactionIfQty0;
-  exports.incrementBin = incrementBin;
-  exports.saveTransaction = saveTransaction;
-  exports.scrollSelect = scrollSelect;
-  exports.focusInput = focusInput;
-  exports.toggleDrawer = toggleDrawer;
-  exports.drugSearch = drugSearch;
-  exports.groupDrugs = groupDrugs;
-  exports.drugName = drugName;
-  exports.parseUserDate = parseUserDate;
-  exports.toJsonDate = toJsonDate;
-  exports.waitForDrugsToIndex = waitForDrugsToIndex;
-  exports.canActivate = canActivate;
-  exports.getHistory = getHistory;
-  function expShortcuts($event, $index) {
-    if ($event.which == 13) return this.focusInput('#qty_' + $index);
-
-    return true;
-  }
-
-  function qtyShortcuts($event, $index) {
-    if ($event.which == 13) return this.focusInput('#bin_' + $index, 'md-autocomplete');
-
-    return clearIfAsterick($event);
-  }
-
-  function removeTransactionIfQty0($event, $index) {
-
-    var transaction = this.transactions[$index];
-    var doneeDelete = !transaction.qty.from && transaction.qty.to === 0;
-    var donorDelete = !transaction.qty.to && transaction.qty.from === 0;
-
-    if (!donorDelete && !doneeDelete) return true;
-
-    this.drugs = [];
-    this.transactions.splice($index, 1);
-    this.db.transaction.remove(transaction);
-    this.focusInput('md-autocomplete');
-  }
-
-  function incrementBin($event, transaction) {
-
-    if ($event.which == 107 || $event.which == 187) var increment = 1;
-
-    if ($event.which == 109 || $event.which == 189) var increment = -1;
-
-    if (!increment) return clearIfAsterick($event);
-
-    var binLetter = transaction.bin[0];
-    var binNumber = +transaction.bin.slice(1) + increment;
-
-    if (binNumber < 0 || binNumber > 699) {
-      binLetter = String.fromCharCode(binLetter.charCodeAt() + increment);
-      binNumber = (binNumber + 700) % 700;
-    }
-
-    transaction.bin = binLetter + ('00' + binNumber).slice(-3);
-    saveTransaction.call(this, transaction);
-    return false;
-  }
-
-  function clearIfAsterick($event) {
-    return $event.which == 106 || $event.shiftKey && $event.which == 56 ? $event.target.value = "" : true;
-  }
-
-  function saveTransaction(transaction) {
-    var _this = this;
-
-    return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
-      return _this.db.transaction.put(transaction);
-    }).catch(function (err) {
-      delete _this._saveTransaction;
-      throw _this.snackbar.error(err);
-    });
-  }
-
-  function scrollSelect($event, curr) {
-    var list = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-    var cb = arguments[3];
-
-
-    var index = list.indexOf(curr);
-    var last = list.length - 1;
-
-    if ($event.which == 38) cb.call(this, list[index > 0 ? index - 1 : last]);
-
-    if ($event.which == 40) cb.call(this, list[index < last ? index + 1 : 0]);
-  }
-
-  function focusInput(selector, fallback) {
-    var elem = document.querySelector(selector + ' input');
-
-    if (elem && !elem.disabled) elem.focus();else if (fallback) document.querySelector(fallback + ' input').focus();else console.log('Cannot find ' + selector + ' input');
-
-    return false;
-  }
-
-  function toggleDrawer() {
-    var drawer = document.querySelector('.mdl-layout__header');
-    drawer && drawer.firstChild.click();
-  }
-
-  var _drugSearch = {
-    name: function name(term, clearCache) {
-      var start = Date.now();
-      var terms = term.toLowerCase().replace('.', '\\.').split(/, |[, ]/g);
-
-      if (term.startsWith(_drugSearch._term) && !clearCache) {
-        var regex = RegExp('(?=.*' + terms.join(')(?=.*( |0)') + ')', 'i');
-        return _drugSearch._drugs.then(function (drugs) {
-          return drugs.filter(function (drug) {
-            return regex.test(drug.generic + ' ' + drug.brand);
-          });
-        }).then(function (drugs) {
-          console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', term, 'cache', _drugSearch._term);
-          _drugSearch._term = term;
-          return drugs;
-        });
-      }
-
-      _drugSearch._term = term;
-      console.log('drug search', term, _drugSearch.range(terms[0]));
-      return _drugSearch._drugs = this.db.drug.query('name', _drugSearch.range(terms[0])).then(_drugSearch.map(start));
-    },
-    addPkgCode: function addPkgCode(term, drug) {
-      var pkg, ndc9, upc;
-      if (term.length > 8) {
-        ndc9 = '^' + drug.ndc9 + '(\\d{2})$';
-        upc = '^' + drug.upc + '(\\d{' + (10 - drug.upc.length) + '})$';
-        pkg = term.match(RegExp(ndc9 + '|' + upc));
-      }
-
-      drug.pkg = pkg ? pkg[1] || pkg[2] : '';
-      return drug;
-    },
-    range: function range(term) {
-      return { startkey: term, endkey: term + '\uFFFF', include_docs: true };
-    },
-    map: function map(start) {
-      return function (res) {
-        console.log('query returned', res.rows.length, 'rows and took', Date.now() - start);
-        return res.rows.map(function (row) {
-          return row.doc;
-        });
-      };
-    },
-    ndc: function ndc(_ndc, clearCache) {
-      var start = Date.now();
-      var term = _ndc.replace(/-/g, '');
-
-      if (term.length == 12 && term[0] == '3') term = term.slice(1, -1);
-
-      var ndc9 = term.slice(0, 9);
-      var upc = term.slice(0, 8);
-
-      if (term.startsWith(_drugSearch._term) && !clearCache) {
-        console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term);
-        return _drugSearch._drugs.then(function (drugs) {
-          var filtered = drugs.filter(filter);
-          return term.length == 9 || term.length == 11 ? filtered.reverse() : filtered;
-        });
-      }
-
-      function filter(drug) {
-        _drugSearch.addPkgCode(term, drug);
-
-        return drug.ndc9.startsWith(ndc9) || drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc);
-      }
-
-      console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term);
-
-      _drugSearch._term = term;
-
-      ndc9 = this.db.drug.query('ndc9', _drugSearch.range(ndc9)).then(_drugSearch.map(start));
-
-      upc = this.db.drug.query('upc', _drugSearch.range(upc)).then(_drugSearch.map(start));
-
-      return _drugSearch._drugs = Promise.all([ndc9, upc]).then(function (_ref) {
-        var ndc9 = _ref[0],
-            upc = _ref[1];
-
-
-        var unique = {};
-
-        for (var _iterator = ndc9, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-          var _ref2;
-
-          if (_isArray) {
-            if (_i >= _iterator.length) break;
-            _ref2 = _iterator[_i++];
-          } else {
-            _i = _iterator.next();
-            if (_i.done) break;
-            _ref2 = _i.value;
-          }
-
-          var drug = _ref2;
-
-          unique[drug._id] = drug;
-        }for (var _iterator2 = upc, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-          var _ref3;
-
-          if (_isArray2) {
-            if (_i2 >= _iterator2.length) break;
-            _ref3 = _iterator2[_i2++];
-          } else {
-            _i2 = _iterator2.next();
-            if (_i2.done) break;
-            _ref3 = _i2.value;
-          }
-
-          var _drug = _ref3;
-
-          if (_drug.upc.length != 9 && term.length != 11) unique[_drug._id] = _drug;
-        }unique = Object.keys(unique).map(function (key) {
-          return _drugSearch.addPkgCode(term, unique[key]);
-        });
-        console.log('query returned', unique.length, 'rows and took', Date.now() - start);
-        return unique;
-      });
-    }
-  };
-
-  function drugSearch() {
-    var _this2 = this;
-
-    if (!this.term || this.term.length < 3) return Promise.resolve([]);
-
-    var clearCache = this._savingDrug;
-    var term = this.term.trim();
-
-    return this._search = Promise.resolve(this._search).then(function (_) {
-      return _drugSearch[/^[\d-]+$/.test(term) ? 'ndc' : 'name'].call(_this2, term, clearCache);
-    });
-  }
-
-  function groupDrugs(drugs, ordered) {
-
-    var groups = {};
-    for (var _iterator3 = drugs, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-      var _ref4;
-
-      if (_isArray3) {
-        if (_i3 >= _iterator3.length) break;
-        _ref4 = _iterator3[_i3++];
-      } else {
-        _i3 = _iterator3.next();
-        if (_i3.done) break;
-        _ref4 = _i3.value;
-      }
-
-      var drug = _ref4;
-
-      var generic = drug.generic;
-      groups[generic] = groups[generic] || { generic: generic, name: drugName(drug, ordered), drugs: [] };
-      groups[generic].drugs.push(drug);
-    }
-
-    return Object.keys(groups).map(function (key) {
-      return groups[key];
-    });
-  }
-
-  function drugName(drug, ordered) {
-    var name = drug.generic;
-    var desc = [];
-
-    var display = ordered[name] && ordered[name].displayMessage;
-    if (drug.brand) desc.push(drug.brand);
-    if (display) desc.push(display);
-
-    if (desc.length) name += ' (' + desc.join(', ') + ')';
-
-    return name;
-  }
-
-  function parseUserDate(date) {
-
-    date = (date || '').split('/');
-
-    var year = '';
-
-    if (date.length > 1) year = date.pop().slice(-2);else if (date[0].length > 3) year = date[0].slice(-2);
-
-    return { month: date[0].slice(0, 2), year: year };
-  }
-
-  function toJsonDate(_ref5) {
-    var month = _ref5.month,
-        year = _ref5.year;
-
-    console.log('date', month, year, new Date('20' + year, month - 1, 1).toJSON());
-    return new Date('20' + year, month - 1, 1).toJSON();
-  }
-
-  function waitForDrugsToIndex() {
-    var _this3 = this;
-
-    this.db.drug.drugIsIndexed.get().then(function (_) {
-      _this3.drugsIndexed = true;
-      _this3.placeholder = "Search Drugs By Generic Name Or NDC...";
-    });
-  }
-
-  function canActivate(_, next, _ref6) {
-    var router = _ref6.router;
-
-    return this.db.user.session.get().then(function (session) {
-
-      var loggedIn = session && session.account;
-
-      for (var _iterator4 = router.navigation, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
-        var _ref7;
-
-        if (_isArray4) {
-          if (_i4 >= _iterator4.length) break;
-          _ref7 = _iterator4[_i4++];
-        } else {
-          _i4 = _iterator4.next();
-          if (_i4.done) break;
-          _ref7 = _i4.value;
-        }
-
-        var route = _ref7;
-
-        route.isVisible = loggedIn ? route.config.roles && ~route.config.roles.indexOf('user') : !route.config.roles;
-      }var canActivate = next.navModel.isVisible || !next.nav;
-
-      return canActivate || router.currentInstruction ? canActivate : new _aureliaRouter.Redirect(loggedIn ? 'shipments' : 'login');
-    }).catch(function (err) {
-      return console.log('loginRequired error', err);
-    });
-  }
-
-  function getHistory(id) {
-    var _this4 = this;
-
-    return this.db.transaction.history.get(id).then(function (_history) {
-      console.log('history', id, _history);
-
-      function id(k, o) {
-        if (Array.isArray(o)) return o;
-        return o.shipment.from.name + ' ' + o._id;
-      }
-
-      function pad(word, num) {
-        return (word + ' '.repeat(num)).slice(0, num);
-      }
-      return JSON.stringify(_history, function (k, v) {
-        if (Array.isArray(v)) return v;
-
-        var status = _this4.status || 'pickup';
-        var href = '/#/shipments/' + v.shipment._id;
-        var fromName = 'From: ' + v.shipment.account.from.name;
-        var fromStreet = v.shipment.account.from.street;
-        var fromAddress = v.shipment.account.from.city + ', ' + v.shipment.account.from.state + ' ' + v.shipment.account.from.zip;
-        var date = '<a href=\'' + href + '\'>' + pad(v._id.slice(0, 10), 20) + '</a>';
-        var qty = pad('Quantity ' + (v.qty.to || v.qty.from), 20);
-        var tracking = pad(v.type, 20);
-        var toName = '';
-        var toStreet = '';
-        var toAddress = '';
-
-        if (v.shipment.account.to) {
-          toName = 'To: ' + v.shipment.account.to.name;
-          toStreet = v.shipment.account.to.street;
-          toAddress = v.shipment.account.to.city + ', ' + v.shipment.account.to.state + ' ' + v.shipment.account.to.zip;
-          tracking = '<a target=\'_blank\' href=\'https://www.fedex.com/apps/fedextrack/?tracknumbers=' + v.shipment.tracking + '\'>' + pad('FedEx Tracking', 20) + '</a>';
-        }
-
-        return date + pad(fromName, 35) + toName + "<br>" + qty + pad(fromStreet, 35) + toStreet + '<br>' + tracking + pad(fromAddress, 35) + toAddress;
-      }, "   ").replace(/\[\n?\s*/g, "<div style='margin-top:-12px'>").replace(/\n?\s*\],?/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
-    });
-  }
-});
-define('client/src/resources/value-converters',['exports', '../resources/helpers'], function (exports, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.toArrayValueConverter = exports.dateValueConverter = exports.boldValueConverter = exports.valueValueConverter = exports.userFilterValueConverter = exports.drugFilterValueConverter = exports.shipmentFilterValueConverter = exports.upperCaseValueConverter = exports.numberValueConverter = exports.jsonValueConverter = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var jsonValueConverter = exports.jsonValueConverter = function () {
-    function jsonValueConverter() {
-      _classCallCheck(this, jsonValueConverter);
-    }
-
-    jsonValueConverter.prototype.toView = function toView() {
-      var object = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-      return JSON.stringify(object, null, " ");
-    };
-
-    return jsonValueConverter;
-  }();
-
-  var numberValueConverter = exports.numberValueConverter = function () {
-    function numberValueConverter() {
-      _classCallCheck(this, numberValueConverter);
-    }
-
-    numberValueConverter.prototype.fromView = function fromView(str) {
-      return str === '' ? null : +str;
-    };
-
-    numberValueConverter.prototype.toView = function toView(num, decimals) {
-      return num && decimals != null ? num.toFixed(decimals) : num;
-    };
-
-    return numberValueConverter;
-  }();
-
-  var upperCaseValueConverter = exports.upperCaseValueConverter = function () {
-    function upperCaseValueConverter() {
-      _classCallCheck(this, upperCaseValueConverter);
-    }
-
-    upperCaseValueConverter.prototype.fromView = function fromView(str) {
-      return str == null ? null : str.toUpperCase();
-    };
-
-    return upperCaseValueConverter;
-  }();
-
-  var shipmentFilterValueConverter = exports.shipmentFilterValueConverter = function () {
-    function shipmentFilterValueConverter() {
-      _classCallCheck(this, shipmentFilterValueConverter);
-    }
-
-    shipmentFilterValueConverter.prototype.toView = function toView() {
-      var shipments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-      filter = filter.toLowerCase();
-      return shipments.filter(function (shipment) {
-        return ~(shipment.account.from.name + ' ' + shipment.account.to.name + ' ' + shipment.tracking + ' ' + shipment.status + ' ' + (shipment._id && shipment._id.slice(0, 10))).toLowerCase().indexOf(filter);
-      });
-    };
-
-    return shipmentFilterValueConverter;
-  }();
-
-  var drugFilterValueConverter = exports.drugFilterValueConverter = function () {
-    function drugFilterValueConverter() {
-      _classCallCheck(this, drugFilterValueConverter);
-    }
-
-    drugFilterValueConverter.prototype.toView = function toView() {
-      var drugs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-      filter = filter.replace('.', '\\.').split(/, |[, ]/g);
-      var regex = RegExp('(?=.*' + filter.join(')(?=.*( |0)') + ')', 'i');
-      return drugs.filter(function (drug) {
-        return regex.test(drug.generic);
-      });
-    };
-
-    return drugFilterValueConverter;
-  }();
-
-  var userFilterValueConverter = exports.userFilterValueConverter = function () {
-    function userFilterValueConverter() {
-      _classCallCheck(this, userFilterValueConverter);
-    }
-
-    userFilterValueConverter.prototype.toView = function toView() {
-      var users = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-      filter = filter.toLowerCase();
-      var res = users.filter(function (user) {
-        try {
-          return ~(user.name.first + ' ' + user.name.last).toLowerCase().indexOf(filter);
-        } catch (err) {
-          console.log('filter err', user, err);
-        }
-      });
-      return res;
-    };
-
-    return userFilterValueConverter;
-  }();
-
-  var valueValueConverter = exports.valueValueConverter = function () {
-    function valueValueConverter() {
-      _classCallCheck(this, valueValueConverter);
-    }
-
-    valueValueConverter.prototype.toView = function toView() {
-      var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var decimals = arguments[1];
-      var trigger = arguments[2];
-
-
-      transactions = Array.isArray(transactions) ? transactions : [transactions];
-
-      return transactions.reduce(function (total, transaction) {
-        if (!transaction.drug.price || !transaction.qty) return 0;
-        var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
-        var qty = transaction.qty.to || transaction.qty.from || 0;
-        return total + qty * price;
-      }, 0).toFixed(decimals);
-    };
-
-    return valueValueConverter;
-  }();
-
-  var boldValueConverter = exports.boldValueConverter = function () {
-    function boldValueConverter() {
-      _classCallCheck(this, boldValueConverter);
-    }
-
-    boldValueConverter.prototype.toView = function toView(text, bold) {
-      if (!bold || !text) return text;
-
-      if (typeof bold == 'string') bold = RegExp('(' + bold.replace(/ /g, '|').replace('.', '( | 0)?\\.') + ')', 'gi');
-
-      return text.replace(bold, '<strong>$1</strong>');
-    };
-
-    return boldValueConverter;
-  }();
-
-  var dateValueConverter = exports.dateValueConverter = function () {
-    function dateValueConverter() {
-      _classCallCheck(this, dateValueConverter);
-    }
-
-    dateValueConverter.prototype.toView = function toView(date) {
-      if (!date) return '';
-      return date != this.model ? date.slice(5, 7) + '/' + date.slice(2, 4) : this.view;
-    };
-
-    dateValueConverter.prototype.fromView = function fromView(date) {
-
-      if (date.includes('*')) return null;
-
-      var _parseUserDate = (0, _helpers.parseUserDate)(date.replace(/\+|\-|\=/g, '')),
-          month = _parseUserDate.month,
-          year = _parseUserDate.year;
-
-      if (date.includes('+') || date.includes('=')) month++;
-
-      if (date.includes('-')) month--;
-
-      if (month < 1) {
-        year--;
-        month = 12;
-      }
-
-      if (month > 12) {
-        year++;
-        month = 1;
-      }
-
-      this.view = date.length == 1 ? month : ("00" + month).slice(-2) + '/' + year;
-
-      return this.model = (0, _helpers.toJsonDate)({ month: month, year: year });
-    };
-
-    return dateValueConverter;
-  }();
-
-  var toArrayValueConverter = exports.toArrayValueConverter = function () {
-    function toArrayValueConverter() {
-      _classCallCheck(this, toArrayValueConverter);
-    }
-
-    toArrayValueConverter.prototype.toView = function toView() {
-      var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var sort = arguments[1];
-
-
-      var arr = Object.keys(obj);
-
-      if (sort) arr.sort().reverse();
-
-      return arr.map(function (key) {
-        return { key: key, val: obj[key] };
-      });
-    };
-
-    return toArrayValueConverter;
-  }();
 });
 define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _helpers) {
   'use strict';
@@ -2676,8 +2676,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           repacks.drug.price = { goodrx: 0, nadac: 0, retail: 0, updatedAt: new Date().toJSON() };
           console.log('this.repacks.drug is null', repacks.drug);
         } else if (repacks.drug._id != transaction.drug._id) {
-          repacks.drug = false;
           console.error('this.repacks.drug mismatch', repacks.drug, transaction.drug);
+          repacks.drug = false;
+          this.snackbar.show('Warning: Mismatched NDCs');
+          break;
         }
 
         repacks.drug.price.goodrx += transaction.drug.price.goodrx * transaction.qty.to / this.filter.checked.qty;
