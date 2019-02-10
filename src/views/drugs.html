@@ -180,7 +180,7 @@
               innerHTML.bind="group.name | bold:term">
             </td>
             <td style="max-width:30%">
-              ${ account.ordered[group.generic] ? 'Price:$'+(account.ordered[group.generic].price30 ? account.ordered[group.generic].price30+'/30' : account.ordered[group.generic].price90+'/90')+' days, Min Qty:'+(account.ordered[group.generic].minQty || account.default.minQty) +', Min Days:'+(ordered[group.generic].minDays ||  account.default.minDays) : ''}
+              ${ account.ordered[group.generic] ? 'Price:$'+(account.ordered[group.generic].price30 ? account.ordered[group.generic].price30+'/30' : (account.ordered[group.generic].price90 || account.default.price90)+'/90')+' days, Min Qty:'+(account.ordered[group.generic].minQty || account.default.minQty) +', Min Days:'+(ordered[group.generic].minDays ||  account.default.minDays) : ''}
             </td>
           </tr>
         </table>
