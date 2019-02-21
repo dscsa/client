@@ -404,10 +404,16 @@ export class inventory {
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
   repackInventory() {
 
+    if ( ! this.repacks.drug || ! this.filter.checked.count)
+      return console.log('repackInventory called incorrectly. Aurelia should have disabled (problem with custom "form" attribute)', 'this.repacks.drug', this.repacks.drug, this.filter.checked.count)
+
+    if (this.openingMenu) //postpone this call just in case openMenu is still running Pradaxa (2019-01-28T20:23:27.174900Z & 2019-01-28T16:47:12.754500Z) got the next.transaction of Esomeprazole (2019-01-29T17:15:56.773700Z)
+      return setTimeout(this.repackInventory.bind(this), 500)
+
     let newTransactions = [],
         next = [],
-        createdAt = new Date().toJSON()
-
+        createdAt = new Date().toJSON(),
+        drug = this.repacks.drug //freeze the drug just in case drug is getting updated part way through this function Pradaxa (2019-01-28T20:23:27.174900Z & 2019-01-28T16:47:12.754500Z) got the next.transaction of Esomeprazole (2019-01-29T17:15:56.773700Z)
 
     //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
     //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
@@ -418,7 +424,7 @@ export class inventory {
       qty:{to:this.repacks.excessQty, from:null},
       user:{_id:this.user},
       shipment:{_id:this.account._id},
-      drug:this.repacks.drug,
+      drug:drug,
       next:[{disposed:{}, createdAt}]
     })
 
@@ -434,7 +440,7 @@ export class inventory {
         user:{_id:this.user},
         shipment:{_id:this.account._id},
         bin:repack.bin,
-        drug:this.repacks.drug,
+        drug:drug,
         next:next
       }
 
@@ -665,6 +671,7 @@ export class inventory {
       return true
     }
 
+    this.openingMenu = true //see note on repackInventory
     const term = this.term.replace('Pended ', '')
 
     this.pendToId  = ''
@@ -678,6 +685,7 @@ export class inventory {
     }
 
     console.log('openMenu', this.account.ordered[this.term], this.repacks)
+    this.openingMenu = false  //see note on repackInventory
   }
 
   setMatchingPends(drug) {
@@ -705,7 +713,7 @@ export class inventory {
 
       if ( ! transaction.isChecked) continue
 
-      if (repacks.drug == null) {
+      if (repacks.drug == null) { //null or undefined but not false
         repacks.drug = JSON.parse(JSON.stringify(transaction.drug))
         repacks.drug.price = {goodrx:0, nadac:0, retail:0, updatedAt:new Date().toJSON()} //need to do a weighted average price of everything being repacked
         console.log('this.repacks.drug is null', repacks.drug)

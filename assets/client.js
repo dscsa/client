@@ -8,6 +8,33 @@ define('client/src/environment',["exports"], function (exports) {
     debug: false,
     testing: false };
 });
+define('client/src/libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
+});
+define('client/src/libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Pouch = exports.Pouch = function Pouch() {
+    _classCallCheck(this, Pouch);
+
+    return pouchdbClient;
+  };
+});
 define('client/src/elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';
 
@@ -787,33 +814,6 @@ define('client/src/elems/md-text',['exports', 'aurelia-framework'], function (ex
 
     return MdTextCustomElement;
   }()) || _class) || _class) || _class) || _class) || _class);
-});
-define('client/src/libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
-});
-define('client/src/libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Pouch = exports.Pouch = function Pouch() {
-    _classCallCheck(this, Pouch);
-
-    return pouchdbClient;
-  };
 });
 define('client/src/resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
   'use strict';
@@ -2385,16 +2385,20 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.repackInventory = function repackInventory() {
       var _this7 = this;
 
+      if (!this.repacks.drug || !this.filter.checked.count) return console.log('repackInventory called incorrectly. Aurelia should have disabled (problem with custom "form" attribute)', 'this.repacks.drug', this.repacks.drug, this.filter.checked.count);
+
+      if (this.openingMenu) return setTimeout(this.repackInventory.bind(this), 500);
+
       var newTransactions = [],
           next = [],
-          createdAt = new Date().toJSON();
-
+          createdAt = new Date().toJSON(),
+          drug = this.repacks.drug;
       newTransactions.push({
         exp: { to: this.repacks[0].exp, from: null },
         qty: { to: this.repacks.excessQty, from: null },
         user: { _id: this.user },
         shipment: { _id: this.account._id },
-        drug: this.repacks.drug,
+        drug: drug,
         next: [{ disposed: {}, createdAt: createdAt }]
       });
 
@@ -2421,7 +2425,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           user: { _id: this.user },
           shipment: { _id: this.account._id },
           bin: repack.bin,
-          drug: this.repacks.drug,
+          drug: drug,
           next: next
         };
 
@@ -2622,6 +2626,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         return true;
       }
 
+      this.openingMenu = true;
       var term = this.term.replace('Pended ', '');
 
       this.pendToId = '';
@@ -2635,6 +2640,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       }
 
       console.log('openMenu', this.account.ordered[this.term], this.repacks);
+      this.openingMenu = false;
     };
 
     inventory.prototype.setMatchingPends = function setMatchingPends(drug) {
