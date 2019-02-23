@@ -409,6 +409,8 @@ export class inventory {
       return this.snackbar.show(`Repack Drug Error`)
     }
 
+    //Without this the below happened 52 < 90 causing a 38qty error in Verified - Expired - Disposed - Dispensed - Old Inventory + New Inventory = 38.  However someone could change a quantity after it is repacked and still cause an issue
+    //2018-11-19T18:14:46.034300Z (Qty 18 Old Inventory) + 2018-11-28T21:57:05.481600Z (Qty 6 Old Inventory) + 2018-12-04T18:02:50.084500Z (Qty 28 Verified) ---> 2018-12-06T17:33:37.030300Z (Qty 30 Disposed) +  2018-12-06T17:33:37.048700Z (Qty 60 Repacked: 11 Disposed + 22 Dispensed + 27 New Inventory)
     let total = this.repacks.reduce((total, repack) => total+repack, 0)
     if (total > this.repacks.excessQty) {
       console.error('repackInventory quantity is incorrect. ', 'this.repacks.excessQty', this.repacks.excessQty, 'this.repacks', this.repacks)
