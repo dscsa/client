@@ -2385,7 +2385,18 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.repackInventory = function repackInventory() {
       var _this7 = this;
 
-      if (!this.repacks.drug || !this.filter.checked.count) return console.log('repackInventory called incorrectly. Aurelia should have disabled (problem with custom "form" attribute)', 'this.repacks.drug', this.repacks.drug, this.filter.checked.count);
+      if (!this.repacks.drug || !this.filter.checked.count) {
+        console.error('repackInventory called incorrectly. Aurelia should have disabled (problem with custom "form" attribute)', 'this.repacks.drug', this.repacks.drug, this.filter.checked.count);
+        return this.snackbar.show('Repack Drug Error');
+      }
+
+      var total = this.repacks.reduce(function (total, repack) {
+        return total + repack;
+      }, 0);
+      if (total > this.repacks.excessQty) {
+        console.error('repackInventory quantity is incorrect. ', 'this.repacks.excessQty', this.repacks.excessQty, 'this.repacks', this.repacks);
+        return this.snackbar.show('Repack Qty Error');
+      }
 
       if (this.openingMenu) return setTimeout(this.repackInventory.bind(this), 500);
 
