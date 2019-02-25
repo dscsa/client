@@ -1175,16 +1175,17 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         if (Array.isArray(v)) return v;
 
         var status = _this4.status || 'pickup';
-        var href = '/#/shipments/' + v.shipment._id;
         var fromName = 'From: ' + v.shipment.account.from.name;
         var fromStreet = v.shipment.account.from.street;
         var fromAddress = v.shipment.account.from.city + ', ' + v.shipment.account.from.state + ' ' + v.shipment.account.from.zip;
-        var date = '<a href=\'' + href + '\'>' + pad(v._id.slice(0, 10), 20) + '</a>';
+        var date = pad(v._id.slice(0, 10), 20);
         var qty = pad('Quantity ' + (v.qty.to || v.qty.from), 20);
         var tracking = pad(v.type, 20);
         var toName = '';
         var toStreet = '';
         var toAddress = '';
+
+        if (v.shipment._id) date = '<a href=\'/#/shipments/' + v.shipment._id + '\'>' + date + '</a>';
 
         if (v.shipment.account.to) {
           toName = 'To: ' + v.shipment.account.to.name;
@@ -1194,7 +1195,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         }
 
         return date + pad(fromName, 35) + toName + "<br>" + qty + pad(fromStreet, 35) + toStreet + '<br>' + tracking + pad(fromAddress, 35) + toAddress;
-      }, "   ").replace(/\[\n?\s*/g, "<div style='margin-top:-12px'>").replace(/\n?\s*\],?/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
+      }, "   ").replace(/\[\n?\s*/g, "<div style='border-left:1px solid; padding-left:8px; margin-top:-12px'>").replace(/\n?\s*\],?/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
     });
   }
 });

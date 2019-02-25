@@ -318,16 +318,18 @@ export function getHistory(id) {
           return v
 
           let status      = this.status || 'pickup' //Might not be initialized yet
-          let href        = '/#/shipments/'+v.shipment._id
           let fromName    = 'From: '+v.shipment.account.from.name
           let fromStreet  = v.shipment.account.from.street
           let fromAddress = v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip
-          let date        = `<a href='${href}'>${pad(v._id.slice(0, 10), 20)}</a>`
+          let date        = pad(v._id.slice(0, 10), 20)
           let qty         = pad('Quantity '+(v.qty.to || v.qty.from), 20)
           let tracking    = pad(v.type, 20)
           let toName      = ''
           let toStreet    = ''
           let toAddress   = ''
+
+          if (v.shipment._id)
+            date = `<a href='/#/shipments/${v.shipment._id}'>${date}</a>`
 
           if (v.shipment.account.to) {
             toName    = 'To: '+v.shipment.account.to.name
@@ -342,7 +344,7 @@ export function getHistory(id) {
       },
       "   "
     )
-    .replace(/\[\n?\s*/g, "<div style='margin-top:-12px'>")
+    .replace(/\[\n?\s*/g, "<div style='border-left:1px solid; padding-left:8px; margin-top:-12px'>")
     .replace(/\n?\s*\],?/g, '</div>')
     .replace(/ *"/g, '')
     .replace(/\n/g, '<br><br>')
