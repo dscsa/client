@@ -1195,7 +1195,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         }
 
         return date + pad(fromName, 35) + toName + "<br>" + qty + pad(fromStreet, 35) + toStreet + '<br>' + tracking + pad(fromAddress, 35) + toAddress;
-      }, "   ").replace(/\[\n?\s*/g, "<div style='border-left:1px solid; padding-left:8px; margin-top:-12px'>").replace(/\n?\s*\],?/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
+      }, "   ").replace(/(\[\n?\s*){1,2}/g, "<div style='border-left:1px solid; padding-left:8px; margin-top:-12px'>").replace(/(\n?\s*\],?){1,2}/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
     });
   }
 });
