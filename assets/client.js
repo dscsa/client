@@ -2023,7 +2023,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       this.db.user.session.get().then(function (session) {
 
-        _this2.user = session._id;
+        _this2.user = { _id: session._id };
         _this2.account = { _id: session.account._id };
 
         _this2.db.account.get(session.account._id).then(function (account) {
@@ -2289,7 +2289,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.pendInventory = function pendInventory(_id, pendQty) {
 
       var toPend = [];
-      var next = [{ pended: { _id: _id }, createdAt: new Date().toJSON() }];
+      var next = [{ pended: { _id: _id }, user: this.user, createdAt: new Date().toJSON() }];
       var pendId = this.getPendId({ next: next });
 
       if (pendQty) next[0].pended._id = pendId + ' - ' + pendQty;
@@ -2370,14 +2370,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.dispenseInventory = function dispenseInventory() {
-      var next = [{ dispensed: {}, createdAt: new Date().toJSON() }];
+      var next = [{ dispensed: {}, user: this.user, createdAt: new Date().toJSON() }];
       this.updateSelected(function (transaction) {
         return transaction.next = next;
       });
     };
 
     inventory.prototype.disposeInventory = function disposeInventory() {
-      var next = [{ disposed: {}, createdAt: new Date().toJSON() }];
+      var next = [{ disposed: {}, user: this.user, createdAt: new Date().toJSON() }];
       this.updateSelected(function (transaction) {
         return transaction.next = next;
       });
@@ -2408,10 +2408,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       newTransactions.push({
         exp: { to: this.repacks[0].exp, from: null },
         qty: { to: this.repacks.excessQty, from: null },
-        user: { _id: this.user },
+        user: this.user,
         shipment: { _id: this.account._id },
         drug: drug,
-        next: [{ disposed: {}, createdAt: createdAt }]
+        next: [{ disposed: {}, user: this.user, createdAt: createdAt }]
       });
 
       for (var _iterator4 = this.repacks, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
@@ -2434,7 +2434,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var newTransaction = {
           exp: { to: repack.exp, from: null },
           qty: { to: +repack.qty, from: null },
-          user: { _id: this.user },
+          user: this.user,
           shipment: { _id: this.account._id },
           bin: repack.bin,
           drug: drug,
@@ -2464,7 +2464,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         console.log('Repacked vials have been created', rows);
 
         var next = rows.map(function (row) {
-          return { transaction: { _id: row.id }, createdAt: createdAt };
+          return { transaction: { _id: row.id }, user: _this7.user, createdAt: createdAt };
         });
 
         _this7.updateSelected(function (transaction) {

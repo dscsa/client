@@ -49,7 +49,7 @@ export class inventory {
 
     this.db.user.session.get().then(session => {
 
-      this.user    = session._id
+      this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
       this.db.account.get(session.account._id).then(account => this.account = account)
@@ -306,7 +306,7 @@ export class inventory {
   pendInventory(_id, pendQty) {
 
     let toPend = []
-    let next   = [{pended:{_id}, createdAt:new Date().toJSON()}]
+    let next   = [{pended:{_id}, user:this.user, createdAt:new Date().toJSON()}]
     let pendId = this.getPendId({next})
 
     if (pendQty)
@@ -392,12 +392,12 @@ export class inventory {
   }
 
   dispenseInventory() {
-    const next = [{dispensed:{}, createdAt:new Date().toJSON()}]
+    const next = [{dispensed:{}, user:this.user, createdAt:new Date().toJSON()}]
     this.updateSelected(transaction => transaction.next = next)
   }
 
   disposeInventory() {
-    const next = [{disposed:{}, createdAt:new Date().toJSON()}]
+    const next = [{disposed:{}, user:this.user, createdAt:new Date().toJSON()}]
     this.updateSelected(transaction => transaction.next = next)
   }
 
@@ -432,10 +432,10 @@ export class inventory {
     newTransactions.push({
       exp:{to:this.repacks[0].exp, from:null},
       qty:{to:this.repacks.excessQty, from:null},
-      user:{_id:this.user},
+      user:this.user,
       shipment:{_id:this.account._id},
       drug:drug,
-      next:[{disposed:{}, createdAt}]
+      next:[{disposed:{}, user:this.user, createdAt}]
     })
 
     //Create the new (repacked) transactions
@@ -447,7 +447,7 @@ export class inventory {
       let newTransaction = {
         exp:{to:repack.exp, from:null},
         qty:{to:+repack.qty, from:null},
-        user:{_id:this.user},
+        user:this.user,
         shipment:{_id:this.account._id},
         bin:repack.bin,
         drug:drug,
@@ -483,7 +483,7 @@ export class inventory {
       console.log('Repacked vials have been created', rows)
 
       const next = rows.map(row => {
-        return {transaction:{_id:row.id}, createdAt}
+        return {transaction:{_id:row.id}, user:this.user, createdAt}
       })
 
       this.updateSelected(transaction => transaction.next = next)
