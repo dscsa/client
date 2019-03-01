@@ -166,7 +166,7 @@ export class inventory {
 
     const [pendId, label] = pendedKey.split(': ')
 
-    let transactions = Object.values(this.pended[pendId]).reduce((arr, pend) => {
+    let transactions = Object.values(this.pended[pendId] || {}).reduce((arr, pend) => {
          return ! label || pend.label == label ? arr.concat(pend.transactions) : arr
     }, [])
 
@@ -766,11 +766,12 @@ export class inventory {
     return true
   }
 
-  showHistoryDialog(id) {
-    console.log('getHistory', id)
-    this.history = 'Loading...'
+  showHistoryDialog(_id) {
+    console.log('getHistory', _id)
+    this.history     = 'Loading...'
+    this.transaction = {_id}
     this.dialog.showModal()
-    this.getHistory(id).then(history => {
+    this.getHistory(_id).then(history => {
       console.log(history)
       this.history = history
     })
