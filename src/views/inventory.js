@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, drugSearch, groupDrugs, drugName, waitForDrugsToIndex, toggleDrawer, getHistory} from '../resources/helpers'
+import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, drugSearch, groupDrugs, drugName, waitForDrugsToIndex, toggleDrawer, getHistory, currentDate} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class inventory {
@@ -29,6 +29,7 @@ export class inventory {
     this.canActivate     = canActivate
     this.toggleDrawer    = toggleDrawer
     this.getHistory      = getHistory
+    this.currentDate     = currentDate
     this.reset           = $event => {
       if ($event.newURL.slice(-9) == 'inventory') {
         this.term = ''
@@ -636,13 +637,6 @@ export class inventory {
     }, 0)
     this.repacks.excessQty = this.filter.checked.qty - repackQty
     //console.log('this.repacks.excessQty', this.repacks.excessQty, this.filter.checked.qty, repackQty, this.repacks)
-  }
-
-  currentDate(addMonths, split) {
-    var minExp = new Date()
-    minExp.setMonth(minExp.getMonth() + addMonths)
-    minExp = minExp.toJSON()
-    return split ? minExp.split(/\-|T|:|\./) : minExp
   }
 
   exportCSV() {

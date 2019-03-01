@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
 import {Pouch}     from '../libs/pouch'
 import {csv}    from '../libs/csv'
-import {canActivate, scrollSelect, toggleDrawer, drugSearch, drugName, groupDrugs, focusInput} from '../resources/helpers'
+import {canActivate, scrollSelect, toggleDrawer, drugSearch, drugName, groupDrugs, focusInput, currentDate} from '../resources/helpers'
 
 
 //@pageState()
@@ -22,6 +22,7 @@ export class drugs {
     this.focusInput   = focusInput
     this.drugName     = drugName
     this.canActivate  = canActivate
+    this.currentDate  = currentDate
   }
 
   deactivate() {
@@ -90,8 +91,8 @@ export class drugs {
 
     let order     = this.account.ordered[group.generic] || {}
     let minDays   = order.minDays || (this.account.default && this.account.default.minDays)
-    let indate    = this.addDays(minDays || 30).split('-')
-    let unexpired = this.addDays(30).split('-')
+    let indate    = this.addDays(minDays).split('-')
+    let unexpired = this.currentDate(1, true)
 
     //[to_id, 'month', year, month, doc.drug.generic, stage, sortedDrug]
     this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', indate[0], indate[1], group.generic], endkey:[this.account._id, 'month', indate[0], indate[1], group.generic, {}]})
@@ -149,7 +150,7 @@ export class drugs {
         gsns:this.drug && this.drug.gsns,
       }
       url = 'drugs'
-      
+
       //save time when entering new drugs.  Wait because field is disabled right now and will take a bit to enable.
       setTimeout(_ => {
         this.focusInput('[name=pro_ndc_field]')

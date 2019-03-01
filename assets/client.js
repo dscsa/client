@@ -837,6 +837,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   exports.waitForDrugsToIndex = waitForDrugsToIndex;
   exports.canActivate = canActivate;
   exports.getHistory = getHistory;
+  exports.currentDate = currentDate;
   function expShortcuts($event, $index) {
     if ($event.which == 13) return this.focusInput('#qty_' + $index);
 
@@ -1197,6 +1198,13 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         return date + pad(fromName, 35) + toName + "<br>" + qty + pad(fromStreet, 35) + toStreet + '<br>' + tracking + pad(fromAddress, 35) + toAddress;
       }, "   ").slice(2, -2).replace(/(\[\n?\s*){1,2}/g, "<div style='border-left:1px solid; padding-left:8px; margin-top:-12px'>").replace(/(\n?\s*\],?){1,2}/g, '</div>').replace(/ *"/g, '').replace(/\n/g, '<br><br>');
     });
+  }
+
+  function currentDate(addMonths, split) {
+    var date = new Date();
+    date.setMonth(date.getMonth() + addMonths);
+    date = date.toJSON();
+    return split ? date.split(/\-|T|:|\./) : date;
   }
 });
 define('client/src/resources/value-converters',['exports', '../resources/helpers'], function (exports, _helpers) {
@@ -1578,6 +1586,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       this.focusInput = _helpers.focusInput;
       this.drugName = _helpers.drugName;
       this.canActivate = _helpers.canActivate;
+      this.currentDate = _helpers.currentDate;
     }
 
     drugs.prototype.deactivate = function deactivate() {
@@ -1640,8 +1649,8 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       var order = this.account.ordered[group.generic] || {};
       var minDays = order.minDays || this.account.default && this.account.default.minDays;
-      var indate = this.addDays(minDays || 30).split('-');
-      var unexpired = this.addDays(30).split('-');
+      var indate = this.addDays(minDays).split('-');
+      var unexpired = this.currentDate(1, true);
 
       this.db.transaction.query('inventory.qty-by-generic', { startkey: [this.account._id, 'month', indate[0], indate[1], group.generic], endkey: [this.account._id, 'month', indate[0], indate[1], group.generic, {}] }).then(function (inventory) {
         console.log('indate inventory', minDays, indate, inventory);
@@ -2004,6 +2013,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.canActivate = _helpers.canActivate;
       this.toggleDrawer = _helpers.toggleDrawer;
       this.getHistory = _helpers.getHistory;
+      this.currentDate = _helpers.currentDate;
       this.reset = function ($event) {
         if ($event.newURL.slice(-9) == 'inventory') {
           _this.term = '';
@@ -2589,13 +2599,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         return Math.max(0, repack.qty || 0) + totalQty;
       }, 0);
       this.repacks.excessQty = this.filter.checked.qty - repackQty;
-    };
-
-    inventory.prototype.currentDate = function currentDate(addMonths, split) {
-      var minExp = new Date();
-      minExp.setMonth(minExp.getMonth() + addMonths);
-      minExp = minExp.toJSON();
-      return split ? minExp.split(/\-|T|:|\./) : minExp;
     };
 
     inventory.prototype.exportCSV = function exportCSV() {

@@ -351,3 +351,10 @@ export function getHistory(id) {
     .replace(/\n/g, '<br><br>')
   })
 }
+
+export function currentDate(addMonths, split) {
+  var date = new Date()
+  date.setMonth(date.getMonth() + addMonths)
+  date = date.toJSON()
+  return split ? date.split(/\-|T|:|\./) : date
+}
