@@ -344,6 +344,7 @@ export function getHistory(id) {
       },
       "   "
     )
+    .slice(1, -1) //remove outer Array "[" and "]" since we don't want a border line on the outermost div
     .replace(/(\[\n?\s*){1,2}/g, "<div style='border-left:1px solid; padding-left:8px; margin-top:-12px'>")
     .replace(/(\n?\s*\],?){1,2}/g, '</div>')
     .replace(/ *"/g, '')
