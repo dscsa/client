@@ -769,7 +769,6 @@ export class inventory {
   showHistoryDialog(_id) {
     console.log('getHistory', _id)
     this.history     = 'Loading...'
-    this.transaction = {_id}
     this.dialog.showModal()
     this.getHistory(_id).then(history => {
       console.log(history)
