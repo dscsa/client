@@ -439,7 +439,6 @@ export class shipments {
     this.transactions.unshift(transaction) //Add the drug to the view
 
     let order        = this.getOrder(transaction)
-    let isPharMerica = false ///pharmerica.*/i.test(this.shipment.account.from.name)
 
     //We set current inventory when adding a new transaction.  This is a tradeoff of frequency vs accurracy.  This will be inaccurate
     //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
@@ -461,9 +460,7 @@ export class shipments {
       })
     }
 
-    isPharMerica && ! order //Kiah's idea of not making people duplicate logs for PharMerica, saving us some time
-      ? this.snackbar.show(`Destroy, record already exists`)
-      : setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
+    setTimeout(_ => this.focusInput('#exp_0'), 50) // Select the row.  Wait for repeat.for to refresh (needed for dev env not live)
 
     return this._saveTransaction = Promise.resolve(this._saveTransaction).then(_ => {
       return this.db.transaction.post(transaction)
@@ -476,7 +473,7 @@ export class shipments {
 
   dialogClose() {
     this.dialog.close()
-    this.focusInput('#qty_0')
+    this.focusInput('#exp_0')
   }
 
   exportCSV() {

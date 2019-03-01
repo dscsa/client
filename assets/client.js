@@ -3458,7 +3458,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       this.transactions.unshift(transaction);
 
       var order = this.getOrder(transaction);
-      var isPharMerica = false;
+
       if (order) {
 
         var minDays = order.minDays || this.account.default && this.account.default.minDays || 30;
@@ -3474,7 +3474,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         });
       }
 
-      isPharMerica && !order ? this.snackbar.show('Destroy, record already exists') : setTimeout(function (_) {
+      setTimeout(function (_) {
         return _this9.focusInput('#exp_0');
       }, 50);
 
@@ -3488,7 +3488,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
 
     shipments.prototype.dialogClose = function dialogClose() {
       this.dialog.close();
-      this.focusInput('#qty_0');
+      this.focusInput('#exp_0');
     };
 
     shipments.prototype.exportCSV = function exportCSV() {
