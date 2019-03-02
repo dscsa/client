@@ -2758,7 +2758,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var repackFilter = {};
       var formFilter = {};
       var checkVisible = true;
-      var oneMonthFromNow = inventory.prototype.currentDate(1);
+      var oneMonthFromNow = (0, _helpers.currentDate)(1);
       var isBin = inventory.prototype.isBin(term);
       var defaultCheck = isBin || inventory.prototype.isExp(term);
 

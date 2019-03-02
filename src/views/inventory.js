@@ -785,7 +785,7 @@ export class inventoryFilterValueConverter {
     let repackFilter    = {}
     let formFilter      = {}
     let checkVisible    = true
-    let oneMonthFromNow = inventory.prototype.currentDate(1)
+    let oneMonthFromNow = currentDate(1)
     let isBin           = inventory.prototype.isBin(term)
     let defaultCheck    = isBin || inventory.prototype.isExp(term)
 
