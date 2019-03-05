@@ -131,6 +131,28 @@ sudo node /dscsa/node_modules/server           #add username: admin and the pass
 ctrl c (to stop server)
 sudo forever start /dscsa/node_modules/server  #forever list, forever stop
 #log: sudo nano /dscsa/couchdb/log/couchdb.log
+
+
+#Add 2nd static public IP for replication
+Goto console.aws.com
+  -> Network Interfaces -> Actions -> Manage IP Addresses -> Increment current IP address by one
+  -> Elastic IPs -> Associate -> Instance ID -> Select New Private IP
+  -> Then SSH into instance and run sudo ip addr add <private ip address>/24 dev ens5
+     //if fails to “ip a” to see if “ens5” is correct
+     //More info: https://bobcares.com/blog/an-easy-guide-to-setup-amazon-ec2-multiple-ips/2/
+     //NOTE: THIS MIGHT NOT SURVIVE RESTARTS!
+
+Right now
+Server A*:
+Private IPs 172.30.2.173, 172.30.2.174
+Public IPs 52.8.112.88 (v2.goodpill.org), 52.52.80.83 (static for replication)
+
+Server B*:
+Private IPs 172.30.2.240, 172.30.2.241
+Public IPs  52.9.6.78 (Live Inventory Backup), 52.9.98.164 (static for replication)
+
+* To switch live servers, just switch the primary IP addresses (e.g, 52.8.112.88 & 52.9.6.78)
+
 ```
 
 ##### Testing Notes
