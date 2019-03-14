@@ -8,33 +8,6 @@ define('client/src/environment',["exports"], function (exports) {
     debug: false,
     testing: false };
 });
-define('client/src/libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
-});
-define('client/src/libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Pouch = exports.Pouch = function Pouch() {
-    _classCallCheck(this, Pouch);
-
-    return pouchdbClient;
-  };
-});
 define('client/src/elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';
 
@@ -814,6 +787,33 @@ define('client/src/elems/md-text',['exports', 'aurelia-framework'], function (ex
 
     return MdTextCustomElement;
   }()) || _class) || _class) || _class) || _class) || _class);
+});
+define('client/src/libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
+});
+define('client/src/libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Pouch = exports.Pouch = function Pouch() {
+    _classCallCheck(this, Pouch);
+
+    return pouchdbClient;
+  };
 });
 define('client/src/resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
   'use strict';
@@ -1995,7 +1995,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.db = db;
       this.router = router;
       this.csv = _csv.csv;
-      this.repacks = [];
       this.transactions = [];
       this.pended = {};
 
@@ -2240,6 +2239,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       console.log('selectTerm', type, key);
 
       this.setVisibleChecks(false);
+      this.repacks = [];
 
       type == 'pended' ? this.selectPended(key) : this.selectInventory(type, key, 100);
 
@@ -2409,18 +2409,16 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         return this.snackbar.show('Repack Qty Error');
       }
 
-      if (this.openingMenu) return setTimeout(this.repackInventory.bind(this), 500);
-
       var newTransactions = [],
           next = [],
-          createdAt = new Date().toJSON(),
-          drug = this.repacks.drug;
+          createdAt = new Date().toJSON();
+
       newTransactions.push({
         exp: { to: this.repacks[0].exp, from: null },
         qty: { to: this.repacks.excessQty, from: null },
         user: this.user,
         shipment: { _id: this.account._id },
-        drug: drug,
+        drug: this.repacks.drug,
         next: [{ disposed: {}, user: this.user, createdAt: createdAt }]
       });
 
@@ -2447,7 +2445,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           user: this.user,
           shipment: { _id: this.account._id },
           bin: repack.bin,
-          drug: drug,
+          drug: this.repacks.drug,
           next: next
         };
 
@@ -2634,14 +2632,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.openMenu = function openMenu($event) {
       console.log('openMenu called', $event.target.tagName, this.transactions.length, !this.transactions.length, this.repacks, $event);
-      if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'UL' && $event.target.tagName != 'MD-MENU') return true;
+
+      if (this.repacks.length && $event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'UL' && $event.target.tagName != 'MD-MENU') return true;
 
       if (!this.transactions.length) {
         console.log('openMenu transactions.length == 0', this.repacks);
         return true;
       }
 
-      this.openingMenu = true;
       var term = this.term.replace('Pended ', '');
 
       this.pendToId = '';
@@ -2655,7 +2653,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       }
 
       console.log('openMenu', this.account.ordered[this.term], this.repacks);
-      this.openingMenu = false;
     };
 
     inventory.prototype.setMatchingPends = function setMatchingPends(drug) {

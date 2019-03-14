@@ -11,7 +11,6 @@ export class inventory {
     this.db      = db
     this.router  = router
     this.csv     = csv
-    this.repacks = []
     this.transactions = []
     this.pended = {}
 
@@ -239,6 +238,7 @@ export class inventory {
     console.log('selectTerm', type, key)
 
     this.setVisibleChecks(false) //reset selected qty back to 0
+    this.repacks = []  //empty and left over repacks
 
     type == 'pended'
       ? this.selectPended(key)
@@ -418,13 +418,9 @@ export class inventory {
       return this.snackbar.show(`Repack Qty Error`)
     }
 
-    if (this.openingMenu) //postpone this call just in case openMenu is still running Pradaxa (2019-01-28T20:23:27.174900Z & 2019-01-28T16:47:12.754500Z) got the next.transaction of Esomeprazole (2019-01-29T17:15:56.773700Z)
-      return setTimeout(this.repackInventory.bind(this), 500)
-
     let newTransactions = [],
         next = [],
-        createdAt = new Date().toJSON(),
-        drug = this.repacks.drug //freeze the drug just in case drug is getting updated part way through this function Pradaxa (2019-01-28T20:23:27.174900Z & 2019-01-28T16:47:12.754500Z) got the next.transaction of Esomeprazole (2019-01-29T17:15:56.773700Z)
+        createdAt = new Date().toJSON()
 
     //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
     //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
@@ -435,7 +431,7 @@ export class inventory {
       qty:{to:this.repacks.excessQty, from:null},
       user:this.user,
       shipment:{_id:this.account._id},
-      drug:drug,
+      drug:this.repacks.drug,
       next:[{disposed:{}, user:this.user, createdAt}]
     })
 
@@ -451,7 +447,7 @@ export class inventory {
         user:this.user,
         shipment:{_id:this.account._id},
         bin:repack.bin,
-        drug:drug,
+        drug:this.repacks.drug,
         next:next
       }
 
@@ -667,7 +663,9 @@ export class inventory {
 
   openMenu($event) {
     console.log('openMenu called', $event.target.tagName, this.transactions.length, ! this.transactions.length, this.repacks, $event)
-    if ($event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'UL' && $event.target.tagName != 'MD-MENU')
+
+    //This repack.length because Pradaxa (2019-01-28T20:23:27.174900Z & 2019-01-28T16:47:12.754500Z) got the next.transaction of Esomeprazole (2019-01-29T17:15:56.773700Z)
+    if (this.repacks.length && $event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'UL' && $event.target.tagName != 'MD-MENU')
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
     if ( ! this.transactions.length) {
@@ -675,7 +673,6 @@ export class inventory {
       return true
     }
 
-    this.openingMenu = true //see note on repackInventory
     const term = this.term.replace('Pended ', '')
 
     this.pendToId  = ''
@@ -689,7 +686,6 @@ export class inventory {
     }
 
     console.log('openMenu', this.account.ordered[this.term], this.repacks)
-    this.openingMenu = false  //see note on repackInventory
   }
 
   setMatchingPends(drug) {
