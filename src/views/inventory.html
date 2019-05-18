@@ -64,7 +64,7 @@
           <div if.bind="$index == 0" class="mdl-card__title" style="padding:16px 0 4px 0">
             <div style="width:60%">Exp Filter</div>
           </div>
-          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="refreshFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 10)}</md-checkbox>
+          <md-checkbox name = "pro_checkbox" style="width:60%; margin-bottom:3px" click.delegate="refreshFilter(exp)" checked.bind="exp.val.isChecked">${exp.key.slice(0, 7)}</md-checkbox>
           <div style="width:18%; display:inline-block; vertical-align:top">${exp.val.qty}</div>
           <div style="width:18%; display:inline-block; vertical-align:top">${exp.val.count}</div>
         </div>
