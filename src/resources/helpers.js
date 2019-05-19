@@ -110,16 +110,27 @@ let _drugSearch = {
     //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
     if (term.startsWith(_drugSearch._term) && ! clearCache) {
       const regex = RegExp('(?=.*'+terms.join(')(?=.*( |0)')+')', 'i') //Use lookaheads to search for each word separately (no order).  Even the first term might be the 2nd generic
-      return _drugSearch._drugs.then(drugs => drugs.filter(drug => regex.test(drug.generic+' '+drug.brand))).then(drugs => {
-        console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', term, 'cache', _drugSearch._term)
-        _drugSearch._term = term
-        return drugs
-      })
+      return _drugSearch._drugs
+        .then(drugs => drugs.filter(drug => regex.test(drug.generic+' '+drug.brand)))
+        .then(drugs => {
+          console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', term, 'cache', _drugSearch._term)
+          _drugSearch._term = term
+
+          if (drugs[0]) {
+            var unknown = JSON.parse(JSON.stringify(drugs[0]))
+            unknown._id = "Unspecified"
+            drugs = drugs.concat(unknown)
+          }
+
+          return drugs
+        })
     }
 
     _drugSearch._term = term
     console.log('drug search', term, _drugSearch.range(terms[0]))
-    return _drugSearch._drugs = this.db.drug.query('name', _drugSearch.range(terms[0])).then(_drugSearch.map(start))
+    return _drugSearch._drugs = this.db.drug
+      .query('name', _drugSearch.range(terms[0]))
+      .then(_drugSearch.map(start))
   },
 
   addPkgCode(term, drug) {
