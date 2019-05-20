@@ -934,25 +934,30 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
       if (term.startsWith(_drugSearch._term) && !clearCache) {
         var regex = RegExp('(?=.*' + terms.join(')(?=.*( |0)') + ')', 'i');
         return _drugSearch._drugs.then(function (drugs) {
+
+          var unknowns = {};
+
           return drugs.filter(function (drug) {
-            return regex.test(drug.generic + ' ' + drug.brand);
-          });
+            var isMatch = regex.test(drug.generic + ' ' + drug.brand);
+
+            if (isMatch && !unknowns[drug.generic]) {
+              var unknown = JSON.parse(JSON.stringify(drug));
+              unknown._id = "Unspecified";
+              unknowns[drug.generic] = unknown;
+            }
+
+            return isMatch;
+          }).concat(Object.values(unknowns));
         }).then(function (drugs) {
           console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', term, 'cache', _drugSearch._term);
           _drugSearch._term = term;
-
-          if (drugs[0]) {
-            var unknown = JSON.parse(JSON.stringify(drugs[0]));
-            unknown._id = "Unspecified";
-            drugs = drugs.concat(unknown);
-          }
-
           return drugs;
         });
       }
 
       _drugSearch._term = term;
       console.log('drug search', term, _drugSearch.range(terms[0]));
+
       return _drugSearch._drugs = this.db.drug.query('name', _drugSearch.range(terms[0])).then(_drugSearch.map(start));
     },
     addPkgCode: function addPkgCode(term, drug) {
