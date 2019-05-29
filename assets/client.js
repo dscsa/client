@@ -942,6 +942,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
             if (isMatch && !unknowns[drug.generic]) {
               var unknown = JSON.parse(JSON.stringify(drug));
+              unknown.labeler = undefined;
               unknown._id = "Unspecified";
               unknowns[drug.generic] = unknown;
             }
@@ -1760,7 +1761,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     drugs.prototype.exportCSV = function exportCSV(generic) {
       var _this7 = this;
 
-      var inventory = this.db.transaction.query('inventory', { key: [this.account._id] });
+      var inventory = this.db.transaction.query('inventory.qty-by-generic', { key: [this.account._id] });
       var drugs = this.db.drug.allDocs({ include_docs: true, endkey: '_design' });
       Promise.all([inventory, drugs]).then(function (_ref) {
         var inventory = _ref[0],
