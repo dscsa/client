@@ -200,7 +200,7 @@ export class drugs {
   }
 
   exportCSV(generic) {
-    let inventory = this.db.transaction.query('inventory', {key:[this.account._id]})
+    let inventory = this.db.transaction.query('inventory.qty-by-generic', {key:[this.account._id]})
     let drugs = this.db.drug.allDocs({include_docs:true, endkey:'_design'})
     Promise.all([inventory, drugs]).then(([inventory, drugs]) => {
       console.log('Export queries run')

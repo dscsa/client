@@ -120,6 +120,7 @@ let _drugSearch = {
 
             if (isMatch && ! unknowns[drug.generic]) {
               var unknown = JSON.parse(JSON.stringify(drug))
+              unknown.labeler = undefined
               unknown._id = "Unspecified"
               unknowns[drug.generic] = unknown
             }
