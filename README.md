@@ -76,6 +76,8 @@ sudo apt-get update && sudo apt-get install couchdb # select option for standalo
 enable CORS
 [fabric] request_timeout 120000
 [compactions] _defaults [{db_fragmentation, "5%"}, {view_fragmentation, "5%"},{from, "00:00"}, {to, "04:00"}]
+[couch_httpd_auth] secret <ensure same for all instances behind a load balancer>
+#http://mail-archives.apache.org/mod_mbox/couchdb-user/201705.mbox/%3CCAB2Gbkw4FdhUuBJ6ErBBo4vnC8ANzGQ3AS6ua-uB032Km6zOgQ@mail.gmail.com%3E
 
 ###
 #start if new instance, move files to non-bootable drive
