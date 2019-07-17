@@ -135,6 +135,7 @@ sudo forever start /dscsa/node_modules/server  #forever list, forever stop
 #log: sudo nano /dscsa/couchdb/log/couchdb.log
 
 
+## If not using a Load Balancer
 #Add 2nd static public IP for replication
 Goto console.aws.com
   -> Network Interfaces -> Actions -> Manage IP Addresses -> Increment current IP address by one
@@ -154,6 +155,13 @@ Private IPs 172.30.2.240, 172.30.2.241
 Public IPs  52.9.6.78 (Live Inventory Backup), 52.9.98.164 (static for replication)
 
 * To switch live servers, just switch the primary IP addresses (e.g, 52.8.112.88 & 52.9.6.78)
+
+## If using a Load Balancer
+Ensure that [couch_httpd_auth] "secrets" are the same
+Ensure that [couch_httpd_auth] "timeout" are the same
+Ensure that [admins] password hashes are the same
+https://stackoverflow.com/questions/43958527/does-couchdb-2-sync-user-sessions-across-nodes
+http://mail-archives.apache.org/mod_mbox/couchdb-user/201705.mbox/%3CCAB2Gbkw4FdhUuBJ6ErBBo4vnC8ANzGQ3AS6ua-uB032Km6zOgQ@mail.gmail.com%3E
 
 ```
 

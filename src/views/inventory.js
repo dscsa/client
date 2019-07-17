@@ -121,7 +121,7 @@ export class inventory {
       this.type = null
 
     //Sort X00 bin alphabetically per Cindy's request.
-    if (this.term == 'X00')
+    if (this.term == 'X00' || this.term == 'Y00' || this.term == 'Z00')
       transactions = transactions.sort((a,b) => {
         if (a.drug.generic < b.drug.generic) return -1
         if (b.drug.generic < a.drug.generic) return 1
