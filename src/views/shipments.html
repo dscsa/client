@@ -169,9 +169,9 @@
             repeat.for="drug of drugs"
             click.delegate="addTransaction(drug)"
             class="${ drug._id == $parent.drug._id && 'is-selected'}">
-            <td innerHTML.bind="drug.generic | bold:term" style="white-space:normal; max-width:60%" class="mdl-data-table__cell--non-numeric" ></td>
-            <td innerHTML.bind="drug._id + (drug.pkg ? '-'+drug.pkg : '')" style="max-width:20%" class="mdl-data-table__cell--non-numeric" ></td>
-            <td innerHTML.bind="drug.labeler" style="max-width:20%" class="mdl-data-table__cell--non-numeric" ></td>
+            <td innerHTML.bind="drug.generic | bold:term" style="white-space:normal;" class="mdl-data-table__cell--non-numeric" ></td>
+            <td innerHTML.bind="drug.labeler" style="width:1%" class="mdl-data-table__cell--non-numeric" ></td>
+            <td innerHTML.bind="drug._id + (drug.pkg ? '-'+drug.pkg : '')" style="width:1%" class="mdl-data-table__cell--non-numeric" ></td>
           </tr>
         </table>
       </md-autocomplete>

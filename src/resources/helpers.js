@@ -116,11 +116,11 @@ let _drugSearch = {
           var unknowns = {} //Add one "Unspecified" NDC result per unique generic name
 
           return drugs.filter(drug => {
-            let isMatch = regex.test(drug.generic+' '+drug.brand+' '+drug.labeler)
+            let isMatch = regex.test(drug.generic+' '+(drug.brand || '')+' '+(drug.labeler || ''))
 
             if (isMatch && ! unknowns[drug.generic]) {
               var unknown = JSON.parse(JSON.stringify(drug))
-              unknown.labeler = undefined
+              unknown.labeler = ''
               unknown._id = "Unspecified"
               unknowns[drug.generic] = unknown
             }
