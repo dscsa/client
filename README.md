@@ -148,7 +148,9 @@ sudo apt-get install nodejs -y
 sudo apt-get install git-core
 sudo npm install dscsa/server                  #make sure you are in the /dscsa directory!
 sudo npm install forever -g                    #to do make new repo with this dependency that runs this with
-sudo node /dscsa/node_modules/server           #add username: admin and the password you used for CouchDB
+sudo mkdir keys
+sudo nano keys/dev.js                          #copy and paste key file from existing instance
+sudo node /dscsa/node_modules/server        
 ctrl c (to stop server)
 sudo forever start /dscsa/node_modules/server  #forever list, forever stop
 #log: sudo nano /dscsa/couchdb/log/couchdb.log
