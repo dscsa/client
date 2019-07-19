@@ -123,9 +123,16 @@ sudo su couchdb
 ulimit -n #this should display same number as above e.g., 20000
 exit
 
+###
+
+Add Elastic IP to instance. Important to do before replication otherwise "Use Local Existing DB" option will map to wrong IP
+Add EC2 Console, Register New Instance with Load Balancer's "Target Group"
+
 ####
 
-In fauxton, setup replication for all 6 databases: _users, user, account, shipment, drug, transaction
+# We need to do 2x Replications to get Two-Way syncing
+New Server: In fauxton, setup replication for all 6 databases: _users, user, account, shipment, drug, transaction
+Old Server: In fauxton, setup replication for all 6 databases: _users, user, account, shipment, drug, transaction
 
 #Source
 Remote database
@@ -133,8 +140,8 @@ http:<PRIVATE IP>:5984/<DB> # NOTE THIS IS EC2's PRIVATE IP (RARELY USED), NOT E
 User name and password
 
 #Target
-Local existing database
-<DB>
+Remote existing database
+http:<PRIVATE IP>:5984/<DB> # NOTE THIS IS EC2's PRIVATE IP (RARELY USED), NOT ELASTIC IP OR PUBLIC IP WHICH WILL NOT WORK
 User name and password
 
 #Continuous
@@ -155,10 +162,6 @@ ctrl c (to stop server)
 sudo forever start /dscsa/node_modules/server  #forever list, forever stop
 #log: sudo nano /dscsa/couchdb/log/couchdb.log
 
-
-###
-
-Add EC2 Console, Register New Instance with Load Balancer's "Target Group"
 
 ```
 
