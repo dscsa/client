@@ -71,13 +71,15 @@ echo "deb https://apache.bintray.com/couchdb-deb xenial main" | sudo tee -a /etc
 curl -L https://couchdb.apache.org/repo/bintray-pubkey.asc | sudo apt-key add -
 sudo apt-get update && sudo apt-get install couchdb # select option for standalone, 0.0.0.0, set db password
 
-
 # goto <elastic-ip>:5984/_utils.  CouchDB should have been started automatically
 enable CORS
 [fabric] request_timeout 120000
 [compactions] _defaults [{db_fragmentation, "5%"}, {view_fragmentation, "5%"},{from, "00:00"}, {to, "04:00"}]
-[couch_httpd_auth] secret <ensure same for all instances behind a load balancer>
-#http://mail-archives.apache.org/mod_mbox/couchdb-user/201705.mbox/%3CCAB2Gbkw4FdhUuBJ6ErBBo4vnC8ANzGQ3AS6ua-uB032Km6zOgQ@mail.gmail.com%3E
+[couch_httpd_auth] "secrets" are the same as other instances if using a Load Balancer
+[couch_httpd_auth] "timeout" are the same as other instances if using a Load Balancer
+Ensure that [admins] password hashes are the same       # If using a Load Balancer
+https://stackoverflow.com/questions/43958527/does-couchdb-2-sync-user-sessions-across-nodes
+http://mail-archives.apache.org/mod_mbox/couchdb-user/201705.mbox/%3CCAB2Gbkw4FdhUuBJ6ErBBo4vnC8ANzGQ3AS6ua-uB032Km6zOgQ@mail.gmail.com%3E
 
 ###
 #start if new instance, move files to non-bootable drive
@@ -94,8 +96,6 @@ sudo mv /var/log/couchdb /dscsa/couchdb/log
 sudo ln -s /dscsa/couchdb/log /var/log/couchdb
 #after sudo service couchdb restart, fauxton should still work
 
-#login to fauxton, with username admin, password as set during installation
-#stop if new instance, move files to non-bootable drive
 ###
 
 ### Raise File Limits
@@ -119,8 +119,27 @@ sudo nano /etc/pam.d/common-session
   session required pam_limits.so
 
 #to test file limit was increased
-# sudo su couchdb; ulimit -n; exit
+sudo su couchdb
+ulimit -n #this should display same number as above e.g., 20000
+exit
 
+####
+
+In fauxton, setup replication for all 6 databases: _users, user, account, shipment, drug, transaction
+
+#Source
+Remote database
+http:<PRIVATE IP>:5984/<DB> # NOTE THIS IS EC2's PRIVATE IP (RARELY USED), NOT ELASTIC IP OR PUBLIC IP WHICH WILL NOT WORK
+User name and password
+
+#Target
+Local existing database
+<DB>
+User name and password
+
+#Continuous
+
+####
 
 #install nodejs and application
 #goto https://deb.nodesource.com and find the latest version
@@ -133,6 +152,13 @@ sudo node /dscsa/node_modules/server           #add username: admin and the pass
 ctrl c (to stop server)
 sudo forever start /dscsa/node_modules/server  #forever list, forever stop
 #log: sudo nano /dscsa/couchdb/log/couchdb.log
+
+
+###
+
+Add EC2 Console, Register New Instance with Load Balancer's "Target Group"
+
+```
 
 
 ## If not using a Load Balancer
@@ -155,15 +181,6 @@ Private IPs 172.30.2.240, 172.30.2.241
 Public IPs  52.9.6.78 (Live Inventory Backup), 52.9.98.164 (static for replication)
 
 * To switch live servers, just switch the primary IP addresses (e.g, 52.8.112.88 & 52.9.6.78)
-
-## If using a Load Balancer
-Ensure that [couch_httpd_auth] "secrets" are the same
-Ensure that [couch_httpd_auth] "timeout" are the same
-Ensure that [admins] password hashes are the same
-https://stackoverflow.com/questions/43958527/does-couchdb-2-sync-user-sessions-across-nodes
-http://mail-archives.apache.org/mod_mbox/couchdb-user/201705.mbox/%3CCAB2Gbkw4FdhUuBJ6ErBBo4vnC8ANzGQ3AS6ua-uB032Km6zOgQ@mail.gmail.com%3E
-
-```
 
 ##### Testing Notes
 Currently set to visit http://localhost:9000. If that's not right, need to update it in the spec
