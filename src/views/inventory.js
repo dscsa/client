@@ -121,7 +121,7 @@ export class inventory {
       this.type = null
 
     //Sort X00 bin alphabetically per Cindy's request.
-    if (this.term == 'X00' || this.term == 'Y00' || this.term == 'Z00')
+    if ( ~ ['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term))
       transactions = transactions.sort((a,b) => {
         if (a.drug.generic < b.drug.generic) return -1
         if (b.drug.generic < a.drug.generic) return 1
@@ -200,14 +200,14 @@ export class inventory {
       opts.startkey = [this.account._id, bin[0], bin[2], bin[1], bin[3]]
       opts.endkey   = [this.account._id, bin[0], bin[2], bin[1], bin[3], {}]
     } else if (type == 'exp<') {
-      var query = 'expired.qty-by-bin'
+      var query = 'expired-by-bin'
       var [year, month] = key.split('-')
       opts.startkey = [this.account._id, year, month]
       opts.endkey   = [this.account._id, year, month+'\uffff']
     } else if (type == 'generic') {
       //Only show medicine at least one month from expiration
       //just in case there is a lot of it and limit prevent us from seeing more
-      var query = 'inventory.qty-by-generic'
+      var query = 'inventory-by-generic'
       var [year, month] = this.currentDate(limit ? 1 : 0, true)
       opts.startkey = [this.account._id, 'month', year, month, key]
       opts.endkey   = [this.account._id, 'month', year, month, key, {}] //Use of {} rather than \uffff so we don't combine different drug.forms
@@ -307,7 +307,7 @@ export class inventory {
   pendInventory(_id, pendQty) {
 
     let toPend = []
-    let next   = [{pended:{_id}, user:this.user, createdAt:new Date().toJSON()}]
+    let next   = [{pended:{_id, user:this.user, createdAt:new Date().toJSON()}}]
     let pendId = this.getPendId({next})
 
     if (pendQty)
@@ -393,13 +393,29 @@ export class inventory {
   }
 
   dispenseInventory() {
-    const next = [{dispensed:{}, user:this.user, createdAt:new Date().toJSON()}]
-    this.updateSelected(transaction => transaction.next = next)
+    const next = [{dispensed:{user:this.user, createdAt:new Date().toJSON()}}]
+    this.updateSelected(transaction => {
+
+      //Preserve Old Next's Pended Property
+      next.pended = transaction.next[0] && transaction.next[0].pended
+        ? transaction.next[0].pended
+        : undefined
+
+      transaction.next = next
+    })
   }
 
   disposeInventory() {
-    const next = [{disposed:{}, user:this.user, createdAt:new Date().toJSON()}]
-    this.updateSelected(transaction => transaction.next = next)
+    const next = [{disposed:{user:this.user, createdAt:new Date().toJSON()}}]
+    this.updateSelected(transaction => {
+
+      //Preserve Old Next's Pended Property
+      next.pended = transaction.next[0] && transaction.next[0].pended
+        ? transaction.next[0].pended
+        : undefined
+
+      transaction.next = next
+    })
   }
 
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
@@ -432,7 +448,7 @@ export class inventory {
       user:this.user,
       shipment:{_id:this.account._id},
       drug:this.repacks.drug,
-      next:[{disposed:{}, user:this.user, createdAt}]
+      next:[{disposed:{user:this.user, createdAt}}]
     })
 
     //Create the new (repacked) transactions
@@ -480,10 +496,18 @@ export class inventory {
       console.log('Repacked vials have been created', rows)
 
       const next = rows.map(row => {
-        return {transaction:{_id:row.id}, user:this.user, createdAt}
+        return {transaction:{_id:row.id, user:this.user, createdAt}}
       })
 
-      this.updateSelected(transaction => transaction.next = next)
+      this.updateSelected(transaction => {
+
+        //Preserve Old Next's Pended Property
+        next.pended = transaction.next[0] && transaction.next[0].pended
+          ? transaction.next[0].pended
+          : undefined
+
+        transaction.next = next
+      })
 
       this.printLabels(newTransactions.slice(1)) //don't include the "excess" one
 
@@ -498,7 +522,7 @@ export class inventory {
     //getPendId from a transaction
     if (transaction) {
       const pendId  = transaction.next[0].pended._id
-      const created = transaction.next[0].createdAt
+      const created = transaction.next[0].pended.createdAt
       return pendId ? pendId.split(' - ')[0] : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
     }
 
@@ -645,7 +669,7 @@ export class inventory {
       endkey:[this.account._id, 'month', year, month+'\uffff']
     }
 
-    this.db.transaction.query('inventory.qty-by-generic', opts).then(transactions => {
+    this.db.transaction.query('inventory-by-generic', opts).then(transactions => {
       this.csv.fromJSON(name, transactions.rows.map(row => {
         return {
           'drug.generic':row.key[4],
@@ -653,7 +677,8 @@ export class inventory {
           'drug.brand':row.key[6],
           'drug._id':row.key[7],
           'exp.to':row.key[8],
-          'qty.to':row.value,
+          'qty.to':row.value[0],
+          'val.to':row.value[1],
           'bin':row.key[10], //key 9 is sortedBin
           '_id':row.id
         }

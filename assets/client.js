@@ -2124,7 +2124,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         this.snackbar.show('Displaying first 100 results');
       } else this.type = null;
 
-      if (this.term == 'X00' || this.term == 'Y00' || this.term == 'Z00') transactions = transactions.sort(function (a, b) {
+      if ( ~ ['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term)) transactions = transactions.sort(function (a, b) {
         if (a.drug.generic < b.drug.generic) return -1;
         if (b.drug.generic < a.drug.generic) return 1;
       });

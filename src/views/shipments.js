@@ -451,11 +451,11 @@ export class shipments {
       date = date.toJSON().slice(0, 10).split('-')
 
       //[to_id, 'month', year, month, doc.drug.generic, stage, sortedDrug]
-      this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', date[0], date[1], drug.generic], endkey:[this.account._id, 'month', date[0], date[1], drug.generic, {}]})
+      this.db.transaction.query('inventory-by-generic', {startkey:[this.account._id, 'month', date[0], date[1], drug.generic], endkey:[this.account._id, 'month', date[0], date[1], drug.generic, {}]})
       .then(inventory => {
         console.log('indate inventory', minDays, date, inventory)
         let row = inventory.rows[0]
-        order.indateInventory = row ? row.value.sum : 0
+        order.indateInventory = row ? row.value[0].sum : 0
         console.log('order.inventory', this.indateInventory)
       })
     }
