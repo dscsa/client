@@ -1649,7 +1649,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
     drugs.prototype.addDays = function addDays(days) {
       var date = new Date();
-      date.setDate(+days + date.getDate());
+      if(typeof days !== 'undefined') date.setDate(+days + date.getDate()); //put this here bc I think mindays is an account-spec right? and if not there, this crashes always
       return date.toJSON().slice(0, 10);
     };
 
@@ -1665,16 +1665,16 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
       var indate = this.addDays(minDays).split('-');
       var unexpired = this.currentDate(1, true);
 
-      this.db.transaction.query('inventory.qty-by-generic', { startkey: [this.account._id, 'month', indate[0], indate[1], group.generic], endkey: [this.account._id, 'month', indate[0], indate[1], group.generic, {}] }).then(function (inventory) {
+      this.db.transaction.query('inventory-by-generic', { startkey: [this.account._id, 'month', indate[0], indate[1], group.generic], endkey: [this.account._id, 'month', indate[0], indate[1], group.generic, {}] }).then(function (inventory) {
         console.log('indate inventory', minDays, indate, inventory);
         var row = inventory.rows[0];
-        _this3.indateInventory = row ? row.value.sum : 0;
+        _this3.indateInventory = row ? row.value[0].sum : 0;
         console.log('indate inventory', _this3.indateInventory);
 
-        _this3.db.transaction.query('inventory.qty-by-generic', { startkey: [_this3.account._id, 'month', unexpired[0], unexpired[1], group.generic], endkey: [_this3.account._id, 'month', unexpired[0], unexpired[1], group.generic, {}] }).then(function (inventory) {
+        _this3.db.transaction.query('inventory-by-generic', { startkey: [_this3.account._id, 'month', unexpired[0], unexpired[1], group.generic], endkey: [_this3.account._id, 'month', unexpired[0], unexpired[1], group.generic, {}] }).then(function (inventory) {
           console.log('outdate inventory', unexpired, inventory);
           var row = inventory.rows[0];
-          _this3.outdateInventory = row ? row.value.sum - _this3.indateInventory : 0;
+          _this3.outdateInventory = row ? row.value[0].sum - _this3.indateInventory : 0;
           console.log('outdate inventory', _this3.outdateInventory);
         });
       });
@@ -1761,7 +1761,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     drugs.prototype.exportCSV = function exportCSV(generic) {
       var _this7 = this;
 
-      var inventory = this.db.transaction.query('inventory.qty-by-generic', { key: [this.account._id] });
+      var inventory = this.db.transaction.query('inventory-by-generic', { key: [this.account._id] });
       var drugs = this.db.drug.allDocs({ include_docs: true, endkey: '_design' });
       Promise.all([inventory, drugs]).then(function (_ref) {
         var inventory = _ref[0],
@@ -1783,7 +1783,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
           var row = _ref2;
 
-          ndcMap[row.key[2]] = row.value;
+          ndcMap[row.key[2]] = row.value[0];
         }
         console.log('Inital map complete');
         _this7.csv.fromJSON('Drugs ' + new Date().toJSON() + '.csv', drugs.rows.map(function (row) {
@@ -2124,7 +2124,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         this.snackbar.show('Displaying first 100 results');
       } else this.type = null;
 
-      if ( ~ ['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term)) transactions = transactions.sort(function (a, b) {
+      if (~['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term)) transactions = transactions.sort(function (a, b) {
         if (a.drug.generic < b.drug.generic) return -1;
         if (b.drug.generic < a.drug.generic) return 1;
       });
@@ -2204,7 +2204,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         opts.startkey = [this.account._id, bin[0], bin[2], bin[1], bin[3]];
         opts.endkey = [this.account._id, bin[0], bin[2], bin[1], bin[3], {}];
       } else if (type == 'exp<') {
-        var query = 'expired.qty-by-bin';
+        var query = 'expired-by-bin';
 
         var _key$split = key.split('-'),
             year = _key$split[0],
@@ -2213,7 +2213,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         opts.startkey = [this.account._id, year, month];
         opts.endkey = [this.account._id, year, month + '\uFFFF'];
       } else if (type == 'generic') {
-        var query = 'inventory.qty-by-generic';
+        var query = 'inventory-by-generic';
 
         var _currentDate = this.currentDate(limit ? 1 : 0, true),
             year = _currentDate[0],
@@ -2312,7 +2312,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.pendInventory = function pendInventory(_id, pendQty) {
 
       var toPend = [];
-      var next = [{ pended: { _id: _id }, user: this.user, createdAt: new Date().toJSON() }];
+      var next = [{ pended: { _id: _id, user: this.user, createdAt: new Date().toJSON() } }];
       var pendId = this.getPendId({ next: next });
 
       if (pendQty) next[0].pended._id = pendId + ' - ' + pendQty;
@@ -2393,16 +2393,20 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.dispenseInventory = function dispenseInventory() {
-      var next = [{ dispensed: {}, user: this.user, createdAt: new Date().toJSON() }];
+      var next = [{ dispensed: { user: this.user, createdAt: new Date().toJSON() } }];
       this.updateSelected(function (transaction) {
-        return transaction.next = next;
+        next.pended = transaction.next[0] && transaction.next[0].pended ? transaction.next[0].pended : undefined;
+
+        transaction.next = next;
       });
     };
 
     inventory.prototype.disposeInventory = function disposeInventory() {
-      var next = [{ disposed: {}, user: this.user, createdAt: new Date().toJSON() }];
+      var next = [{ disposed: { user: this.user, createdAt: new Date().toJSON() } }];
       this.updateSelected(function (transaction) {
-        return transaction.next = next;
+        next.pended = transaction.next[0] && transaction.next[0].pended ? transaction.next[0].pended : undefined;
+
+        transaction.next = next;
       });
     };
 
@@ -2432,7 +2436,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         user: this.user,
         shipment: { _id: this.account._id },
         drug: this.repacks.drug,
-        next: [{ disposed: {}, user: this.user, createdAt: createdAt }]
+        next: [{ disposed: { user: this.user, createdAt: createdAt } }]
       });
 
       for (var _iterator4 = this.repacks, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
@@ -2485,11 +2489,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         console.log('Repacked vials have been created', rows);
 
         var next = rows.map(function (row) {
-          return { transaction: { _id: row.id }, user: _this7.user, createdAt: createdAt };
+          return { transaction: { _id: row.id, user: _this7.user, createdAt: createdAt } };
         });
 
         _this7.updateSelected(function (transaction) {
-          return transaction.next = next;
+          next.pended = transaction.next[0] && transaction.next[0].pended ? transaction.next[0].pended : undefined;
+
+          transaction.next = next;
         });
 
         _this7.printLabels(newTransactions.slice(1));
@@ -2502,7 +2508,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     inventory.prototype.getPendId = function getPendId(transaction) {
       if (transaction) {
         var pendId = transaction.next[0].pended._id;
-        var created = transaction.next[0].createdAt;
+        var created = transaction.next[0].pended.createdAt;
         return pendId ? pendId.split(' - ')[0] : created.slice(5, 16).replace('T', ' ');
       }
 
@@ -2627,7 +2633,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         endkey: [this.account._id, 'month', year, month + '\uFFFF']
       };
 
-      this.db.transaction.query('inventory.qty-by-generic', opts).then(function (transactions) {
+      this.db.transaction.query('inventory-by-generic', opts).then(function (transactions) {
         _this9.csv.fromJSON(name, transactions.rows.map(function (row) {
           return {
             'drug.generic': row.key[4],
@@ -2635,7 +2641,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
             'drug.brand': row.key[6],
             'drug._id': row.key[7],
             'exp.to': row.key[8],
-            'qty.to': row.value,
+            'qty.to': row.value[0],
+            'val.to': row.value[1],
             'bin': row.key[10],
             '_id': row.id
           };
@@ -3479,10 +3486,10 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         date.setDate(+minDays + date.getDate());
         date = date.toJSON().slice(0, 10).split('-');
 
-        this.db.transaction.query('inventory.qty-by-generic', { startkey: [this.account._id, 'month', date[0], date[1], drug.generic], endkey: [this.account._id, 'month', date[0], date[1], drug.generic, {}] }).then(function (inventory) {
+        this.db.transaction.query('inventory-by-generic', { startkey: [this.account._id, 'month', date[0], date[1], drug.generic], endkey: [this.account._id, 'month', date[0], date[1], drug.generic, {}] }).then(function (inventory) {
           console.log('indate inventory', minDays, date, inventory);
           var row = inventory.rows[0];
-          order.indateInventory = row ? row.value.sum : 0;
+          order.indateInventory = row ? row.value[0].sum : 0;
           console.log('order.inventory', _this9.indateInventory);
         });
       }
