@@ -83,8 +83,9 @@ sudo apt-get update && sudo apt-get install couchdb # select option for standalo
 enable CORS
 [fabric] request_timeout 120000
 [compactions] _defaults [{db_fragmentation, "5%"}, {view_fragmentation, "5%"},{from, "00:00"}, {to, "04:00"}]
-[couch_httpd_auth] "secret" is the same as other instances if using a Load Balancer
 [couch_httpd_auth] "timeout" is the same as other instances if using a Load Balancer
+[couch_httpd_auth] "secret" is the same as other instances if using a Load Balancer #this will log you out
+
 
 #If you get logged out of Fauxton settings available at /dscsa/couchdb/etc/local.ini
 #If you need to change password goto [admins] <username> <new password> after refreshing new password should get hashed
