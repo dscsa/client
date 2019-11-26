@@ -312,12 +312,15 @@ export class inventory {
 
     let toPend = []
     let repackQty = pendQty
-    let pended_obj = {_id:new Date().toJSON(), user:{ _id: this.user }, repackQty: repackQty, group: group}
+    let pended_obj = {_id:new Date().toJSON(), user:this.user, repackQty: repackQty, group: group}
     let pendId = group// this.getPendId({next})
 
     this.updateSelected(transaction => {
-      let next = transaction.next
-      next.pended = pended_obj
+      let next = transaction.next ? transaction.next : [{}]
+      if(next.length == 0){
+        next = [{}]
+      }
+      next[0].pended = pended_obj
       transaction.isChecked = false
       transaction.next = next
       toPend.push(transaction)
@@ -360,7 +363,7 @@ export class inventory {
   setPended(transactions) {
 
     for (let transaction of transactions) {
-
+      console.log(transaction)
       //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
       let pendId  = this.getPendId(transaction)
       let pendQty = this.getPendQty(transaction)
@@ -370,6 +373,9 @@ export class inventory {
       this.pended[pendId] = this.pended[pendId] || {}
       this.pended[pendId][generic] = this.pended[pendId][generic] || {label, transactions:[]}
       this.pended[pendId][generic].transactions.push(transaction)
+
+      console.log(this.pended)
+      console.log("HERE")
     }
   }
 
@@ -397,7 +403,7 @@ export class inventory {
   }
 
   dispenseInventory() {
-    const dispensed_obj = { _id: new Date().toJSON(), user: { _id: this.user } }
+    const dispensed_obj = { _id: new Date().toJSON(), user: this.user  }
 
     this.updateSelected(transaction => {
       let next = transaction.next
@@ -412,7 +418,7 @@ export class inventory {
   }
 
   disposeInventory() {
-    const disposed_obj = { _id: new Date().toJSON(), user: { _id: this.user } }
+    const disposed_obj = { _id: new Date().toJSON(), user:  this.user  }
 
     this.updateSelected(transaction => {
       let next = transaction.next
@@ -457,7 +463,7 @@ export class inventory {
       user:this.user,
       shipment:{_id:this.account._id},
       drug:this.repacks.drug,
-      next:[{ disposed: { _id: new Date().toJSON(), user: { _id: this.user } } }]
+      next:[{ disposed: { _id: new Date().toJSON(), user:  this.user  } }]
     })
 
     //Create the new (repacked) transactions
@@ -536,8 +542,13 @@ export class inventory {
 
     //getPendId from a transaction
     if (transaction) {
-      const pendId  = transaction.next[0].pended.group
-      const created = transaction.next[0].pended._id
+      console.log("There")
+      console.log(transaction)
+      console.log(transaction.next.length)
+      const pendId  = transaction.next[0] ? transaction.next[0].pended.group : null
+      const created = transaction.next[0] ? transaction.next[0].pended._id : transaction._id
+      console.log(pendId)
+      console.log(created)
       return pendId ? pendId : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
     }
 
@@ -550,11 +561,11 @@ export class inventory {
 
     //getPendId from a transaction
     if (transaction) {
-      const pendId  = transaction.next[0].pended.group
+      const pendId  = transaction.next[0] ? transaction.next[0].pended.group : null
       return pendId ? pendId : undefined
     }
 
-    return transaction.next[0].pended.repackQty
+    return this.term.split(' - ')[1]
   }
 
 
