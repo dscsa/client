@@ -290,11 +290,15 @@ export class inventory {
     .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
+  //TODO: when we unpend, is that when it would transition to the picked stage? Or just get rid of the pended property of next?
   unpendInventory() {
     const term = this.repacks.drug.generic
     this.updateSelected(transaction => {
+      let next = transaction.next
+      if(next[0].pended) delete next[0].pended
       transaction.isChecked = false
-      transaction.next = []
+      transaction.next = next //TODO: should this add a new object to transaction.next
+      //transaction.next = []
     })
     //We must let these transactions save without next for them to appear back in inventory
    .then(_ => term ? this.selectTerm('generic', term) : this.term = '')
@@ -304,16 +308,16 @@ export class inventory {
   //1) They pick an existing pendId and _id is passed as parameter
   //2) They type in their own pendId and pendToId is passed as parameter
   //3) They do Pend New without a pendId in which case the createdAt date will be used later
-  pendInventory(_id, pendQty) {
+  pendInventory(group, pendQty) {
 
     let toPend = []
-    let next   = [{pended:{_id, user:this.user, createdAt:new Date().toJSON()}}]
-    let pendId = this.getPendId({next})
-
-    if (pendQty)
-      next[0].pended._id = pendId+' - '+pendQty
+    let repackQty = pendQty
+    let pended_obj = {_id:new Date().toJSON(), user:{ _id: this.user }, repackQty: repackQty, group: group}
+    let pendId = group// this.getPendId({next})
 
     this.updateSelected(transaction => {
+      let next = transaction.next
+      next.pended = pended_obj
       transaction.isChecked = false
       transaction.next = next
       toPend.push(transaction)
@@ -393,26 +397,31 @@ export class inventory {
   }
 
   dispenseInventory() {
-    const next = [{dispensed:{user:this.user, createdAt:new Date().toJSON()}}]
+    const dispensed_obj = { _id: new Date().toJSON(), user: { _id: this.user } }
+
     this.updateSelected(transaction => {
-
+      let next = transaction.next
+      if(next.length == 0) next = [{}]
+      next[0].dispensed = dispensed_obj //so we don't modify other data
       //Preserve Old Next's Pended Property
-      next.pended = transaction.next[0] && transaction.next[0].pended
-        ? transaction.next[0].pended
-        : undefined
-
+      //  next.pended = transaction.next[0] && transaction.next[0].pended
+      //  ? transaction.next[0].pended
+      //  : undefined
       transaction.next = next
     })
   }
 
   disposeInventory() {
-    const next = [{disposed:{user:this.user, createdAt:new Date().toJSON()}}]
-    this.updateSelected(transaction => {
+    const disposed_obj = { _id: new Date().toJSON(), user: { _id: this.user } }
 
+    this.updateSelected(transaction => {
+      let next = transaction.next
+      if(next.length == 0) next = [{}]
+      next[0].disposed = disposed_obj //so we don't modify other data
       //Preserve Old Next's Pended Property
-      next.pended = transaction.next[0] && transaction.next[0].pended
-        ? transaction.next[0].pended
-        : undefined
+      //next.pended = transaction.next[0] && transaction.next[0].pended
+      //  ? transaction.next[0].pended
+      //  : undefined
 
       transaction.next = next
     })
@@ -448,7 +457,7 @@ export class inventory {
       user:this.user,
       shipment:{_id:this.account._id},
       drug:this.repacks.drug,
-      next:[{disposed:{user:this.user, createdAt}}]
+      next:[{ disposed: { _id: new Date().toJSON(), user: { _id: this.user } } }]
     })
 
     //Create the new (repacked) transactions
@@ -495,18 +504,24 @@ export class inventory {
 
       console.log('Repacked vials have been created', rows)
 
-      const next = rows.map(row => {
-        return {transaction:{_id:row.id, user:this.user, createdAt}}
+
+      let repacked_obj = {_id: new Date().toJSON(),   user: { _id: this.user } , transactions: [] }
+
+      const transactions_arr = rows.map(row => {
+        return {_id:row.id}
       })
 
+      repacked_obj.transactions = transactions_arr
+
       this.updateSelected(transaction => {
-
+        let temp_next = transaction.next
+        if(temp_next.length == 0) temp_next = [{}]
+        temp_next[0].repacked = repacked_obj
         //Preserve Old Next's Pended Property
-        next.pended = transaction.next[0] && transaction.next[0].pended
-          ? transaction.next[0].pended
-          : undefined
-
-        transaction.next = next
+        //next[0].pended = transaction.next[0] && transaction.next[0].pended
+        //  ? transaction.next[0].pended
+        //  : undefined
+        transaction.next = temp_next
       })
 
       this.printLabels(newTransactions.slice(1)) //don't include the "excess" one
@@ -521,9 +536,9 @@ export class inventory {
 
     //getPendId from a transaction
     if (transaction) {
-      const pendId  = transaction.next[0].pended._id
-      const created = transaction.next[0].pended.createdAt
-      return pendId ? pendId.split(' - ')[0] : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
+      const pendId  = transaction.next[0].pended.group
+      const created = transaction.next[0].pended._id
+      return pendId ? pendId : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
     }
 
     //Get the currectly selected pendId
@@ -535,11 +550,11 @@ export class inventory {
 
     //getPendId from a transaction
     if (transaction) {
-      const pendId  = transaction.next[0].pended._id
-      return pendId ? pendId.split(' - ')[1] : undefined
+      const pendId  = transaction.next[0].pended.group
+      return pendId ? pendId : undefined
     }
 
-    return this.term.split(' - ')[1]
+    return transaction.next[0].pended.repackQty
   }
 
 
@@ -593,6 +608,7 @@ export class inventory {
 
       console.log('saveAndReconcileTransaction', qtyChange, transaction.qty.to, repack.qty.to)
 
+      //TODO: what to do here?
       return this.db.transaction.query('next.transaction._id', {key:[this.account._id, transaction._id], include_docs:true}).then(res => {
 
         if ( ! res.rows.length) {

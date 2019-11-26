@@ -353,7 +353,7 @@ export class shipments {
 
     if (verifiedAt) {
       transaction.verifiedAt = null
-      transaction.next = [{disposed:{}, createdAt:new Date().toJSON()}]
+      transaction.next = [{disposed:{_id:new Date().toJSON(), user:{_id:this.user}}}]
       transaction.bin = null
     } else {
       transaction.verifiedAt = new Date().toJSON()
@@ -415,7 +415,7 @@ export class shipments {
         from:this.transactions[0] ? this.transactions[0].exp.from : null,
         to:this.transactions[0] ? this.transactions[0].exp.to : null
       },
-      next:[{disposed:{}, createdAt:new Date().toJSON()}],
+      next:[{ disposed: { _id: new Date().toJSON(), user: { _id: this.user } } }]
     }
 
     transaction.drug = {
