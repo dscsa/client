@@ -294,6 +294,8 @@ export class inventory {
   unpendInventory() {
     const term = this.repacks.drug.generic
     this.updateSelected(transaction => {
+      console.log(transaction)
+      console.log("UP")
       let next = transaction.next
       if(next[0].pended) delete next[0].pended
       transaction.isChecked = false
@@ -409,10 +411,7 @@ export class inventory {
       let next = transaction.next
       if(next.length == 0) next = [{}]
       next[0].dispensed = dispensed_obj //so we don't modify other data
-      //Preserve Old Next's Pended Property
-      //  next.pended = transaction.next[0] && transaction.next[0].pended
-      //  ? transaction.next[0].pended
-      //  : undefined
+
       transaction.next = next
     })
   }
@@ -424,10 +423,7 @@ export class inventory {
       let next = transaction.next
       if(next.length == 0) next = [{}]
       next[0].disposed = disposed_obj //so we don't modify other data
-      //Preserve Old Next's Pended Property
-      //next.pended = transaction.next[0] && transaction.next[0].pended
-      //  ? transaction.next[0].pended
-      //  : undefined
+
 
       transaction.next = next
     })
@@ -449,10 +445,14 @@ export class inventory {
       return this.snackbar.show(`Repack Qty Error`)
     }
 
-    let newTransactions = [],
-        next = [],
-        createdAt = new Date().toJSON()
+    let next = this.transactions[0].next ? [{pended:this.transactions[0].next[0].pended}] :[]
 
+    //TODO: here you want to add the pended of the original transaction onto the new one don't you?
+
+    let newTransactions = [],
+        createdAt = new Date().toJSON()
+    console.log("BELOW")
+    console.log(next)
     //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
     //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
     //because we don't know where the extra pills came from.  If 0 still keep record in case we need to
@@ -465,6 +465,8 @@ export class inventory {
       drug:this.repacks.drug,
       next:[{ disposed: { _id: new Date().toJSON(), user:  this.user  } }]
     })
+
+
 
     //Create the new (repacked) transactions
     for (let repack of this.repacks) {
@@ -482,6 +484,9 @@ export class inventory {
         next:next
       }
 
+      console.log("nd then")
+      console.log(newTransaction)
+
       //Only add to display if we are not in pended screen
       //if pended we don't want it to appear
       if (this.term.slice(0,7) != 'Pended')
@@ -491,6 +496,7 @@ export class inventory {
     }
 
     console.log('newTransaction',  this.repacks.length, this.repacks, newTransactions.length, newTransactions)
+
 
     //Once we have the new _ids insert them into the next property of the checked transactions
     this.db.transaction.bulkDocs(newTransactions).then(rows => {
@@ -523,10 +529,6 @@ export class inventory {
         let temp_next = transaction.next
         if(temp_next.length == 0) temp_next = [{}]
         temp_next[0].repacked = repacked_obj
-        //Preserve Old Next's Pended Property
-        //next[0].pended = transaction.next[0] && transaction.next[0].pended
-        //  ? transaction.next[0].pended
-        //  : undefined
         transaction.next = temp_next
       })
 
@@ -542,13 +544,10 @@ export class inventory {
 
     //getPendId from a transaction
     if (transaction) {
-      console.log("There")
-      console.log(transaction)
-      console.log(transaction.next.length)
+
       const pendId  = transaction.next[0] ? transaction.next[0].pended.group : null
       const created = transaction.next[0] ? transaction.next[0].pended._id : transaction._id
-      console.log(pendId)
-      console.log(created)
+
       return pendId ? pendId : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
     }
 
