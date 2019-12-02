@@ -339,7 +339,7 @@ export class shopping {
   //Sorts the pended Orders
   //Currently only sorts by number of items, putting orders with fewer items at the top
   //todo: when we have a priority property, sort by tht first
-  sortPended(arr){
+  sortOrdrs(arr){
     console.log("Orders before sorting")
     console.log(arr)
 
@@ -496,7 +496,7 @@ export class pendedFilterValueConverter {
       if (Object.keys(genericMatches).length)
         matches.unshift({key:pendId, val:genericMatches})
     }
-    matches = shopping.prototype.sortPended(matches)
+    matches = shopping.prototype.sortOrdrs(matches)
     return matches
   }
 }
