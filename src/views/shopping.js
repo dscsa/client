@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, drugSearch, groupDrugs, drugName, waitForDrugsToIndex, toggleDrawer, getHistory, currentDate} from '../resources/helpers'
+import {canActivate, expShortcuts, saveTransaction, groupDrugs, drugName, waitForDrugsToIndex, currentDate} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class shopping {
@@ -10,28 +10,21 @@ export class shopping {
   constructor(db, router){
     this.db      = db
     this.router  = router
-    this.csv     = csv
-    this.transactions = []
     this.pended = {}
 
-    this.shopList = []
+    this.shopList = [] //an expanded version of this.transactions from inventory.js tracks outcome of shopping each item
     this.shoppingIndex = -1
-
+    this.nextButtonText = '' //This can become 'Finish' or other more intuitive values depending on events
+    this.orderSelectedToShop = false
+    this.basketNumber = ''
 
     this.waitForDrugsToIndex = waitForDrugsToIndex
-    this.expShortcuts    = expShortcuts
-    this.qtyShortcutsKeydown    = qtyShortcuts
-    this.removeTransactionIfQty0 = removeTransactionIfQty0
     this.saveTransaction = saveTransaction
-    this.incrementBin    = incrementBin
-    this.focusInput      = focusInput
-    this.drugSearch      = drugSearch
     this.drugName        = drugName
     this.groupDrugs      = groupDrugs
     this.canActivate     = canActivate
-    this.toggleDrawer    = toggleDrawer
-    this.getHistory      = getHistory
     this.currentDate     = currentDate
+
     this.reset           = $event => {
       if ($event.newURL.slice(-9) == 'inventory') {
         this.term = ''
@@ -75,8 +68,6 @@ export class shopping {
     })
   }
 
-
-
   setTransactions(transactions = [], type, limit) {
     if (transactions.length == limit) {
       this.type = type
@@ -101,23 +92,9 @@ export class shopping {
         'missing':false,
       }
     }
-    console.log(this.shopList)
-    this.transactions = transactions //TODO remove, only here for debugging
+
     this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
-  }
-
-
-  isRepack(transaction) {
-    return transaction.bin && transaction.bin.length == 3
-  }
-
-  isBin(term) { //unlike shipment page allow for B00* to search all sections within large B00 bin but don't include repacks
-    return /^[A-Za-z][0-6]?\d[\d*]$/.test(term)
-  }
-
-  isExp(term) {
-    return /^20\d\d-\d\d-?\d?\d?$/.test(term)
   }
 
 
@@ -133,25 +110,95 @@ export class shopping {
     if (transactions)
       this.term = 'Pended '+pendedKey
 
-    transactions.sort(this.sortPended.bind(this))
-
     this.setTransactions(transactions)
+    this.initializeShopper()
 
-    this.shoppingIndex = 0
   }
 
 
-  movePickingForward(){
+  moveShoppingForward(){
     if(this.shoppingIndex == this.shopList.length -1){ //then we're finished
       //TODO: process the outcomes properties fully into transaction items
       //Offer up more orders
+      this.saveShoppingResults()
+      this.resetShopper()
+      this.refreshPended()
       return
     }
 
     this.shoppingIndex += 1
+
+    if(this.shoppingIndex == this.shopList.length -1){
+      this.setNextToSave()
+    }
+
   }
 
-  movePickingBackward(){
+  setNextToSave(){
+    this.nextButtonText = 'Save Shopping Results'
+  }
+
+  setNextToNext(){
+    this.nextButtonText = 'Next'
+  }
+
+
+  initializeShopper(){
+    this.shoppingIndex = 0
+    this.orderSelectedToShop = true
+
+    if(this.shopList.length == 1){
+      this.setNextToSave()
+    } else {
+      this.setNextToNext()
+    }
+  }
+
+  //Reset variables that we don't want to perserve from one order to the next
+  resetShopper(){
+    this.setNextToNext()
+    this.orderSelectedToShop = false
+    this.basketNumber = ''
+  }
+
+  saveShoppingResults(){
+
+    let shoppingList = this.shopList;
+    let basketNumber = this.basketNumber;
+    let new_transactions = []
+
+    for(var i = 0; i < shoppingList.length; i++){
+      let outcome = this.getOutcome(shoppingList[i])
+
+      delete shoppingList[i].outcome
+      let next = shoppingList[i].next
+      if(next){ //should always be true, but just in case
+        next[0].picked = {
+          _id:new Date().toJSON(),
+          basket:basketNumber,
+          matchType:outcome,
+          user:this.user,
+        }
+      }
+      shoppingList[i].next = next
+      new_transactions.push(shoppingList[i])
+    }
+    console.log("saving the following transactions:")
+    console.log(new_transactions)
+    return this.db.transaction.bulkDocs(new_transactions)
+    .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+  }
+
+  //shoppedItem is just a transaction with an extra property for outcome
+  getOutcome(shoppedItem){
+    let res = ''
+    for(let possibility in shoppedItem.outcome){
+      if(shoppedItem.outcome[possibility]) res += ";" + possibility
+    }
+    return res
+  }
+
+  moveShoppingBackward(){
     if(this.shoppingIndex == 0) return
     this.shoppingIndex -= 1
   }
@@ -162,8 +209,13 @@ export class shopping {
     this.shopList[this.shoppingIndex].outcome[key] = !this.shopList[this.shoppingIndex].outcome[key]
   }
 
-  selectTerm(type, key) {
 
+
+
+
+
+
+  selectTerm(type, key) {
     console.log('selectTerm', type, key)
 
     this.setVisibleChecks(false) //reset selected qty back to 0
@@ -204,25 +256,6 @@ export class shopping {
     })
     //We must let these transactions save without next for them to appear back in inventory
    .then(_ => term ? this.selectTerm('generic', term) : this.term = '')
-  }
-
-  //Sorts transactions that were pended
-  sortPended(a, b) {
-
-    var aPack = this.isRepack(a)
-    var bPack = this.isRepack(b)
-
-    if (aPack > bPack) return -1
-    if (aPack < bPack) return 1
-
-    //Flip columns and rows for sorting, since shopping is easier if you never move backwards
-    let aBin = a.bin[0]+a.bin[2]+a.bin[1]+(a.bin[3] || '')
-    let bBin = b.bin[0]+b.bin[2]+b.bin[1]+(b.bin[3] || '')
-
-    if (aBin > bBin) return 1
-    if (aBin < bBin) return -1
-
-    return 0
   }
 
   //Group pended into this structure {drug:{pendedAt1:[...drugs], pendedAt2:[...drugs]}}
@@ -292,7 +325,6 @@ export class shopping {
     })
   }
 
-
   getPendId(transaction) {
 
     //getPendId from a transaction
@@ -309,7 +341,6 @@ export class shopping {
     return this.term.replace('Pended ', '').split(': ')[0]
   }
 
-
   getPendQty(transaction) {
 
     //getPendId from a transaction
@@ -320,7 +351,6 @@ export class shopping {
 
     return this.term.split(' - ')[1]
   }
-
 
   setMatchingPends(drug) {
 
@@ -339,7 +369,7 @@ export class shopping {
   //Sorts the pended Orders
   //Currently only sorts by number of items, putting orders with fewer items at the top
   //todo: when we have a priority property, sort by tht first
-  sortOrdrs(arr){
+  sortOrders(arr){
     console.log("Orders before sorting")
     console.log(arr)
 
@@ -352,128 +382,7 @@ export class shopping {
 
     return arr
   }
-}
 
-//ADDED step of converting object to array
-export class shoppingFilterValueConverter {
-  toView(transactions = [], filter = {}, term = ''){
-    //restart filter on transaction changes but keep checks
-    //where they are if user is just modifying the filter
-    let ndcFilter       = {}
-    let expFilter       = {}
-    let repackFilter    = {}
-    let formFilter      = {}
-    let checkVisible    = true
-    let oneMonthFromNow = currentDate(1)
-    let isBin           = shopping.prototype.isBin(term)
-    let defaultCheck    = isBin || shopping.prototype.isExp(term)
-
-    filter.checked = filter.checked || {}
-    filter.checked.qty = filter.checked.qty || 0
-    filter.checked.count = filter.checked.count || 0
-
-    transactions = transactions.filter((transaction, i) => {
-
-      //TODO we could reduce code by making this a loop of keys.  Lot's of redundancy here
-      let qty    = transaction.qty.to || transaction.qty.from
-      let exp    = (transaction.exp.to || transaction.exp.from).slice(0, 7)
-      let ndc    = transaction.drug._id
-      let form   = transaction.drug.form
-      let repack = shopping.prototype.isRepack(transaction) ? 'Repacked' : 'Inventory'
-      let isExp  = exp > oneMonthFromNow ? 'Unexpired' : 'Expired'
-      let pended = transaction.next[0] && transaction.next[0].pended
-
-      if ( ! expFilter[exp]) {
-        //console.log('pended', !!pended, 'exp', exp, 'filter.exp', filter.exp, 'filter.exp[exp]', filter.exp && filter.exp[exp], 'filter.exp[exp].isChecked', filter.exp && filter.exp[exp] && filter.exp[exp].isChecked)
-        expFilter[exp] = {isChecked:filter.exp && filter.exp[exp] ? filter.exp[exp].isChecked : defaultCheck || pended || false, count:0, qty:0}
-      }
-
-      if ( ! expFilter[isExp]) {
-        expFilter[isExp] = {isChecked:filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : ((isBin && isExp == 'Unexpired' && term[3] == '*') ? false : true), count:0, qty:0} //if someone search for 'A00*' show only the expired items by default (this will help data entry people purging expireds)
-      }
-
-      if ( ! ndcFilter[ndc])
-        ndcFilter[ndc] = {isChecked:filter.ndc && filter.ndc[ndc] ? filter.ndc[ndc].isChecked : defaultCheck || pended || ! i, count:0, qty:0}
-
-      if ( ! formFilter[form])
-        formFilter[form] = {isChecked:filter.form && filter.form[form] ? filter.form[form].isChecked : defaultCheck || pended || ! i, count:0, qty:0}
-
-      if ( ! repackFilter[repack])
-        repackFilter[repack] = {isChecked:filter.repack && filter.repack[repack] ? filter.repack[repack].isChecked : defaultCheck || pended || ! repackFilter['Repacked'], count:0, qty:0}
-
-      if ( ! expFilter[isExp].isChecked) {
-        if (expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
-          expFilter[isExp].count++
-          expFilter[isExp].qty += qty
-        }
-
-        return shopping.prototype.setCheck.call({filter}, transaction, false)
-      }
-
-      if ( ! expFilter[exp].isChecked) {
-        if (expFilter[isExp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
-          expFilter[exp].count++
-          expFilter[exp].qty += qty
-        }
-
-        return shopping.prototype.setCheck.call({filter}, transaction, false)
-      }
-
-      if ( ! ndcFilter[ndc].isChecked) {
-        if (expFilter[isExp].isChecked && expFilter[exp].isChecked && formFilter[form].isChecked && repackFilter[repack].isChecked) {
-          ndcFilter[ndc].count++
-          ndcFilter[ndc].qty += qty
-        }
-
-        return shopping.prototype.setCheck.call({filter}, transaction, false)
-      }
-
-      if ( ! formFilter[form].isChecked) {
-        if (expFilter[isExp].isChecked && expFilter[exp].isChecked && ndcFilter[ndc].isChecked && repackFilter[repack].isChecked) {
-          formFilter[form].count++
-          formFilter[form].qty += qty
-        }
-        return shopping.prototype.setCheck.call({filter}, transaction, false)
-      }
-
-      if ( ! repackFilter[repack].isChecked) {
-        if (expFilter[isExp].isChecked && expFilter[exp].isChecked && ndcFilter[ndc].isChecked && formFilter[form].isChecked) {
-          repackFilter[repack].count++
-          repackFilter[repack].qty += qty
-        }
-
-        return shopping.prototype.setCheck.call({filter}, transaction, false)
-      }
-
-      if ( ! transaction.isChecked)
-        checkVisible = false
-
-      expFilter[isExp].count++
-      expFilter[isExp].qty += qty
-
-      expFilter[exp].count++
-      expFilter[exp].qty += qty
-
-      ndcFilter[ndc].count++
-      ndcFilter[ndc].qty += qty
-
-      formFilter[form].count++
-      formFilter[form].qty += qty
-
-      repackFilter[repack].count++
-      repackFilter[repack].qty += qty
-
-      return true
-    })
-
-    filter.exp     = expFilter
-    filter.ndc     = ndcFilter
-    filter.form    = formFilter
-    filter.repack  = repackFilter
-    filter.checked.visible = transactions.length ? checkVisible : false //unchecked if not transactions
-
-    return transactions
-  }
 }
 
 //Allow user to search by pendId OR generic name
@@ -496,7 +405,7 @@ export class pendedFilterValueConverter {
       if (Object.keys(genericMatches).length)
         matches.unshift({key:pendId, val:genericMatches})
     }
-    matches = shopping.prototype.sortOrdrs(matches)
+    matches = shopping.prototype.sortOrders(matches)
     return matches
   }
 }

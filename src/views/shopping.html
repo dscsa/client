@@ -11,6 +11,7 @@
   <require from="client/src/elems/md-autocomplete"></require>
   <require from="client/src/elems/md-menu"></require>
   <require from="client/src/elems/form"></require>
+
   <style>
     .mdl-button:hover { background-color:initial }
     .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}
@@ -18,7 +19,7 @@
 
   <section class="mdl-grid au-animate">
 
-    <div>
+    <div if.bind = "!orderSelectedToShop">
       <md-input
         autoselect
         value.bind="pendedFilter"
@@ -34,13 +35,12 @@
           ${pend.key}
         </div>
       </div>
-
     </div>
 
-
-    <div>
+    <div if.bind = "orderSelectedToShop">
       <table>
-        <thead><th>NEXT:</th></thead>
+        <tr><td style="padding:0"><md-input value.bind = "basketNumber">Basket Number</td></tr>
+        <tr><th>GO TO:</th></tr>
         <tr><td style="padding:0">${shopList[shoppingIndex].bin}</td></tr>
         <tr><td style="padding:0">${shopList[shoppingIndex].drug.generic}</td></tr>
         <tr><td style="padding:0">EXP: ${shopList[shoppingIndex].exp.to}</td></tr>
@@ -51,86 +51,15 @@
         <tr><td style="padding:0"><md-checkbox name = "outcomeThree" click.delegate="shoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].outcome.slot_before">Slot Before</md-checkbox></td></tr>
         <tr><td style="padding:0"><md-checkbox name = "outcomeFour" click.delegate="shoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].outcome.slot_after">Slot After</md-checkbox></td></tr>
         <tr><td style="padding:0"><md-checkbox name = "outcomeFive" click.delegate="shoppingOption('missing')" checked.bind="shopList[shoppingIndex].outcome.missing">Missing</md-checkbox></td></tr>
-        
+
         <tr>
-          <td style="padding:0"><md-button color raised click.delegate="movePickingBackward()">Back</md-button></td>
-          <td style="padding:0"><md-button color raised click.delegate="movePickingForward()">Next</md-button></td>
+          <td style="padding:0"><md-button color raised click.delegate="moveShoppingBackward()">Back</md-button></td>
+          <td style="padding:0"><md-button color raised click.delegate="moveShoppingForward()">${nextButtonText}</md-button></td>
         </tr>
 
       </table>
     </div>
 
-
-    <div class="table-wrap">
-      <div show.bind="noResults" style="margin:24px">No Results</div>
-      <table show.bind=" ! noResults && transactions.length" md-table>
-        <thead>
-          <tr>
-            <th style="width:50px; padding:0"></th>
-            <th class="mdl-data-table__cell--non-numeric" style="padding-left:0">Drug</th>
-            <th style="text-align:left; width:60px;">Bin</th>
-            <th style="text-align:left; width:60px;">Qty</th>
-            <th style="width:80px" class="mdl-data-table__cell--non-numeric">Form</th>
-            <th style="width:100px" class="mdl-data-table__cell--non-numeric">Ndc</th>
-            <th style="text-align:left; width:60px;">Exp</th>
-            <th style="width:48px"></th>
-          </tr>
-        </thead>
-        <tr name = "pro_transaction" repeat.for="transaction of transactions" input.delegate="saveAndReconcileTransaction(transaction) & debounce:1000">
-          <td style="padding:0">
-            <md-checkbox name = "pro_transaction_checkbox" click.delegate="toggleCheck(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
-          </td>
-
-          <td class="mdl-data-table__cell--non-numeric" style="padding-left:0; overflow:hidden">${ transaction.drug.generic  & oneTime }</td>
-
-          <td style="padding:0">
-            <md-input
-              name = "pro_transaction_bin"
-              id.bind="'bin_'+$index"
-              required
-              keydown.delegate="binShortcuts($event, $index)"
-              pattern="[A-Z]\d{2}|[A-Za-z]\d{3}"
-              value.bind="transaction.bin"
-              style="width:40px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px"
-              maxlength.bind="4"
-              placeholder>
-            </md-input>
-          </td>
-
-          <td style="padding:0">
-            <md-input
-              name = "pro_transaction_qty"
-              id.bind="'qty_'+$index"
-              required
-              keydown.delegate="qtyShortcutsKeydown($event, $index)"
-              input.trigger="qtyShortcutsInput($event, $index) & debounce:300"
-              disabled.bind="transaction.next[0] && ! transaction.next[0].pended"
-              type="number"
-              value.bind="transaction.qty.to | number"
-              style="width:40px; margin-bottom:-8px"
-              max.bind="3000"
-              placeholder>
-            </md-input>
-          </td>
-          <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form  & oneTime }</td>
-          <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') & oneTime }</td>
-
-          <td style="padding:0">
-            <md-input
-              name = "pro_transaction_exp"
-              id.bind="'exp_'+$index"
-              required
-              keydown.delegate="expShortcuts($event, $index)"
-              pattern="(0?[1-9]|1[012])/(1\d|2\d)"
-              value.bind="transaction.exp.to | date"
-              style="width:40px; margin-bottom:-8px"
-              placeholder>
-            </md-input>
-          </td>
-
-        </tr>
-      </table>
-    </div>
 
 
     <md-snackbar ref="snackbar"></md-snackbar>
@@ -143,4 +72,7 @@
 
   </dialog>
   </section>
+
+
+
 </template>
