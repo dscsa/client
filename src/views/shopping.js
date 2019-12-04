@@ -16,7 +16,7 @@ export class shopping {
     this.shoppingIndex = -1
     this.nextButtonText = '' //This can become 'Finish' or other more intuitive values depending on events
     this.orderSelectedToShop = false
-    this.basketNumber = ''
+    this.formComplete = false
 
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.saveTransaction = saveTransaction
@@ -68,21 +68,10 @@ export class shopping {
     })
   }
 
-  setTransactions(transactions = [], type, limit) {
-    if (transactions.length == limit) {
-      this.type = type
-      this.snackbar.show(`Displaying first 100 results`)
-    } else
-      this.type = null
+  setShopList(transactions = [], type, limit) {
 
-    //Sort X00 bin alphabetically per Cindy's request.
-    if ( ~ ['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term))
-      transactions = transactions.sort((a,b) => {
-        if (a.drug.generic < b.drug.generic) return -1
-        if (b.drug.generic < a.drug.generic) return 1
-      })
+    this.shopList = transactions.sort(this.sortTransactionsForShopping)
 
-    this.shopList = transactions
     for(var i = 0; i < this.shopList.length; i++){
       this.shopList[i].outcome = {
         'exact_match':false,
@@ -91,12 +80,49 @@ export class shopping {
         'slot_after':false,
         'missing':false,
       }
+      this.shopList[i].basketNumber = ''
     }
 
+    this.getImageURLS()
     this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
   }
 
+  sortTransactionsForShopping(a, b) {
+
+    var aBin = a.bin
+    var bBin = b.bin
+
+    var aPack = aBin && aBin.length == 3
+    var bPack = bBin && bBin.length == 3
+
+    if (aPack > bPack) return -1
+    if (aPack < bPack) return 1
+
+    //Flip columns and rows for sorting, since shopping is easier if you never move backwards
+    var aFlip = aBin[0]+aBin[2]+aBin[1]+(aBin[3] || '')
+    var bFlip = bBin[0]+bBin[2]+bBin[1]+(bBin[3] || '')
+
+    if (aFlip > bFlip) return 1
+    if (aFlip < bFlip) return -1
+
+    return 0
+  }
+
+  getImageURLS(){
+
+    let saveImgCallback = (function(drug){
+      for(var n = 0; n < this.shopList.length; n++){
+        if(this.shopList[n].drug._id = drug._id) this.shopList[n].image = drug.image
+      }
+    }).bind(this)
+
+    for(var i = 0; i < this.shopList.length; i++){
+      this.db.drug.get('0003-0830') //TODO go back to using actual drug id below
+      //this.db.drug.get(this.shopList[i].drug._id)
+      .then(drug => saveImgCallback(drug))
+    }
+  }
 
   //Given the pendedkey to identify the order, take all the items in that order
   //and display them one at a time for shopper
@@ -110,13 +136,15 @@ export class shopping {
     if (transactions)
       this.term = 'Pended '+pendedKey
 
-    this.setTransactions(transactions)
+    this.setShopList(transactions)
     this.initializeShopper()
 
   }
 
 
   moveShoppingForward(){
+
+
     if(this.shoppingIndex == this.shopList.length -1){ //then we're finished
       //TODO: process the outcomes properties fully into transaction items
       //Offer up more orders
@@ -126,13 +154,31 @@ export class shopping {
       return
     }
 
-    this.shoppingIndex += 1
-
-    if(this.shoppingIndex == this.shopList.length -1){
-      this.setNextToSave()
+    //if next one has the same drug name, then pass the basket number forward
+    if(this.shopList[this.shoppingIndex].drug.generic == this.shopList[this.shoppingIndex + 1].drug.generic){
+      this.shopList[this.shoppingIndex + 1].basketNumber = this.shopList[this.shoppingIndex].basketNumber
     }
 
+    this.shoppingIndex += 1
+    this.formComplete = false
+    if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
+
+
   }
+
+
+  moveShoppingBackward(){
+    this.setNextToNext()
+    if(this.shoppingIndex == 0) return
+    this.shoppingIndex -= 1
+    this.formComplete = true //you can't have left a screen if it wasn't complete
+
+  }
+
+  highlightRequired(){
+    //TODO: highlight bin field, and the radio buttons
+  }
+
 
   setNextToSave(){
     this.nextButtonText = 'Save Shopping Results'
@@ -158,18 +204,27 @@ export class shopping {
   resetShopper(){
     this.setNextToNext()
     this.orderSelectedToShop = false
-    this.basketNumber = ''
+  }
+
+  cancelShopping(){
+    //TODO: pop up asking if they're sure they want this
+    if(this.shoppingIndex > 0){
+      this.shopList = this.shopList.slice(0,this.shoppingIndex)
+      this.saveShoppingResults()
+    }
+
+    this.resetShopper()
+    this.refreshPended()
   }
 
   saveShoppingResults(){
 
     let shoppingList = this.shopList;
-    let basketNumber = this.basketNumber;
     let new_transactions = []
 
     for(var i = 0; i < shoppingList.length; i++){
       let outcome = this.getOutcome(shoppingList[i])
-
+      let basketNumber = shoppingList[i].basketNumber
       delete shoppingList[i].outcome
       let next = shoppingList[i].next
       if(next){ //should always be true, but just in case
@@ -185,8 +240,19 @@ export class shopping {
     }
     console.log("saving the following transactions:")
     console.log(new_transactions)
-    return this.db.transaction.bulkDocs(new_transactions)
-    .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+
+    this.db.transaction.bulkDocs(new_transactions).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+    this.removeOrderFromLocalPended()
+
+  }
+
+  removeOrderFromLocalPended(){
+    let order = this.shopList[0].next[0].pended.group
+    console.log("pended before")
+    console.log(this.pended)
+    delete this.pended[order]
+    console.log("pended after")
+    console.log(this.pended)
   }
 
   //shoppedItem is just a transaction with an extra property for outcome
@@ -198,20 +264,28 @@ export class shopping {
     return res
   }
 
-  moveShoppingBackward(){
-    if(this.shoppingIndex == 0) return
-    this.shoppingIndex -= 1
-  }
-
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
   shoppingOption(key){
-    this.shopList[this.shoppingIndex].outcome[key] = !this.shopList[this.shoppingIndex].outcome[key]
+    //TODO: force only one
+    if(this.shopList[this.shoppingIndex].outcome[key]) return //don't let thme uncheck, because radio buttons
+
+    if(this.shopList[this.shoppingIndex].basketNumber.length > 0){
+      this.formComplete = true;
+    } else {
+      //TODO: highlight the basket number field
+      return
+    }
+
+    for(let outcome_option in this.shopList[this.shoppingIndex].outcome){
+      if(outcome_option !== key){
+         this.shopList[this.shoppingIndex].outcome[outcome_option] = false
+      } else {
+        this.shopList[this.shoppingIndex].outcome[outcome_option] = true
+      }
+    }
+
   }
-
-
-
-
 
 
 
@@ -228,34 +302,10 @@ export class shopping {
     this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
   }
 
-  refreshFilter(obj) {
-    if (obj) obj.val.isChecked = ! obj.val.isChecked
-    this.filter = Object.assign({}, this.filter)
-  }
-
   refreshPended() {
     //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
     //to trigger and update using Object.assign rather than just adding a property
     this.pended = Object.assign({}, this.pended)
-  }
-
-  //TODO: this is what we do after completing a shoplist
-  unpendInventory() {
-    const term = this.repacks.drug.generic
-    this.updateSelected(transaction => {
-      console.log(transaction)
-      console.log("UP")
-      let next = transaction.next
-      if(next[0] && next[0].pended){
-       delete next[0].pended
-       if(Object.keys(next[0]) == 0) next = [] //don't want to leave an empty object, throws off other stuff
-      }
-      transaction.isChecked = false
-      transaction.next = next //TODO: should this add a new object to transaction.next
-      //transaction.next = []
-    })
-    //We must let these transactions save without next for them to appear back in inventory
-   .then(_ => term ? this.selectTerm('generic', term) : this.term = '')
   }
 
   //Group pended into this structure {drug:{pendedAt1:[...drugs], pendedAt2:[...drugs]}}
@@ -298,31 +348,6 @@ export class shopping {
       delete this.pended[pendId]
 
     //NOTE Developer should call this.refreshPended() after all transactions are unpended
-  }
-
-  dispenseInventory() {
-    const dispensed_obj = { _id: new Date().toJSON(), user: this.user  }
-
-    this.updateSelected(transaction => {
-      let next = transaction.next
-      if(next.length == 0) next = [{}]
-      next[0].dispensed = dispensed_obj //so we don't modify other data
-
-      transaction.next = next
-    })
-  }
-
-  disposeInventory() {
-    const disposed_obj = { _id: new Date().toJSON(), user:  this.user  }
-
-    this.updateSelected(transaction => {
-      let next = transaction.next
-      if(next.length == 0) next = [{}]
-      next[0].disposed = disposed_obj //so we don't modify other data
-
-
-      transaction.next = next
-    })
   }
 
   getPendId(transaction) {
@@ -374,7 +399,7 @@ export class shopping {
     console.log(arr)
 
     arr = arr.sort((a,b) => {
-      if(Object.keys(Object.values(a)[1]).length > Object.keys(Object.values(b)[1]).length) return 1
+      if(Object.keys(Object.values(a)[1]).length > Object.keys(Object.values(b)[1]).length) return -1
     })
 
     console.log("Orders after sorting")

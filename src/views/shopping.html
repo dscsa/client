@@ -37,11 +37,18 @@
       </div>
     </div>
 
-    <div if.bind = "orderSelectedToShop">
+    <div style="border:5px solid"if.bind = "orderSelectedToShop">
       <table>
-        <tr><td style="padding:0"><md-input value.bind = "basketNumber">Basket Number</td></tr>
+        <td style="padding:0; text-align:right"><md-button color click.delegate="cancelShopping()">Cancel</md-button></td>
+        <tr><td style="padding:0"><md-input value.bind = "shopList[shoppingIndex].basketNumber">Basket Number</td></tr>
         <tr><th>GO TO:</th></tr>
-        <tr><td style="padding:0">${shopList[shoppingIndex].bin}</td></tr>
+        <tr><td style="padding:0; text-align:center; font-size:30px">${shopList[shoppingIndex].bin.slice(0,3) + '-' + shopList[shoppingIndex].bin.slice(3,4)}</td></tr>
+        <tr><td style="padding:0"><img
+          style="height:20%;width:20%;"
+          if.bind="shopList[shoppingIndex].image"
+          src.bind="shopList[shoppingIndex].image"></td><tr>
+        <tr><td style="padding:0">Group: ${shopList[shoppingIndex].next[0].pended.group}</td></tr>
+        <tr><td style="padding:0">Drug ${shoppingIndex+1} of ${shopList.length}</td></tr>
         <tr><td style="padding:0">${shopList[shoppingIndex].drug.generic}</td></tr>
         <tr><td style="padding:0">EXP: ${shopList[shoppingIndex].exp.to}</td></tr>
         <tr><td style="padding:0">QTY: ${shopList[shoppingIndex].qty.to}</td></tr>
@@ -54,7 +61,8 @@
 
         <tr>
           <td style="padding:0"><md-button color raised click.delegate="moveShoppingBackward()">Back</md-button></td>
-          <td style="padding:0"><md-button color raised click.delegate="moveShoppingForward()">${nextButtonText}</md-button></td>
+          <td style="padding:0"><md-button color raised show.bind="formComplete" click.delegate="moveShoppingForward()">${nextButtonText}</md-button></td>
+          <td style="padding:0"><md-button color='grey' raised show.bind="!formComplete" click.delegate="highlightRequired()">Complete Form</md-button></td>
         </tr>
 
       </table>
