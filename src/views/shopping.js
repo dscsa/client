@@ -113,14 +113,13 @@ export class shopping {
 
     let saveImgCallback = (function(drug){
       for(var n = 0; n < this.shopList.length; n++){
-        if(this.shopList[n].drug._id = drug._id) this.shopList[n].image = drug.image
+        if(this.shopList[n].drug._id == drug._id) this.shopList[n].image = drug.image
       }
     }).bind(this)
 
     for(var i = 0; i < this.shopList.length; i++){
-      this.db.drug.get('0003-0830') //TODO go back to using actual drug id below
-      //this.db.drug.get(this.shopList[i].drug._id)
-      .then(drug => saveImgCallback(drug))
+      //this.db.drug.get('0003-0830') //use for testing if must have images
+      this.db.drug.get(this.shopList[i].drug._id).then(drug => saveImgCallback(drug))
     }
   }
 
@@ -157,15 +156,22 @@ export class shopping {
     //if next one has the same drug name, then pass the basket number forward
     if(this.shopList[this.shoppingIndex].drug.generic == this.shopList[this.shoppingIndex + 1].drug.generic){
       this.shopList[this.shoppingIndex + 1].basketNumber = this.shopList[this.shoppingIndex].basketNumber
+    } else {
+      this.snackbar.show('Different drug name, enter new basket number')
     }
 
     this.shoppingIndex += 1
-    this.formComplete = false
+    this.formComplete = (this.shopList[this.shoppingIndex].basketNumber.length > 0) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].outcome) //if returning to a complete page, don't grey out the next/save button
     if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
-
 
   }
 
+  someOutcomeSelected(outcomeObj){
+    for(let key in outcomeObj){
+      if(outcomeObj[key] == true) return true
+    }
+    return false
+  }
 
   moveShoppingBackward(){
     this.setNextToNext()
@@ -176,6 +182,7 @@ export class shopping {
   }
 
   highlightRequired(){
+    this.snackbar.show('Basket number and outcome are required')
     //TODO: highlight bin field, and the radio buttons
   }
 

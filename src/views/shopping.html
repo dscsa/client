@@ -40,10 +40,10 @@
     <div style="border:5px solid"if.bind = "orderSelectedToShop">
       <table>
         <td style="padding:0; text-align:right"><md-button color click.delegate="cancelShopping()">Cancel</md-button></td>
-        <tr><td style="padding:0"><md-input value.bind = "shopList[shoppingIndex].basketNumber">Basket Number</td></tr>
+        <tr><td style="padding:0"><md-input required value.bind = "shopList[shoppingIndex].basketNumber">Basket Number</td></tr>
         <tr><th>GO TO:</th></tr>
         <tr><td style="padding:0; text-align:center; font-size:30px">${shopList[shoppingIndex].bin.slice(0,3) + '-' + shopList[shoppingIndex].bin.slice(3,4)}</td></tr>
-        <tr><td style="padding:0"><img
+        <tr><td style="padding:0; text-align:center"><img
           style="height:20%;width:20%;"
           if.bind="shopList[shoppingIndex].image"
           src.bind="shopList[shoppingIndex].image"></td><tr>
