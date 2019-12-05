@@ -17,6 +17,7 @@ export class shopping {
     this.nextButtonText = '' //This can become 'Finish' or other more intuitive values depending on events
     this.orderSelectedToShop = false
     this.formComplete = false
+    this.uniqueDrugsInOrder = []
 
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.saveTransaction = saveTransaction
@@ -81,14 +82,22 @@ export class shopping {
         'missing':false,
       }
       this.shopList[i].basketNumber = ''
+      if(!(~this.uniqueDrugsInOrder.indexOf(this.shopList[i].drug.generic))) this.uniqueDrugsInOrder.push(this.shopList[i].drug.generic)
     }
 
-    this.getImageURLS()
+    this.getImageURLS() //must use an async call to the db
     this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
   }
 
+
   sortTransactionsForShopping(a, b) {
+    var aName = a.drug.generic;
+    var bName = b.drug.generic;
+
+    //sort by drug name first
+    if(aName > bName) return -1
+    if(aName < bName) return 1
 
     var aBin = a.bin
     var bBin = b.bin
@@ -109,6 +118,7 @@ export class shopping {
     return 0
   }
 
+
   getImageURLS(){
 
     let saveImgCallback = (function(drug){
@@ -118,7 +128,6 @@ export class shopping {
     }).bind(this)
 
     for(var i = 0; i < this.shopList.length; i++){
-      //this.db.drug.get('0003-0830') //use for testing if must have images
       this.db.drug.get(this.shopList[i].drug._id).then(drug => saveImgCallback(drug))
     }
   }
@@ -153,7 +162,7 @@ export class shopping {
       return
     }
 
-    //if next one has the same drug name, then pass the basket number forward
+    //if next one has the same drug , then pass the basket number forward
     if(this.shopList[this.shoppingIndex].drug.generic == this.shopList[this.shoppingIndex + 1].drug.generic){
       this.shopList[this.shoppingIndex + 1].basketNumber = this.shopList[this.shoppingIndex].basketNumber
     } else {
@@ -210,6 +219,7 @@ export class shopping {
   //Reset variables that we don't want to perserve from one order to the next
   resetShopper(){
     this.setNextToNext()
+    this.uniqueDrugsInOrder = []
     this.orderSelectedToShop = false
   }
 
@@ -250,10 +260,10 @@ export class shopping {
     console.log(new_transactions)
 
     this.db.transaction.bulkDocs(new_transactions).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
-    this.removeOrderFromLocalPended()
 
   }
 
+  //TODO: this should not need to happen
   removeOrderFromLocalPended(){
     let order = this.shopList[0].next[0].pended.group
     console.log("pended before")
@@ -332,6 +342,7 @@ export class shopping {
       this.pended[pendId] = this.pended[pendId] || {}
       this.pended[pendId][generic] = this.pended[pendId][generic] || {label, transactions:[]}
       this.pended[pendId][generic].transactions.push(transaction)
+      this.pended[pendId].priority = transaction.next[0].pended.priority ? (transaction.next[0].pended.priority == true) : false
 
     }
   }
@@ -400,20 +411,33 @@ export class shopping {
     return matches
   }
 
-  //Sorts the pended Orders
-  //Currently only sorts by number of items, putting orders with fewer items at the top
-  //todo: when we have a priority property, sort by tht first
+
   sortOrders(arr){
-    console.log("Orders before sorting")
+    //TODO:sort by priority of the items first
+    //then sort by group name
+    console.log("unsorted")
     console.log(arr)
 
     arr = arr.sort((a,b) => {
-      if(Object.keys(Object.values(a)[1]).length > Object.keys(Object.values(b)[1]).length) return -1
+      //if(Object.keys(Object.values(a)[1]).length > Object.keys(Object.values(b)[1]).length) return -1 //sorts by number of items
+
+
+      let urgency1 = (Object.values(a.val)[0].transactions[0].next[0].pended.priority) == true //being explicit to avoid mere existence evaluating to true
+      let urgency2 = (Object.values(b.val)[0].transactions[0].next[0].pended.priority) == true
+      console.log(urgency1)
+      console.log(urgency2)
+      if(urgency1 && !urgency2) return -1
+      if(!urgency1 && urgency2) return 1
+      console.log("Hre")
+      let group1 = a.key
+      let group2 = b.key
+      if(group1 > group2) return 1
+      if(group1 < group2) return -1
+
     })
 
-    console.log("Orders after sorting")
+    console.log("sorted")
     console.log(arr)
-
     return arr
   }
 
@@ -426,7 +450,7 @@ export class pendedFilterValueConverter {
     let matches = [] //an array of arrays
     for (let pendId in pended) {
       if ( ~ pendId.toLowerCase().indexOf(term)) {
-        matches.unshift({key:pendId, val:pended[pendId]})
+        matches.unshift({key:pendId, val:pended[pendId], priority:pended[pendId].priority})
         continue
       }
 
@@ -437,7 +461,7 @@ export class pendedFilterValueConverter {
           genericMatches[generic] = pended[pendId][generic]
 
       if (Object.keys(genericMatches).length)
-        matches.unshift({key:pendId, val:genericMatches})
+        matches.unshift({key:pendId, val:genericMatches, priority:pended[pendId].priority})
     }
     matches = shopping.prototype.sortOrders(matches)
     return matches
