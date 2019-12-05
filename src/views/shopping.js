@@ -26,23 +26,15 @@ export class shopping {
     this.canActivate     = canActivate
     this.currentDate     = currentDate
 
-    this.reset           = $event => {
-      if ($event.newURL.slice(-9) == 'inventory') {
-        this.term = ''
-        this.setTransactions()
-      }
-    }
   }
 
   deactivate() {
-    window.removeEventListener("hashchange", this.reset)
+    //window.removeEventListener("hashchange", this.reset)
   }
 
   activate(params) {
     //TODO find a more elegant way to accomplish this
-    window.addEventListener("hashchange", this.reset)
-
-    //TODO replace this with page state library
+    //window.addEventListener("hashchange", this.reset)
 
     this.db.user.session.get().then(session => {
 
@@ -71,6 +63,8 @@ export class shopping {
 
   setShopList(transactions = [], type, limit) {
 
+    if(transactions.length > 0) this.lockdownGroup(transactions);
+
     this.shopList = transactions.sort(this.sortTransactionsForShopping)
 
     for(var i = 0; i < this.shopList.length; i++){
@@ -88,6 +82,14 @@ export class shopping {
     this.getImageURLS() //must use an async call to the db
     this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
+  }
+
+  lockdownGroup(transactions){
+    console.log(transactions)
+    for(var i = 0; i < transactions.length; i++){
+      transactions[i].next[0].picked = {}
+    }
+    this.db.transaction.bulkDocs(transactions).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
 
@@ -137,9 +139,15 @@ export class shopping {
   selectOrder(pendedKey) {
     const [pendId, label] = pendedKey.split(': ')
 
-    let transactions = Object.values(this.pended[pendId] || {}).reduce((arr, pend) => {
+    var transactions = []
+
+    for(let key in this.pended[pendId]){
+        if((key !== 'priority') && (key !== 'locked')) transactions = transactions.concat(this.pended[pendId][key].transactions)
+    }
+
+  /*  let transactions = Object.values(this.pended[pendId] || {}).reduce((arr, pend) => {
          return ! label || pend.label == label ? arr.concat(pend.transactions) : arr
-    }, [])
+    }, [])*/
 
     if (transactions)
       this.term = 'Pended '+pendedKey
@@ -226,17 +234,20 @@ export class shopping {
   cancelShopping(){
     //TODO: pop up asking if they're sure they want this
     if(this.shoppingIndex > 0){
-      this.shopList = this.shopList.slice(0,this.shoppingIndex)
-      this.saveShoppingResults()
+      let shoppedItems = this.shopList.slice(0,this.shoppingIndex)
+      let remainingItems = this.shopList.slice(this.shoppingIndex)
+      this.saveShoppingResults(shoppedItems, 'shopped') //previous results need a proper picked property
+      this.saveShoppingResults(remainingItems, 'remaining')
     }
 
     this.resetShopper()
     this.refreshPended()
   }
 
-  saveShoppingResults(){
 
-    let shoppingList = this.shopList;
+  saveShoppingResults(shoppedItems, key){
+
+    let shoppingList = shoppedItems;
     let new_transactions = []
 
     for(var i = 0; i < shoppingList.length; i++){
@@ -245,13 +256,18 @@ export class shopping {
       delete shoppingList[i].outcome
 
       let next = shoppingList[i].next
-      if(next){ //should always be true, but just in case
-        next[0].picked = {
-          _id:new Date().toJSON(),
-          basket:basketNumber,
-          matchType:outcome,
-          user:this.user,
+      if(next){
+        if(key == 'shopped'){
+          next[0].picked = {
+            _id:new Date().toJSON(),
+            basket:basketNumber,
+            matchType:outcome,
+            user:this.user,
+          }
+        } else if(key == 'remaining'){
+          delete next[0].picked
         }
+
       }
       shoppingList[i].next = next
       new_transactions.push(shoppingList[i])
@@ -343,7 +359,9 @@ export class shopping {
       this.pended[pendId][generic] = this.pended[pendId][generic] || {label, transactions:[]}
       this.pended[pendId][generic].transactions.push(transaction)
       this.pended[pendId].priority = transaction.next[0].pended.priority ? (transaction.next[0].pended.priority == true) : false
-
+      console.log(transaction.next[0])
+      this.pended[pendId].locked = transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length == 0 : false
+      console.log(this.pended[pendId])
     }
   }
 
@@ -450,7 +468,7 @@ export class pendedFilterValueConverter {
     let matches = [] //an array of arrays
     for (let pendId in pended) {
       if ( ~ pendId.toLowerCase().indexOf(term)) {
-        matches.unshift({key:pendId, val:pended[pendId], priority:pended[pendId].priority})
+        matches.unshift({key:pendId, val:pended[pendId], priority:pended[pendId].priority, locked:pended[pendId].locked})
         continue
       }
 
@@ -461,7 +479,7 @@ export class pendedFilterValueConverter {
           genericMatches[generic] = pended[pendId][generic]
 
       if (Object.keys(genericMatches).length)
-        matches.unshift({key:pendId, val:genericMatches, priority:pended[pendId].priority})
+        matches.unshift({key:pendId, val:genericMatches, priority:pended[pendId].priority, locked:pended[pendId].locked})
     }
     matches = shopping.prototype.sortOrders(matches)
     return matches
