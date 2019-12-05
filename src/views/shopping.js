@@ -233,6 +233,7 @@ export class shopping {
       let outcome = this.getOutcome(shoppingList[i])
       let basketNumber = shoppingList[i].basketNumber
       delete shoppingList[i].outcome
+
       let next = shoppingList[i].next
       if(next){ //should always be true, but just in case
         next[0].picked = {
@@ -280,6 +281,7 @@ export class shopping {
     if(this.shopList[this.shoppingIndex].basketNumber.length > 0){
       this.formComplete = true;
     } else {
+      this.snackbar.show('Must enter basket number')
       //TODO: highlight the basket number field
       return
     }
