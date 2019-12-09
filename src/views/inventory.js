@@ -13,6 +13,7 @@ export class inventory {
     this.csv     = csv
     this.transactions = []
     this.pended = {}
+    this.shoppingSyncPended = {}
 
     this.placeholder     = "Search by generic name, ndc, exp, or bin" //Put in while database syncs
     this.waitForDrugsToIndex = waitForDrugsToIndex
@@ -70,6 +71,21 @@ export class inventory {
           this.selectTerm(keys[0], params[keys[0]])
       })
     })
+  }
+
+  toggleDrawerCheck(pendId, label){
+    this.shoppingSyncPended[pendId][label].drawerCheck = !this.shoppingSyncPended[pendId][label].drawerCheck
+    //TODO: save this afterwards
+    //should only ever uncheck if cindy wants to unpend something, should be infrequent
+  }
+
+  togglePriority(pendId){
+    //switcht the priority in
+    this.shoppingSyncPended[pendId].priority = ! this.shoppingSyncPended[pendId].priority
+    let transactions_to_update = this.pended[pendId]
+    console.log(transactions_to_update)
+    //TODO: save this at he transaction level
+    //extract all the transactions, switch their priority, update the group's priority tag in this.pended[], and save
   }
 
   toggleCheck(transaction) {
@@ -166,9 +182,13 @@ export class inventory {
 
     const [pendId, label] = pendedKey.split(': ')
 
+    console.log("1_")
+    console.log(this.pended)
     let transactions = Object.values(this.pended[pendId] || {}).reduce((arr, pend) => {
-         return ! label || pend.label == label ? arr.concat(pend.transactions) : arr
+         return ((! label || pend.label == label)) ? arr.concat(pend.transactions) : arr
     }, [])
+    console.log("2_")
+    console.log(transactions)
 
     if (transactions)
       this.term = 'Pended '+pendedKey
@@ -368,7 +388,6 @@ export class inventory {
   setPended(transactions) {
 
     for (let transaction of transactions) {
-      console.log(transaction)
       //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
       let pendId  = this.getPendId(transaction)
       let pendQty = this.getPendQty(transaction)
@@ -379,9 +398,18 @@ export class inventory {
       this.pended[pendId][generic] = this.pended[pendId][generic] || {label, transactions:[]}
       this.pended[pendId][generic].transactions.push(transaction)
 
-      console.log(this.pended)
-      console.log("HERE")
+      this.shoppingSyncPended[pendId] = this.shoppingSyncPended[pendId] || {}
+      this.shoppingSyncPended[pendId][label] = this.shoppingSyncPended[pendId][label] || {}
+      this.shoppingSyncPended[pendId][label].drawerCheck = transaction.next[0].pended ? true : false;
+      this.shoppingSyncPended[pendId][label].locked = transaction.next[0].picked ? true : false;
+      this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false;
+
     }
+  }
+
+  getPriority(group){
+    console.log("3_")
+    console.log(group)
   }
 
   unsetPended(transaction) {

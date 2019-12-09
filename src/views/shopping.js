@@ -60,6 +60,10 @@ export class shopping {
       })
     })
   }
+  formatExp(rawStr){
+    let substr_arr = rawStr.slice(2,7).split("-")
+    return substr_arr[1]+"/"+substr_arr[0]
+  }
 
   setShopList(transactions = [], type, limit) {
 
@@ -136,7 +140,9 @@ export class shopping {
 
   //Given the pendedkey to identify the order, take all the items in that order
   //and display them one at a time for shopper
-  selectOrder(pendedKey) {
+  selectOrder(isLocked, pendedKey) {
+    if(isLocked) return;
+
     const [pendId, label] = pendedKey.split(': ')
 
     var transactions = []
@@ -164,7 +170,7 @@ export class shopping {
     if(this.shoppingIndex == this.shopList.length -1){ //then we're finished
       //TODO: process the outcomes properties fully into transaction items
       //Offer up more orders
-      this.saveShoppingResults()
+      this.saveShoppingResults(this.shopList,"shopped")
       this.resetShopper()
       this.refreshPended()
       return
@@ -229,23 +235,24 @@ export class shopping {
     this.setNextToNext()
     this.uniqueDrugsInOrder = []
     this.orderSelectedToShop = false
+    this.formComplete = false
   }
 
   cancelShopping(){
     //TODO: pop up asking if they're sure they want this
-    if(this.shoppingIndex > 0){
-      let shoppedItems = this.shopList.slice(0,this.shoppingIndex)
-      let remainingItems = this.shopList.slice(this.shoppingIndex)
-      this.saveShoppingResults(shoppedItems, 'shopped') //previous results need a proper picked property
-      this.saveShoppingResults(remainingItems, 'remaining')
-    }
-
+    let shoppedItems = this.shopList.slice(0,this.shoppingIndex)
+    let remainingItems = this.shopList.slice(this.shoppingIndex)
+    this.saveShoppingResults(shoppedItems, 'shopped') //previous results need a proper picked property
+    this.saveShoppingResults(remainingItems, 'remaining')
     this.resetShopper()
     this.refreshPended()
   }
 
 
   saveShoppingResults(shoppedItems, key){
+    console.log(shoppedItems)
+    console.log(key)
+    if(shoppedItems.length == 0) return
 
     let shoppingList = shoppedItems;
     let new_transactions = []

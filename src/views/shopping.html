@@ -29,7 +29,7 @@
 
       <div repeat.for="pend of pended | pendedFilter:pendedFilter">
         <div
-          click.delegate="selectOrder(pend.key)"
+          click.delegate="selectOrder(pend.locked, pend.key)"
           class="mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}"
           style="font-size:13px; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding:8px">
           ${pend.key}
@@ -37,43 +37,57 @@
       </div>
     </div>
 
-    <div style="border:5px solid"if.bind = "orderSelectedToShop">
-      <table>
-        <tr><td style="padding:0"><md-input required value.bind = "shopList[shoppingIndex].basketNumber">Basket Number</td><td style="padding:0; text-align:right"><md-button color click.delegate="cancelShopping()">Cancel</md-button></td></tr>
-        <tr><th>GO TO:</th></tr>
-        <tr><td style="padding:0; text-align:center; font-size:30px">${shopList[shoppingIndex].bin.length == 3 ? shopList[shoppingIndex].bin : (shopList[shoppingIndex].bin.slice(0,3) + '-' + shopList[shoppingIndex].bin.slice(3,4))}</td></tr>
-        <tr><td style="padding:0; text-align:center"><img
-          style="height:20%;width:20%;"
+    <div style="width:100%; height:100%; position:relative" if.bind = "orderSelectedToShop">
+
+      <div style="width:100%; display:inline-block; padding-bottom:25px">
+         <md-input style="float:left" required value.bind = "shopList[shoppingIndex].basketNumber">Basket Number</md-input>
+         <md-button style="float:right" color click.delegate="cancelShopping()">Cancel</md-button>
+      </div>
+
+      <div style="width:100%;display:inline-block; text-align:center; padding-bottom:20px">
+        <div style="float:left; text-align:left; width:50%; vertical-align:middle">
+          <div style="font-size:55px; padding-bottom:30px">${shopList[shoppingIndex].bin.length == 3 ? shopList[shoppingIndex].bin : (shopList[shoppingIndex].bin.slice(0,3) + '-' + shopList[shoppingIndex].bin.slice(3,4))}</div>
+          <div style="font-size:20px; padding-bottom:30px">${shopList[shoppingIndex].drug.generic}</div>
+          <div style="font-size:20px; padding-bottom:7px"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].exp.to)}</div>
+          <div style="font-size:20px"><b>Qty:</b> ${shopList[shoppingIndex].qty.to}</div>
+        </div>
+        <img
+          style="height:50%;width:50%;float:right"
           if.bind="shopList[shoppingIndex].image"
-          src.bind="shopList[shoppingIndex].image"></td><tr>
-        <tr><td style="padding:0">Group: ${shopList[shoppingIndex].next[0].pended.group}</td></tr>
-        <tr><td style="padding:0">Item ${shoppingIndex+1} of ${shopList.length}</td></tr>
-        <tr><td style="padding:0">Drug ${uniqueDrugsInOrder.indexOf(shopList[shoppingIndex].drug.generic)+1} of ${uniqueDrugsInOrder.length}</td></tr>
-        <tr><td style="padding:0">${shopList[shoppingIndex].drug.generic}</td></tr>
-        <tr><td style="padding:0">EXP: ${shopList[shoppingIndex].exp.to}</td></tr>
-        <tr><td style="padding:0">QTY: ${shopList[shoppingIndex].qty.to}</td></tr>
+          src.bind="shopList[shoppingIndex].image"/>
+      </div>
 
-        <tr><td style="padding:0"><md-checkbox name = "exact_match" click.delegate="shoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].outcome.exact_match">Exact Match</md-checkbox></td></tr>
-        <tr><td style="padding:0"><md-checkbox name = "roughly_equal" click.delegate="shoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].outcome.roughly_equal">+/-3 Qty</md-checkbox></td></tr>
-        <tr><td style="padding:0"><md-checkbox name = "outcomeThree" click.delegate="shoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].outcome.slot_before">Slot Before</md-checkbox></td></tr>
-        <tr><td style="padding:0"><md-checkbox name = "outcomeFour" click.delegate="shoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].outcome.slot_after">Slot After</md-checkbox></td></tr>
-        <tr><td style="padding:0"><md-checkbox name = "outcomeFive" click.delegate="shoppingOption('missing')" checked.bind="shopList[shoppingIndex].outcome.missing">Missing</md-checkbox></td></tr>
+      <div style="width:100%;display:inline-block; padding-bottom:20px">
+        <div style="width:50%; float:left">
+          <div style="font-size:20px; padding-bottom:10px"><b>Group:</b> ${shopList[shoppingIndex].next[0].pended.group}</div>
+          <div style="font-size:20px; padding-bottom:10px">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
+          <div style="font-size:20px; padding-bottom:10px">Drug <b>${uniqueDrugsInOrder.indexOf(shopList[shoppingIndex].drug.generic)+1}</b> of <b>${uniqueDrugsInOrder.length}</b></div>
+        </div>
+        <div style="width:50%; float:right">
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "exact_match" click.delegate="shoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].outcome.exact_match">Exact Match</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "roughly_equal" click.delegate="shoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].outcome.roughly_equal">+/-3 Qty</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "outcomeThree" click.delegate="shoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].outcome.slot_before">Slot Before</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "outcomeFour" click.delegate="shoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].outcome.slot_after">Slot After</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "outcomeFive" click.delegate="shoppingOption('missing')" checked.bind="shopList[shoppingIndex].outcome.missing">Missing</md-checkbox></div>
+        </div>
+      </div>
 
-        <tr>
-          <td style="padding:0"><md-button color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button></td>
-          <td style="padding:0"><md-button color raised show.bind="formComplete" click.delegate="moveShoppingForward()">${nextButtonText}</md-button></td>
-          <td style="padding:0"><md-button color='grey' raised show.bind="!formComplete" click.delegate="highlightRequired()">Complete Form</md-button></td>
-        </tr>
+      <div style="width:100%;display:inline-block; bottom:0">
+        <div style="float:left">
+          <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
+        </div>
+        <div if.bind="!formComplete"
+        style="float:right; vertical-align:middle;" click.delegate = "highlightRequired()">COMPLETE FORM TO CONTINUE</div>
+        <div style="float:right" show.bind="formComplete">
+          <md-button style="float:right" color raised show.bind="formComplete" click.delegate="moveShoppingForward()">${nextButtonText}</md-button>
+        </div>
+      </div>
 
-      </table>
+      <div>
+        <md-snackbar ref="snackbar"></md-snackbar>
+      </div>
+
     </div>
 
-
-
-    <md-snackbar ref="snackbar"></md-snackbar>
-
   </section>
-
-
-
 </template>

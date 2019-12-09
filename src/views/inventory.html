@@ -29,14 +29,28 @@
         style="font-size:13px; font-weight:600; cursor:pointer; color:#757575; padding:8px">
         ${pend.key}
       </div>
+      <md-switch
+        name = "groupPrioritySwitch"
+        checked.one-way="shoppingSyncPended[pend.key].priority"
+        click.trigger="togglePriority(pend.key)">
+      </md-switch>
       <div
         name="pro_pended_items"
-        repeat.for="pendedDrug of pend.val | toArray"
+        repeat.for="pendedDrug of pend.val | toArray">
+        <div
         click.delegate="selectTerm('pended', pend.key+': '+pendedDrug.val.label)"
         class="mdl-navigation__link ${ term == 'Pended '+pend.key+': '+pendedDrug.val.label ? 'mdl-navigation__link--current' : ''}"
         style="font-size:12px; cursor:pointer; padding-top:2px; padding-bottom:2px; padding-left:12px">
         ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
+        </div>
+        <md-checkbox
+        name = "transactionDrawerCheckbox"
+        disabled.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].locked"
+        click.trigger = "toggleDrawerCheck(pend.key,pendedDrug.val.label)"
+        checked.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].drawerCheck" ></md-checkbox>
       </div>
+
+
     </div>
   </md-drawer>
   <section class="mdl-grid au-animate">
