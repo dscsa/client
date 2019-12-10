@@ -29,7 +29,7 @@
 
       <div repeat.for="pend of pended | pendedFilter:pendedFilter">
         <div
-          click.delegate="selectOrder(pend.locked, pend.key)"
+          click.delegate="selectGroup(pend.locked, pend.key)"
           class="mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}"
           style="font-size:13px; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding:8px">
           ${pend.key}

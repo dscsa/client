@@ -75,16 +75,22 @@ export class inventory {
 
   toggleDrawerCheck(pendId, label){
     this.shoppingSyncPended[pendId][label].drawerCheck = !this.shoppingSyncPended[pendId][label].drawerCheck
-    //TODO: save this afterwards
     //should only ever uncheck if cindy wants to unpend something, should be infrequent
+    //TODO: do we unpend these transactions?
   }
 
-  togglePriority(pendId){
+
+  togglePriority(pendId, label){
     //switcht the priority in
     this.shoppingSyncPended[pendId].priority = ! this.shoppingSyncPended[pendId].priority
-    let transactions_to_update = this.pended[pendId]
-    console.log(transactions_to_update)
-    //TODO: save this at he transaction level
+    let transactions_to_update = this.extractTransactions(pendId, '') //gives an array of transactions that need to have priority toggled, then saved
+
+    for(let i = 0; i < transactions_to_update.length; i++){
+      transactions_to_update[i].next[0].pended.priority = transactions_to_update[i].next[0].pended.priority ? !transactions_to_update[i].next[0].pended.priority : true; //if it exists, flip, otherwise that means never added, so make true
+    }
+
+    return this.db.transaction.bulkDocs(transactions_to_update)
+    .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
     //extract all the transactions, switch their priority, update the group's priority tag in this.pended[], and save
   }
 
@@ -182,13 +188,7 @@ export class inventory {
 
     const [pendId, label] = pendedKey.split(': ')
 
-    console.log("1_")
-    console.log(this.pended)
-    let transactions = Object.values(this.pended[pendId] || {}).reduce((arr, pend) => {
-         return ((! label || pend.label == label)) ? arr.concat(pend.transactions) : arr
-    }, [])
-    console.log("2_")
-    console.log(transactions)
+    let transactions = this.extractTransactions(pendId, label);
 
     if (transactions)
       this.term = 'Pended '+pendedKey
@@ -197,6 +197,16 @@ export class inventory {
 
     this.setTransactions(transactions)
     this.toggleDrawer()
+  }
+
+  extractTransactions(pendId, label){
+    console.log("1_")
+    let transactions = Object.values(this.pended[pendId] || {}).reduce((arr, pend) => {
+         return ((! label || pend.label == label)) ? arr.concat(pend.transactions) : arr
+    }, [])
+    console.log("2_")
+    console.log(transactions)
+    return transactions
   }
 
   selectInventory(type, key, limit) {
