@@ -73,14 +73,36 @@ export class inventory {
     })
   }
 
+  clickOnGroupInDrawer(event,pendId){
+    console.log(event.target.tagName)
+    if(event.target.tagName == "SPAN"){
+      this.togglePriority(pendId)
+    } else {
+      this.selectTerm('pended', pendId)
+    }
+  }
+
+  clickOnTransactionInDrawer(isReal,$event,pendKey,label){
+    console.log(event.target.tagName)
+    console.log(event)
+    if((event.target.tagName == "SPAN") && isReal){
+      this.toggleDrawerCheck(pendKey,label)
+    } else if((event.target.tagName == "DIV") && !isReal){
+      this.selectTerm('pended',pendKey+': '+label)
+    }
+  }
+
   toggleDrawerCheck(pendId, label){
+    console.log("here")
+    console.log(pendId)
+    console.log(this.shoppingSyncPended[pendId][label].drawerCheck)
     this.shoppingSyncPended[pendId][label].drawerCheck = !this.shoppingSyncPended[pendId][label].drawerCheck
     //should only ever uncheck if cindy wants to unpend something, should be infrequent
     //TODO: do we unpend these transactions?
   }
 
 
-  togglePriority(pendId, label){
+  togglePriority(pendId){
     //switcht the priority in
     this.shoppingSyncPended[pendId].priority = ! this.shoppingSyncPended[pendId].priority
     let transactions_to_update = this.extractTransactions(pendId, '') //gives an array of transactions that need to have priority toggled, then saved
