@@ -41,24 +41,20 @@ export class shopping {
 
       this.db.account.get(session.account._id).then(account => this.account = account)
 
-      //Since pended are set into an object rather than array we don't have control to append to
-      //beginning or end (object keys are iterated in the order they are added), this will always
-      //push new pended keys to the last keys in the object.  But we want new keys to be listed first
-      //in the pended drawer so we use unshift to reverse the order inside the pendedFilter which means
-      //we do NOT want to reverse the order here (they would be reversed twice which would negate it)
-      this.db.transaction.query('pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
-      .then(res => {
-        this.groupByPended(res.rows.map(row => row.doc))
-        this.refreshPended() //not needed on development without this on production, blank drawer on inital load
-      })
-      .then(_ => {
-        let keys = Object.keys(params)
-        if (keys[0])
-          this.selectTerm(keys[0], params[keys[0]])
-      })
+      this.refreshPended()
     })
   }
 
+  //set this.pended appropriately
+  refreshPended() {
+    this.db.transaction.query('pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
+    .then(res => {
+      this.pended = {}
+      this.groupByPended(res.rows.map(row => row.doc))
+      this.refreshPended() //not needed on development without this on production, blank drawer on inital load
+    })
+    this.pended = Object.assign({}, this.pended)
+  }
 
   //Group pended into order structure
   groupByPended(transactions) {
@@ -197,18 +193,6 @@ export class shopping {
     this.db.transaction.bulkDocs(new_transactions).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
-
-  //TODO: this should not need to happen
-  removeOrderFromLocalPended(){
-    let order = this.shopList[0].next[0].pended.group
-    console.log("pended before")
-    console.log(this.pended)
-    delete this.pended[order]
-    console.log("pended after")
-    console.log(this.pended)
-  }
-
-
   selectTerm(type, key) {
     console.log('selectTerm', type, key)
 
@@ -223,11 +207,6 @@ export class shopping {
   }
 
 
-  refreshPended() {
-    //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
-    //to trigger and update using Object.assign rather than just adding a property
-    this.pended = Object.assign({}, this.pended)
-  }
 
 
 //------------------Button controls-------------------------
@@ -239,8 +218,8 @@ export class shopping {
       //TODO: process the outcomes properties fully into transaction items
       //Offer up more orders
       this.saveShoppingResults(this.shopList,"shopped")
-      this.resetShopper()
       this.refreshPended()
+      this.resetShopper()
       return
     }
 
@@ -269,12 +248,12 @@ export class shopping {
 
   cancelShopping(){
     //TODO: pop up asking if they're sure they want this
+    this.refreshPended()
     let shoppedItems = this.shopList.slice(0,this.shoppingIndex)
     let remainingItems = this.shopList.slice(this.shoppingIndex)
     this.saveShoppingResults(shoppedItems, 'shopped') //previous results need a proper picked property
     this.saveShoppingResults(remainingItems, 'remaining')
     this.resetShopper()
-    this.refreshPended()
   }
 
 

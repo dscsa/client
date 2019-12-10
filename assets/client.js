@@ -3681,16 +3681,21 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           return _this.account = account;
         });
 
-        _this.db.transaction.query('pended-by-name-bin', { include_docs: true, startkey: [_this.account._id], endkey: [_this.account._id, {}] }).then(function (res) {
-          _this.groupByPended(res.rows.map(function (row) {
-            return row.doc;
-          }));
-          _this.refreshPended();
-        }).then(function (_) {
-          var keys = Object.keys(params);
-          if (keys[0]) _this.selectTerm(keys[0], params[keys[0]]);
-        });
+        _this.refreshPended();
       });
+    };
+
+    shopping.prototype.refreshPended = function refreshPended() {
+      var _this2 = this;
+
+      this.db.transaction.query('pended-by-name-bin', { include_docs: true, startkey: [this.account._id], endkey: [this.account._id, {}] }).then(function (res) {
+        _this2.pended = {};
+        _this2.groupByPended(res.rows.map(function (row) {
+          return row.doc;
+        }));
+        _this2.refreshPended();
+      });
+      this.pended = Object.assign({}, this.pended);
     };
 
     shopping.prototype.groupByPended = function groupByPended(transactions) {
@@ -3795,7 +3800,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.saveShoppingResults = function saveShoppingResults(shoppedItems, key) {
-      var _this2 = this;
+      var _this3 = this;
 
       if (shoppedItems.length == 0) return;
 
@@ -3827,17 +3832,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       console.log(new_transactions);
 
       this.db.transaction.bulkDocs(new_transactions).catch(function (err) {
-        return _this2.snackbar.error('Error removing inventory. Please reload and try again', err);
+        return _this3.snackbar.error('Error removing inventory. Please reload and try again', err);
       });
-    };
-
-    shopping.prototype.removeOrderFromLocalPended = function removeOrderFromLocalPended() {
-      var order = this.shopList[0].next[0].pended.group;
-      console.log("pended before");
-      console.log(this.pended);
-      delete this.pended[order];
-      console.log("pended after");
-      console.log(this.pended);
     };
 
     shopping.prototype.selectTerm = function selectTerm(type, key) {
@@ -3851,16 +3847,12 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.router.navigate('inventory?' + type + '=' + key, { trigger: false });
     };
 
-    shopping.prototype.refreshPended = function refreshPended() {
-      this.pended = Object.assign({}, this.pended);
-    };
-
     shopping.prototype.moveShoppingForward = function moveShoppingForward() {
 
       if (this.shoppingIndex == this.shopList.length - 1) {
         this.saveShoppingResults(this.shopList, "shopped");
-        this.resetShopper();
         this.refreshPended();
+        this.resetShopper();
         return;
       }
 
@@ -3883,12 +3875,12 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.cancelShopping = function cancelShopping() {
+      this.refreshPended();
       var shoppedItems = this.shopList.slice(0, this.shoppingIndex);
       var remainingItems = this.shopList.slice(this.shoppingIndex);
       this.saveShoppingResults(shoppedItems, 'shopped');
       this.saveShoppingResults(remainingItems, 'remaining');
       this.resetShopper();
-      this.refreshPended();
     };
 
     shopping.prototype.shoppingOption = function shoppingOption(key) {
@@ -3917,14 +3909,14 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.lockdownGroup = function lockdownGroup(transactions) {
-      var _this3 = this;
+      var _this4 = this;
 
       console.log(transactions);
       for (var i = 0; i < transactions.length; i++) {
         transactions[i].next[0].picked = {};
       }
       this.db.transaction.bulkDocs(transactions).catch(function (err) {
-        return _this3.snackbar.error('Error removing inventory. Please reload and try again', err);
+        return _this4.snackbar.error('Error removing inventory. Please reload and try again', err);
       });
     };
 
