@@ -77,7 +77,7 @@
           <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
         </div>
         <div if.bind="!formComplete"
-        style="float:right; vertical-align:middle;" click.delegate = "highlightRequired()">COMPLETE FORM TO CONTINUE</div>
+        style="float:right; vertical-align:middle;" click.delegate = "warnAboutRequired()">COMPLETE FORM TO CONTINUE</div>
         <div style="float:right" show.bind="formComplete">
           <md-button style="float:right" color raised show.bind="formComplete" click.delegate="moveShoppingForward()">${nextButtonText}</md-button>
         </div>

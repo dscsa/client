@@ -45,7 +45,7 @@ export class shopping {
     })
   }
 
-  //set this.pended appropriately
+  //set this.pended appropriately, called at beginning, and any time we return to the order list (after completing or canceling shopping)
   refreshPended() {
     this.db.transaction.query('pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
     .then(res => {
@@ -61,7 +61,6 @@ export class shopping {
     for (let transaction of transactions) {
       //We want to group by PendId, don't need to group by generic like in inventory
       let pendId  = this.getPendId(transaction)
-
       this.pended[pendId] = this.pended[pendId] || {}
       this.pended[pendId].transactions = this.pended[pendId].transactions ? this.pended[pendId].transactions : []
       this.pended[pendId].transactions.push(transaction)
@@ -70,14 +69,12 @@ export class shopping {
     }
   }
 
+  //Currently sorts priority orders first, then ascending by group name
+  sortOrders(arr){ //given array of orders, sort appropriately.
 
-  sortOrders(arr){
-    //TODO:sort by priority of the items first
-    //then sort by group name
     arr = arr.sort((a,b) => {
-      //if(Object.keys(Object.values(a)[1]).length > Object.keys(Object.values(b)[1]).length) return -1 //sorts by number of items
-      let urgency1 = a.priority //(Object.values(a.val)[0].transactions[0].next[0].pended.priority) == true //being explicit to avoid mere existence evaluating to true
-      let urgency2 = b.priority //(Object.values(b.val)[0].transactions[0].next[0].pended.priority) == true
+      let urgency1 = a.priority
+      let urgency2 = b.priority
 
       if(urgency1 && !urgency2) return -1
       if(!urgency1 && urgency2) return 1
@@ -94,7 +91,7 @@ export class shopping {
   //Given the pendedkey to identify the order, take all the items in that order
   //and display them one at a time for shopper
   selectGroup(isLocked, pendedKey) {
-    if(isLocked) return;
+    //if(isLocked) return;
 
     const [pendId, label] = pendedKey.split(': ')
 
@@ -146,7 +143,6 @@ export class shopping {
     }
   }
 
-
   //Reset variables that we don't want to perserve from one order to the next
   resetShopper(){
     this.setNextToNext()
@@ -154,7 +150,6 @@ export class shopping {
     this.orderSelectedToShop = false
     this.formComplete = false
   }
-
 
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
@@ -215,9 +210,8 @@ export class shopping {
 
 
     if(this.shoppingIndex == this.shopList.length -1){ //then we're finished
-      //TODO: process the outcomes properties fully into transaction items
-      //Offer up more orders
-      this.saveShoppingResults(this.shopList,"shopped")
+      //this.saveShoppingResults(this.shopList,"shopped") //this would save at the end of the full shoplist
+      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
       this.refreshPended()
       this.resetShopper()
       return
@@ -229,6 +223,9 @@ export class shopping {
     } else {
       this.snackbar.show('Different drug name, enter new basket number')
     }
+
+    this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped') //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
+
 
     this.shoppingIndex += 1
     this.formComplete = (this.shopList[this.shoppingIndex].basketNumber.length > 0) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].outcome) //if returning to a complete page, don't grey out the next/save button
@@ -245,9 +242,8 @@ export class shopping {
 
   }
 
-
+  //will sve all fully shopped items, and unlock remaining ones
   cancelShopping(){
-    //TODO: pop up asking if they're sure they want this
     this.refreshPended()
     let shoppedItems = this.shopList.slice(0,this.shoppingIndex)
     let remainingItems = this.shopList.slice(this.shoppingIndex)
@@ -267,7 +263,6 @@ export class shopping {
       this.formComplete = true;
     } else {
       this.snackbar.show('Must enter basket number')
-      //TODO: highlight the basket number field
       return
     }
 
@@ -297,7 +292,6 @@ export class shopping {
       this.db.transaction.bulkDocs(transactions).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
-
   sortTransactionsForShopping(a, b) {
     var aName = a.drug.generic;
     var bName = b.drug.generic;
@@ -325,7 +319,7 @@ export class shopping {
     return 0
   }
 
-
+  //makes the async call to drug db to get images for whichever drugs we have one
   getImageURLS(){
 
     let saveImgCallback = (function(drug){
@@ -339,20 +333,14 @@ export class shopping {
     }
   }
 
-
+  //shortcut to look at the outcome object and check if any values are set to true
   someOutcomeSelected(outcomeObj){
-    for(let key in outcomeObj){
-      if(outcomeObj[key] == true) return true
-    }
-    return false
+    return ~Object.values(outcomeObj).indexOf(true)
   }
 
-
-  highlightRequired(){
+  warnAboutRequired(){
     this.snackbar.show('Basket number and outcome are required')
-    //TODO: highlight bin field, and the radio buttons
   }
-
 
   setNextToSave(){
     this.nextButtonText = 'Save Shopping Results'
@@ -362,48 +350,34 @@ export class shopping {
     this.nextButtonText = 'Next'
   }
 
+  //shoppedItem is just a transaction with an extra property for outcome
+  getOutcome(shoppedItem){
+    let res = ''
+    for(let possibility in shoppedItem.outcome){
+      if(shoppedItem.outcome[possibility]) res += possibility //this could be made to append into a magic string if there's multiple conditions we want to allow
+    }
+    return res
+  }
 
-    //shoppedItem is just a transaction with an extra property for outcome
-    getOutcome(shoppedItem){
-      let res = ''
-      for(let possibility in shoppedItem.outcome){
-        if(shoppedItem.outcome[possibility]) res += ";" + possibility
-      }
-      return res
+
+  getPendId(transaction) {
+    //getPendId from a transaction
+    if (transaction) {
+
+      const pendId  = transaction.next[0] ? transaction.next[0].pended.group : null
+      const created = transaction.next[0] ? transaction.next[0].pended._id : transaction._id
+
+      return pendId ? pendId : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
     }
 
-
-    getPendId(transaction) {
-
-      //getPendId from a transaction
-      if (transaction) {
-
-        const pendId  = transaction.next[0] ? transaction.next[0].pended.group : null
-        const created = transaction.next[0] ? transaction.next[0].pended._id : transaction._id
-
-        return pendId ? pendId : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
-      }
-
-      //Get the currectly selected pendId
-      //Hacky. Maybe we should set these individually rather than splitting them.
-      return this.term.replace('Pended ', '').split(': ')[0]
-    }
-
-    getPendQty(transaction) {
-      //getPendId from a transaction
-      if (transaction) {
-        const pendId  = transaction.next[0] ? transaction.next[0].pended.group : null
-        return pendId ? pendId : undefined
-      }
-
-      return this.term.split(' - ')[1]
-    }
-
+    return this.term.replace('Pended ', '').split(': ')[0]
+  }
 }
 
 //Allow user to search by pendId OR generic name
 //have priority and locked getting pushed up to save on code elsewhere
 export class pendedFilterValueConverter {
+
   toView(pended = {}, term = ''){
     term = term.toLowerCase()
     let matches = [] //an array of arrays
@@ -412,15 +386,6 @@ export class pendedFilterValueConverter {
         matches.unshift({key:pendId, val:pended[pendId], priority:pended[pendId].priority, locked:pended[pendId].locked})
         continue
       }
-
-      let genericMatches = {}
-
-      for (let generic in pended[pendId])
-        if ( ~ generic.toLowerCase().indexOf(term))
-          genericMatches[generic] = pended[pendId][generic]
-
-      if (Object.keys(genericMatches).length)
-        matches.unshift({key:pendId, val:genericMatches, priority:pended[pendId].priority, locked:pended[pendId].locked})
     }
     matches = shopping.prototype.sortOrders(matches)
     return matches
