@@ -3842,13 +3842,15 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       var new_transactions = [];
 
       for (var i = 0; i < shoppingList.length; i++) {
-        console.log(shoppingList[i]);
         var outcome = this.getOutcome(shoppingList[i]);
         var basketNumber = shoppingList[i].basketNumber;
         delete shoppingList[i].outcome;
 
         var next = shoppingList[i].next;
         if (next) {
+          console.log("in here");
+          console.log(next);
+          console.log(key);
           if (key == 'shopped') {
             next[0].picked = {
               _id: new Date().toJSON(),

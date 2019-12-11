@@ -167,13 +167,15 @@ export class shopping {
     let new_transactions = []
 
     for(var i = 0; i < shoppingList.length; i++){
-      console.log(shoppingList[i])
       let outcome = this.getOutcome(shoppingList[i])
       let basketNumber = shoppingList[i].basketNumber
       delete shoppingList[i].outcome
 
       let next = shoppingList[i].next
       if(next){
+        console.log("in here")
+        console.log(next)
+        console.log(key)
         if(key == 'shopped'){
           next[0].picked = {
             _id:new Date().toJSON(),
