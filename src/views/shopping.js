@@ -60,7 +60,7 @@ export class shopping {
   groupByPended(transactions) {
     for (let transaction of transactions) {
 
-      if(transaction.next[0].pended.priority == null) continue //an extra in between to keep us from seeing limbo-ed transactions
+      if(typeof transaction.next[0].pended.priority != 'undefined' && transaction.next[0].pended.priority == null) continue //an extra in between to keep us from seeing limbo-ed transactions
 
       //We want to group by PendId, don't need to group by generic like in inventory
       let pendId  = this.getPendId(transaction)

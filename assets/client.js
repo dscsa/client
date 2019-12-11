@@ -3748,7 +3748,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         var transaction = _ref;
 
 
-        if (transaction.next[0].pended.priority == null) continue;
+        if (typeof transaction.next[0].pended.priority != 'undefined' && transaction.next[0].pended.priority == null) continue;
         var pendId = this.getPendId(transaction);
         this.pended[pendId] = this.pended[pendId] || {};
         this.pended[pendId].transactions = this.pended[pendId].transactions ? this.pended[pendId].transactions : [];
