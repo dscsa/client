@@ -167,6 +167,7 @@ export class shopping {
     let new_transactions = []
 
     for(var i = 0; i < shoppingList.length; i++){
+      console.log(shoppingList[i])
       let outcome = this.getOutcome(shoppingList[i])
       let basketNumber = shoppingList[i].basketNumber
       delete shoppingList[i].outcome
@@ -250,11 +251,11 @@ export class shopping {
 
   //will sve all fully shopped items, and unlock remaining ones
   cancelShopping(){
-    this.refreshPended()
     let shoppedItems = this.shopList.slice(0,this.shoppingIndex)
     let remainingItems = this.shopList.slice(this.shoppingIndex)
     this.saveShoppingResults(shoppedItems, 'shopped') //previous results need a proper picked property
     this.saveShoppingResults(remainingItems, 'remaining')
+    this.refreshPended()
     this.resetShopper()
   }
 

@@ -3842,6 +3842,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       var new_transactions = [];
 
       for (var i = 0; i < shoppingList.length; i++) {
+        console.log(shoppingList[i]);
         var outcome = this.getOutcome(shoppingList[i]);
         var basketNumber = shoppingList[i].basketNumber;
         delete shoppingList[i].outcome;
@@ -3911,11 +3912,11 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.cancelShopping = function cancelShopping() {
-      this.refreshPended();
       var shoppedItems = this.shopList.slice(0, this.shoppingIndex);
       var remainingItems = this.shopList.slice(this.shoppingIndex);
       this.saveShoppingResults(shoppedItems, 'shopped');
       this.saveShoppingResults(remainingItems, 'remaining');
+      this.refreshPended();
       this.resetShopper();
     };
 
