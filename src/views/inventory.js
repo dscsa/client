@@ -121,7 +121,7 @@ export class inventory {
     let transactions_to_update = this.extractTransactions(pendId, '') //gives an array of transactions that need to have priority toggled, then saved
 
     for(let i = 0; i < transactions_to_update.length; i++){
-      if(transactions_to_update[i].next[0].pended.priority == null) continue;
+      if(typeof transactions_to_update[i].next[0].pended.priority != 'undefined' && transactions_to_update[i].next[0].pended.priority == null) continue;
       transactions_to_update[i].next[0].pended.priority = transactions_to_update[i].next[0].pended.priority ? !transactions_to_update[i].next[0].pended.priority : true; //if it exists, flip, otherwise that means never added, so make true
     }
 
@@ -448,7 +448,7 @@ export class inventory {
       this.shoppingSyncPended[pendId][label] = this.shoppingSyncPended[pendId][label] || {}
       this.shoppingSyncPended[pendId][label].drawerCheck = typeof transaction.next[0].pended.priority == 'undefined' ? true: (transaction.next[0].pended.priority != null)
       this.shoppingSyncPended[pendId][label].locked = transaction.next[0].picked ? true : false;
-      this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false; //this will read false for limbo-ed transaction where priority = null, but thats fine. 
+      this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false; //this will read false for limbo-ed transaction where priority = null, but thats fine.
 
     }
   }

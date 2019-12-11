@@ -2109,7 +2109,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var transactions_to_update = this.extractTransactions(pendId, '');
 
       for (var i = 0; i < transactions_to_update.length; i++) {
-        if (transactions_to_update[i].next[0].pended.priority == null) continue;
+        if (typeof transactions_to_update[i].next[0].pended.priority != 'undefined' && transactions_to_update[i].next[0].pended.priority == null) continue;
         transactions_to_update[i].next[0].pended.priority = transactions_to_update[i].next[0].pended.priority ? !transactions_to_update[i].next[0].pended.priority : true;
       }
 
