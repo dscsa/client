@@ -170,7 +170,8 @@ export class shopping {
       let outcome = this.getOutcome(shoppingList[i])
       let basketNumber = shoppingList[i].basketNumber
       delete shoppingList[i].outcome
-
+      delete shoppingList[i].basketNumber
+      delete shoppingList[i].image
       let next = shoppingList[i].next
       if(next){
         console.log("in here")

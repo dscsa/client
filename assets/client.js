@@ -3845,7 +3845,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         var outcome = this.getOutcome(shoppingList[i]);
         var basketNumber = shoppingList[i].basketNumber;
         delete shoppingList[i].outcome;
-
+        delete shoppingList[i].basketNumber;
+        delete shoppingList[i].image;
         var next = shoppingList[i].next;
         if (next) {
           console.log("in here");
