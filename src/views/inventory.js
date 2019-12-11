@@ -83,8 +83,6 @@ export class inventory {
   }
 
   clickOnTransactionInDrawer(isReal,$event,pendKey,label){
-    console.log(event.target.tagName)
-    console.log(event)
     if((event.target.tagName == "SPAN") && isReal){
       this.toggleDrawerCheck(pendKey,label)
     } else if((event.target.tagName == "DIV") && !isReal){
@@ -92,13 +90,28 @@ export class inventory {
     }
   }
 
+
+
+  //should only ever uncheck if cindy wants to unpend something, should be infrequent
+  //button will be disabled if there's a picked property. so we have to use the priority property of pended
+  //if pended.priority = true, its priority. if = false, it's not. if = null, then it's inbetween pended and picked, and
+  //will appear in the pended drawer, but not on the shopping sheet
   toggleDrawerCheck(pendId, label){
-    console.log("here")
-    console.log(pendId)
-    console.log(this.shoppingSyncPended[pendId][label].drawerCheck)
+    if(this.shoppingSyncPended[pendId][label].locked) return;
+
     this.shoppingSyncPended[pendId][label].drawerCheck = !this.shoppingSyncPended[pendId][label].drawerCheck
-    //should only ever uncheck if cindy wants to unpend something, should be infrequent
-    //TODO: do we unpend these transactions?
+
+    let temp_transactions = this.extractTransactions(pendId, label) //this is an array in case multiple generics
+    console.log(temp_transactions)
+
+    for(let i = 0; i < temp_transactions.length; i++){
+      temp_transactions[i].next[0].pended.priority = this.shoppingSyncPended[pendId][label].drawerCheck ? false : null;
+      console.log(temp_transactions[i])
+      //TODO: save temp_transaction
+    }
+
+    return this.db.transaction.bulkDocs(temp_transactions)
+    .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
 
@@ -108,6 +121,7 @@ export class inventory {
     let transactions_to_update = this.extractTransactions(pendId, '') //gives an array of transactions that need to have priority toggled, then saved
 
     for(let i = 0; i < transactions_to_update.length; i++){
+      if(transactions_to_update[i].next[0].pended.priority == null) continue;
       transactions_to_update[i].next[0].pended.priority = transactions_to_update[i].next[0].pended.priority ? !transactions_to_update[i].next[0].pended.priority : true; //if it exists, flip, otherwise that means never added, so make true
     }
 
@@ -432,9 +446,9 @@ export class inventory {
 
       this.shoppingSyncPended[pendId] = this.shoppingSyncPended[pendId] || {}
       this.shoppingSyncPended[pendId][label] = this.shoppingSyncPended[pendId][label] || {}
-      this.shoppingSyncPended[pendId][label].drawerCheck = transaction.next[0].pended ? true : false;
+      this.shoppingSyncPended[pendId][label].drawerCheck = typeof transaction.next[0].pended.priority == 'undefined' ? true: (transaction.next[0].pended.priority != null)
       this.shoppingSyncPended[pendId][label].locked = transaction.next[0].picked ? true : false;
-      this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false;
+      this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false; //this will read false for limbo-ed transaction where priority = null, but thats fine. 
 
     }
   }
