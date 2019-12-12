@@ -69,7 +69,6 @@ export class shopping {
       this.pended[pendId].transactions.push(transaction)
       this.pended[pendId].priority = transaction.next[0].pended.priority ? (transaction.next[0].pended.priority == true) : false
       this.pended[pendId].locked = transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length == 0 : false
-      //TODO: we need to change the definition of locked slightly, so that we can unchecked boxes in the inventory page
     }
   }
 
@@ -162,7 +161,7 @@ export class shopping {
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
   saveShoppingResults(provided_transactions, key){
-    
+
     let transactions = provided_transactions.slice()
 
     if(transactions.length == 0) return Promise.resolve()
@@ -281,7 +280,6 @@ export class shopping {
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
   shoppingOption(key){
-    //TODO: force only one
     if(this.shopList[this.shoppingIndex].outcome[key]) return //don't let thme uncheck, because radio buttons
 
     if(this.shopList[this.shoppingIndex].basketNumber.length > 0){

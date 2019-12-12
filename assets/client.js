@@ -2066,7 +2066,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.clickOnGroupInDrawer = function clickOnGroupInDrawer(event, pendId) {
-      console.log(event.target.tagName);
       if (event.target.tagName == "SPAN") {
         this.togglePriority(pendId);
       } else {

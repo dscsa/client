@@ -74,7 +74,6 @@ export class inventory {
   }
 
   clickOnGroupInDrawer(event,pendId){
-    console.log(event.target.tagName)
     if(event.target.tagName == "SPAN"){
       this.togglePriority(pendId)
     } else {
@@ -89,8 +88,6 @@ export class inventory {
       this.selectTerm('pended',pendKey+': '+label)
     }
   }
-
-
 
   //should only ever uncheck if cindy wants to unpend something, should be infrequent
   //button will be disabled if there's a picked property. so we have to use the priority property of pended
@@ -107,7 +104,6 @@ export class inventory {
     for(let i = 0; i < temp_transactions.length; i++){
       temp_transactions[i].next[0].pended.priority = this.shoppingSyncPended[pendId][label].drawerCheck ? false : null;
       console.log(temp_transactions[i])
-      //TODO: save temp_transaction
     }
 
     return this.db.transaction.bulkDocs(temp_transactions)
