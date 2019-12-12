@@ -104,9 +104,13 @@ export class shopping {
     var transactions = this.pended[pendId].transactions
 
     if (transactions) this.term = 'Pended '+pendedKey
+    if(transactions.length == 0) return
 
-    this.setShopList(transactions)
-    this.initializeShopper()
+    this.saveShoppingResults(transactions, 'lockdown').then(_=>{
+      this.setShopList(transactions)
+      this.initializeShopper()
+    }).bind(this)
+
   }
 
 
@@ -115,9 +119,7 @@ export class shopping {
   //processed and removed appropriately before saving
   setShopList(transactions = [], type, limit) {
 
-    if(transactions.length > 0) this.lockdownGroup(transactions);
-
-    this.shopList = transactions.sort(this.sortTransactionsForShopping)
+    this.shopList = transactions.slice().sort(this.sortTransactionsForShopping)
 
     for(var i = 0; i < this.shopList.length; i++){
       this.shopList[i].outcome = {
@@ -159,43 +161,52 @@ export class shopping {
 
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
-  saveShoppingResults(shoppedItems, key){
+  saveShoppingResults(provided_transactions, key){
+    
+    let transactions = provided_transactions.slice()
 
-    if(shoppedItems.length == 0) return
+    if(transactions.length == 0) return Promise.resolve()
 
-    let shoppingList = shoppedItems;
-    let new_transactions = []
+    for(var i = 0; i < transactions.length; i++){
+      let current_transaction = transactions[i]
+      let outcome = this.getOutcome(current_transaction)
+      let next = current_transaction.next
 
-    for(var i = 0; i < shoppingList.length; i++){
-      let outcome = this.getOutcome(shoppingList[i])
-      let basketNumber = shoppingList[i].basketNumber
-      delete shoppingList[i].outcome
-      delete shoppingList[i].basketNumber
-      delete shoppingList[i].image
-      let next = shoppingList[i].next
       if(next){
-        console.log("in here")
-        console.log(next)
-        console.log(key)
         if(key == 'shopped'){
           next[0].picked = {
             _id:new Date().toJSON(),
-            basket:basketNumber,
+            basket:current_transaction.basketNumber,
             matchType:outcome,
             user:this.user,
           }
         } else if(key == 'remaining'){
-          delete next[0].picked
+          let res4 = delete next[0].picked
+          console.log("deleting picked:" + res4)
+        } else if(key == 'lockdown'){
+          next[0].picked = {}
         }
 
       }
-      shoppingList[i].next = next
-      new_transactions.push(shoppingList[i])
+
+      let res1 = delete current_transaction.outcome
+      console.log("deleting outcome" + res1)
+      console.log(current_transaction.outcome)
+      let res2 = delete current_transaction.basketNumber
+      console.log("deleting basketnumber" + res2)
+      let res3 = delete current_transaction.image
+      console.log("deleting image" + res3)
+      current_transaction.next = next
+
+      console.log("stripped transaction")
+      console.log(current_transaction)
+
+      transactions[i] = current_transaction
     }
     console.log("saving the following transactions:")
-    console.log(new_transactions)
+    console.log(transactions)
 
-    this.db.transaction.bulkDocs(new_transactions).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+    return this.db.transaction.bulkDocs(transactions).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
   selectTerm(type, key) {
@@ -221,26 +232,28 @@ export class shopping {
 
     if(this.shoppingIndex == this.shopList.length -1){ //then we're finished
       //this.saveShoppingResults(this.shopList,"shopped") //this would save at the end of the full shoplist
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
-      this.refreshPended()
-      this.resetShopper()
-      return
-    }
-
-    //if next one has the same drug , then pass the basket number forward
-    if(this.shopList[this.shoppingIndex].drug.generic == this.shopList[this.shoppingIndex + 1].drug.generic){
-      this.shopList[this.shoppingIndex + 1].basketNumber = this.shopList[this.shoppingIndex].basketNumber
+      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
+      then(_=>{
+        this.refreshPended()
+        this.resetShopper()
+      }).bind(this)
     } else {
-      this.snackbar.show('Different drug name, enter new basket number')
+      //if next one has the same drug , then pass the basket number forward
+      if(this.shopList[this.shoppingIndex].drug.generic == this.shopList[this.shoppingIndex + 1].drug.generic){
+        this.shopList[this.shoppingIndex + 1].basketNumber = this.shopList[this.shoppingIndex].basketNumber
+      } else {
+        this.snackbar.show('Different drug name, enter new basket number')
+      }
+
+       //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
+
+      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
+      then(_=>{
+        this.shoppingIndex += 1
+        this.formComplete = (this.shopList[this.shoppingIndex].basketNumber.length > 0) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].outcome) //if returning to a complete page, don't grey out the next/save button
+        if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
+      }).bind(this)
     }
-
-    this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped') //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
-
-
-    this.shoppingIndex += 1
-    this.formComplete = (this.shopList[this.shoppingIndex].basketNumber.length > 0) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].outcome) //if returning to a complete page, don't grey out the next/save button
-    if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
-
   }
 
 
@@ -256,10 +269,12 @@ export class shopping {
   cancelShopping(){
     let shoppedItems = this.shopList.slice(0,this.shoppingIndex)
     let remainingItems = this.shopList.slice(this.shoppingIndex)
-    this.saveShoppingResults(shoppedItems, 'shopped') //previous results need a proper picked property
-    this.saveShoppingResults(remainingItems, 'remaining')
-    this.refreshPended()
-    this.resetShopper()
+    this.saveShoppingResults(shoppedItems, 'shopped').then(_=>{
+      this.saveShoppingResults(remainingItems, 'remaining').then(_=>{
+        this.refreshPended()
+        this.resetShopper()
+      }).bind(this)
+    }).bind(this) //previous results need a proper picked property
   }
 
 
@@ -294,13 +309,6 @@ export class shopping {
     return substr_arr[1]+"/"+substr_arr[0]
   }
 
-  lockdownGroup(transactions){
-      console.log(transactions)
-      for(var i = 0; i < transactions.length; i++){
-        transactions[i].next[0].picked = {}
-      }
-      this.db.transaction.bulkDocs(transactions).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
-  }
 
   sortTransactionsForShopping(a, b) {
     var aName = a.drug.generic;
