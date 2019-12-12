@@ -359,7 +359,7 @@ export class shopping {
   }
 
   setNextToSave(){
-    this.nextButtonText = 'Save Shopping Results'
+    this.nextButtonText = 'Complete Shopping'
   }
 
   setNextToNext(){

@@ -4012,7 +4012,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.setNextToSave = function setNextToSave() {
-      this.nextButtonText = 'Save Shopping Results';
+      this.nextButtonText = 'Complete Shopping';
     };
 
     shopping.prototype.setNextToNext = function setNextToNext() {
