@@ -110,15 +110,7 @@ export class shopping {
       this.initializeShopper()
     }).bind(this)
 
-    this.hide()
-
   }
-
-  hide(){
-    console.log("header")
-    console.log(this.mainHeader.style = "display:none")
-  }
-
 
   //Slightly enhance the transactions to track info about the shopping app
   //and allow for easy reference / cleaner code between view/controller

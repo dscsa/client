@@ -3790,13 +3790,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         _this3.setShopList(transactions);
         _this3.initializeShopper();
       }).bind(this);
-
-      this.hide();
-    };
-
-    shopping.prototype.hide = function hide() {
-      console.log("header");
-      console.log(this.mainHeader.style = "display:none");
     };
 
     shopping.prototype.setShopList = function setShopList() {
