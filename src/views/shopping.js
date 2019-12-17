@@ -96,7 +96,7 @@ export class shopping {
   //Given the pendedkey to identify the order, take all the items in that order
   //and display them one at a time for shopper
   selectGroup(isLocked, pendedKey) {
-    //if(isLocked) return;
+    //if(isLocked) return; //TODO uncommed this when we're passed initial testing
 
     const [pendId, label] = pendedKey.split(': ')
 
@@ -110,6 +110,13 @@ export class shopping {
       this.initializeShopper()
     }).bind(this)
 
+    this.hide()
+
+  }
+
+  hide(){
+    console.log("header")
+    console.log(this.mainHeader.style = "display:none")
   }
 
 
@@ -176,6 +183,7 @@ export class shopping {
           next[0].picked = {
             _id:new Date().toJSON(),
             basket:current_transaction.basketNumber,
+            repackQty:current_transaction.qty.to ? current_transaction.qty.to : current_transaction.qty.from,
             matchType:outcome,
             user:this.user,
           }

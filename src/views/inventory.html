@@ -39,21 +39,20 @@
         </md-switch>
       </div>
 
-      <div style="display:inline-block; width:90%"
+      <div style="display:inline-block"
         repeat.for="pendedDrug of pend.val | toArray">
         <div
           name="pro_pended_items"
           class="mdl-navigation__link ${ term == 'Pended '+pend.key+': '+pendedDrug.val.label ? 'mdl-navigation__link--current' : ''}"
           click.delegate="clickOnTransactionInDrawer(false,$event,pend.key,pendedDrug.val.label)"
           style="font-size:12px; float:right; cursor:pointer; padding-top:2px; padding-bottom:2px; padding-left:12px">
-            ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
-
-            <md-checkbox
-              name = "transactionDrawerCheckbox"
-              style="float:left"
-              disabled.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].locked"
-              click.trigger = "clickOnTransactionInDrawer(true,$event,pend.key,pendedDrug.val.label)"
-              checked.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].drawerCheck" ></md-checkbox>
+          <md-checkbox
+            name = "transactionDrawerCheckbox"
+            style="float:left"
+            disabled.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].locked"
+            click.trigger = "clickOnTransactionInDrawer(true,$event,pend.key,pendedDrug.val.label)"
+            checked.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].drawerCheck" >
+          </md-checkbox>${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
         </div>
       </div>
 
