@@ -60,7 +60,7 @@ export class inventory {
       //push new pended keys to the last keys in the object.  But we want new keys to be listed first
       //in the pended drawer so we use unshift to reverse the order inside the pendedFilter which means
       //we do NOT want to reverse the order here (they would be reversed twice which would negate it)
-      this.db.transaction.query('pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
+      this.db.transaction.query('currently-pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
       .then(res => {
         this.setPended(res.rows.map(row => row.doc))
         this.refreshPended() //not needed on development without this on production, blank drawer on inital load
@@ -430,6 +430,9 @@ export class inventory {
   setPended(transactions) {
 
     for (let transaction of transactions) {
+      //skipped picked transactions
+      if(transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length > 0 : false) continue
+
       //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
       let pendId  = this.getPendId(transaction)
       let pendQty = this.getPendQty(transaction)

@@ -47,7 +47,7 @@ export class shopping {
 
   //set this.pended appropriately, called at beginning, and any time we return to the order list (after completing or canceling shopping)
   refreshPended() {
-    this.db.transaction.query('pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
+    this.db.transaction.query('currently-pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
     .then(res => {
       this.pended = {}
       this.groupByPended(res.rows.map(row => row.doc))
@@ -60,7 +60,12 @@ export class shopping {
   groupByPended(transactions) {
     for (let transaction of transactions) {
 
-      if(typeof transaction.next[0].pended.priority != 'undefined' && transaction.next[0].pended.priority == null) continue //an extra in between to keep us from seeing limbo-ed transactions
+      //skip transaction that are locked down, with priority = null, or that are picked, where the picked property has keys, as opposed
+      //to when it's locked
+      if((typeof transaction.next[0].pended.priority != 'undefined' && transaction.next[0].pended.priority == null)
+      || (transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length > 0 : false)) continue
+
+      //TODO: check for full picked properties as well
 
       //We want to group by PendId, don't need to group by generic like in inventory
       let pendId  = this.getPendId(transaction)

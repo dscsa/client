@@ -2053,7 +2053,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           return _this2.account = account;
         });
 
-        _this2.db.transaction.query('pended-by-name-bin', { include_docs: true, startkey: [_this2.account._id], endkey: [_this2.account._id, {}] }).then(function (res) {
+        _this2.db.transaction.query('currently-pended-by-name-bin', { include_docs: true, startkey: [_this2.account._id], endkey: [_this2.account._id, {}] }).then(function (res) {
           _this2.setPended(res.rows.map(function (row) {
             return row.doc;
           }));
@@ -2436,6 +2436,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         }
 
         var transaction = _ref3;
+
+        if (transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length > 0 : false) continue;
 
         var pendId = this.getPendId(transaction);
         var pendQty = this.getPendQty(transaction);
@@ -3721,7 +3723,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.refreshPended = function refreshPended() {
       var _this2 = this;
 
-      this.db.transaction.query('pended-by-name-bin', { include_docs: true, startkey: [this.account._id], endkey: [this.account._id, {}] }).then(function (res) {
+      this.db.transaction.query('currently-pended-by-name-bin', { include_docs: true, startkey: [this.account._id], endkey: [this.account._id, {}] }).then(function (res) {
         _this2.pended = {};
         _this2.groupByPended(res.rows.map(function (row) {
           return row.doc;
@@ -3746,8 +3748,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
         var transaction = _ref;
 
+        if (typeof transaction.next[0].pended.priority != 'undefined' && transaction.next[0].pended.priority == null || (transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length > 0 : false)) continue;
 
-        if (typeof transaction.next[0].pended.priority != 'undefined' && transaction.next[0].pended.priority == null) continue;
         var pendId = this.getPendId(transaction);
         this.pended[pendId] = this.pended[pendId] || {};
         this.pended[pendId].transactions = this.pended[pendId].transactions ? this.pended[pendId].transactions : [];
