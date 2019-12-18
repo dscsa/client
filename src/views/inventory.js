@@ -431,7 +431,7 @@ export class inventory {
 
     for (let transaction of transactions) {
       //skipped picked transactions
-      if(transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length > 0 : false) continue
+      if(transaction.next[0].picked ? transaction.next[0].picked._id : false) continue
 
       //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
       let pendId  = this.getPendId(transaction)

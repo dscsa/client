@@ -63,7 +63,7 @@ export class shopping {
       //skip transaction that are locked down, with priority = null, or that are picked, where the picked property has keys, as opposed
       //to when it's locked
       if((typeof transaction.next[0].pended.priority != 'undefined' && transaction.next[0].pended.priority == null)
-      || (transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length > 0 : false)) continue
+      || (transaction.next[0].picked ? transaction.next[0].picked._id : false)) continue
 
       //TODO: check for full picked properties as well
 
