@@ -73,7 +73,7 @@ export class shopping {
       this.pended[pendId].transactions = this.pended[pendId].transactions ? this.pended[pendId].transactions : []
       this.pended[pendId].transactions.push(transaction)
       this.pended[pendId].priority = transaction.next[0].pended.priority ? (transaction.next[0].pended.priority == true) : false
-      this.pended[pendId].locked = transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length == 0 : false
+      this.pended[pendId].locked = transaction.next[0].picked && ! transaction.next[0].picked._id
     }
   }
 
