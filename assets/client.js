@@ -3791,6 +3791,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.saveShoppingResults(transactions, 'lockdown').then(function (_) {
         _this3.setShopList(transactions);
         _this3.initializeShopper();
+        console.log(_this3.shopList);
       }).bind(this);
     };
 
@@ -3838,43 +3839,41 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.formComplete = false;
     };
 
+    shopping.prototype.cleanUpTransactionsToSave = function cleanUpTransactionsToSave(transaction) {
+      transaction = JSON.parse(JSON.stringify(transaction));
+      var outcome = this.getOutcome(transaction);
+      var next = transaction.next;
+
+      if (next) {
+        if (this.key == 'shopped') {
+          next[0].picked = {
+            _id: new Date().toJSON(),
+            basket: transaction.basketNumber,
+            repackQty: transaction.qty.to ? transaction.qty.to : transaction.qty.from,
+            matchType: outcome,
+            user: this.user
+          };
+        } else if (this.key == 'remaining') {
+          var res4 = delete next[0].picked;
+        } else if (this.key == 'lockdown') {
+          next[0].picked = {};
+        }
+      }
+
+      var res1 = delete transaction.outcome;
+      var res2 = delete transaction.basketNumber;
+      var res3 = delete transaction.image;
+      transaction.next = next;
+      return transaction;
+    };
+
     shopping.prototype.saveShoppingResults = function saveShoppingResults(provided_transactions, key) {
       var _this4 = this;
 
-      var transactions = provided_transactions.slice();
+      if (provided_transactions.length == 0) return Promise.resolve();
 
-      if (transactions.length == 0) return Promise.resolve();
+      var transactions = provided_transactions.map(this.cleanUpTransactionsToSave, { getOutcome: this.getOutcome, key: key });
 
-      for (var i = 0; i < transactions.length; i++) {
-        var current_transaction = transactions[i];
-        var outcome = this.getOutcome(current_transaction);
-        var next = current_transaction.next;
-
-        if (next) {
-          if (key == 'shopped') {
-            next[0].picked = {
-              _id: new Date().toJSON(),
-              basket: current_transaction.basketNumber,
-              repackQty: current_transaction.qty.to ? current_transaction.qty.to : current_transaction.qty.from,
-              matchType: outcome,
-              user: this.user
-            };
-          } else if (key == 'remaining') {
-            var res4 = delete next[0].picked;
-            console.log("deleting picked:" + res4);
-          } else if (key == 'lockdown') {
-            next[0].picked = {};
-          }
-        }
-
-        var res1 = delete current_transaction.outcome;
-
-        var res2 = delete current_transaction.basketNumber;
-        var res3 = delete current_transaction.image;
-        current_transaction.next = next;
-
-        transactions[i] = current_transaction;
-      }
       console.log("saving the following transactions:");
       console.log(transactions);
 
@@ -3911,8 +3910,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
           _this5.shoppingIndex += 1;
-          _this5.formComplete = _this5.shopList[_this5.shoppingIndex].basketNumber.length > 0 && _this5.someOutcomeSelected(_this5.shopList[_this5.shoppingIndex].outcome);
+          _this5.formComplete = _this5.shopList[_this5.shoppingIndex].basketNumber.length > 1 && _this5.someOutcomeSelected(_this5.shopList[_this5.shoppingIndex].outcome);
           if (_this5.shoppingIndex == _this5.shopList.length - 1) _this5.setNextToSave();
+          console.log(_this5.shopList);
         }).bind(this);
       }
     };
@@ -3933,6 +3933,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         _this6.saveShoppingResults(remainingItems, 'remaining').then(function (_) {
           _this6.refreshPended();
           _this6.resetShopper();
+          console.log(_this6.shopList);
         }).bind(_this6);
       }).bind(this);
     };
@@ -3940,7 +3941,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.shoppingOption = function shoppingOption(key) {
       if (this.shopList[this.shoppingIndex].outcome[key]) return;
 
-      if (this.shopList[this.shoppingIndex].basketNumber.length > 0) {
+      if (this.shopList[this.shoppingIndex].basketNumber.length > 1) {
         console.log("getting here for some reason");
         this.formComplete = true;
       } else {

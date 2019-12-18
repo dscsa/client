@@ -113,6 +113,7 @@ export class shopping {
     this.saveShoppingResults(transactions, 'lockdown').then(_=>{
       this.setShopList(transactions)
       this.initializeShopper()
+      console.log(this.shopList)
     }).bind(this)
 
   }
@@ -164,45 +165,42 @@ export class shopping {
     this.formComplete = false
   }
 
+  cleanUpTransactionsToSave(transaction){
+    transaction = JSON.parse(JSON.stringify(transaction))
+    let outcome = this.getOutcome(transaction)
+    let next = transaction.next
+
+    if(next){
+      if(this.key == 'shopped'){
+        next[0].picked = {
+          _id:new Date().toJSON(),
+          basket:transaction.basketNumber,
+          repackQty:transaction.qty.to ? transaction.qty.to : transaction.qty.from,
+          matchType:outcome,
+          user:this.user,
+        }
+      } else if(this.key == 'remaining'){
+        let res4 = delete next[0].picked
+      } else if(this.key == 'lockdown'){
+        next[0].picked = {}
+      }
+    }
+
+    let res1 = delete transaction.outcome
+    let res2 = delete transaction.basketNumber
+    let res3 = delete transaction.image
+    transaction.next = next
+    return transaction
+  }
+
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
   saveShoppingResults(provided_transactions, key){
 
-    let transactions = provided_transactions.slice()
+    if(provided_transactions.length == 0) return Promise.resolve()
 
-    if(transactions.length == 0) return Promise.resolve()
+    let transactions = provided_transactions.map(this.cleanUpTransactionsToSave, {getOutcome: this.getOutcome, key:key})
 
-    for(var i = 0; i < transactions.length; i++){
-      let current_transaction = transactions[i]
-      let outcome = this.getOutcome(current_transaction)
-      let next = current_transaction.next
-
-      if(next){
-        if(key == 'shopped'){
-          next[0].picked = {
-            _id:new Date().toJSON(),
-            basket:current_transaction.basketNumber,
-            repackQty:current_transaction.qty.to ? current_transaction.qty.to : current_transaction.qty.from,
-            matchType:outcome,
-            user:this.user,
-          }
-        } else if(key == 'remaining'){
-          let res4 = delete next[0].picked
-          console.log("deleting picked:" + res4)
-        } else if(key == 'lockdown'){
-          next[0].picked = {}
-        }
-
-      }
-
-      let res1 = delete current_transaction.outcome
-
-      let res2 = delete current_transaction.basketNumber
-      let res3 = delete current_transaction.image
-      current_transaction.next = next
-
-      transactions[i] = current_transaction
-    }
     console.log("saving the following transactions:")
     console.log(transactions)
 
@@ -250,8 +248,9 @@ export class shopping {
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
       then(_=>{
         this.shoppingIndex += 1
-        this.formComplete = (this.shopList[this.shoppingIndex].basketNumber.length > 0) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].outcome) //if returning to a complete page, don't grey out the next/save button
+        this.formComplete = (this.shopList[this.shoppingIndex].basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].outcome) //if returning to a complete page, don't grey out the next/save button
         if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
+        console.log(this.shopList)
       }).bind(this)
     }
   }
@@ -262,7 +261,6 @@ export class shopping {
     if(this.shoppingIndex == 0) return
     this.shoppingIndex -= 1
     this.formComplete = true //you can't have left a screen if it wasn't complete
-
   }
 
   //will sve all fully shopped items, and unlock remaining ones
@@ -273,6 +271,7 @@ export class shopping {
       this.saveShoppingResults(remainingItems, 'remaining').then(_=>{
         this.refreshPended()
         this.resetShopper()
+        console.log(this.shopList)
       }).bind(this)
     }).bind(this) //previous results need a proper picked property
   }
@@ -283,7 +282,7 @@ export class shopping {
   shoppingOption(key){
     if(this.shopList[this.shoppingIndex].outcome[key]) return //don't let thme uncheck, because radio buttons
 
-    if(this.shopList[this.shoppingIndex].basketNumber.length > 0){
+    if(this.shopList[this.shoppingIndex].basketNumber.length > 1){
       console.log("getting here for some reason")
       this.formComplete = true;
     } else {
