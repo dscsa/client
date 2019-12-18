@@ -132,14 +132,16 @@ export class shopping {
         'slot_after':false,
         'missing':false,
       }
-      this.shopList[i].basketNumber = ''
+      this.shopList[i].basketNumber = this.shopList[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
       if(!(~this.uniqueDrugsInOrder.indexOf(this.shopList[i].drug.generic))) this.uniqueDrugsInOrder.push(this.shopList[i].drug.generic)
     }
-
+    console.log("me?")
     this.getImageURLS() //must use an async call to the db
     this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
+    console.log("you?")
   }
+
 
 
   //Display and set relavant variables to display a group
@@ -194,16 +196,10 @@ export class shopping {
       }
 
       let res1 = delete current_transaction.outcome
-      console.log("deleting outcome" + res1)
-      console.log(current_transaction.outcome)
-      let res2 = delete current_transaction.basketNumber
-      console.log("deleting basketnumber" + res2)
-      let res3 = delete current_transaction.image
-      console.log("deleting image" + res3)
-      current_transaction.next = next
 
-      console.log("stripped transaction")
-      console.log(current_transaction)
+      let res2 = delete current_transaction.basketNumber
+      let res3 = delete current_transaction.image
+      current_transaction.next = next
 
       transactions[i] = current_transaction
     }
@@ -288,6 +284,7 @@ export class shopping {
     if(this.shopList[this.shoppingIndex].outcome[key]) return //don't let thme uncheck, because radio buttons
 
     if(this.shopList[this.shoppingIndex].basketNumber.length > 0){
+      console.log("getting here for some reason")
       this.formComplete = true;
     } else {
       this.snackbar.show('Must enter basket number')
@@ -350,7 +347,7 @@ export class shopping {
     }).bind(this)
 
     for(var i = 0; i < this.shopList.length; i++){
-      this.db.drug.get(this.shopList[i].drug._id).then(drug => saveImgCallback(drug))
+      this.db.drug.get(this.shopList[i].drug._id).then(drug => saveImgCallback(drug)).catch(err=>console.log(err))
     }
   }
 

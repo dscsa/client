@@ -3810,13 +3810,14 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           'slot_after': false,
           'missing': false
         };
-        this.shopList[i].basketNumber = '';
+        this.shopList[i].basketNumber = this.shopList[i].next[0].pended.priority == true ? 'G' : 'R';
         if (!~this.uniqueDrugsInOrder.indexOf(this.shopList[i].drug.generic)) this.uniqueDrugsInOrder.push(this.shopList[i].drug.generic);
       }
-
+      console.log("me?");
       this.getImageURLS();
       this.noResults = this.term && !transactions.length;
       this.filter = {};
+      console.log("you?");
     };
 
     shopping.prototype.initializeShopper = function initializeShopper() {
@@ -3867,16 +3868,10 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         }
 
         var res1 = delete current_transaction.outcome;
-        console.log("deleting outcome" + res1);
-        console.log(current_transaction.outcome);
-        var res2 = delete current_transaction.basketNumber;
-        console.log("deleting basketnumber" + res2);
-        var res3 = delete current_transaction.image;
-        console.log("deleting image" + res3);
-        current_transaction.next = next;
 
-        console.log("stripped transaction");
-        console.log(current_transaction);
+        var res2 = delete current_transaction.basketNumber;
+        var res3 = delete current_transaction.image;
+        current_transaction.next = next;
 
         transactions[i] = current_transaction;
       }
@@ -3946,6 +3941,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       if (this.shopList[this.shoppingIndex].outcome[key]) return;
 
       if (this.shopList[this.shoppingIndex].basketNumber.length > 0) {
+        console.log("getting here for some reason");
         this.formComplete = true;
       } else {
         this.snackbar.show('Must enter basket number');
@@ -4002,6 +3998,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       for (var i = 0; i < this.shopList.length; i++) {
         this.db.drug.get(this.shopList[i].drug._id).then(function (drug) {
           return saveImgCallback(drug);
+        }).catch(function (err) {
+          return console.log(err);
         });
       }
     };
