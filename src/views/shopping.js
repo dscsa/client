@@ -47,7 +47,7 @@ export class shopping {
 
   //set this.pended appropriately, called at beginning, and any time we return to the order list (after completing or canceling shopping)
   refreshPended() {
-    this.db.transaction.query('pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
+    this.db.transaction.query('currently-pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
     .then(res => {
       this.pended = {}
       this.groupByPended(res.rows.map(row => row.doc))
@@ -68,7 +68,7 @@ export class shopping {
       this.pended[pendId].transactions = this.pended[pendId].transactions ? this.pended[pendId].transactions : []
       this.pended[pendId].transactions.push(transaction)
       this.pended[pendId].priority = transaction.next[0].pended.priority ? (transaction.next[0].pended.priority == true) : false
-      this.pended[pendId].locked = transaction.next[0].picked ? Object.keys(transaction.next[0].picked).length == 0 : false
+      this.pended[pendId].locked = transaction.next[0].picked && ! transaction.next[0].picked._id
     }
   }
 
