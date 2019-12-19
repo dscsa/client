@@ -71,7 +71,8 @@ export class shopping {
 
   //Given the pendedkey to identify the order, take all the items in that order
   //and display them one at a time for shopper.
-  //requires selecting the fitting transactions, and building the extraData array to accompany them
+  //requires selecting the right transactions, and creating the shopList array of object to store,
+  //for each transaction, the raw data item from the dB, as well as the extra info we need to track while the app is runnign
   selectGroup(isLocked, pendedKey) {
 
     //if(isLocked) return; //TODO uncommed this when we're passed initial testing
@@ -83,7 +84,7 @@ export class shopping {
     if(transactions.length == 0) return
     if (transactions) this.term = 'Pended '+pendedKey
 
-    this.buildShoppingData(transactions.sort(this.sortTransactionsForShopping))
+    this.prepShoppingData(transactions.sort(this.sortTransactionsForShopping))
 
     this.saveShoppingResults(this.shopList, 'lockdown').then(_=>{
       this.initializeShopper()
@@ -91,13 +92,14 @@ export class shopping {
 
   }
 
-  buildShoppingData(raw_transactions) {
-    console.log(raw_transactions)
-    this.shopList = [] //going to an array of object, where each object is {raw:{transaction}, extra:{extra_data}}
+  prepShoppingData(raw_transactions) {
+
+    this.shopList = [] //going to be an array of objects, where each object is {raw:{transaction}, extra:{extra_data}}
 
     for(var i = 0; i < raw_transactions.length; i++){
 
       var extra_data = {} //this will track info needed during the miniapp running, and which we'd need to massage later before saving
+
       extra_data.outcome = {
         'exact_match':false,
         'roughly_equal':false,
@@ -105,23 +107,22 @@ export class shopping {
         'slot_after':false,
         'missing':false,
       }
+
       extra_data.basketNumber = raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
       if(!(~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic))) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic)
 
-      var enriched_transaction = {
-        raw: raw_transactions[i],
-        extra: extra_data
-      }
-
-      this.shopList.push(enriched_transaction)
+      this.shopList.push({raw: raw_transactions[i],extra: extra_data})
     }
 
     this.getImageURLS() //must use an async call to the db
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
 
+    console.log("raw transactions:")
+    console.log(raw_transactions)
     console.log("shopping list:")
     console.log(this.shopList)
   }
+
 
   //Display and set relavant variables to display a group
   initializeShopper(){
@@ -135,13 +136,14 @@ export class shopping {
     }
   }
 
+
   //Reset variables that we don't want to perserve from one order to the next
   resetShopper(){
-    this.setNextToNext()
     this.uniqueDrugsInOrder = []
     this.orderSelectedToShop = false
     this.formComplete = false
   }
+
 
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
@@ -155,9 +157,7 @@ export class shopping {
     for(var i = 0; i < arr_enriched_transactions.length; i++){
 
       var reformated_transaction = arr_enriched_transactions[i].raw
-
       var outcome = this.getOutcome(arr_enriched_transactions[i].extra)
-
       let next = reformated_transaction.next
 
       if(next[0]){
@@ -169,7 +169,7 @@ export class shopping {
             matchType:outcome,
             user:this.user,
           }
-        } else if(key == 'remaining'){
+        } else if(key == 'unlock'){
           let res4 = delete next[0].picked
         } else if(key == 'lockdown'){
           next[0].picked = {}
@@ -177,7 +177,6 @@ export class shopping {
       }
 
       reformated_transaction.next = next
-
       transactions_to_save.push(reformated_transaction)
 
     }
@@ -185,22 +184,8 @@ export class shopping {
     console.log("saving these transactions")
     console.log(transactions_to_save)
 
-    return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("done saving" + JSON.stringify(res))).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+    return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res))).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
-
-  selectTerm(type, key) {
-    console.log('selectTerm', type, key)
-
-    this.setVisibleChecks(false) //reset selected qty back to 0
-    this.repacks = []  //empty and left over repacks
-
-    type == 'pended'
-      ? this.selectPended(key)
-      : this.selectInventory(type, key, 100)
-
-    this.router.navigate(`inventory?${type}=${key}`, {trigger:false})
-  }
-
 
 
 
@@ -209,12 +194,15 @@ export class shopping {
   moveShoppingForward(){
 
     if(this.shoppingIndex == this.shopList.length -1){ //then we're finished
+
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
       then(_=>{
         this.refreshPended()
         this.resetShopper()
       }).bind(this)
+
     } else {
+
       //if next one has the same drug , then pass the basket number forward
       if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
@@ -229,25 +217,26 @@ export class shopping {
         this.formComplete = (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
         if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
       }).bind(this)
+
     }
   }
 
-
   moveShoppingBackward(){
+    if(this.shoppingIndex == 0) return //shouldn't appear, but extra protection :)
+
     this.setNextToNext()
-    if(this.shoppingIndex == 0) return
     this.shoppingIndex -= 1
     this.formComplete = true //you can't have left a screen if it wasn't complete
   }
 
-  //will sve all fully shopped items, and unlock remaining ones
+  //will save all fully shopped items, and unlock remaining ones
   cancelShopping(){
     this.saveShoppingResults(this.shopList.slice(0,this.shoppingIndex), 'shopped').then(_=>{
-      this.saveShoppingResults(this.shopList.slice(this.shoppingIndex), 'remaining').then(_=>{
-        this.refreshPended()
+      this.saveShoppingResults(this.shopList.slice(this.shoppingIndex), 'unlock').then(_=>{
+        this.refreshPended() //recalculate in case there were changes, others picked orders, etc
         this.resetShopper()
       }).bind(this)
-    }).bind(this) //previous results need a proper picked property
+    }).bind(this)
   }
 
 
@@ -364,7 +353,6 @@ export class shopping {
   }
 
 
-
   //Currently sorts priority orders first, then ascending by group name
   sortOrders(arr){ //given array of orders, sort appropriately.
 
@@ -383,14 +371,11 @@ export class shopping {
     return arr
   }
 
-
-
 }
 
-//Allow user to search by pendId OR generic name
-//have priority and locked getting pushed up to save on code elsewhere
+//Allow user to search by pendId among all pended groups
+//also sorts by priority, then by group name in ascending order
 export class pendedFilterValueConverter {
-
   toView(pended = {}, term = ''){
     term = term.toLowerCase()
     let matches = [] //an array of arrays

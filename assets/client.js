@@ -3766,20 +3766,21 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       if (transactions.length == 0) return;
       if (transactions) this.term = 'Pended ' + pendedKey;
 
-      this.buildShoppingData(transactions.sort(this.sortTransactionsForShopping));
+      this.prepShoppingData(transactions.sort(this.sortTransactionsForShopping));
 
       this.saveShoppingResults(this.shopList, 'lockdown').then(function (_) {
         _this3.initializeShopper();
       }).bind(this);
     };
 
-    shopping.prototype.buildShoppingData = function buildShoppingData(raw_transactions) {
-      console.log(raw_transactions);
+    shopping.prototype.prepShoppingData = function prepShoppingData(raw_transactions) {
+
       this.shopList = [];
 
       for (var i = 0; i < raw_transactions.length; i++) {
 
         var extra_data = {};
+
         extra_data.outcome = {
           'exact_match': false,
           'roughly_equal': false,
@@ -3787,20 +3788,18 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           'slot_after': false,
           'missing': false
         };
+
         extra_data.basketNumber = raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R';
         if (!~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic)) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic);
 
-        var enriched_transaction = {
-          raw: raw_transactions[i],
-          extra: extra_data
-        };
-
-        this.shopList.push(enriched_transaction);
+        this.shopList.push({ raw: raw_transactions[i], extra: extra_data });
       }
 
       this.getImageURLS();
       this.filter = {};
 
+      console.log("raw transactions:");
+      console.log(raw_transactions);
       console.log("shopping list:");
       console.log(this.shopList);
     };
@@ -3817,7 +3816,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.resetShopper = function resetShopper() {
-      this.setNextToNext();
       this.uniqueDrugsInOrder = [];
       this.orderSelectedToShop = false;
       this.formComplete = false;
@@ -3833,9 +3831,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       for (var i = 0; i < arr_enriched_transactions.length; i++) {
 
         var reformated_transaction = arr_enriched_transactions[i].raw;
-
         var outcome = this.getOutcome(arr_enriched_transactions[i].extra);
-
         var next = reformated_transaction.next;
 
         if (next[0]) {
@@ -3847,7 +3843,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
               matchType: outcome,
               user: this.user
             };
-          } else if (key == 'remaining') {
+          } else if (key == 'unlock') {
             var res4 = delete next[0].picked;
           } else if (key == 'lockdown') {
             next[0].picked = {};
@@ -3855,7 +3851,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         }
 
         reformated_transaction.next = next;
-
         transactions_to_save.push(reformated_transaction);
       }
 
@@ -3863,27 +3858,17 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       console.log(transactions_to_save);
 
       return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-        return console.log("done saving" + JSON.stringify(res));
+        return console.log("results of saving" + JSON.stringify(res));
       }).catch(function (err) {
         return _this4.snackbar.error('Error removing inventory. Please reload and try again', err);
       });
-    };
-
-    shopping.prototype.selectTerm = function selectTerm(type, key) {
-      console.log('selectTerm', type, key);
-
-      this.setVisibleChecks(false);
-      this.repacks = [];
-
-      type == 'pended' ? this.selectPended(key) : this.selectInventory(type, key, 100);
-
-      this.router.navigate('inventory?' + type + '=' + key, { trigger: false });
     };
 
     shopping.prototype.moveShoppingForward = function moveShoppingForward() {
       var _this5 = this;
 
       if (this.shoppingIndex == this.shopList.length - 1) {
+
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
           _this5.refreshPended();
           _this5.resetShopper();
@@ -3904,8 +3889,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.moveShoppingBackward = function moveShoppingBackward() {
-      this.setNextToNext();
       if (this.shoppingIndex == 0) return;
+
+      this.setNextToNext();
       this.shoppingIndex -= 1;
       this.formComplete = true;
     };
@@ -3914,7 +3900,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       var _this6 = this;
 
       this.saveShoppingResults(this.shopList.slice(0, this.shoppingIndex), 'shopped').then(function (_) {
-        _this6.saveShoppingResults(_this6.shopList.slice(_this6.shoppingIndex), 'remaining').then(function (_) {
+        _this6.saveShoppingResults(_this6.shopList.slice(_this6.shoppingIndex), 'unlock').then(function (_) {
           _this6.refreshPended();
           _this6.resetShopper();
         }).bind(_this6);
