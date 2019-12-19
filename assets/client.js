@@ -3687,7 +3687,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.router = router;
       this.pended = {};
 
-      this.shopList = [];
+      this.shoppingTransactions = [];
+      this.extraShoppingData = [];
       this.shoppingIndex = -1;
       this.nextButtonText = '';
       this.orderSelectedToShop = false;
@@ -3728,7 +3729,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         _this2.groupByPended(res.rows.map(function (row) {
           return row.doc;
         }));
-        _this2.refreshPended();
       });
       this.pended = Object.assign({}, this.pended);
     };
@@ -3785,47 +3785,42 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       var transactions = this.pended[pendId].transactions;
 
-      if (transactions) this.term = 'Pended ' + pendedKey;
       if (transactions.length == 0) return;
+      if (transactions) this.term = 'Pended ' + pendedKey;
 
-      this.saveShoppingResults(transactions, 'lockdown').then(function (_) {
-        _this3.setShopList(transactions);
+      this.shoppingTransactions = transactions.sort(this.sortTransactionsForShopping);
+      this.extraShoppingData = [];
+      this.buildShoppingData();
+
+      this.saveShoppingResults(0, this.shoppingTransactions.length, 'lockdown').then(function (_) {
         _this3.initializeShopper();
-        console.log(_this3.shopList);
       }).bind(this);
     };
 
-    shopping.prototype.setShopList = function setShopList() {
-      var transactions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var type = arguments[1];
-      var limit = arguments[2];
+    shopping.prototype.buildShoppingData = function buildShoppingData() {
 
-
-      this.shopList = transactions.slice().sort(this.sortTransactionsForShopping);
-
-      for (var i = 0; i < this.shopList.length; i++) {
-        this.shopList[i].outcome = {
+      for (var i = 0; i < this.shoppingTransactions.length; i++) {
+        var itemExtraShoppingData = {};
+        itemExtraShoppingData.outcome = {
           'exact_match': false,
           'roughly_equal': false,
           'slot_before': false,
           'slot_after': false,
           'missing': false
         };
-        this.shopList[i].basketNumber = this.shopList[i].next[0].pended.priority == true ? 'G' : 'R';
-        if (!~this.uniqueDrugsInOrder.indexOf(this.shopList[i].drug.generic)) this.uniqueDrugsInOrder.push(this.shopList[i].drug.generic);
+        itemExtraShoppingData.basketNumber = this.shoppingTransactions[i].next[0].pended.priority == true ? 'G' : 'R';
+        if (!~this.uniqueDrugsInOrder.indexOf(this.shoppingTransactions[i].drug.generic)) this.uniqueDrugsInOrder.push(this.shoppingTransactions[i].drug.generic);
+        this.extraShoppingData.push(itemExtraShoppingData);
       }
-      console.log("me?");
       this.getImageURLS();
-      this.noResults = this.term && !transactions.length;
       this.filter = {};
-      console.log("you?");
     };
 
     shopping.prototype.initializeShopper = function initializeShopper() {
       this.shoppingIndex = 0;
       this.orderSelectedToShop = true;
 
-      if (this.shopList.length == 1) {
+      if (this.shoppingTransactions.length == 1) {
         this.setNextToSave();
       } else {
         this.setNextToNext();
@@ -3839,45 +3834,41 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.formComplete = false;
     };
 
-    shopping.prototype.cleanUpTransactionsToSave = function cleanUpTransactionsToSave(transaction) {
-      transaction = JSON.parse(JSON.stringify(transaction));
-      var outcome = this.getOutcome(transaction);
-      var next = transaction.next;
-
-      if (next) {
-        if (this.key == 'shopped') {
-          next[0].picked = {
-            _id: new Date().toJSON(),
-            basket: transaction.basketNumber,
-            repackQty: transaction.qty.to ? transaction.qty.to : transaction.qty.from,
-            matchType: outcome,
-            user: this.user
-          };
-        } else if (this.key == 'remaining') {
-          var res4 = delete next[0].picked;
-        } else if (this.key == 'lockdown') {
-          next[0].picked = {};
-        }
-      }
-
-      var res1 = delete transaction.outcome;
-      var res2 = delete transaction.basketNumber;
-      var res3 = delete transaction.image;
-      transaction.next = next;
-      return transaction;
-    };
-
-    shopping.prototype.saveShoppingResults = function saveShoppingResults(provided_transactions, key) {
+    shopping.prototype.saveShoppingResults = function saveShoppingResults(included_start_index, unincluded_end_index, key) {
       var _this4 = this;
 
-      if (provided_transactions.length == 0) return Promise.resolve();
+      var transactions_to_save = this.shoppingTransactions.slice(included_start_index, unincluded_end_index);
+      if (transactions_to_save.length == 0) return Promise.resolve();
 
-      var transactions = provided_transactions.map(this.cleanUpTransactionsToSave, { getOutcome: this.getOutcome, key: key });
+      for (var i = 0; i < transactions_to_save.length; i++) {
+        var outcome = this.getOutcome(this.extraShoppingData[i]);
 
-      console.log("saving the following transactions:");
-      console.log(transactions);
+        var next = transactions_to_save[i].next;
 
-      return this.db.transaction.bulkDocs(transactions).catch(function (err) {
+        if (next[0]) {
+          if (key == 'shopped') {
+            next[0].picked = {
+              _id: new Date().toJSON(),
+              basket: this.extraShoppingData[i].basketNumber,
+              repackQty: transactions_to_save[i].qty.to ? transactions_to_save[i].qty.to : transactions_to_save[i].qty.from,
+              matchType: outcome,
+              user: this.user
+            };
+          } else if (key == 'remaining') {
+            var res4 = delete next[0].picked;
+          } else if (key == 'lockdown') {
+            next[0].picked = {};
+          }
+        }
+
+        transactions_to_save[i].next = next;
+      }
+
+      console.log("saving these transactions");
+      console.log(transactions_to_save);
+      return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
+        return console.log("done saving" + JSON.stringify(res));
+      }).catch(function (err) {
         return _this4.snackbar.error('Error removing inventory. Please reload and try again', err);
       });
     };
@@ -3896,23 +3887,22 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.moveShoppingForward = function moveShoppingForward() {
       var _this5 = this;
 
-      if (this.shoppingIndex == this.shopList.length - 1) {
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
+      if (this.shoppingIndex == this.shoppingTransactions.length - 1) {
+        this.saveShoppingResults(this.shoppingIndex, this.shoppingIndex + 1, 'shopped').then(function (_) {
           _this5.refreshPended();
           _this5.resetShopper();
         }).bind(this);
       } else {
-        if (this.shopList[this.shoppingIndex].drug.generic == this.shopList[this.shoppingIndex + 1].drug.generic) {
-          this.shopList[this.shoppingIndex + 1].basketNumber = this.shopList[this.shoppingIndex].basketNumber;
+        if (this.shoppingTransactions[this.shoppingIndex].drug.generic == this.shoppingTransactions[this.shoppingIndex + 1].drug.generic) {
+          this.extraShoppingData[this.shoppingIndex + 1].basketNumber = this.extraShoppingData[this.shoppingIndex].basketNumber;
         } else {
           this.snackbar.show('Different drug name, enter new basket number');
         }
 
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
+        this.saveShoppingResults(this.shoppingIndex, this.shoppingIndex + 1, 'shopped').then(function (_) {
           _this5.shoppingIndex += 1;
-          _this5.formComplete = _this5.shopList[_this5.shoppingIndex].basketNumber.length > 1 && _this5.someOutcomeSelected(_this5.shopList[_this5.shoppingIndex].outcome);
-          if (_this5.shoppingIndex == _this5.shopList.length - 1) _this5.setNextToSave();
-          console.log(_this5.shopList);
+          _this5.formComplete = _this5.extraShoppingData[_this5.shoppingIndex].basketNumber.length > 1 && _this5.someOutcomeSelected(_this5.extraShoppingData[_this5.shoppingIndex].outcome);
+          if (_this5.shoppingIndex == _this5.shoppingTransactions.length - 1) _this5.setNextToSave();
         }).bind(this);
       }
     };
@@ -3927,33 +3917,29 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.cancelShopping = function cancelShopping() {
       var _this6 = this;
 
-      var shoppedItems = this.shopList.slice(0, this.shoppingIndex);
-      var remainingItems = this.shopList.slice(this.shoppingIndex);
-      this.saveShoppingResults(shoppedItems, 'shopped').then(function (_) {
-        _this6.saveShoppingResults(remainingItems, 'remaining').then(function (_) {
+      this.saveShoppingResults(0, this.shoppingIndex, 'shopped').then(function (_) {
+        _this6.saveShoppingResults(_this6.shoppingIndex, _this6.shoppingTransactions.length, 'remaining').then(function (_) {
           _this6.refreshPended();
           _this6.resetShopper();
-          console.log(_this6.shopList);
         }).bind(_this6);
       }).bind(this);
     };
 
     shopping.prototype.shoppingOption = function shoppingOption(key) {
-      if (this.shopList[this.shoppingIndex].outcome[key]) return;
+      if (this.extraShoppingData[this.shoppingIndex].outcome[key]) return;
 
-      if (this.shopList[this.shoppingIndex].basketNumber.length > 1) {
-        console.log("getting here for some reason");
+      if (this.extraShoppingData[this.shoppingIndex].basketNumber.length > 1) {
         this.formComplete = true;
       } else {
         this.snackbar.show('Must enter basket number');
         return;
       }
 
-      for (var outcome_option in this.shopList[this.shoppingIndex].outcome) {
+      for (var outcome_option in this.extraShoppingData[this.shoppingIndex].outcome) {
         if (outcome_option !== key) {
-          this.shopList[this.shoppingIndex].outcome[outcome_option] = false;
+          this.extraShoppingData[this.shoppingIndex].outcome[outcome_option] = false;
         } else {
-          this.shopList[this.shoppingIndex].outcome[outcome_option] = true;
+          this.extraShoppingData[this.shoppingIndex].outcome[outcome_option] = true;
         }
       }
     };
@@ -3991,13 +3977,13 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.getImageURLS = function getImageURLS() {
 
       var saveImgCallback = function (drug) {
-        for (var n = 0; n < this.shopList.length; n++) {
-          if (this.shopList[n].drug._id == drug._id) this.shopList[n].image = drug.image;
+        for (var n = 0; n < this.extraShoppingData.length; n++) {
+          if (this.shoppingTransactions[n].drug._id == drug._id) this.extraShoppingData[n].image = drug.image;
         }
       }.bind(this);
 
-      for (var i = 0; i < this.shopList.length; i++) {
-        this.db.drug.get(this.shopList[i].drug._id).then(function (drug) {
+      for (var i = 0; i < this.extraShoppingData.length; i++) {
+        this.db.drug.get(this.shoppingTransactions[i].drug._id).then(function (drug) {
           return saveImgCallback(drug);
         }).catch(function (err) {
           return console.log(err);
@@ -4021,10 +4007,10 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.nextButtonText = 'Next';
     };
 
-    shopping.prototype.getOutcome = function getOutcome(shoppedItem) {
+    shopping.prototype.getOutcome = function getOutcome(extraItemData) {
       var res = '';
-      for (var possibility in shoppedItem.outcome) {
-        if (shoppedItem.outcome[possibility]) res += possibility;
+      for (var possibility in extraItemData.outcome) {
+        if (extraItemData.outcome[possibility]) res += possibility;
       }
       return res;
     };
@@ -4087,4 +4073,4 @@ define('text!client/src/views/join.html', ['module'], function(module) { module.
 define('text!client/src/views/login.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/md-loading\"></require>\n  <require from=\"client/src/elems/form\"></require>\n  <section class=\"mdl-grid\" style=\"margin-top:30vh;\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle\" style=\"width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px\">\n      <md-input name = \"pro_phone\" value.bind=\"phone\" type=\"tel\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Phone</md-input>\n      <md-input name = \"pro_password\" value.bind=\"password\" type=\"password\" required minlength=\"4\">Password</md-input>\n      <md-button\n        name = \"pro_button\"\n        raised color form\n        click.delegate=\"login()\"\n        disabled.bind=\"disabled\"\n        style=\"padding-top:16px\">\n        Login\n      </md-button>\n      <md-loading value.bind=\"progress.docs_read/progress.doc_count * 100\"></md-loading>\n      <p class=\"mdl-color-text--grey-600\" style=\"margin-top:10px; height:20px; font-size:9px\">${ progress.percent } ${ loading }</p>\n    </form>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
 define('text!client/src/views/routes.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"mdl-layout mdl-js-layout mdl-layout--fixed-header\">\n    <header class=\"mdl-layout__header hide-when-printed\">\n      <div class=\"mdl-layout__header-row\">\n        <svg style=\"height:70%; margin-left:-60px\" id=\"Layer_1\" width=\"200\" version=\"1.1\" xmlns:x=\"&amp;ns_extend;\" xmlns:i=\"&amp;ns_ai;\" xmlns:graph=\"&amp;ns_graphs;\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 1920 737\" style=\"enable-background:new 0 0 1920 737;\" xml:space=\"preserve\">\n            <style type=\"text/css\">\n              .st0{fill:#3E4454;}\n              .st1{fill:#2291F8;}\n            </style>\n            <switch>\n              <foreignObject requiredExtensions=\"&amp;ns_ai;\" x=\"0\" y=\"0\" width=\"1\" height=\"1\">\n                <i:pgfref xlink:href=\"#adobe_illustrator_pgf\"></i:pgfref>\n              </foreignObject>\n              <g i:extraneous=\"self\">\n                <g>\n                  <g>\n                    <g>\n                      <path class=\"st0\" d=\"M936.21,505.42h-65.3c-15.02,0-29.12-6.14-37.71-16.43c-5.52-6.61-8.43-14.42-8.43-22.61V445.5            c0-7.72,6.26-13.99,13.99-13.99s13.99,6.26,13.99,13.99v20.88c0,1.57,0.65,3.15,1.93,4.68c2.58,3.09,8.2,6.39,16.24,6.39h65.3            c10.4,0,18.17-5.84,18.17-11.07v-3.65c0-50.36-26.7-62.73-60.5-78.39c-33.1-15.33-74.28-34.41-74.28-98.52v-3.65            c0-21.52,20.7-39.04,46.14-39.04h67.19c25.44,0,46.14,17.51,46.14,39.04v24.58c0,7.72-6.26,13.99-13.99,13.99            s-13.99-6.26-13.99-13.99v-24.58c0-5.22-7.77-11.07-18.17-11.07h-67.19c-10.4,0-18.17,5.84-18.17,11.07v3.65            c0,46.24,25.63,58.11,58.07,73.14c34.18,15.83,76.71,35.54,76.71,103.77v3.65C982.34,487.91,961.65,505.42,936.21,505.42z\"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1539.63,505.42h-31.75c-41.3,0-74.89-33.6-74.89-74.89V257.12c0-7.72,6.26-13.99,13.99-13.99            c7.72,0,13.99,6.26,13.99,13.99v173.41c0,25.87,21.05,46.92,46.92,46.92h31.75c25.87,0,46.92-21.05,46.92-46.92V257.12            c0-7.72,6.26-13.99,13.99-13.99c7.72,0,13.99,6.26,13.99,13.99v173.41C1614.52,471.83,1580.92,505.42,1539.63,505.42z\"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1083.31,507.71c-7.72,0-13.99-6.26-13.99-13.99v-237.5c0-7.72,6.26-13.99,13.99-13.99            c7.72,0,13.99,6.26,13.99,13.99v237.5C1097.3,501.45,1091.04,507.71,1083.31,507.71z\"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1200.89,507.71c-7.72,0-13.99-6.26-13.99-13.99v-236.6c0-7.72,6.26-13.99,13.99-13.99h90.93            c28.36,0,51.44,23.07,51.44,51.44v43.26c0,28.36-23.08,51.44-51.44,51.44h-76.95v104.45            C1214.88,501.45,1208.62,507.71,1200.89,507.71z M1214.88,361.3h76.95c12.94,0,23.47-10.53,23.47-23.47v-43.26            c0-12.94-10.53-23.47-23.47-23.47h-76.95V361.3z\"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1339.71,507.71c-4.83,0-9.53-2.51-12.12-6.99l-66.43-114.97c-3.86-6.69-1.57-15.24,5.11-19.11            c6.69-3.86,15.25-1.57,19.11,5.11l66.43,114.97c3.86,6.69,1.57,15.24-5.11,19.11C1344.49,507.1,1342.08,507.71,1339.71,507.71z            \"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1906.01,507.15c-7.72,0-13.99-6.26-13.99-13.99V315.99l-68.38,138.91c-2.35,4.78-7.22,7.81-12.55,7.81            c-5.33,0-10.19-3.03-12.55-7.81l-68.38-138.91v177.17c0,7.72-6.26,13.99-13.99,13.99c-7.72,0-13.99-6.26-13.99-13.99V255.92            c0-6.5,4.48-12.15,10.82-13.62c6.32-1.48,12.85,1.61,15.72,7.44l82.37,167.32l82.37-167.32c2.87-5.83,9.39-8.92,15.72-7.44            c6.33,1.47,10.82,7.12,10.82,13.62v237.24C1920,500.88,1913.74,507.15,1906.01,507.15z\"></path>\n                    </g>\n                  </g>\n                    <path class=\"st1\" d=\"M604.45,130.92L411.49,19.52C366.42-6.5,310.88-6.5,265.8,19.52L72.85,130.92C27.77,156.95,0,205.05,0,257.1        v222.8c0,52.05,27.77,100.15,72.85,126.18l192.95,111.4c45.08,26.03,100.62,26.03,145.69,0l192.95-111.4        c45.08-26.03,72.85-74.12,72.85-126.18V257.1C677.29,205.05,649.52,156.95,604.45,130.92z M568.58,406.37        c0,13-5.07,25.22-14.27,34.4c-9.18,9.17-21.37,14.21-34.34,14.21c-0.03,0-0.06,0-0.08,0l-13-0.02        c-88.13,0-132.33-40.27-175.08-79.21c-41.58-37.88-80.86-73.66-160.54-73.66h-13.94c-15.7,0-28.47,12.77-28.47,28.47v73.98        c0,19.7,16.03,35.73,35.73,35.73l154.58,0.17c59.34,0.06,111.39,47.64,111.39,101.83c0,30.81-25.07,55.87-55.88,55.87H302.6        c-30.81,0-55.87-25.07-55.87-55.87c0-0.35,0.02-0.7,0.05-1.04v-29.99c0-5.56,4.51-10.07,10.07-10.07        c5.56,0,10.07,4.51,10.07,10.07v30.93c0,0.31-0.01,0.63-0.04,0.94c0.45,19.31,16.3,34.89,35.72,34.89h72.09        c19.7,0,35.73-16.03,35.73-35.73c0-38.51-39.03-81.63-91.27-81.68l-154.57-0.17c-30.8,0-55.87-25.07-55.87-55.87v-73.98        c0-26.8,21.81-48.61,48.61-48.61h13.94c87.48,0,131.51,40.11,174.1,78.91c41.75,38.03,81.19,73.96,161.53,73.96l13.01,0.02        c0.02,0,0.03,0,0.05,0c7.6,0,14.73-2.95,20.11-8.32c5.39-5.38,8.35-12.53,8.35-20.15v-73.92c0-19.7-16.03-35.73-35.73-35.73        l-148.42-0.16c-54.49-0.06-117.84-44.55-117.84-101.83c0-30.81,25.07-55.87,55.88-55.87h72.09c30.81,0,55.88,25.07,55.88,55.87        c0,0.35-0.02,0.7-0.05,1.04v29.99c0,5.56-4.51,10.07-10.07,10.07s-10.07-4.51-10.07-10.07v-30.93c0-0.31,0.01-0.63,0.04-0.94        c-0.45-19.31-16.3-34.89-35.72-34.89h-72.09c-19.7,0-35.73,16.03-35.73,35.73c0,45.2,53.46,81.64,97.72,81.69l148.41,0.16        c30.8,0,55.86,25.07,55.86,55.87V406.37z\"></path>\n                  </g>\n                </g>\n            </switch>\n        </svg>\n        <span class=\"mdl-layout-title\"></span>\n        <!-- Add spacer, to align navigation to the right -->\n        <div class=\"mdl-layout-spacer\"></div>\n        <nav class=\"mdl-navigation\">\n          <a repeat.for=\"route of routes\" show.bind=\"route.isVisible\" class=\"mdl-navigation__link ${route.isActive ? 'mdl-navigation__link--current' : ''}\" href.bind=\"route.href\" style=\"\">\n            ${route.title}\n          </a>\n        </nav>\n      </div>\n    </header>\n    <main class=\"mdl-layout__content\">\n      <!-- http://stackoverflow.com/questions/33636796/chrome-safari-not-filling-100-height-of-flex-parent -->\n      <router-view style=\"display:block;\"></router-view>\n    </main>\n  </div>\n</template>\n"; });
 define('text!client/src/views/shipments.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from='client/src/elems/md-table'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-switch\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-menu\"></require>\n  <require from=\"client/src/elems/md-autocomplete\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/form\"></require>\n  <md-drawer autofocus>\n    <md-input\n      name = \"pro_filter_input\"\n      value.bind=\"filter\"\n      autoselect\n      style=\"padding:0 8px; width:auto\">\n      Filter shipments ${ role.accounts } you\n    </md-input>\n    <!-- <md-switch\n      checked.one-way=\"role.account == 'to'\"\n      click.delegate=\"swapRole()\"\n      style=\"margin:-33px 0 0 185px;\">\n    </md-switch> -->\n    <a\n      name = \"new_shipment\"\n      if.bind=\" ! filter\"\n      class=\"mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(null, true)\">\n      <div class=\"mdl-typography--title\">New Shipment</div>\n      or add inventory\n    </a>\n    <a\n      name = \"pro_shipments\"\n      repeat.for=\"shipment of shipments[role.shipments] | shipmentFilter:filter\"\n      class=\"mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(shipment, true)\">\n      <div class=\"mdl-typography--title\" innerHtml.bind=\"shipment.account[role.accounts].name | bold:filter\"></div>\n      <div style=\"font-size:12px\" innerHtml.bind=\"shipment._id.slice(11, 21)+', '+(shipment.tracking.slice(-6) || shipment.tracking) | bold:filter\"></div>\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--3-col full-height\">\n      <div class=\"mdl-card__title\" style=\"display:block;\">\n        <div class=\"mdl-card__title-text\" style=\"text-transform:capitalize\">\n          ${ shipment._rev ? 'Shipment '+(shipment.tracking.slice(-6) || shipment.tracking) : 'New Shipment '+role.accounts+' You' }\n        </div>\n        <div style=\"margin-top:3px; margin-bottom:-25px\">\n          <strong>${transactions.length}</strong> items worth\n          <strong>$${ transactions | value:0:transactions.length }</strong>\n        </div>\n      </div>\n      <div class=\"mdl-card__supporting-text\" style=\"font-size:16px;\">\n        <md-select\n          if.bind=\"role.shipments == 'from' || shipment._rev\"\n          change.delegate=\"setCheckboxes()\"\n          style=\"width:100%\"\n          value.bind=\"shipment\"\n          default.bind=\"{tracking:'New Tracking #', account:{from:account, to:account}}\"\n          options.bind=\"shipments[role.shipments]\"\n          property=\"tracking\">\n          Tracking #\n        </md-select>\n        <md-input\n          name = \"pro_tracking_input\"\n          if.bind=\"role.shipments == 'to' && ! shipment._rev\"\n          focusin.delegate=\"setCheckboxes()\"\n          autofocus\n          required\n          style=\"width:100%\"\n          pattern=\"[a-zA-Z\\d]{6,}\"\n          value.bind=\"shipment.tracking\">\n          Tracking #\n        </md-input>\n        <md-select\n          name = \"pro_from_option\"\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.from\"\n          options.bind=\"(role.accounts == 'to' || shipment._rev) ? [shipment.account.from] : accounts[role.accounts]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.accounts == 'to'\">\n          <!-- disabled is for highlighting the current role -->\n          From\n        </md-select>\n        <md-select\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.to\"\n          options.bind=\"(role.accounts == 'from' || shipment._rev) ? [shipment.account.to] : accounts[role.accounts]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.accounts == 'from'\">\n          <!-- disabled is for highlighting the current role -->\n          To\n        </md-select>\n        <md-select\n          style=\"width:32%;\"\n          value.bind=\"shipment.status\"\n          options.bind=\"stati\"\n          disabled.bind=\"! shipment._rev\">\n          Status\n        </md-select>\n        <md-input\n          type=\"date\"\n          style=\"width:64%; margin-top:20px\"\n          value.bind=\"shipment[shipment.status+'At']\"\n          disabled.bind=\"! shipment._rev\"\n          input.delegate=\"saveShipment() & debounce:1500\">\n        </md-input>\n        <!-- <md-select\n          style=\"width:100%\"\n          value.bind=\"attachment.name\"\n          change.delegate=\"getAttachment()\"\n          options.bind=\"['','Shipping Label', 'Manifest']\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Attachment\n        </md-select>\n        <md-button color\n          if.bind=\"attachment.name\"\n          click.delegate=\"upload.click()\"\n          style=\"position:absolute; right:18px; margin-top:-48px; height:24px; line-height:24px\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Upload\n        </md-button>\n        <input\n          type=\"file\"\n          ref=\"upload\"\n          change.delegate=\"setAttachment(upload.files[0])\"\n          style=\"display:none\">\n        <div if.bind=\"attachment.url\" style=\"width: 100%; padding-top:56px; padding-bottom:129%; position:relative;\">\n          <embed\n            src.bind=\"attachment.url\"\n            type.bind=\"attachment.type\"\n            style=\"position:absolute; height:100%; width:100%; top:0; bottom:0\">\n        </div> -->\n        <!-- The above padding / positioning keeps a constant aspect ratio for the embeded pdf  -->\n      </div>\n      <div class=\"mdl-card__actions\">\n        <md-button color raised form\n          name = \"pro_create_button\"\n          ref=\"newShipmentButton\"\n          style=\"width:100%\"\n          show.bind=\"shipment._id == shipmentId && ! shipment._rev\"\n          click.delegate=\"createShipment()\">\n          New Shipment Of ${ diffs.length || 'No' } Items\n        </md-button>\n        <md-button color raised\n          ref=\"moveItemsButton\"\n          style=\"width:100%\"\n          show.bind=\"shipment._id != shipmentId\"\n          disabled.bind=\"! diffs.length || ! shipment.account.to._id\"\n          click.delegate=\"shipment._rev ? moveTransactionsToShipment(shipment) : createShipment()\">\n          Move ${ diffs.length } Items\n        </md-button>\n      </div>\n    </form>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--9-col full-height\">\n      <!-- disabled.bind=\"! searchReady\" -->\n      <md-autocomplete\n        name = \"pro_searchbar\"\n        value.bind=\"term\"\n        input.delegate=\"search() & debounce:50\"\n        keydown.delegate=\"autocompleteShortcuts($event) & debounce:50\"\n        style=\"margin:0px 24px\">\n        <table md-table>\n          <tr\n            repeat.for=\"drug of drugs\"\n            click.delegate=\"addTransaction(drug)\"\n            class=\"${ drug._id == $parent.drug._id && 'is-selected'}\">\n            <td innerHTML.bind=\"drug.generic | bold:term\" style=\"white-space:normal;\" class=\"mdl-data-table__cell--non-numeric\" ></td>\n            <td innerHTML.bind=\"drug.labeler\" style=\"width:1%\" class=\"mdl-data-table__cell--non-numeric\" ></td>\n            <td innerHTML.bind=\"drug._id + (drug.pkg ? '-'+drug.pkg : '')\" style=\"width:1%\" class=\"mdl-data-table__cell--non-numeric\" ></td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <md-menu style=\"position:absolute; z-index:2; top:10px; right:5px;\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          show.bind=\"transactions.length\"\n          click.delegate=\"exportCSV()\">\n          Export CSV\n        </li>\n        <li\n          show.bind=\"!transactions.length\"\n          disabled>\n          Export CSV\n        </li>\n        <li\n          show.bind=\"role.accounts != 'to' || shipment._rev\"\n          click.delegate=\"$file.click()\">\n          Import CSV\n        </li>\n        <li\n          show.bind=\"role.accounts == 'to' && ! shipment._rev\"\n          disabled>\n          Import CSV\n        </li>\n      </md-menu>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div class=\"table-wrap\">\n        <table md-table>\n          <thead>\n            <tr>\n              <th style=\"width:56px\"></th>\n              <th class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0\">Drug</th>\n              <th style=\"width:100px;\" class=\"mdl-data-table__cell--non-numeric\">Ndc</th>\n              <th style=\"width:40px; padding-left:0; padding-right:0px\">Value</th>\n              <th style=\"text-align:left; width:60px;\">Exp</th>\n              <th style=\"text-align:left; width:60px\">Qty</th>\n              <!-- 84px account for the 24px of padding-right on index.html's css td:last-child -->\n              <th style=\"text-align:left; width:84px;\">Bin</th>\n            </tr>\n          </thead>\n          <tbody>\n            <tr style=\"padding-top:7px;\" name = \"pro_transaction\" repeat.for=\"transaction of transactions\" input.delegate=\"saveTransaction(transaction) & debounce:1500\">\n              <td style=\"padding:0 0 0 8px\">\n                <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->\n                <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->\n                <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use next[0].disposed directly rather than isChecked because autocheck coerces isChecked to be out of sync -->\n                <md-checkbox\n                  name = \"pro_checkbox\"\n                  click.delegate=\"manualCheck($index)\"\n                  disabled.bind=\" ! moveItemsButton.offsetParent && ! newShipmentButton.offsetParent && transaction.isChecked && transaction.next[0]\"\n                  checked.bind=\"transaction.isChecked\">\n                </md-checkbox>\n\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0; overflow:hidden\">\n                ${ transaction.drug.generic & oneTime }\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"padding:0\">\n                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') & oneTime }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction | value:2:transaction.qty[role.shipments] }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.exp[role.accounts] | date & oneTime }\n                <md-input\n                  name = \"pro_exp\"\n                  id.bind=\"'exp_'+$index\"\n                  required\n                  keydown.delegate=\"expShortcutsKeydown($event, $index)\"\n                  input.trigger=\"expShortcutsInput($index)\"\n                  disabled.bind=\"transaction.isChecked && transaction.next[0]\"\n                  pattern=\"(0?[1-9]|1[012])/(1\\d|2\\d)\"\n                  value.bind=\"transaction.exp[role.shipments] | date\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.qty[role.accounts] & oneTime }\n                  <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->\n                  <!-- keyup rather than keydown because we want the new quantity not the old one -->\n                  <md-input\n                    name = \"pro_qty\"\n                    id.bind=\"'qty_'+$index\"\n                    required\n                    keydown.delegate=\"qtyShortcutsKeydown($event, $index)\"\n                    input.trigger=\"qtyShortcutsInput($event, $index)\"\n                    disabled.bind=\"transaction.isChecked && transaction.next[0]\"\n                    type=\"number\"\n                    value.bind=\"transaction.qty[role.shipments] | number\"\n                    style=\"width:40px; margin-bottom:-8px\"\n                    max.bind=\"3000\"\n                    placeholder>\n                  </md-input>\n              </td>\n              <!-- disable if not checked because we don't want a red required field unless we are keeping the item -->\n              <td style=\"padding:0\">\n                <md-input\n                  name = \"pro_bin\"\n                  id.bind=\"'bin_'+$index\"\n                  required\n                  disabled.bind=\" ! transaction.isChecked || transaction.next[0] || shipment._id != shipmentId\"\n                  keyup.delegate=\"setBin(transaction) & debounce:1500\"\n                  keydown.delegate=\"binShortcuts($event, $index)\"\n                  pattern.bind=\"shipment._rev ? '[A-Za-z][0-6]\\\\d{2}' : '[A-Za-z][0-6]?\\\\d{2}'\"\n                  maxlength.bind=\"4\"\n                  value.bind=\"transaction.bin\"\n                  style=\"width:40px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px\"\n                  placeholder>\n                </md-input>\n              </td>\n            </tr>\n          </tbody>\n        </table>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n    <dialog ref=\"dialog\" class=\"mdl-dialog\">\n    <h4 class=\"mdl-dialog__title\">Drug Warning</h4>\n    <div class=\"mdl-dialog__content\">${drug.warning}</div>\n    <div class=\"mdl-dialog__actions\">\n      <md-button click.delegate=\"dialogClose()\">Close</md-button>\n    </div>\n  </dialog>\n  </section>\n</template>\n"; });
-define('text!client/src/views/shopping.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from='client/src/elems/md-table'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-switch\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-autocomplete\"></require>\n  <require from=\"client/src/elems/md-menu\"></require>\n  <require from=\"client/src/elems/form\"></require>\n\n  <style>\n    .mdl-button:hover { background-color:initial }\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n  </style>\n\n  <section class=\"mdl-grid au-animate\">\n\n    <div if.bind = \"!orderSelectedToShop\">\n      <md-input\n        autoselect\n        value.bind=\"pendedFilter\"\n        style=\"padding-bottom:30px; width:auto\">\n        Select Group\n      </md-input>\n\n      <div repeat.for=\"pend of pended | pendedFilter:pendedFilter\">\n        <div\n          click.delegate=\"selectGroup(pend.locked, pend.key)\"\n          class=\"mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}\"\n          style=\"font-size:30px; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding-bottom:50px\">\n          ${pend.key}\n        </div>\n      </div>\n    </div>\n\n    <div style=\"width:100%; height:80%; position:relative\" if.bind = \"orderSelectedToShop\">\n\n      <div style=\"width:100%; display:inline-block; padding-bottom:25px\">\n         <md-input  type=\"tel\" style=\"float:left; font-size:20px\" value.bind = \"shopList[shoppingIndex].basketNumber\">Basket Number</md-input>\n         <md-button style=\"float:right\" color click.delegate=\"cancelShopping()\">Cancel</md-button>\n      </div>\n\n      <div style=\"width:100%;display:inline-block; text-align:center; padding-bottom:20px\">\n        <div style=\"float:left; width:100%\">\n          <div style=\"font-size:30px; padding-bottom:30px\">${shopList[shoppingIndex].drug.generic}</div>\n          <div style=\"font-size:30px; padding-bottom:30px\" if.bind = \"shopList[shoppingIndex].drug.brand.length > 0\">${shopList[shoppingIndex].drug.brand}</div>\n        </div>\n        <div style=\"float:left; text-align:left; width:50%; vertical-align:middle\">\n          <div style=\"font-size:55px; padding-bottom:30px\">${shopList[shoppingIndex].bin.length == 3 ? shopList[shoppingIndex].bin : (shopList[shoppingIndex].bin.slice(0,3) + '-' + shopList[shoppingIndex].bin.slice(3,4))}</div>\n          <div style=\"font-size:20px;padding-bottom:7px\"><b>Qty:</b> ${shopList[shoppingIndex].qty.to}</div>\n          <div style=\"font-size:20px\"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].exp.to)}</div>\n        </div>\n        <img\n          style=\"height:50%;width:50%;float:right\"\n          if.bind=\"shopList[shoppingIndex].image\"\n          src.bind=\"shopList[shoppingIndex].image\"/>\n      </div>\n\n      <div style=\"width:100%;display:inline-block; padding-bottom:20px\">\n        <div style=\"width:50%; float:left\">\n          <div style=\"font-size:20px; padding-bottom:10px\"><b>Group:</b> ${shopList[shoppingIndex].next[0].pended.group}</div>\n          <div style=\"font-size:20px; padding-bottom:10px\">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>\n          <div style=\"font-size:20px; padding-bottom:10px\">Drug <b>${uniqueDrugsInOrder.indexOf(shopList[shoppingIndex].drug.generic)+1}</b> of <b>${uniqueDrugsInOrder.length}</b></div>\n        </div>\n        <div style=\"width:50%; float:right\">\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"exact_match\" click.delegate=\"shoppingOption('exact_match')\" checked.bind=\"shopList[shoppingIndex].outcome.exact_match\">Exact Match</md-checkbox></div>\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"roughly_equal\" click.delegate=\"shoppingOption('roughly_equal')\" checked.bind=\"shopList[shoppingIndex].outcome.roughly_equal\">+/-3 Qty</md-checkbox></div>\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"outcomeThree\" click.delegate=\"shoppingOption('slot_before')\" checked.bind=\"shopList[shoppingIndex].outcome.slot_before\">Slot Before</md-checkbox></div>\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"outcomeFour\" click.delegate=\"shoppingOption('slot_after')\" checked.bind=\"shopList[shoppingIndex].outcome.slot_after\">Slot After</md-checkbox></div>\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"outcomeFive\" click.delegate=\"shoppingOption('missing')\" checked.bind=\"shopList[shoppingIndex].outcome.missing\">Missing</md-checkbox></div>\n        </div>\n      </div>\n\n      <div style=\"width:100%;display:inline-block; bottom:0\">\n        <div style=\"float:left\">\n          <md-button style=\"float:left\" color raised show.bind=\"shoppingIndex>0\"click.delegate=\"moveShoppingBackward()\">Back</md-button>\n        </div>\n\n        <div style=\"float:right\" >\n          <md-button style=\"float:right\" disabled.bind=\"!formComplete\" color raised click.delegate=\"moveShoppingForward()\">${nextButtonText}</md-button>\n        </div>\n      </div>\n\n      <div>\n        <md-snackbar ref=\"snackbar\"></md-snackbar>\n      </div>\n\n    </div>\n\n  </section>\n</template>\n"; });
+define('text!client/src/views/shopping.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from='client/src/elems/md-table'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-switch\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-autocomplete\"></require>\n  <require from=\"client/src/elems/md-menu\"></require>\n  <require from=\"client/src/elems/form\"></require>\n\n  <style>\n    .mdl-button:hover { background-color:initial }\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n  </style>\n\n  <section class=\"mdl-grid au-animate\">\n\n    <div if.bind = \"!orderSelectedToShop\">\n      <md-input\n        autoselect\n        value.bind=\"pendedFilter\"\n        style=\"padding-bottom:30px; width:auto\">\n        Select Group\n      </md-input>\n\n      <div repeat.for=\"pend of pended | pendedFilter:pendedFilter\">\n        <div\n          click.delegate=\"selectGroup(pend.locked, pend.key)\"\n          class=\"mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}\"\n          style=\"font-size:30px; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding-bottom:50px\">\n          ${pend.key}\n        </div>\n      </div>\n    </div>\n\n    <div style=\"width:100%; height:80%; position:relative\" if.bind = \"orderSelectedToShop\">\n\n      <div style=\"width:100%; display:inline-block; padding-bottom:25px\">\n         <md-input  type=\"tel\" style=\"float:left; font-size:20px\" value.bind = \"extraShoppingData[shoppingIndex].basketNumber\">Basket Number</md-input>\n         <md-button style=\"float:right\" color click.delegate=\"cancelShopping()\">Cancel</md-button>\n      </div>\n\n      <div style=\"width:100%;display:inline-block; text-align:center; padding-bottom:20px\">\n        <div style=\"float:left; width:100%\">\n          <div style=\"font-size:30px; padding-bottom:30px\">${shoppingTransactions[shoppingIndex].drug.generic}</div>\n          <div style=\"font-size:30px; padding-bottom:30px\" if.bind = \"shoppingTransactions[shoppingIndex].drug.brand.length > 0\">${shoppingTransactions[shoppingIndex].drug.brand}</div>\n        </div>\n        <div style=\"float:left; text-align:left; width:50%; vertical-align:middle\">\n          <div style=\"font-size:55px; padding-bottom:30px\">${shoppingTransactions[shoppingIndex].bin.length == 3 ? shoppingTransactions[shoppingIndex].bin : (shoppingTransactions[shoppingIndex].bin.slice(0,3) + '-' + shoppingTransactions[shoppingIndex].bin.slice(3,4))}</div>\n          <div style=\"font-size:20px;padding-bottom:7px\"><b>Qty:</b> ${shoppingTransactions[shoppingIndex].qty.to}</div>\n          <div style=\"font-size:20px\"><b>Exp:</b> ${formatExp(shoppingTransactions[shoppingIndex].exp.to)}</div>\n        </div>\n        <img\n          style=\"height:50%;width:50%;float:right\"\n          if.bind=\"extraShoppingData[shoppingIndex].image\"\n          src.bind=\"extraShoppingData[shoppingIndex].image\"/>\n      </div>\n\n      <div style=\"width:100%;display:inline-block; padding-bottom:20px\">\n        <div style=\"width:50%; float:left\">\n          <div style=\"font-size:20px; padding-bottom:10px\"><b>Group:</b> ${shoppingTransactions[shoppingIndex].next[0].pended.group}</div>\n          <div style=\"font-size:20px; padding-bottom:10px\">Item <b>${shoppingIndex+1}</b> of <b>${shoppingTransactions.length}</b></div>\n          <div style=\"font-size:20px; padding-bottom:10px\">Drug <b>${uniqueDrugsInOrder.indexOf(shoppingTransactions[shoppingIndex].drug.generic)+1}</b> of <b>${uniqueDrugsInOrder.length}</b></div>\n        </div>\n        <div style=\"width:50%; float:right\">\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"exact_match\" click.delegate=\"shoppingOption('exact_match')\" checked.bind=\"extraShoppingData[shoppingIndex].outcome.exact_match\">Exact Match</md-checkbox></div>\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"roughly_equal\" click.delegate=\"shoppingOption('roughly_equal')\" checked.bind=\"extraShoppingData[shoppingIndex].outcome.roughly_equal\">+/-3 Qty</md-checkbox></div>\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"outcomeThree\" click.delegate=\"shoppingOption('slot_before')\" checked.bind=\"extraShoppingData[shoppingIndex].outcome.slot_before\">Slot Before</md-checkbox></div>\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"outcomeFour\" click.delegate=\"shoppingOption('slot_after')\" checked.bind=\"extraShoppingData[shoppingIndex].outcome.slot_after\">Slot After</md-checkbox></div>\n          <div><md-checkbox style= \"font-size:25px; padding-bottom:7px\" name = \"outcomeFive\" click.delegate=\"shoppingOption('missing')\" checked.bind=\"extraShoppingData[shoppingIndex].outcome.missing\">Missing</md-checkbox></div>\n        </div>\n      </div>\n\n      <div style=\"width:100%;display:inline-block; bottom:0\">\n        <div style=\"float:left\">\n          <md-button style=\"float:left\" color raised show.bind=\"shoppingIndex>0\"click.delegate=\"moveShoppingBackward()\">Back</md-button>\n        </div>\n\n        <div style=\"float:right\" >\n          <md-button style=\"float:right\" disabled.bind=\"!formComplete\" color raised click.delegate=\"moveShoppingForward()\">${nextButtonText}</md-button>\n        </div>\n      </div>\n\n      <div>\n        <md-snackbar ref=\"snackbar\"></md-snackbar>\n      </div>\n\n    </div>\n\n  </section>\n</template>\n"; });

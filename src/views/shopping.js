@@ -12,7 +12,8 @@ export class shopping {
     this.router  = router
     this.pended = {}
 
-    this.shopList = [] //an expanded version of this.transactions from inventory.js tracks outcome of shopping each item
+    this.shoppingTransactions = [] //an expanded version of this.transactions from inventory.js tracks outcome of shopping each item
+    this.extraShoppingData = []
     this.shoppingIndex = -1
     this.nextButtonText = '' //This can become 'Finish' or other more intuitive values depending on events
     this.orderSelectedToShop = false
@@ -51,7 +52,7 @@ export class shopping {
     .then(res => {
       this.pended = {}
       this.groupByPended(res.rows.map(row => row.doc))
-      this.refreshPended() //not needed on development without this on production, blank drawer on inital load
+      //this.refreshPended() //not needed on development without this on production, blank drawer on inital load
     })
     this.pended = Object.assign({}, this.pended)
   }
@@ -105,15 +106,17 @@ export class shopping {
 
     const [pendId, label] = pendedKey.split(': ')
 
-    var transactions = this.pended[pendId].transactions
+    let transactions = this.pended[pendId].transactions //this is the array of transactions as they come straight out of the DB
 
-    if (transactions) this.term = 'Pended '+pendedKey
     if(transactions.length == 0) return
+    if (transactions) this.term = 'Pended '+pendedKey
 
-    this.saveShoppingResults(transactions, 'lockdown').then(_=>{
-      this.setShopList(transactions)
+    this.shoppingTransactions = transactions.sort(this.sortTransactionsForShopping)
+    this.extraShoppingData = []
+    this.buildShoppingData()
+
+    this.saveShoppingResults(0,this.shoppingTransactions.length, 'lockdown').then(_=>{
       this.initializeShopper()
-      console.log(this.shopList)
     }).bind(this)
 
   }
@@ -121,26 +124,24 @@ export class shopping {
   //Slightly enhance the transactions to track info about the shopping app
   //and allow for easy reference / cleaner code between view/controller
   //processed and removed appropriately before saving
-  setShopList(transactions = [], type, limit) {
+  buildShoppingData() {
 
-    this.shopList = transactions.slice().sort(this.sortTransactionsForShopping)
-
-    for(var i = 0; i < this.shopList.length; i++){
-      this.shopList[i].outcome = {
+    for(var i = 0; i < this.shoppingTransactions.length; i++){
+      var itemExtraShoppingData = {} //this will track info needed during the miniapp running, and which we'd need to massage later before saving
+      itemExtraShoppingData.outcome = {
         'exact_match':false,
         'roughly_equal':false,
         'slot_before':false,
         'slot_after':false,
         'missing':false,
       }
-      this.shopList[i].basketNumber = this.shopList[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
-      if(!(~this.uniqueDrugsInOrder.indexOf(this.shopList[i].drug.generic))) this.uniqueDrugsInOrder.push(this.shopList[i].drug.generic)
+      itemExtraShoppingData.basketNumber = this.shoppingTransactions[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
+      if(!(~this.uniqueDrugsInOrder.indexOf(this.shoppingTransactions[i].drug.generic))) this.uniqueDrugsInOrder.push(this.shoppingTransactions[i].drug.generic)
+      this.extraShoppingData.push(itemExtraShoppingData)
     }
-    console.log("me?")
     this.getImageURLS() //must use an async call to the db
-    this.noResults    = this.term && ! transactions.length
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
-    console.log("you?")
+
   }
 
 
@@ -150,7 +151,7 @@ export class shopping {
     this.shoppingIndex = 0
     this.orderSelectedToShop = true
 
-    if(this.shopList.length == 1){
+    if(this.shoppingTransactions.length == 1){
       this.setNextToSave()
     } else {
       this.setNextToNext()
@@ -165,46 +166,40 @@ export class shopping {
     this.formComplete = false
   }
 
-  cleanUpTransactionsToSave(transaction){
-    transaction = JSON.parse(JSON.stringify(transaction))
-    let outcome = this.getOutcome(transaction)
-    let next = transaction.next
-
-    if(next){
-      if(this.key == 'shopped'){
-        next[0].picked = {
-          _id:new Date().toJSON(),
-          basket:transaction.basketNumber,
-          repackQty:transaction.qty.to ? transaction.qty.to : transaction.qty.from,
-          matchType:outcome,
-          user:this.user,
-        }
-      } else if(this.key == 'remaining'){
-        let res4 = delete next[0].picked
-      } else if(this.key == 'lockdown'){
-        next[0].picked = {}
-      }
-    }
-
-    let res1 = delete transaction.outcome
-    let res2 = delete transaction.basketNumber
-    let res3 = delete transaction.image
-    transaction.next = next
-    return transaction
-  }
-
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
-  saveShoppingResults(provided_transactions, key){
+  saveShoppingResults(included_start_index, unincluded_end_index, key){
+    var transactions_to_save = this.shoppingTransactions.slice(included_start_index, unincluded_end_index)
+    if(transactions_to_save.length == 0) return Promise.resolve()
 
-    if(provided_transactions.length == 0) return Promise.resolve()
+    //now need to enrich transactions_to_save with formatted data
+    for(var i = 0; i < transactions_to_save.length; i++){
+      var outcome = this.getOutcome(this.extraShoppingData[i])
 
-    let transactions = provided_transactions.map(this.cleanUpTransactionsToSave, {getOutcome: this.getOutcome, key:key})
+      let next = transactions_to_save[i].next
 
-    console.log("saving the following transactions:")
-    console.log(transactions)
+      if(next[0]){
+        if(key == 'shopped'){
+          next[0].picked = {
+            _id:new Date().toJSON(),
+            basket:this.extraShoppingData[i].basketNumber,
+            repackQty:transactions_to_save[i].qty.to ? transactions_to_save[i].qty.to : transactions_to_save[i].qty.from,
+            matchType:outcome,
+            user:this.user,
+          }
+        } else if(key == 'remaining'){
+          let res4 = delete next[0].picked
+        } else if(key == 'lockdown'){
+          next[0].picked = {}
+        }
+      }
 
-    return this.db.transaction.bulkDocs(transactions).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+      transactions_to_save[i].next = next
+    }
+
+    console.log("saving these transactions")
+    console.log(transactions_to_save)
+    return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("done saving" + JSON.stringify(res))).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
   selectTerm(type, key) {
@@ -227,30 +222,26 @@ export class shopping {
 
   moveShoppingForward(){
 
-
-    if(this.shoppingIndex == this.shopList.length -1){ //then we're finished
-      //this.saveShoppingResults(this.shopList,"shopped") //this would save at the end of the full shoplist
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
+    if(this.shoppingIndex == this.shoppingTransactions.length -1){ //then we're finished
+      this.saveShoppingResults(this.shoppingIndex, this.shoppingIndex+1, 'shopped').
       then(_=>{
         this.refreshPended()
         this.resetShopper()
       }).bind(this)
     } else {
       //if next one has the same drug , then pass the basket number forward
-      if(this.shopList[this.shoppingIndex].drug.generic == this.shopList[this.shoppingIndex + 1].drug.generic){
-        this.shopList[this.shoppingIndex + 1].basketNumber = this.shopList[this.shoppingIndex].basketNumber
+      if(this.shoppingTransactions[this.shoppingIndex].drug.generic == this.shoppingTransactions[this.shoppingIndex + 1].drug.generic){
+        this.extraShoppingData[this.shoppingIndex + 1].basketNumber = this.extraShoppingData[this.shoppingIndex].basketNumber
       } else {
         this.snackbar.show('Different drug name, enter new basket number')
       }
 
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
-
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
+      this.saveShoppingResults(this.shoppingIndex, this.shoppingIndex+1, 'shopped').
       then(_=>{
         this.shoppingIndex += 1
-        this.formComplete = (this.shopList[this.shoppingIndex].basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].outcome) //if returning to a complete page, don't grey out the next/save button
-        if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
-        console.log(this.shopList)
+        this.formComplete = (this.extraShoppingData[this.shoppingIndex].basketNumber.length > 1) && this.someOutcomeSelected(this.extraShoppingData[this.shoppingIndex].outcome) //if returning to a complete page, don't grey out the next/save button
+        if(this.shoppingIndex == this.shoppingTransactions.length -1) this.setNextToSave()
       }).bind(this)
     }
   }
@@ -265,13 +256,10 @@ export class shopping {
 
   //will sve all fully shopped items, and unlock remaining ones
   cancelShopping(){
-    let shoppedItems = this.shopList.slice(0,this.shoppingIndex)
-    let remainingItems = this.shopList.slice(this.shoppingIndex)
-    this.saveShoppingResults(shoppedItems, 'shopped').then(_=>{
-      this.saveShoppingResults(remainingItems, 'remaining').then(_=>{
+    this.saveShoppingResults(0, this.shoppingIndex, 'shopped').then(_=>{
+      this.saveShoppingResults(this.shoppingIndex, this.shoppingTransactions.length, 'remaining').then(_=>{
         this.refreshPended()
         this.resetShopper()
-        console.log(this.shopList)
       }).bind(this)
     }).bind(this) //previous results need a proper picked property
   }
@@ -280,21 +268,20 @@ export class shopping {
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
   shoppingOption(key){
-    if(this.shopList[this.shoppingIndex].outcome[key]) return //don't let thme uncheck, because radio buttons
+    if(this.extraShoppingData[this.shoppingIndex].outcome[key]) return //don't let thme uncheck, because radio buttons
 
-    if(this.shopList[this.shoppingIndex].basketNumber.length > 1){
-      console.log("getting here for some reason")
+    if(this.extraShoppingData[this.shoppingIndex].basketNumber.length > 1){
       this.formComplete = true;
     } else {
       this.snackbar.show('Must enter basket number')
       return
     }
 
-    for(let outcome_option in this.shopList[this.shoppingIndex].outcome){
+    for(let outcome_option in this.extraShoppingData[this.shoppingIndex].outcome){
       if(outcome_option !== key){
-         this.shopList[this.shoppingIndex].outcome[outcome_option] = false
+         this.extraShoppingData[this.shoppingIndex].outcome[outcome_option] = false
       } else {
-        this.shopList[this.shoppingIndex].outcome[outcome_option] = true
+        this.extraShoppingData[this.shoppingIndex].outcome[outcome_option] = true
       }
     }
 
@@ -340,13 +327,13 @@ export class shopping {
   getImageURLS(){
 
     let saveImgCallback = (function(drug){
-      for(var n = 0; n < this.shopList.length; n++){
-        if(this.shopList[n].drug._id == drug._id) this.shopList[n].image = drug.image
+      for(var n = 0; n < this.extraShoppingData.length; n++){
+        if(this.shoppingTransactions[n].drug._id == drug._id) this.extraShoppingData[n].image = drug.image
       }
     }).bind(this)
 
-    for(var i = 0; i < this.shopList.length; i++){
-      this.db.drug.get(this.shopList[i].drug._id).then(drug => saveImgCallback(drug)).catch(err=>console.log(err))
+    for(var i = 0; i < this.extraShoppingData.length; i++){
+      this.db.drug.get(this.shoppingTransactions[i].drug._id).then(drug => saveImgCallback(drug)).catch(err=>console.log(err))
     }
   }
 
@@ -368,10 +355,10 @@ export class shopping {
   }
 
   //shoppedItem is just a transaction with an extra property for outcome
-  getOutcome(shoppedItem){
+  getOutcome(extraItemData){
     let res = ''
-    for(let possibility in shoppedItem.outcome){
-      if(shoppedItem.outcome[possibility]) res += possibility //this could be made to append into a magic string if there's multiple conditions we want to allow
+    for(let possibility in extraItemData.outcome){
+      if(extraItemData.outcome[possibility]) res += possibility //this could be made to append into a magic string if there's multiple conditions we want to allow
     }
     return res
   }
