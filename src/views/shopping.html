@@ -40,38 +40,38 @@
     <div style="width:100%; height:80%; position:relative" if.bind = "orderSelectedToShop">
 
       <div style="width:100%; display:inline-block; padding-bottom:25px">
-         <md-input  type="tel" style="float:left; font-size:20px" value.bind = "extraShoppingData[shoppingIndex].basketNumber">Basket Number</md-input>
+         <md-input  type="tel" style="float:left; font-size:20px" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input>
          <md-button style="float:right" color click.delegate="cancelShopping()">Cancel</md-button>
       </div>
 
       <div style="width:100%;display:inline-block; text-align:center; padding-bottom:20px">
         <div style="float:left; width:100%">
-          <div style="font-size:30px; padding-bottom:30px">${shoppingTransactions[shoppingIndex].drug.generic}</div>
-          <div style="font-size:30px; padding-bottom:30px" if.bind = "shoppingTransactions[shoppingIndex].drug.brand.length > 0">${shoppingTransactions[shoppingIndex].drug.brand}</div>
+          <div style="font-size:30px; padding-bottom:30px">${shopList[shoppingIndex].raw.drug.generic}</div>
+          <div style="font-size:30px; padding-bottom:30px" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
         </div>
         <div style="float:left; text-align:left; width:50%; vertical-align:middle">
-          <div style="font-size:55px; padding-bottom:30px">${shoppingTransactions[shoppingIndex].bin.length == 3 ? shoppingTransactions[shoppingIndex].bin : (shoppingTransactions[shoppingIndex].bin.slice(0,3) + '-' + shoppingTransactions[shoppingIndex].bin.slice(3,4))}</div>
-          <div style="font-size:20px;padding-bottom:7px"><b>Qty:</b> ${shoppingTransactions[shoppingIndex].qty.to}</div>
-          <div style="font-size:20px"><b>Exp:</b> ${formatExp(shoppingTransactions[shoppingIndex].exp.to)}</div>
+          <div style="font-size:55px; padding-bottom:30px">${shopLit[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</div>
+          <div style="font-size:20px;padding-bottom:7px"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
+          <div style="font-size:20px"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
         </div>
         <img
           style="height:50%;width:50%;float:right"
-          if.bind="extraShoppingData[shoppingIndex].image"
-          src.bind="extraShoppingData[shoppingIndex].image"/>
+          if.bind="shopList[shoppingIndex].extra.image"
+          src.bind="shopList[shoppingIndex].extra.image"/>
       </div>
 
       <div style="width:100%;display:inline-block; padding-bottom:20px">
         <div style="width:50%; float:left">
-          <div style="font-size:20px; padding-bottom:10px"><b>Group:</b> ${shoppingTransactions[shoppingIndex].next[0].pended.group}</div>
-          <div style="font-size:20px; padding-bottom:10px">Item <b>${shoppingIndex+1}</b> of <b>${shoppingTransactions.length}</b></div>
-          <div style="font-size:20px; padding-bottom:10px">Drug <b>${uniqueDrugsInOrder.indexOf(shoppingTransactions[shoppingIndex].drug.generic)+1}</b> of <b>${uniqueDrugsInOrder.length}</b></div>
+          <div style="font-size:20px; padding-bottom:10px"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+          <div style="font-size:20px; padding-bottom:10px">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
+          <div style="font-size:20px; padding-bottom:10px">Drug <b>${uniqueDrugsInOrder.indexOf(shopList[shoppingIndex].raw.drug.generic)+1}</b> of <b>${uniqueDrugsInOrder.length}</b></div>
         </div>
         <div style="width:50%; float:right">
-          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "exact_match" click.delegate="shoppingOption('exact_match')" checked.bind="extraShoppingData[shoppingIndex].outcome.exact_match">Exact Match</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "roughly_equal" click.delegate="shoppingOption('roughly_equal')" checked.bind="extraShoppingData[shoppingIndex].outcome.roughly_equal">+/-3 Qty</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "outcomeThree" click.delegate="shoppingOption('slot_before')" checked.bind="extraShoppingData[shoppingIndex].outcome.slot_before">Slot Before</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "outcomeFour" click.delegate="shoppingOption('slot_after')" checked.bind="extraShoppingData[shoppingIndex].outcome.slot_after">Slot After</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "outcomeFive" click.delegate="shoppingOption('missing')" checked.bind="extraShoppingData[shoppingIndex].outcome.missing">Missing</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "exact_match" click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "roughly_equal" click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/-3 Qty</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "outcomeThree" click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "outcomeFour" click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:7px" name = "outcomeFive" click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</md-checkbox></div>
         </div>
       </div>
 
