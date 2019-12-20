@@ -28,6 +28,8 @@ export class shopping {
 
   activate(params) {
 
+    //console.log($('.mdl-layout mdl-js-layout mdl-layout--fixed-header'))
+
     this.db.user.session.get().then(session => {
 
       this.user    = { _id:session._id}
