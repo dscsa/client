@@ -2053,7 +2053,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           return _this2.account = account;
         });
 
-        _this2.db.transaction.query('currently-pended-by-name-bin', { include_docs: true, startkey: [_this2.account._id], endkey: [_this2.account._id, {}] }).then(function (res) {
+        _this2.db.transaction.query('currently-pended-by-group-bin', { include_docs: true, startkey: [_this2.account._id], endkey: [_this2.account._id, {}] }).then(function (res) {
           _this2.setPended(res.rows.map(function (row) {
             return row.doc;
           }));
@@ -3719,7 +3719,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.refreshPended = function refreshPended() {
       var _this2 = this;
 
-      this.db.transaction.query('currently-pended-by-name-bin', { include_docs: true, startkey: [this.account._id], endkey: [this.account._id, {}] }).then(function (res) {
+      this.db.transaction.query('currently-pended-by-group-bin', { include_docs: true, startkey: [this.account._id], endkey: [this.account._id, {}] }).then(function (res) {
         _this2.pended = {};
         _this2.groupByPended(res.rows.map(function (row) {
           return row.doc;
