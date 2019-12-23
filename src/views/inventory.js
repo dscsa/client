@@ -75,6 +75,7 @@ export class inventory {
 
   clickOnGroupInDrawer(event,pendId){
     if(event.target.tagName == "SPAN"){
+      if(this.shoppingSyncPended[pendId].locked) return;
       this.togglePriority(pendId)
     } else {
       this.selectTerm('pended', pendId)
@@ -315,6 +316,8 @@ export class inventory {
   }
 
   refreshPended() {
+    console.log(this.pended)
+
     //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
     //to trigger and update using Object.assign rather than just adding a property
     this.pended = Object.assign({}, this.pended)
@@ -381,7 +384,8 @@ export class inventory {
     let repackQty = pendQty
     let pended_obj = {_id:new Date().toJSON(), user:this.user, repackQty: repackQty, group: group}
     let pendId = group// this.getPendId({next})
-
+    console.log("pending inventory:")
+    console.log(pended_obj)
     this.updateSelected(transaction => {
       let next = transaction.next ? transaction.next : [{}]
       if(next.length == 0){
@@ -436,9 +440,11 @@ export class inventory {
       //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
       let pendId  = this.getPendId(transaction)
       let pendQty = this.getPendQty(transaction)
+      console.log("pendid" + pendId)
+      console.log("pendqty" + pendQty)
       let generic = transaction.drug.generic
       let label   = generic + (pendQty ? ' - '+pendQty : '')
-
+      console.log(transaction)
       this.pended[pendId] = this.pended[pendId] || {}
       this.pended[pendId][generic] = this.pended[pendId][generic] || {label, transactions:[]}
       this.pended[pendId][generic].transactions.push(transaction)
@@ -447,14 +453,10 @@ export class inventory {
       this.shoppingSyncPended[pendId][label] = this.shoppingSyncPended[pendId][label] || {}
       this.shoppingSyncPended[pendId][label].drawerCheck = typeof transaction.next[0].pended.priority == 'undefined' ? true: (transaction.next[0].pended.priority != null)
       this.shoppingSyncPended[pendId][label].locked = transaction.next[0].picked ? true : false;
+      this.shoppingSyncPended[pendId].locked =  transaction.next[0].picked ? true : false;
       this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false; //this will read false for limbo-ed transaction where priority = null, but thats fine.
 
     }
-  }
-
-  getPriority(group){
-    console.log("3_")
-    console.log(group)
   }
 
   unsetPended(transaction) {
@@ -636,7 +638,7 @@ export class inventory {
 
     //getPendId from a transaction
     if (transaction) {
-      const pendId  = transaction.next[0] ? transaction.next[0].pended.group : null
+      const pendId  = transaction.next[0] ? transaction.next[0].pended.repackQty : null
       return pendId ? pendId : undefined
     }
 

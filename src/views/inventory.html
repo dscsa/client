@@ -36,6 +36,7 @@
           name = "groupPrioritySwitch"
           style="float:right"
           checked.one-way="shoppingSyncPended[pend.key].priority"
+          disabled.bind = "shoppingSyncPended[pend.key].locked"
           click.trigger="clickOnGroupInDrawer($event,pend.key)">
         </md-switch>
       </div>
