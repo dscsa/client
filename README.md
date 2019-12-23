@@ -82,7 +82,7 @@ sudo apt-get update && sudo apt-get install couchdb # select option for standalo
 # goto <elastic-ip>:5984/_utils.  CouchDB should have been started automatically
 enable CORS
 [fabric] request_timeout 120000
-[compactions] _defaults [{db_fragmentation, "5%"}, {view_fragmentation, "5%"},{from, "00:00"}, {to, "04:00"}]
+[compactions] _default [{db_fragmentation, "5%"}, {view_fragmentation, "5%"},{from, "00:00"}, {to, "04:00"}]
 [couch_httpd_auth] "timeout" is the same as other instances if using a Load Balancer
 [couch_httpd_auth] "secret" is the same as other instances if using a Load Balancer #this will log you out
 
@@ -134,14 +134,9 @@ sudo su couchdb
 ulimit -n #this should display same number as above e.g., 20000
 exit
 
-###
-
-Add Elastic IP to instance. Important to do before replication otherwise "Use Local Existing DB" option will map to wrong IP
-Add EC2 Console, Register New Instance with Load Balancer's "Target Group"
-
 ####
 
-# We need to do 2x Replications to get Two-Way syncing
+# We need to do 2x Replications to get Two-Way syncing for Each of the 6 Databases
 New Server: In fauxton, setup replication for all 6 databases: _users, user, account, shipment, drug, transaction
 Old Server: In fauxton, setup replication for all 6 databases: _users, user, account, shipment, drug, transaction
 
@@ -155,7 +150,15 @@ Remote existing database
 http:<PRIVATE IP>:5984/<DB> # NOTE THIS IS EC2's PRIVATE IP (RARELY USED), NOT ELASTIC IP OR PUBLIC IP WHICH WILL NOT WORK
 User name and password
 
+Pro Tip: Once one db replication is setup, goto Actions > Wrench (Edit Replication) > Change name to new DB > Erase Document Id
+And it will clone the replication document for the new database rather than entering all the information for the 6 databases
+
 #Continuous
+
+###
+
+Add EC2 Console, Register New Instance with Load Balancer's "Target Group"
+
 
 ####
 
