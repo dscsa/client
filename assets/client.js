@@ -3759,6 +3759,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.selectGroup = function selectGroup(isLocked, pendedKey) {
       var _this3 = this;
 
+      if (isLocked) return;
       var _pendedKey$split = pendedKey.split(': '),
           pendId = _pendedKey$split[0],
           label = _pendedKey$split[1];
