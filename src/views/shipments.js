@@ -59,7 +59,14 @@ export class shipments {
 
         this.accounts  = {
           from:[''].concat(senderAccounts
-          .map(({doc}) => {
+          .map((account) => {
+            var doc = account.doc
+
+            if ( ! doc) {
+              console.error('doc property is not set', account, senderAccounts)
+              return {}
+            }
+
             this.ordered[doc._id] = doc.ordered
             return map.from[doc._id] = {_id:doc._id, name:doc.name}
           })
