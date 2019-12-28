@@ -47,7 +47,7 @@
           name="pro_pended_items"
           class="mdl-navigation__link ${ term == 'Pended '+pend.key+': '+pendedDrug.val.label ? 'mdl-navigation__link--current' : ''}"
           click.delegate="clickOnTransactionInDrawer(false,$event,pend.key,pendedDrug.val.label)"
-          style="font-size:12px; display:inline-block; cursor:pointer; padding:1px 0 1px 8px; line-height:18px">
+          style="font-size:12px; display:inline-block; width:100%; cursor:pointer; padding:1px 0 1px 8px; line-height:18px">
           <md-checkbox
             name = "transactionDrawerCheckbox"
             style="display:inline-block"
