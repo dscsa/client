@@ -559,7 +559,7 @@ export class inventory {
         shipment:{_id:this.account._id},
         bin:repack.bin,
         drug:this.repacks.drug,
-        next:next
+        next:[]
       }
 
       console.log("nd then")
