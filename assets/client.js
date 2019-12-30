@@ -2559,7 +2559,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           shipment: { _id: this.account._id },
           bin: repack.bin,
           drug: this.repacks.drug,
-          next: next
+          next: []
         };
 
         console.log("nd then");
