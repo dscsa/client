@@ -2441,8 +2441,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         var transaction = _ref3;
 
-        if (transaction.next[0].picked ? transaction.next[0].picked._id : false) continue;
-
         var pendId = this.getPendId(transaction);
         var pendQty = this.getPendQty(transaction);
         console.log("pendid" + pendId);
