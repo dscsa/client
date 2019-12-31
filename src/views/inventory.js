@@ -100,11 +100,11 @@ export class inventory {
     this.shoppingSyncPended[pendId][label].drawerCheck = !this.shoppingSyncPended[pendId][label].drawerCheck
 
     let temp_transactions = this.extractTransactions(pendId, label) //this is an array in case multiple generics
-    console.log(temp_transactions)
+    //console.log(temp_transactions)
 
     for(let i = 0; i < temp_transactions.length; i++){
       temp_transactions[i].next[0].pended.priority = this.shoppingSyncPended[pendId][label].drawerCheck ? false : null;
-      console.log(temp_transactions[i])
+      //console.log(temp_transactions[i])
     }
 
     return this.db.transaction.bulkDocs(temp_transactions)
@@ -128,7 +128,7 @@ export class inventory {
   }
 
   toggleCheck(transaction) {
-    console.log('toggleCheck transaction',  transaction)
+    //console.log('toggleCheck transaction',  transaction)
     this.setCheck(transaction, ! transaction.isChecked)
   }
 
@@ -233,12 +233,12 @@ export class inventory {
   }
 
   extractTransactions(pendId, label){
-    console.log("1_")
+    //console.log("1_")
     let transactions = Object.values(this.pended[pendId] || {}).reduce((arr, pend) => {
          return ((! label || pend.label == label)) ? arr.concat(pend.transactions) : arr
     }, [])
-    console.log("2_")
-    console.log(transactions)
+    //console.log("2_")
+    //console.log(transactions)
     return transactions
   }
 
@@ -316,7 +316,7 @@ export class inventory {
   }
 
   refreshPended() {
-    console.log(this.pended)
+    //console.log(this.pended)
 
     //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
     //to trigger and update using Object.assign rather than just adding a property
@@ -359,8 +359,8 @@ export class inventory {
   unpendInventory() {
     const term = this.repacks.drug.generic
     this.updateSelected(transaction => {
-      console.log(transaction)
-      console.log("UP")
+      //console.log(transaction)
+      //console.log("UP")
       let next = transaction.next
       if(next[0] && next[0].pended){
        delete next[0].pended
@@ -434,17 +434,17 @@ export class inventory {
   setPended(transactions) {
 
     for (let transaction of transactions) {
-      //skipped picked transactions
-      if(transaction.next[0].picked ? transaction.next[0].picked._id : false) continue
+      //skipped picked transactions ACTUALLY NO, we used to, but commented out. Keeping her in case
+      //of change of mind 12/31/19
+      //if(transaction.next[0].picked ? transaction.next[0].picked._id : false) continue
 
       //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
       let pendId  = this.getPendId(transaction)
       let pendQty = this.getPendQty(transaction)
-      console.log("pendid" + pendId)
-      console.log("pendqty" + pendQty)
+
       let generic = transaction.drug.generic
       let label   = generic + (pendQty ? ' - '+pendQty : '')
-      console.log(transaction)
+
       this.pended[pendId] = this.pended[pendId] || {}
       this.pended[pendId][generic] = this.pended[pendId][generic] || {label, transactions:[]}
       this.pended[pendId][generic].transactions.push(transaction)
@@ -453,10 +453,13 @@ export class inventory {
       this.shoppingSyncPended[pendId][label] = this.shoppingSyncPended[pendId][label] || {}
       this.shoppingSyncPended[pendId][label].drawerCheck = typeof transaction.next[0].pended.priority == 'undefined' ? true: (transaction.next[0].pended.priority != null)
       this.shoppingSyncPended[pendId][label].locked = transaction.next[0].picked ? true : false;
+      this.shoppingSyncPended[pendId][label].basketFilled = transaction.next[0].picked ? (transaction.next[0].picked._id ? true : false)  : false
+      this.shoppingSyncPended[pendId][label].basketNotFilled = !this.shoppingSyncPended[pendId][label].basketFilled
       this.shoppingSyncPended[pendId].locked =  transaction.next[0].picked ? true : false;
       this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false; //this will read false for limbo-ed transaction where priority = null, but thats fine.
-
     }
+    console.log(this.shoppingSyncPended)
+    console.log(this.pended)
   }
 
   unsetPended(transaction) {
@@ -529,8 +532,7 @@ export class inventory {
 
     let newTransactions = [],
         createdAt = new Date().toJSON()
-    console.log("BELOW")
-    console.log(next)
+
     //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
     //and negative excess (repack has more quantity than bins) is disallowed by html5 validation
     //because we don't know where the extra pills came from.  If 0 still keep record in case we need to
@@ -562,8 +564,7 @@ export class inventory {
         next:[]
       }
 
-      console.log("nd then")
-      console.log(newTransaction)
+
 
       //Only add to display if we are not in pended screen
       //if pended we don't want it to appear
@@ -1022,7 +1023,7 @@ export class inventoryFilterValueConverter {
   }
 }
 
-//Allow user to search by pendId OR generic name
+//Allow user to search by pendId OR generic name OR picked bin
 export class pendedFilterValueConverter {
   toView(pended = {}, term = ''){
     term = term.toLowerCase()
@@ -1032,6 +1033,24 @@ export class pendedFilterValueConverter {
         matches.unshift({key:pendId, val:pended[pendId]})
         continue
       }
+
+      //search by basket
+
+      let basketMatches = {}
+
+      for(let generic in pended[pendId]){
+        let transactions = pended[pendId][generic].transactions
+        for(var i = 0; i < transactions.length; i++){
+          if(transactions[i].next[0].picked && transactions[i].next[0].picked._id && ~ transactions[i].next[0].picked.basket.toLowerCase().indexOf(term)){
+            basketMatches[generic] = pended[pendId][generic]
+          }
+        }
+      }
+
+      if (Object.keys(basketMatches).length)
+        matches.unshift({key:pendId, val:basketMatches})
+
+        //search by generic
 
       let genericMatches = {}
 

@@ -232,7 +232,7 @@ export class shopping {
   }
 
   //will save all fully shopped items, and unlock remaining ones
-  cancelShopping(){
+  pauseShopping(){
     this.saveShoppingResults(this.shopList.slice(0,this.shoppingIndex), 'shopped').then(_=>{
       this.saveShoppingResults(this.shopList.slice(this.shoppingIndex), 'unlock').then(_=>{
         this.refreshPended() //recalculate in case there were changes, others picked orders, etc
