@@ -58,7 +58,7 @@
           </md-checkbox>
           <div
           style="display:inline-block; padding-right:10px"
-
+          <!-- problem here is that if some of the generics are shopped, but not all, then this breaks -->
             if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketFilled"><b>${(pendedDrug.val.transactions[0].next[0].picked ? pendedDrug.val.transactions[0].next[0].picked.basket : '')}</b></div>
           ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
         </div>
