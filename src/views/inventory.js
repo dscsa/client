@@ -1041,7 +1041,7 @@ export class pendedFilterValueConverter {
       for(let generic in pended[pendId]){
         let transactions = pended[pendId][generic].transactions
         for(var i = 0; i < transactions.length; i++){
-          if(transactions[i].next[0].picked && transactions[i].next[0].picked._id && ~ transactions[i].next[0].picked.basket.toLowerCase().indexOf(term)){
+          if(transactions[i].next[0].picked && transactions[i].next[0].picked.basket && ~ transactions[i].next[0].picked.basket.toLowerCase().indexOf(term)){
             basketMatches[generic] = pended[pendId][generic]
           }
         }
