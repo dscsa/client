@@ -77,7 +77,7 @@ export class shopping {
   //for each transaction, the raw data item from the dB, as well as the extra info we need to track while the app is runnign
   selectGroup(isLocked, pendedKey) {
 
-    if(isLocked) return; //TODO uncommed this when we're passed initial testing
+  //  if(isLocked) return; //TODO uncommed this when we're passed initial testing
 
     const [pendId, label] = pendedKey.split(': ')
 
