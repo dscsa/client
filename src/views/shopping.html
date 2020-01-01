@@ -70,10 +70,10 @@
           <div style="font-size:20px; line-height:25px; padding-bottom:10px">Drug <b>${uniqueDrugsInOrder.indexOf(shopList[shoppingIndex].raw.drug.generic)+1}</b> of <b>${uniqueDrugsInOrder.length}</b></div>
         </div>
         <div style="width:50%; float:right">
-          <div><md-checkbox style= "font-size:25px; padding-bottom:9px" name = "exact_match" click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:9px" name = "roughly_equal" click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/-3 Qty</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:9px" name = "outcomeThree" click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:9px" name = "outcomeFour" click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "exact_match" click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "roughly_equal" click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/-3 Qty</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeThree" click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</md-checkbox></div>
+          <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeFour" click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</md-checkbox></div>
           <div><md-checkbox style= "font-size:25px;" name = "outcomeFive" click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</md-checkbox></div>
         </div>
       </div>
