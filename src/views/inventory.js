@@ -450,16 +450,23 @@ export class inventory {
       this.pended[pendId][generic].transactions.push(transaction)
 
       this.shoppingSyncPended[pendId] = this.shoppingSyncPended[pendId] || {}
+      this.shoppingSyncPended[pendId].locked =  transaction.next[0].picked ? true : false;
+      this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false; //this will read false for limbo-ed transaction where priority = null, but thats fine.
       this.shoppingSyncPended[pendId][label] = this.shoppingSyncPended[pendId][label] || {}
       this.shoppingSyncPended[pendId][label].drawerCheck = typeof transaction.next[0].pended.priority == 'undefined' ? true: (transaction.next[0].pended.priority != null)
       this.shoppingSyncPended[pendId][label].locked = transaction.next[0].picked ? true : false;
-      this.shoppingSyncPended[pendId][label].basketFilled = transaction.next[0].picked ? (transaction.next[0].picked._id ? true : false)  : false
-      this.shoppingSyncPended[pendId][label].basketNotFilled = !this.shoppingSyncPended[pendId][label].basketFilled
-      this.shoppingSyncPended[pendId].locked =  transaction.next[0].picked ? true : false;
-      this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false; //this will read false for limbo-ed transaction where priority = null, but thats fine.
+
+      let basketFound = transaction.next[0].picked ? (transaction.next[0].picked.basket ? true : false)  : false
+      this.shoppingSyncPended[pendId][label].basketInfo = this.shoppingSyncPended[pendId][label].basketInfo || {}
+      this.shoppingSyncPended[pendId][label].basketInfo.found = this.shoppingSyncPended[pendId][label].basketInfo.found ? this.shoppingSyncPended[pendId][label].basketInfo.found : basketFound
+      this.shoppingSyncPended[pendId][label].basketInfo.notFound = this.shoppingSyncPended[pendId][label].basketInfo.notFound ? this.shoppingSyncPended[pendId][label].basketInfo.notFound : !basketFound
+      this.shoppingSyncPended[pendId][label].basketInfo.basket = this.shoppingSyncPended[pendId][label].basketInfo.basket ? this.shoppingSyncPended[pendId][label].basketInfo.basket : (basketFound ? transaction.next[0].picked.basket  : null )
+
     }
+
     console.log(this.shoppingSyncPended)
     console.log(this.pended)
+
   }
 
   unsetPended(transaction) {

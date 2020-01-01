@@ -49,7 +49,7 @@
           click.delegate="clickOnTransactionInDrawer(false,$event,pend.key,pendedDrug.val.label)"
           style="font-size:12px; display:inline-block; width:100%; cursor:pointer; padding:1px 0 1px 8px; line-height:18px">
           <md-checkbox
-            if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketNotFilled"
+            if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.notFound"
             name = "transactionDrawerCheckbox"
             style="display:inline-block"
             disabled.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].locked"
@@ -57,9 +57,7 @@
             checked.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].drawerCheck" >
           </md-checkbox>
           <div
-          style="display:inline-block; padding-right:10px"
-          <!-- problem here is that if some of the generics are shopped, but not all, then this breaks -->
-            if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketFilled"><b>${(pendedDrug.val.transactions[0].next[0].picked ? pendedDrug.val.transactions[0].next[0].picked.basket : '')}</b></div>
+          style="display:inline-block; padding-right:10px" if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.found"><b>${shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.basket}</b></div>
           ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
         </div>
       </div>

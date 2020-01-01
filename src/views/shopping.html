@@ -23,7 +23,7 @@
        name='viewport'
        content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'
     />
-    
+
     <div if.bind = "!orderSelectedToShop">
       <md-input
         autoselect
@@ -49,8 +49,8 @@
          <md-button style="float:right; height:40px" color click.delegate="pauseShopping()">Pause</md-button>
       </div>
 
-      <div style="width:100%;padding-bottom:30px">
-        <div style="font-size:30px; line-height:35px; padding-bottom:10px">${shopList[shoppingIndex].raw.drug.generic}</div>
+      <div style="width:100%;padding-bottom:20px">
+        <div style="font-size:30px; line-height:35px; padding-bottom:8px">${shopList[shoppingIndex].raw.drug.generic}</div>
         <div style="font-size:20px;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
       </div>
 
@@ -87,13 +87,14 @@
           <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
         </div>
 
-        <div style="text-align:center; font-size:7px; bottom:0">
-          ${shopList[shoppingIndex].raw._id}
-        </div>
-
         <div style="float:right" >
           <md-button style="float:right" disabled.bind="!formComplete" color raised click.delegate="moveShoppingForward()">${nextButtonText}</md-button>
         </div>
+      </div>
+
+
+      <div style="margin:auto; font-size:7px">
+        ${shopList[shoppingIndex].raw._id}
       </div>
 
       <div>
