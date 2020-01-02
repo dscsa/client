@@ -3728,8 +3728,27 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       });
     };
 
+    shopping.prototype.refreshPendedGroups = function refreshPendedGroups() {};
+
     shopping.prototype.refreshPended = function refreshPended() {
       var _this2 = this;
+
+      this.db.transaction.query('currently-pended-groups', { group_level: 3 }).then(function (res) {
+        var groups = [];
+        res = res.rows;
+
+        for (var i = 0; i < res.length; i++) {
+          console.log(res[i]);
+          if (res[i].key[1] == null) continue;
+          console.log("1");
+          if (res[i].key[2] == true) continue;
+          console.log("2");
+          groups.push({ name: res[i].key[0], priority: res[i].key[1], locked: res[i].key[2] == null });
+        }
+
+        console.log("result of new view:", res);
+        console.log("after trimming:", groups);
+      });
 
       this.db.transaction.query('currently-pended-by-group-bin', { include_docs: true, startkey: [this.account._id], endkey: [this.account._id, {}] }).then(function (res) {
         _this2.pended = {};

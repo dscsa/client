@@ -41,8 +41,33 @@ export class shopping {
     })
   }
 
+  refreshPendedGroups(){
+
+  }
+
   //set this.pended appropriately, called at beginning, and any time we return to the order list (after completing or canceling shopping)
   refreshPended() {
+
+    this.db.transaction.query('currently-pended-groups', {group_level:3})
+    .then(res => {
+      //key = [groupname, priority, picked (true, false, null=locked)]
+      let groups = []
+      res = res.rows
+
+      for(var i = 0; i < res.length; i++){
+        console.log(res[i])
+        if(res[i].key[1] == null) continue //if it's been unchecked so priority = null
+        console.log("1")
+        if(res[i].key[2] == true) continue //if it's been fully picked so picked = true
+        console.log("2")
+        groups.push({name:res[i].key[0], priority:res[i].key[1], locked: res[i].key[2] == null})
+      }
+
+      console.log("result of new view:", res)
+      console.log("after trimming:",groups)
+
+    })
+
     this.db.transaction.query('currently-pended-by-group-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
     .then(res => {
       this.pended = {}
