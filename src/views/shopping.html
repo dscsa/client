@@ -53,7 +53,7 @@
       <div style="width:100%;display:inline-block; text-align:center;">
 
         <div style="float:left; text-align:left; height:100%;vertical-align:middle">
-          <div style="font-size:55px; line-height:60px; padding-bottom:15px; margin-top:20px;">${shopLit[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</div>
+          <div style="font-size:55px; line-height:60px; padding-bottom:15px; margin-top:20px;">${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</div>
           <div style="font-size:30px;padding-bottom:7px"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
           <div style="font-size:20px"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
         </div>
