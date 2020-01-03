@@ -603,7 +603,7 @@ export class inventory {
       console.log('Repacked vials have been created', rows)
 
 
-      let repacked_obj = {_id: new Date().toJSON(),   user: { _id: this.user } , transactions: [] }
+      let repacked_obj = {_id: new Date().toJSON(),   user: this.user , transactions: [] }
 
       const transactions_arr = rows.map(row => {
         return {_id:row.id}

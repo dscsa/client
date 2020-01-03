@@ -2579,7 +2579,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         console.log('Repacked vials have been created', rows);
 
-        var repacked_obj = { _id: new Date().toJSON(), user: { _id: _this9.user }, transactions: [] };
+        var repacked_obj = { _id: new Date().toJSON(), user: _this9.user, transactions: [] };
 
         var transactions_arr = rows.map(function (row) {
           return { _id: row.id };
