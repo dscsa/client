@@ -9,8 +9,8 @@ export class shopping {
   constructor(db, router){
     this.db      = db
     this.router  = router
-    this.pended = {}
 
+    this.groups = []
     this.shopList = []
     this.shoppingIndex = -1
     this.nextButtonText = '' //This can become 'Finish' or other more intuitive values depending on events
@@ -37,17 +37,12 @@ export class shopping {
 
       this.db.account.get(session.account._id).then(account => this.account = account)
 
-      this.refreshPended()
+      this.refreshPendedGroups()
     })
   }
 
+
   refreshPendedGroups(){
-
-  }
-
-  //set this.pended appropriately, called at beginning, and any time we return to the order list (after completing or canceling shopping)
-  refreshPended() {
-
     this.db.transaction.query('currently-pended-groups', {group_level:3})
     .then(res => {
       //key = [groupname, priority, picked (true, false, null=locked)]
@@ -55,68 +50,56 @@ export class shopping {
       res = res.rows
 
       for(var i = 0; i < res.length; i++){
-        console.log(res[i])
         if(res[i].key[1] == null) continue //if it's been unchecked so priority = null
-        console.log("1")
         if(res[i].key[2] == true) continue //if it's been fully picked so picked = true
-        console.log("2")
         groups.push({name:res[i].key[0], priority:res[i].key[1], locked: res[i].key[2] == null})
       }
 
-      console.log("result of new view:", res)
-      console.log("after trimming:",groups)
-
+      console.log("raw result of new view:", res)
+      console.log("after processing:",groups)
+      this.groups = groups
     })
 
-    this.db.transaction.query('currently-pended-by-group-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
-    .then(res => {
-      this.pended = {}
-      this.groupByPended(res.rows.map(row => row.doc))
-      //this.refreshPended() //not needed on development without this on production, blank drawer on inital load
-    })
-    this.pended = Object.assign({}, this.pended)
   }
 
-  //Group pended into order structure
-  groupByPended(transactions) {
-    for (let transaction of transactions) {
 
-      //skip transaction that are locked down, with priority = null, or that are picked, where the picked property has keys, as opposed
-      //to when it's locked
-      if((typeof transaction.next[0].pended.priority != 'undefined' && transaction.next[0].pended.priority == null)
-      || (transaction.next[0].picked ? transaction.next[0].picked._id : false)) continue
-
-      //We want to group by PendId, don't need to group by generic like in inventory
-      let pendId  = this.getPendId(transaction)
-      this.pended[pendId] = this.pended[pendId] || {}
-      this.pended[pendId].transactions = this.pended[pendId].transactions ? this.pended[pendId].transactions : []
-      this.pended[pendId].transactions.push(transaction)
-      this.pended[pendId].priority = transaction.next[0].pended.priority ? (transaction.next[0].pended.priority == true) : false
-      this.pended[pendId].locked = transaction.next[0].picked && ! transaction.next[0].picked._id
-    }
-  }
 
   //Given the pendedkey to identify the order, take all the items in that order
   //and display them one at a time for shopper.
   //requires selecting the right transactions, and creating the shopList array of object to store,
   //for each transaction, the raw data item from the dB, as well as the extra info we need to track while the app is runnign
-  selectGroup(isLocked, pendedKey) {
+  selectGroup(isLocked, groupName) {
 
-    if(isLocked) return; //TODO uncommed this when we're passed initial testing
+    //if(isLocked) return; //TODO uncommed this when we're passed initial testing
 
-    const [pendId, label] = pendedKey.split(': ')
+    console.log("pendid: ", groupName)
 
-    let transactions = this.pended[pendId].transactions //this is the array of transactions as they come straight out of the DB, need to be enriched out for the app
+    this.db.transaction.query('currently-pended-by-group', {include_docs:true, startkey:[groupName], endkey:[groupName +'\uffff']})
+    .then(res => {
 
-    if(transactions.length == 0) return
-    if (transactions) this.term = 'Pended '+pendedKey
+      console.log("result of query by order: ", res.rows)
 
-    this.prepShoppingData(transactions.sort(this.sortTransactionsForShopping))
+      let transactions = this.extractTransactonFromDocs(res.rows)
 
-    this.saveShoppingResults(this.shopList, 'lockdown').then(_=>{
-      this.initializeShopper()
-    }).bind(this)
+      if(transactions.length == 0) return
 
+      if (transactions) this.term = 'Pended '+groupName
+
+      this.prepShoppingData(transactions.sort(this.sortTransactionsForShopping))
+
+      this.saveShoppingResults(this.shopList, 'lockdown').then(_=>{
+        this.initializeShopper()
+      }).bind(this)
+
+    })
+  }
+
+  extractTransactonFromDocs(rows){
+    var res = []
+    for(var i = 0; i < rows.length; i++){
+      res.push(rows[i].doc)
+    }
+    return res
   }
 
   prepShoppingData(raw_transactions) {
@@ -224,7 +207,7 @@ export class shopping {
 
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
       then(_=>{
-        this.refreshPended()
+        this.refreshPendedGroups()
         this.resetShopper()
       }).bind(this)
 
@@ -260,7 +243,7 @@ export class shopping {
   pauseShopping(){
     this.saveShoppingResults(this.shopList.slice(0,this.shoppingIndex), 'shopped').then(_=>{
       this.saveShoppingResults(this.shopList.slice(this.shoppingIndex), 'unlock').then(_=>{
-        this.refreshPended() //recalculate in case there were changes, others picked orders, etc
+        this.refreshPendedGroups() //recalculate in case there were changes, others picked orders, etc
         this.resetShopper()
       }).bind(this)
     }).bind(this)
@@ -390,8 +373,8 @@ export class shopping {
       if(urgency1 && !urgency2) return -1
       if(!urgency1 && urgency2) return 1
 
-      let group1 = a.key
-      let group2 = b.key
+      let group1 = a.name
+      let group2 = b.name
       if(group1 > group2) return 1
       if(group1 < group2) return -1
     })
@@ -406,12 +389,18 @@ export class pendedFilterValueConverter {
   toView(pended = {}, term = ''){
     term = term.toLowerCase()
     let matches = [] //an array of arrays
-    for (let pendId in pended) {
-      if ( ~ pendId.toLowerCase().indexOf(term)) {
-        matches.unshift({key:pendId, val:pended[pendId], priority:pended[pendId].priority, locked:pended[pendId].locked})
-        continue
+
+    if(term.trim().length == 0){
+      matches = pended
+    } else {
+      for(var i = 0; i < pended.length; i++){
+        if((~pended[i].name.toLowerCase().indexOf(term)) || (term.trim().length == 0)){
+          matches.unshift(pended[i])
+          continue
+        }
       }
     }
+
     matches = shopping.prototype.sortOrders(matches)
     return matches
   }

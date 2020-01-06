@@ -28,12 +28,12 @@
         Select Group
       </md-input>
 
-      <div repeat.for="pend of pended | pendedFilter:pendedFilter">
+      <div repeat.for="pend of groups | pendedFilter:pendedFilter">
         <div
-          click.delegate="selectGroup(pend.locked, pend.key)"
-          class="mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}"
+          click.delegate="selectGroup(pend.locked, pend.name)"
+          class="mdl-typography--title ${ term == 'Pended '+pend.name ? 'mdl-navigation__link--current' : ''}"
           style="font-size:30px; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding-bottom:50px">
-          ${pend.key}
+          ${pend.name}
         </div>
       </div>
     </div>
