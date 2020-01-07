@@ -108,6 +108,8 @@ export class shopping {
 
     for(var i = 0; i < raw_transactions.length; i++){
 
+      if(raw_transactions[i].next[0].picked) continue
+
       var extra_data = {} //this will track info needed during the miniapp running, and which we'd need to massage later before saving
 
       extra_data.outcome = {

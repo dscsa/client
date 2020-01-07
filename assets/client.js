@@ -3784,6 +3784,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       for (var i = 0; i < raw_transactions.length; i++) {
 
+        if (raw_transactions[i].next[0].picked) continue;
+
         var extra_data = {};
 
         extra_data.outcome = {
