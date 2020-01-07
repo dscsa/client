@@ -3741,8 +3741,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           groups.push({ name: res[i].key[0], priority: res[i].key[1], locked: res[i].key[2] == null });
         }
 
-        console.log("raw result of new view:", res);
-        console.log("after processing:", groups);
+        console.log("raw result of view of pended groups:", res);
+        console.log("after processing to exclude unchecked or complete groups:", groups);
         _this2.groups = groups;
       });
     };
@@ -3750,7 +3750,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.selectGroup = function selectGroup(isLocked, groupName) {
       var _this3 = this;
 
-      console.log("pendid: ", groupName);
+      if (isLocked) return;
 
       this.db.transaction.query('currently-pended-by-group', { include_docs: true, startkey: [groupName], endkey: [groupName + '\uFFFF'] }).then(function (res) {
 
@@ -3803,10 +3803,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.getImageURLS();
       this.filter = {};
 
-      console.log("raw transactions:");
-      console.log(raw_transactions);
-      console.log("shopping list:");
-      console.log(this.shopList);
+      console.log("raw transactions given to prepShoppingData:", raw_transactions);
+      console.log("shopping list generated:", this.shopList);
     };
 
     shopping.prototype.initializeShopper = function initializeShopper() {
@@ -3859,8 +3857,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         transactions_to_save.push(reformated_transaction);
       }
 
-      console.log("saving these transactions");
-      console.log(transactions_to_save);
+      console.log("saving these transactions", transactions_to_save);
 
       return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
         return console.log("results of saving" + JSON.stringify(res));
@@ -3913,6 +3910,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.selectShoppingOption = function selectShoppingOption(key) {
+
       if (this.shopList[this.shoppingIndex].extra.outcome[key]) return;
 
       if (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) {
@@ -4028,6 +4026,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         if (group1 > group2) return 1;
         if (group1 < group2) return -1;
       });
+
       return arr;
     };
 
@@ -4042,6 +4041,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     pendedFilterValueConverter.prototype.toView = function toView() {
       var pended = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var term = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
 
       term = term.toLowerCase();
       var matches = [];

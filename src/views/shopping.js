@@ -28,8 +28,6 @@ export class shopping {
 
   activate(params) {
 
-    //console.log($('.mdl-layout mdl-js-layout mdl-layout--fixed-header'))
-
     this.db.user.session.get().then(session => {
 
       this.user    = { _id:session._id}
@@ -38,7 +36,9 @@ export class shopping {
       this.db.account.get(session.account._id).then(account => this.account = account)
 
       this.refreshPendedGroups()
+
     })
+
   }
 
 
@@ -55,8 +55,8 @@ export class shopping {
         groups.push({name:res[i].key[0], priority:res[i].key[1], locked: res[i].key[2] == null})
       }
 
-      console.log("raw result of new view:", res)
-      console.log("after processing:",groups)
+      console.log("raw result of view of pended groups:", res)
+      console.log("after processing to exclude unchecked or complete groups:",groups)
       this.groups = groups
     })
 
@@ -70,9 +70,7 @@ export class shopping {
   //for each transaction, the raw data item from the dB, as well as the extra info we need to track while the app is runnign
   selectGroup(isLocked, groupName) {
 
-    //if(isLocked) return; //TODO uncommed this when we're passed initial testing
-
-    console.log("pendid: ", groupName)
+    if(isLocked) return; //TODO uncommed this when we're passed initial testing
 
     this.db.transaction.query('currently-pended-by-group', {include_docs:true, startkey:[groupName], endkey:[groupName +'\uffff']})
     .then(res => {
@@ -83,7 +81,7 @@ export class shopping {
 
       if(transactions.length == 0) return
 
-      if (transactions) this.term = 'Pended '+groupName
+      if(transactions) this.term = 'Pended '+groupName
 
       this.prepShoppingData(transactions.sort(this.sortTransactionsForShopping))
 
@@ -102,6 +100,8 @@ export class shopping {
     return res
   }
 
+  //given an array of transactions, then build the shopList array
+  //which has the extra info we need to track during the shopping process
   prepShoppingData(raw_transactions) {
 
     this.shopList = [] //going to be an array of objects, where each object is {raw:{transaction}, extra:{extra_data}}
@@ -127,10 +127,9 @@ export class shopping {
     this.getImageURLS() //must use an async call to the db
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
 
-    console.log("raw transactions:")
-    console.log(raw_transactions)
-    console.log("shopping list:")
-    console.log(this.shopList)
+    console.log("raw transactions given to prepShoppingData:",raw_transactions)
+    console.log("shopping list generated:",this.shopList)
+
   }
 
 
@@ -158,6 +157,7 @@ export class shopping {
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
   saveShoppingResults(arr_enriched_transactions, key){
+
     if(arr_enriched_transactions.length == 0) return Promise.resolve()
 
     //go through enriched trasnactions, edit the raw transactions to store the data,
@@ -191,8 +191,7 @@ export class shopping {
 
     }
 
-    console.log("saving these transactions")
-    console.log(transactions_to_save)
+    console.log("saving these transactions",transactions_to_save)
 
     return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res))).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
@@ -253,6 +252,7 @@ export class shopping {
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
   selectShoppingOption(key){
+
     if(this.shopList[this.shoppingIndex].extra.outcome[key]) return //don't let thme uncheck, because radio buttons
 
     if(this.shopList[this.shoppingIndex].extra.basketNumber.length > 1){
@@ -378,6 +378,7 @@ export class shopping {
       if(group1 > group2) return 1
       if(group1 < group2) return -1
     })
+
     return arr
   }
 
@@ -387,6 +388,7 @@ export class shopping {
 //also sorts by priority, then by group name in ascending order
 export class pendedFilterValueConverter {
   toView(pended = {}, term = ''){
+
     term = term.toLowerCase()
     let matches = [] //an array of arrays
 
@@ -403,5 +405,6 @@ export class pendedFilterValueConverter {
 
     matches = shopping.prototype.sortOrders(matches)
     return matches
+
   }
 }
