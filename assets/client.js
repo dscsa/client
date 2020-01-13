@@ -2053,9 +2053,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           return _this2.account = account;
         });
 
-        _this2.db.transaction.query('currently-pended-by-group-bin', { include_docs: true, startkey: [_this2.account._id], endkey: [_this2.account._id, {}] }).then(function (res) {
+        _this2.db.transaction.query('currently-pended-by-group-priority-generic', { group_level: 5, startkey: [_this2.account._id], endkey: [_this2.account._id, {}] }).then(function (res) {
           _this2.setPended(res.rows.map(function (row) {
-            return row.doc;
+            return row.key[4];
           }));
           _this2.refreshPended();
         }).then(function (_) {
@@ -3731,14 +3731,16 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.refreshPendedGroups = function refreshPendedGroups() {
       var _this2 = this;
 
-      this.db.transaction.query('currently-pended-groups', { group_level: 3 }).then(function (res) {
+      this.db.transaction.query('currently-pended-by-group-priority-generic', { group_level: 4 }).then(function (res) {
+        console.log('result of query:', res);
+
         var groups = [];
         res = res.rows;
 
         for (var i = 0; i < res.length; i++) {
-          if (res[i].key[1] == null) continue;
-          if (res[i].key[2] == true) continue;
-          groups.push({ name: res[i].key[0], priority: res[i].key[1], locked: res[i].key[2] == null });
+          if (res[i].key[2] == null) continue;
+          if (res[i].key[3] == true) continue;
+          groups.push({ name: res[i].key[1], priority: res[i].key[2], locked: res[i].key[3] == null });
         }
 
         console.log("raw result of view of pended groups:", res);
@@ -3750,19 +3752,21 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.selectGroup = function selectGroup(isLocked, groupName) {
       var _this3 = this;
 
-      if (isLocked) return;
-
-      this.db.transaction.query('currently-pended-by-group', { include_docs: true, startkey: [groupName], endkey: [groupName + '\uFFFF'] }).then(function (res) {
+      this.db.transaction.query('currently-pended-by-group-priority-generic', { group_level: 5, startkey: [this.account._id, groupName], endkey: [this.account._id, groupName + '\uFFFF'] }).then(function (res) {
 
         console.log("result of query by order: ", res.rows);
 
         var transactions = _this3.extractTransactonFromDocs(res.rows);
+
+        console.log("raw transactions extracted from res.rows: ", transactions);
 
         if (transactions.length == 0) return;
 
         if (transactions) _this3.term = 'Pended ' + groupName;
 
         _this3.prepShoppingData(transactions.sort(_this3.sortTransactionsForShopping));
+
+        if (_this3.shopList.length == 0) return;
 
         _this3.saveShoppingResults(_this3.shopList, 'lockdown').then(function (_) {
           _this3.initializeShopper();
@@ -3771,11 +3775,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.extractTransactonFromDocs = function extractTransactonFromDocs(rows) {
-      var res = [];
-      for (var i = 0; i < rows.length; i++) {
-        res.push(rows[i].doc);
-      }
-      return res;
+      return res.rows.map(function (row) {
+        return row.key[4];
+      });
     };
 
     shopping.prototype.prepShoppingData = function prepShoppingData(raw_transactions) {

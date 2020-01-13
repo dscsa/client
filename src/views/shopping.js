@@ -43,16 +43,17 @@ export class shopping {
 
 
   refreshPendedGroups(){
-    this.db.transaction.query('currently-pended-groups', {group_level:3})
+    this.db.transaction.query('currently-pended-by-group-priority-generic', {group_level:4})
     .then(res => {
-      //key = [groupname, priority, picked (true, false, null=locked)]
+      console.log('result of query:', res)
+      //key = [account._id, group, priority, picked (true, false, null=locked), full_doc]
       let groups = []
       res = res.rows
 
       for(var i = 0; i < res.length; i++){
-        if(res[i].key[1] == null) continue //if it's been unchecked so priority = null
-        if(res[i].key[2] == true) continue //if it's been fully picked so picked = true
-        groups.push({name:res[i].key[0], priority:res[i].key[1], locked: res[i].key[2] == null})
+        if(res[i].key[2] == null) continue //if it's been unchecked so priority = null
+        if(res[i].key[3] == true) continue //if it's been fully picked so picked = true
+        groups.push({name:res[i].key[1], priority:res[i].key[2], locked: res[i].key[3] == null})
       }
 
       console.log("raw result of view of pended groups:", res)
@@ -70,20 +71,24 @@ export class shopping {
   //for each transaction, the raw data item from the dB, as well as the extra info we need to track while the app is runnign
   selectGroup(isLocked, groupName) {
 
-    if(isLocked) return; //TODO uncommed this when we're passed initial testing
+    //if(isLocked) return; //TODO uncommed this when we're passed initial testing
 
-    this.db.transaction.query('currently-pended-by-group', {include_docs:true, startkey:[groupName], endkey:[groupName +'\uffff']})
+    this.db.transaction.query('currently-pended-by-group-priority-generic', {group_level:5, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
     .then(res => {
 
       console.log("result of query by order: ", res.rows)
 
       let transactions = this.extractTransactonFromDocs(res.rows)
 
+      console.log("raw transactions extracted from res.rows: ",transactions)
+
       if(transactions.length == 0) return
 
       if(transactions) this.term = 'Pended '+groupName
 
       this.prepShoppingData(transactions.sort(this.sortTransactionsForShopping))
+
+      if(this.shopList.length == 0) return
 
       this.saveShoppingResults(this.shopList, 'lockdown').then(_=>{
         this.initializeShopper()
@@ -93,11 +98,7 @@ export class shopping {
   }
 
   extractTransactonFromDocs(rows){
-    var res = []
-    for(var i = 0; i < rows.length; i++){
-      res.push(rows[i].doc)
-    }
-    return res
+    return res.rows.map(row => row.key[4])
   }
 
   //given an array of transactions, then build the shopList array
