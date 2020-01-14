@@ -81,6 +81,12 @@ export class account {
     //TODO reset checkbox and show snackbar if change not made
   }
 
+
+  switchUsers(){
+    console.log("switching users")
+    this.dialog.showModal()
+  }
+
   logout() {
     this.disableLogout = 'Uninstalling...'
     this.db.user.session.delete().then(_ => {
