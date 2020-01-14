@@ -1741,6 +1741,8 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
     drugs.prototype.markHazard = function markHazard() {
 
+      if (!this.account.hazards) this.account.hazards = {};
+
       if (this.account.hazards[this.group.generic]) {
         this.account.hazards[this.group.generic] = undefined;
       } else {

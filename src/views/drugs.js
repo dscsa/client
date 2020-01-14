@@ -180,6 +180,8 @@ export class drugs {
 
   markHazard(){
 
+    if(!this.account.hazards) this.account.hazards = {}
+
     if(this.account.hazards[this.group.generic]){
       this.account.hazards[this.group.generic] = undefined       //then remove it from the list
     } else {
