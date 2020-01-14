@@ -122,9 +122,7 @@ export class shopping {
         'slot_after':false,
         'missing':false,
       }
-      console.log("here for hazards")
-      console.log(raw_transactions[i].drug.generic)
-      console.log(this.account.hazards)
+
       extra_data.basketNumber = this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
       if(!(~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic))) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic)
 

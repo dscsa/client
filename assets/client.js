@@ -3808,9 +3808,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           'slot_after': false,
           'missing': false
         };
-        console.log("here for hazards");
-        console.log(raw_transactions[i].drug.generic);
-        console.log(this.account.hazards);
+
         extra_data.basketNumber = this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R';
         if (!~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic)) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic);
 
