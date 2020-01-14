@@ -87,6 +87,36 @@ export class account {
     this.dialog.showModal()
   }
 
+  attemptSwitch(){
+    console.log(this.phone)
+    console.log(this.password)
+
+    //TODO here: use phone & password to try and log in, update cookies, and then refresh. do not uninstall/reinstall everything
+
+    this.db.user.session.post({phone:this.phone, password:this.password})
+    .then(loading => {
+      this.disabled = true
+
+      //wait for all resources except 'drugs' to sync
+      this.loading  = loading.resources
+      this.progress = loading.progress
+
+      return Promise.all(loading.syncing)
+    })
+    .then(resources => {
+      //TODO
+      //display success message and then close modal window and refresh page
+    })
+    .catch(err => {
+      this.snackbar.error('Login failed', err)
+    })
+
+  }
+
+  closeSwitchUsersDialog(){
+    this.dialog.close()
+  }
+
   logout() {
     this.disableLogout = 'Uninstalling...'
     this.db.user.session.delete().then(_ => {
