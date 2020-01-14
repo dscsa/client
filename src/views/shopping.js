@@ -47,7 +47,7 @@ export class shopping {
   refreshPendedGroups(){
     this.db.transaction.query('currently-pended-by-group-priority-generic', {group_level:4})
     .then(res => {
-      console.log('result of query:', res)
+      //console.log('result of query:', res)
       //key = [account._id, group, priority, picked (true, false, null=locked), full_doc]
       let groups = []
       res = res.rows
@@ -58,8 +58,8 @@ export class shopping {
         groups.push({name:res[i].key[1], priority:res[i].key[2], locked: res[i].key[3] == null})
       }
 
-      console.log("raw result of view of pended groups:", res)
-      console.log("after processing to exclude unchecked or complete groups:",groups)
+      //console.log("raw result of view of pended groups:", res)
+      //console.log("after processing to exclude unchecked or complete groups:",groups)
       this.groups = groups
     })
 
@@ -78,11 +78,11 @@ export class shopping {
     this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
     .then(res => {
 
-      console.log("result of query by order: ", res.rows)
+      //console.log("result of query by order: ", res.rows)
 
       let transactions = this.extractTransactonFromDocs(res.rows)
 
-      console.log("raw transactions extracted from res.rows: ",transactions)
+      //console.log("raw transactions extracted from res.rows: ",transactions)
 
       if(transactions.length == 0) return
 
@@ -132,8 +132,8 @@ export class shopping {
     this.getImageURLS() //must use an async call to the db
     this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
 
-    console.log("raw transactions given to prepShoppingData:",raw_transactions)
-    console.log("shopping list generated:",this.shopList)
+    //console.log("raw transactions given to prepShoppingData:",raw_transactions)
+    //console.log("shopping list generated:",this.shopList)
 
   }
 

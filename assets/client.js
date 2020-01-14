@@ -3745,8 +3745,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       var _this2 = this;
 
       this.db.transaction.query('currently-pended-by-group-priority-generic', { group_level: 4 }).then(function (res) {
-        console.log('result of query:', res);
-
         var groups = [];
         res = res.rows;
 
@@ -3756,8 +3754,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           groups.push({ name: res[i].key[1], priority: res[i].key[2], locked: res[i].key[3] == null });
         }
 
-        console.log("raw result of view of pended groups:", res);
-        console.log("after processing to exclude unchecked or complete groups:", groups);
         _this2.groups = groups;
       });
     };
@@ -3767,11 +3763,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       this.db.transaction.query('currently-pended-by-group-priority-generic', { include_docs: true, reduce: false, startkey: [this.account._id, groupName], endkey: [this.account._id, groupName + '\uFFFF'] }).then(function (res) {
 
-        console.log("result of query by order: ", res.rows);
-
         var transactions = _this3.extractTransactonFromDocs(res.rows);
-
-        console.log("raw transactions extracted from res.rows: ", transactions);
 
         if (transactions.length == 0) return;
 
@@ -3819,9 +3811,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       this.getImageURLS();
       this.filter = {};
-
-      console.log("raw transactions given to prepShoppingData:", raw_transactions);
-      console.log("shopping list generated:", this.shopList);
     };
 
     shopping.prototype.initializeShopper = function initializeShopper() {
