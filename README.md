@@ -57,7 +57,15 @@ sudo npm test
     - some dependencies (koa, pouchdb)
 ```
 ```
+# Launch instance in EC2.  Currently using 1c-west and Ubuntu 16
 ssh -i /path/to/private-key ubuntu@<elastic-ip>
+# to enable additional key pairs
+- login to another instance with that keypair,
+- sudo nano ~/.ssh/authorized_keys,
+- Esc then $ for soft-wrapping,
+- Copy and paste that into same location on new instance
+- Remove line breaks from soft-wrap
+- Test ssh login with new key pair
 
 #mount volume
 sudo mkdir /dscsa
@@ -74,10 +82,13 @@ sudo apt-get update && sudo apt-get install couchdb # select option for standalo
 # goto <elastic-ip>:5984/_utils.  CouchDB should have been started automatically
 enable CORS
 [fabric] request_timeout 120000
-[compactions] _defaults [{db_fragmentation, "5%"}, {view_fragmentation, "5%"},{from, "00:00"}, {to, "04:00"}]
-[couch_httpd_auth] "secrets" are the same as other instances if using a Load Balancer
-[couch_httpd_auth] "timeout" are the same as other instances if using a Load Balancer
-Ensure that [admins] password hashes are the same       # If using a Load Balancer
+[compactions] _default [{db_fragmentation, "5%"}, {view_fragmentation, "5%"},{from, "00:00"}, {to, "04:00"}]
+[couch_httpd_auth] "timeout" is the same as other instances if using a Load Balancer
+[couch_httpd_auth] "secret" is the same as other instances if using a Load Balancer #this will log you out
+
+
+#If you get logged out of Fauxton settings available at /dscsa/couchdb/etc/local.ini
+#If you need to change password goto [admins] <username> <new password> after refreshing new password should get hashed
 https://stackoverflow.com/questions/43958527/does-couchdb-2-sync-user-sessions-across-nodes
 http://mail-archives.apache.org/mod_mbox/couchdb-user/201705.mbox/%3CCAB2Gbkw4FdhUuBJ6ErBBo4vnC8ANzGQ3AS6ua-uB032Km6zOgQ@mail.gmail.com%3E
 
@@ -123,14 +134,9 @@ sudo su couchdb
 ulimit -n #this should display same number as above e.g., 20000
 exit
 
-###
-
-Add Elastic IP to instance. Important to do before replication otherwise "Use Local Existing DB" option will map to wrong IP
-Add EC2 Console, Register New Instance with Load Balancer's "Target Group"
-
 ####
 
-# We need to do 2x Replications to get Two-Way syncing
+# We need to do 2x Replications to get Two-Way syncing for Each of the 6 Databases
 New Server: In fauxton, setup replication for all 6 databases: _users, user, account, shipment, drug, transaction
 Old Server: In fauxton, setup replication for all 6 databases: _users, user, account, shipment, drug, transaction
 
@@ -144,7 +150,15 @@ Remote existing database
 http:<PRIVATE IP>:5984/<DB> # NOTE THIS IS EC2's PRIVATE IP (RARELY USED), NOT ELASTIC IP OR PUBLIC IP WHICH WILL NOT WORK
 User name and password
 
+Pro Tip: Once one db replication is setup, goto Actions > Wrench (Edit Replication) > Change name to new DB > Erase Document Id
+And it will clone the replication document for the new database rather than entering all the information for the 6 databases
+
 #Continuous
+
+###
+
+Add EC2 Console, Register New Instance with Load Balancer's "Target Group"
+
 
 ####
 
@@ -153,6 +167,8 @@ User name and password
 curl --silent --location https://deb.nodesource.com/setup_<VERSION>.x | sudo bash -
 sudo apt-get install nodejs -y
 sudo apt-get install git-core
+
+#Confirm you are in /dscsa directory
 sudo npm install dscsa/server                  #make sure you are in the /dscsa directory!
 sudo npm install forever -g                    #to do make new repo with this dependency that runs this with
 sudo mkdir keys
@@ -161,6 +177,8 @@ sudo node /dscsa/node_modules/server
 ctrl c (to stop server)
 sudo forever start /dscsa/node_modules/server  #forever list, forever stop
 #log: sudo nano /dscsa/couchdb/log/couchdb.log
+
+
 
 
 ```

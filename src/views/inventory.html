@@ -14,6 +14,7 @@
   <style>
     .mdl-button:hover { background-color:initial }
     .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}
+    .mdl-layout__drawer { width:280px; transform:translateX(-290px) }
   </style>
   <md-drawer>
     <md-input
@@ -23,20 +24,45 @@
       Filter pended inventory
     </md-input>
     <div repeat.for="pend of pended | pendedFilter:pendedFilter">
-      <div
-        click.delegate="selectTerm('pended', pend.key)"
-        class="mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}"
-        style="font-size:13px; font-weight:600; cursor:pointer; color:#757575; padding:8px">
-        ${pend.key}
+
+      <div style="display:inline-block; width:100%">
+        <div
+          click.delegate="clickOnGroupInDrawer($event,pend.key)"
+          class="mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}"
+          style="font-size:14px; float:left;font-weight:600; cursor:pointer; color:#757575; padding:8px;">
+          ${pend.key}
+        </div>
+        <md-switch
+          name = "groupPrioritySwitch"
+          style="float:right; margin-right:12px"
+          checked.one-way="shoppingSyncPended[pend.key].priority"
+          disabled.bind = "shoppingSyncPended[pend.key].locked"
+          click.trigger="clickOnGroupInDrawer($event,pend.key)">
+        </md-switch>
       </div>
-      <div
-        name="pro_pended_items"
-        repeat.for="pendedDrug of pend.val | toArray"
-        click.delegate="selectTerm('pended', pend.key+': '+pendedDrug.val.label)"
-        class="mdl-navigation__link ${ term == 'Pended '+pend.key+': '+pendedDrug.val.label ? 'mdl-navigation__link--current' : ''}"
-        style="font-size:12px; cursor:pointer; padding-top:2px; padding-bottom:2px; padding-left:12px">
-        ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
+
+      <div style="display:inline-block; width:100%"
+        repeat.for="pendedDrug of pend.val | toArray">
+        <div
+          name="pro_pended_items"
+          class="mdl-navigation__link ${ term == 'Pended '+pend.key+': '+pendedDrug.val.label ? 'mdl-navigation__link--current' : ''}"
+          click.delegate="clickOnTransactionInDrawer(false,$event,pend.key,pendedDrug.val.label)"
+          style="font-size:12px; display:inline-block; width:100%; cursor:pointer; padding:1px 0 1px 8px; line-height:18px">
+          <md-checkbox
+            if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.notFound"
+            name = "transactionDrawerCheckbox"
+            style="display:inline-block"
+            disabled.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].locked"
+            click.trigger = "clickOnTransactionInDrawer(true,$event,pend.key,pendedDrug.val.label)"
+            checked.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].drawerCheck" >
+          </md-checkbox>
+          <div
+          style="display:inline-block; padding-right:10px" if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.found"><b>${shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.basket}</b></div>
+          ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
+        </div>
       </div>
+
+
     </div>
   </md-drawer>
   <section class="mdl-grid au-animate">

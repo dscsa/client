@@ -202,6 +202,15 @@
         <li click.delegate="$file.click()" class="mdl-menu__item">
           Import CSV
         </li>
+        <li>
+          USP800
+          <md-switch
+          name = "hazard_switch"
+          checked.one-way="account.hazards[group.generic]"
+          disabled.bind="! account.hazards[group.generic] && ! drug._rev"
+          click.delegate="markHazard()">
+          </md-switch>
+        </li>
       </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <md-switch

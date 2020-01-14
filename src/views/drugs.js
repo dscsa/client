@@ -95,18 +95,18 @@ export class drugs {
     let unexpired = this.currentDate(1, true)
 
     //[to_id, 'month', year, month, doc.drug.generic, stage, sortedDrug]
-    this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', indate[0], indate[1], group.generic], endkey:[this.account._id, 'month', indate[0], indate[1], group.generic, {}]})
+    this.db.transaction.query('inventory-by-generic', {startkey:[this.account._id, 'month', indate[0], indate[1], group.generic], endkey:[this.account._id, 'month', indate[0], indate[1], group.generic, {}]})
     .then(inventory => {
       console.log('indate inventory', minDays, indate, inventory)
       let row = inventory.rows[0]
-      this.indateInventory = row ? row.value.sum : 0
+      this.indateInventory = row ? row.value[0].sum : 0
       console.log('indate inventory', this.indateInventory)
 
-      this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.generic], endkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.generic, {}]})
+      this.db.transaction.query('inventory-by-generic', {startkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.generic], endkey:[this.account._id, 'month', unexpired[0], unexpired[1], group.generic, {}]})
       .then(inventory => {
         console.log('outdate inventory', unexpired, inventory)
         let row = inventory.rows[0]
-        this.outdateInventory = row ? row.value.sum - this.indateInventory: 0
+        this.outdateInventory = row ? row.value[0].sum - this.indateInventory: 0
         console.log('outdate inventory', this.outdateInventory)
       })
     })
@@ -178,6 +178,19 @@ export class drugs {
     })
   }
 
+  markHazard(){
+
+    if(!this.account.hazards) this.account.hazards = {}
+
+    if(this.account.hazards[this.group.generic]){
+      this.account.hazards[this.group.generic] = undefined       //then remove it from the list
+    } else {
+      this.account.hazards[this.group.generic] = {"message":"warning"}
+    }
+
+    this.saveAccount();
+  }
+
   //We might make a separate database and API out of this one day, but for now just save on account object.
   //TODO: Warn on delete since we won't save save any of the preferences?
   order() {
@@ -200,13 +213,13 @@ export class drugs {
   }
 
   exportCSV(generic) {
-    let inventory = this.db.transaction.query('inventory.qty-by-generic', {key:[this.account._id]})
+    let inventory = this.db.transaction.query('inventory-by-generic', {key:[this.account._id]})
     let drugs = this.db.drug.allDocs({include_docs:true, endkey:'_design'})
     Promise.all([inventory, drugs]).then(([inventory, drugs]) => {
       console.log('Export queries run')
       let ndcMap = {}
       for (const row of inventory.rows) {
-        ndcMap[row.key[2]] = row.value
+        ndcMap[row.key[2]] = row.value[0]
       }
       console.log('Inital map complete')
       this.csv.fromJSON(`Drugs ${new Date().toJSON()}.csv`, drugs.rows.map(row => {

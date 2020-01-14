@@ -13,6 +13,7 @@ export class inventory {
     this.csv     = csv
     this.transactions = []
     this.pended = {}
+    this.shoppingSyncPended = {}
 
     this.placeholder     = "Search by generic name, ndc, exp, or bin" //Put in while database syncs
     this.waitForDrugsToIndex = waitForDrugsToIndex
@@ -59,7 +60,7 @@ export class inventory {
       //push new pended keys to the last keys in the object.  But we want new keys to be listed first
       //in the pended drawer so we use unshift to reverse the order inside the pendedFilter which means
       //we do NOT want to reverse the order here (they would be reversed twice which would negate it)
-      this.db.transaction.query('pended-by-name-bin', {include_docs:true, startkey:[this.account._id], endkey:[this.account._id, {}]})
+      this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id], endkey:[this.account._id, {}]})
       .then(res => {
         this.setPended(res.rows.map(row => row.doc))
         this.refreshPended() //not needed on development without this on production, blank drawer on inital load
@@ -72,8 +73,62 @@ export class inventory {
     })
   }
 
+  clickOnGroupInDrawer(event,pendId){
+    if(event.target.tagName == "SPAN"){
+      if(this.shoppingSyncPended[pendId].locked) return;
+      this.togglePriority(pendId)
+    } else {
+      this.selectTerm('pended', pendId)
+    }
+  }
+
+  clickOnTransactionInDrawer(isReal,$event,pendKey,label){
+    if((event.target.tagName == "SPAN") && isReal){
+      this.toggleDrawerCheck(pendKey,label)
+    } else if((event.target.tagName == "DIV") && !isReal){
+      this.selectTerm('pended',pendKey+': '+label)
+    }
+  }
+
+  //should only ever uncheck if cindy wants to unpend something, should be infrequent
+  //button will be disabled if there's a picked property. so we have to use the priority property of pended
+  //if pended.priority = true, its priority. if = false, it's not. if = null, then it's inbetween pended and picked, and
+  //will appear in the pended drawer, but not on the shopping sheet
+  toggleDrawerCheck(pendId, label){
+    if(this.shoppingSyncPended[pendId][label].locked) return;
+
+    this.shoppingSyncPended[pendId][label].drawerCheck = !this.shoppingSyncPended[pendId][label].drawerCheck
+
+    let temp_transactions = this.extractTransactions(pendId, label) //this is an array in case multiple generics
+    //console.log(temp_transactions)
+
+    for(let i = 0; i < temp_transactions.length; i++){
+      temp_transactions[i].next[0].pended.priority = this.shoppingSyncPended[pendId][label].drawerCheck ? false : null;
+      //console.log(temp_transactions[i])
+    }
+
+    return this.db.transaction.bulkDocs(temp_transactions)
+    .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+  }
+
+
+  togglePriority(pendId){
+    //switcht the priority in
+    this.shoppingSyncPended[pendId].priority = ! this.shoppingSyncPended[pendId].priority
+    let transactions_to_update = this.extractTransactions(pendId, '') //gives an array of transactions that need to have priority toggled, then saved
+
+    for(let i = 0; i < transactions_to_update.length; i++){
+      if(typeof transactions_to_update[i].next[0].pended.priority != 'undefined' && transactions_to_update[i].next[0].pended.priority == null) continue;
+      transactions_to_update[i].next[0].pended.priority = transactions_to_update[i].next[0].pended.priority ? !transactions_to_update[i].next[0].pended.priority : true; //if it exists, flip, otherwise that means never added, so make true
+    }
+
+    return this.db.transaction.bulkDocs(transactions_to_update)
+    .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+    //extract all the transactions, switch their priority, update the group's priority tag in this.pended[], and save
+  }
+
   toggleCheck(transaction) {
-    console.log('toggleCheck transaction',  transaction)
+    //console.log('toggleCheck transaction',  transaction)
     this.setCheck(transaction, ! transaction.isChecked)
   }
 
@@ -121,7 +176,7 @@ export class inventory {
       this.type = null
 
     //Sort X00 bin alphabetically per Cindy's request.
-    if (this.term == 'X00' || this.term == 'Y00' || this.term == 'Z00')
+    if ( ~ ['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term))
       transactions = transactions.sort((a,b) => {
         if (a.drug.generic < b.drug.generic) return -1
         if (b.drug.generic < a.drug.generic) return 1
@@ -166,9 +221,7 @@ export class inventory {
 
     const [pendId, label] = pendedKey.split(': ')
 
-    let transactions = Object.values(this.pended[pendId] || {}).reduce((arr, pend) => {
-         return ! label || pend.label == label ? arr.concat(pend.transactions) : arr
-    }, [])
+    let transactions = this.extractTransactions(pendId, label);
 
     if (transactions)
       this.term = 'Pended '+pendedKey
@@ -177,6 +230,16 @@ export class inventory {
 
     this.setTransactions(transactions)
     this.toggleDrawer()
+  }
+
+  extractTransactions(pendId, label){
+    //console.log("1_")
+    let transactions = Object.values(this.pended[pendId] || {}).reduce((arr, pend) => {
+         return ((! label || pend.label == label)) ? arr.concat(pend.transactions) : arr
+    }, [])
+    //console.log("2_")
+    //console.log(transactions)
+    return transactions
   }
 
   selectInventory(type, key, limit) {
@@ -200,14 +263,14 @@ export class inventory {
       opts.startkey = [this.account._id, bin[0], bin[2], bin[1], bin[3]]
       opts.endkey   = [this.account._id, bin[0], bin[2], bin[1], bin[3], {}]
     } else if (type == 'exp<') {
-      var query = 'expired.qty-by-bin'
+      var query = 'expired-by-bin'
       var [year, month] = key.split('-')
       opts.startkey = [this.account._id, year, month]
       opts.endkey   = [this.account._id, year, month+'\uffff']
     } else if (type == 'generic') {
       //Only show medicine at least one month from expiration
       //just in case there is a lot of it and limit prevent us from seeing more
-      var query = 'inventory.qty-by-generic'
+      var query = 'inventory-by-generic'
       var [year, month] = this.currentDate(limit ? 1 : 0, true)
       opts.startkey = [this.account._id, 'month', year, month, key]
       opts.endkey   = [this.account._id, 'month', year, month, key, {}] //Use of {} rather than \uffff so we don't combine different drug.forms
@@ -253,6 +316,8 @@ export class inventory {
   }
 
   refreshPended() {
+    //console.log(this.pended)
+
     //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
     //to trigger and update using Object.assign rather than just adding a property
     this.pended = Object.assign({}, this.pended)
@@ -290,11 +355,20 @@ export class inventory {
     .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
+  //TODO: when we unpend, is that when it would transition to the picked stage? Or just get rid of the pended property of next?
   unpendInventory() {
     const term = this.repacks.drug.generic
     this.updateSelected(transaction => {
+      //console.log(transaction)
+      //console.log("UP")
+      let next = transaction.next
+      if(next[0] && next[0].pended){
+       delete next[0].pended
+       if(Object.keys(next[0]) == 0) next = [] //don't want to leave an empty object, throws off other stuff
+      }
       transaction.isChecked = false
-      transaction.next = []
+      transaction.next = next //TODO: should this add a new object to transaction.next
+      //transaction.next = []
     })
     //We must let these transactions save without next for them to appear back in inventory
    .then(_ => term ? this.selectTerm('generic', term) : this.term = '')
@@ -304,16 +378,20 @@ export class inventory {
   //1) They pick an existing pendId and _id is passed as parameter
   //2) They type in their own pendId and pendToId is passed as parameter
   //3) They do Pend New without a pendId in which case the createdAt date will be used later
-  pendInventory(_id, pendQty) {
+  pendInventory(group, pendQty) {
 
     let toPend = []
-    let next   = [{pended:{_id}, user:this.user, createdAt:new Date().toJSON()}]
-    let pendId = this.getPendId({next})
-
-    if (pendQty)
-      next[0].pended._id = pendId+' - '+pendQty
-
+    let repackQty = pendQty
+    let pended_obj = {_id:new Date().toJSON(), user:this.user, repackQty: repackQty, group: group}
+    let pendId = group// this.getPendId({next})
+    console.log("pending inventory:")
+    console.log(pended_obj)
     this.updateSelected(transaction => {
+      let next = transaction.next ? transaction.next : [{}]
+      if(next.length == 0){
+        next = [{}]
+      }
+      next[0].pended = pended_obj
       transaction.isChecked = false
       transaction.next = next
       toPend.push(transaction)
@@ -356,17 +434,39 @@ export class inventory {
   setPended(transactions) {
 
     for (let transaction of transactions) {
+      //skipped picked transactions ACTUALLY NO, we used to, but commented out. Keeping her in case
+      //of change of mind 12/31/19
+      //if(transaction.next[0].picked ? transaction.next[0].picked._id : false) continue
 
       //We want to group by PendId and not PendQty so detach pendQty from pendId and prepend it to generic instead
       let pendId  = this.getPendId(transaction)
       let pendQty = this.getPendQty(transaction)
+
       let generic = transaction.drug.generic
       let label   = generic + (pendQty ? ' - '+pendQty : '')
 
       this.pended[pendId] = this.pended[pendId] || {}
       this.pended[pendId][generic] = this.pended[pendId][generic] || {label, transactions:[]}
       this.pended[pendId][generic].transactions.push(transaction)
+
+      this.shoppingSyncPended[pendId] = this.shoppingSyncPended[pendId] || {}
+      this.shoppingSyncPended[pendId].locked =  transaction.next[0].picked ? true : false;
+      this.shoppingSyncPended[pendId].priority = transaction.next[0].pended.priority ? transaction.next[0].pended.priority : false; //this will read false for limbo-ed transaction where priority = null, but thats fine.
+      this.shoppingSyncPended[pendId][label] = this.shoppingSyncPended[pendId][label] || {}
+      this.shoppingSyncPended[pendId][label].drawerCheck = typeof transaction.next[0].pended.priority == 'undefined' ? true: (transaction.next[0].pended.priority != null)
+      this.shoppingSyncPended[pendId][label].locked = transaction.next[0].picked ? true : false;
+
+      let basketFound = transaction.next[0].picked ? (transaction.next[0].picked.basket ? true : false)  : false
+      this.shoppingSyncPended[pendId][label].basketInfo = this.shoppingSyncPended[pendId][label].basketInfo || {}
+      this.shoppingSyncPended[pendId][label].basketInfo.found = this.shoppingSyncPended[pendId][label].basketInfo.found ? this.shoppingSyncPended[pendId][label].basketInfo.found : basketFound
+      this.shoppingSyncPended[pendId][label].basketInfo.notFound = this.shoppingSyncPended[pendId][label].basketInfo.notFound ? this.shoppingSyncPended[pendId][label].basketInfo.notFound : !basketFound
+      this.shoppingSyncPended[pendId][label].basketInfo.basket = this.shoppingSyncPended[pendId][label].basketInfo.basket ? this.shoppingSyncPended[pendId][label].basketInfo.basket : (basketFound ? transaction.next[0].picked.basket  : null )
+
     }
+
+    console.log(this.shoppingSyncPended)
+    console.log(this.pended)
+
   }
 
   unsetPended(transaction) {
@@ -393,13 +493,28 @@ export class inventory {
   }
 
   dispenseInventory() {
-    const next = [{dispensed:{}, user:this.user, createdAt:new Date().toJSON()}]
-    this.updateSelected(transaction => transaction.next = next)
+    const dispensed_obj = { _id: new Date().toJSON(), user: this.user  }
+
+    this.updateSelected(transaction => {
+      let next = transaction.next
+      if(next.length == 0) next = [{}]
+      next[0].dispensed = dispensed_obj //so we don't modify other data
+
+      transaction.next = next
+    })
   }
 
   disposeInventory() {
-    const next = [{disposed:{}, user:this.user, createdAt:new Date().toJSON()}]
-    this.updateSelected(transaction => transaction.next = next)
+    const disposed_obj = { _id: new Date().toJSON(), user:  this.user  }
+
+    this.updateSelected(transaction => {
+      let next = transaction.next
+      if(next.length == 0) next = [{}]
+      next[0].disposed = disposed_obj //so we don't modify other data
+
+
+      transaction.next = next
+    })
   }
 
   //TODO this allows for mixing different NDCs with a common generic name, should we prevent this or warn the user?
@@ -418,8 +533,11 @@ export class inventory {
       return this.snackbar.show(`Repack Qty Error`)
     }
 
+    let next = this.transactions[0].next ? [{pended:this.transactions[0].next[0].pended}] :[]
+
+    //TODO: here you want to add the pended of the original transaction onto the new one don't you?
+
     let newTransactions = [],
-        next = [],
         createdAt = new Date().toJSON()
 
     //Keep record of any excess that is implicitly destroyed.  Excess must be >= 0 for recordkeeping
@@ -432,8 +550,10 @@ export class inventory {
       user:this.user,
       shipment:{_id:this.account._id},
       drug:this.repacks.drug,
-      next:[{disposed:{}, user:this.user, createdAt}]
+      next:[{ disposed: { _id: new Date().toJSON(), user:  this.user  } }]
     })
+
+
 
     //Create the new (repacked) transactions
     for (let repack of this.repacks) {
@@ -448,8 +568,10 @@ export class inventory {
         shipment:{_id:this.account._id},
         bin:repack.bin,
         drug:this.repacks.drug,
-        next:next
+        next:[]
       }
+
+
 
       //Only add to display if we are not in pended screen
       //if pended we don't want it to appear
@@ -460,6 +582,7 @@ export class inventory {
     }
 
     console.log('newTransaction',  this.repacks.length, this.repacks, newTransactions.length, newTransactions)
+
 
     //Once we have the new _ids insert them into the next property of the checked transactions
     this.db.transaction.bulkDocs(newTransactions).then(rows => {
@@ -479,11 +602,21 @@ export class inventory {
 
       console.log('Repacked vials have been created', rows)
 
-      const next = rows.map(row => {
-        return {transaction:{_id:row.id}, user:this.user, createdAt}
+
+      let repacked_obj = {_id: new Date().toJSON(),   user: this.user , transactions: [] }
+
+      const transactions_arr = rows.map(row => {
+        return {_id:row.id}
       })
 
-      this.updateSelected(transaction => transaction.next = next)
+      repacked_obj.transactions = transactions_arr
+
+      this.updateSelected(transaction => {
+        let temp_next = transaction.next
+        if(temp_next.length == 0) temp_next = [{}]
+        temp_next[0].repacked = repacked_obj
+        transaction.next = temp_next
+      })
 
       this.printLabels(newTransactions.slice(1)) //don't include the "excess" one
 
@@ -497,9 +630,11 @@ export class inventory {
 
     //getPendId from a transaction
     if (transaction) {
-      const pendId  = transaction.next[0].pended._id
-      const created = transaction.next[0].createdAt
-      return pendId ? pendId.split(' - ')[0] : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
+
+      const pendId  = transaction.next[0] ? transaction.next[0].pended.group : null
+      const created = transaction.next[0] ? transaction.next[0].pended._id : transaction._id
+
+      return pendId ? pendId : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
     }
 
     //Get the currectly selected pendId
@@ -511,8 +646,8 @@ export class inventory {
 
     //getPendId from a transaction
     if (transaction) {
-      const pendId  = transaction.next[0].pended._id
-      return pendId ? pendId.split(' - ')[1] : undefined
+      const pendId  = transaction.next[0] ? transaction.next[0].pended.repackQty : null
+      return pendId ? pendId : undefined
     }
 
     return this.term.split(' - ')[1]
@@ -569,6 +704,7 @@ export class inventory {
 
       console.log('saveAndReconcileTransaction', qtyChange, transaction.qty.to, repack.qty.to)
 
+      //TODO: what to do here?
       return this.db.transaction.query('next.transaction._id', {key:[this.account._id, transaction._id], include_docs:true}).then(res => {
 
         if ( ! res.rows.length) {
@@ -645,7 +781,7 @@ export class inventory {
       endkey:[this.account._id, 'month', year, month+'\uffff']
     }
 
-    this.db.transaction.query('inventory.qty-by-generic', opts).then(transactions => {
+    this.db.transaction.query('inventory-by-generic', opts).then(transactions => {
       this.csv.fromJSON(name, transactions.rows.map(row => {
         return {
           'drug.generic':row.key[4],
@@ -653,7 +789,8 @@ export class inventory {
           'drug.brand':row.key[6],
           'drug._id':row.key[7],
           'exp.to':row.key[8],
-          'qty.to':row.value,
+          'qty.to':row.value[0],
+          'val.to':row.value[1],
           'bin':row.key[10], //key 9 is sortedBin
           '_id':row.id
         }
@@ -893,7 +1030,7 @@ export class inventoryFilterValueConverter {
   }
 }
 
-//Allow user to search by pendId OR generic name
+//Allow user to search by pendId OR generic name OR picked bin
 export class pendedFilterValueConverter {
   toView(pended = {}, term = ''){
     term = term.toLowerCase()
@@ -903,6 +1040,24 @@ export class pendedFilterValueConverter {
         matches.unshift({key:pendId, val:pended[pendId]})
         continue
       }
+
+      //search by basket
+
+      let basketMatches = {}
+
+      for(let generic in pended[pendId]){
+        let transactions = pended[pendId][generic].transactions
+        for(var i = 0; i < transactions.length; i++){
+          if(transactions[i].next[0].picked && transactions[i].next[0].picked.basket && ~ transactions[i].next[0].picked.basket.toLowerCase().indexOf(term)){
+            basketMatches[generic] = pended[pendId][generic]
+          }
+        }
+      }
+
+      if (Object.keys(basketMatches).length)
+        matches.unshift({key:pendId, val:basketMatches})
+
+        //search by generic
 
       let genericMatches = {}
 

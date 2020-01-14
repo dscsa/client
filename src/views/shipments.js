@@ -59,7 +59,14 @@ export class shipments {
 
         this.accounts  = {
           from:[''].concat(senderAccounts
-          .map(({doc}) => {
+          .map((account) => {
+            var doc = account.doc
+
+            if ( ! doc) {
+              console.error('doc property is not set', account, senderAccounts)
+              return {}
+            }
+
             this.ordered[doc._id] = doc.ordered
             return map.from[doc._id] = {_id:doc._id, name:doc.name}
           })
@@ -353,7 +360,7 @@ export class shipments {
 
     if (verifiedAt) {
       transaction.verifiedAt = null
-      transaction.next = [{disposed:{}, createdAt:new Date().toJSON()}]
+      transaction.next = [{disposed:{_id:new Date().toJSON(), user:{_id:this.user}}}]
       transaction.bin = null
     } else {
       transaction.verifiedAt = new Date().toJSON()
@@ -415,7 +422,7 @@ export class shipments {
         from:this.transactions[0] ? this.transactions[0].exp.from : null,
         to:this.transactions[0] ? this.transactions[0].exp.to : null
       },
-      next:[{disposed:{}, createdAt:new Date().toJSON()}],
+      next:[{ disposed: { _id: new Date().toJSON(), user: { _id: this.user } } }]
     }
 
     transaction.drug = {
@@ -451,11 +458,11 @@ export class shipments {
       date = date.toJSON().slice(0, 10).split('-')
 
       //[to_id, 'month', year, month, doc.drug.generic, stage, sortedDrug]
-      this.db.transaction.query('inventory.qty-by-generic', {startkey:[this.account._id, 'month', date[0], date[1], drug.generic], endkey:[this.account._id, 'month', date[0], date[1], drug.generic, {}]})
+      this.db.transaction.query('inventory-by-generic', {startkey:[this.account._id, 'month', date[0], date[1], drug.generic], endkey:[this.account._id, 'month', date[0], date[1], drug.generic, {}]})
       .then(inventory => {
         console.log('indate inventory', minDays, date, inventory)
         let row = inventory.rows[0]
-        order.indateInventory = row ? row.value.sum : 0
+        order.indateInventory = row ? row.value[0].sum : 0
         console.log('order.inventory', this.indateInventory)
       })
     }
