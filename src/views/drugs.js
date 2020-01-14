@@ -178,6 +178,17 @@ export class drugs {
     })
   }
 
+  markHazard(){
+
+    if(this.account.hazards[this.group.generic]){
+      this.account.hazards[this.group.generic] = undefined       //then remove it from the list
+    } else {
+      this.account.hazards[this.group.generic] = {"message":"warning"}
+    }
+
+    this.saveAccount();
+  }
+
   //We might make a separate database and API out of this one day, but for now just save on account object.
   //TODO: Warn on delete since we won't save save any of the preferences?
   order() {

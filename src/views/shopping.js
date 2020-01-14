@@ -26,6 +26,8 @@ export class shopping {
     //window.removeEventListener("hashchange", this.reset)
   }
 
+
+
   activate(params) {
 
     this.db.user.session.get().then(session => {
@@ -73,7 +75,7 @@ export class shopping {
 
     //if(isLocked) return; //TODO uncommed this when we're passed initial testing
 
-    this.db.transaction.query('currently-pended-by-group-priority-generic', {group_level:5, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
+    this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
     .then(res => {
 
       console.log("result of query by order: ", res.rows)
@@ -98,7 +100,7 @@ export class shopping {
   }
 
   extractTransactonFromDocs(rows){
-    return res.rows.map(row => row.key[4])
+    return rows.map(row => row.doc)
   }
 
   //given an array of transactions, then build the shopList array
@@ -120,8 +122,10 @@ export class shopping {
         'slot_after':false,
         'missing':false,
       }
-
-      extra_data.basketNumber = raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
+      console.log("here for hazards")
+      console.log(raw_transactions[i].drug.generic)
+      console.log(this.account.hazards)
+      extra_data.basketNumber = this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
       if(!(~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic))) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic)
 
       this.shopList.push({raw: raw_transactions[i],extra: extra_data})
