@@ -43,7 +43,7 @@
       </div>
       <div class="mdl-card__actions">
         <md-button color raised style="width:100%" name = "pro_create_user_button" if.bind="users.length != 0 && ! user._rev" form disabled click.delegate="addUser()">Create User</md-button>
-        <md-button color name = "pro_switch_user_button" raised style="width:100%; padding-bottom:10px" click.delegate="switchUsers()">Switch Users</md-button>
+        <md-button color name = "pro_switch_user_button" raised style="width:100%; padding-bottom:10px" click.delegate="showUserSwitchPage()">Switch Users</md-button>
         <md-button color name = "pro_uninstall_button" raised style="width:100%" if.bind="users.length == 0 || user._id == session._id" click.delegate="logout()" disabled.bind="disableLogout">${ disableLogout || 'Uninstall' }</md-button>
         <md-button color="accent" name = "pro_delete_user_button" raised style="width:100%" if.bind="user._rev && user._id != session._id" click.delegate="deleteUser()">Delete User</md-button>
       </div>
@@ -116,7 +116,7 @@
       </div>
     </div>
 
-  <dialog ref="dialog" class="mdl-dialog" style="width:800px; top:3%; height:40%;">
+  <dialog ref="dialog" class="mdl-dialog" style="width:800px; top:3%; height:35%;">
 
     <section class="mdl-grid" style="margin-top:10vh;">
       <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
@@ -126,7 +126,7 @@
         <md-button
           name = "pro_switch_button"
           raised color form
-          click.delegate="attemptSwitch()"
+          click.delegate="switchUsers()"
           disabled.bind="disabledSwitch"
           style="padding-top:16px">
           Switch Users

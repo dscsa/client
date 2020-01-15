@@ -81,31 +81,24 @@ export class account {
     //TODO reset checkbox and show snackbar if change not made
   }
 
-
-  switchUsers(){
-    console.log("switching users")
+  showUserSwitchPage(){
     this.dialog.showModal()
   }
 
-  attemptSwitch(){
-    console.log(this.phone)
-    console.log(this.password)
+  phoneInAccount(phone){
+    for(var i = 0; i < this.users.length; i++){
+      if(this.users[i].phone == phone) return true
+    }
+    return false
+  }
 
-    //TODO here: use phone & password to try and log in, update cookies, and then refresh. do not uninstall/reinstall everything
+  switchUsers(){
 
-    this.db.user.session.post({phone:this.phone, password:this.password})
-    .then(loading => {
-      this.disabled = true
+    if(!this.phoneInAccount(this.phone)) return this.snackbar.show('Phone number is not in this account')
 
-      //wait for all resources except 'drugs' to sync
-      this.loading  = loading.resources
-      this.progress = loading.progress
-
-      return Promise.all(loading.syncing)
-    })
-    .then(resources => {
-      //TODO
-      //display success message and then close modal window and refresh page
+    this.db.user.session.post({phone:this.phone, password:this.password, switchUsers:true})
+    .then(_ => {
+      this.router.navigate('shipments')
     })
     .catch(err => {
       this.snackbar.error('Login failed', err)
@@ -113,9 +106,11 @@ export class account {
 
   }
 
+
   closeSwitchUsersDialog(){
     this.dialog.close()
   }
+  
 
   logout() {
     this.disableLogout = 'Uninstalling...'
