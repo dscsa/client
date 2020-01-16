@@ -13,14 +13,14 @@
   <require from="client/src/elems/form"></require>
 
   <style>
-    .mdl-button:hover { background-color:initial }
+    .mdl-button:hover { background-color:initial , overflow-y:scroll}
     .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}
   </style>
 
 
   <section class="mdl-grid au-animate">
 
-    <div if.bind = "!orderSelectedToShop" style="overflow-y: scroll">
+    <div if.bind = "!orderSelectedToShop">
       <md-input
         autoselect
         value.bind="pendedFilter"

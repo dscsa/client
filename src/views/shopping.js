@@ -277,6 +277,8 @@ export class shopping {
 
 
   sortTransactionsForShopping(a, b) {
+    console.log(a)
+    console.log(b)
     var aName = a.drug.generic;
     var bName = b.drug.generic;
 
