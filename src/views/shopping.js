@@ -52,14 +52,10 @@ export class shopping {
       let groups = []
       res = res.rows
 
-      for(var i = 0; i < res.length; i++){
-        if(res[i].key[2] == null) continue //if it's been unchecked so priority = null
-        if(res[i].key[3] == true) continue //if it's been fully picked so picked = true
-        groups.push({name:res[i].key[1], priority:res[i].key[2], locked: res[i].key[3] == null})
+      for(var group of res){
+        if((group.key[2] != null) && (group.key[3] != true)) groups.push({name:group.key[1], priority:group.key[2], locked: group.key[3] == null})
       }
 
-      //console.log("raw result of view of pended groups:", res)
-      //console.log("after processing to exclude unchecked or complete groups:",groups)
       this.groups = groups
     })
 
@@ -78,19 +74,13 @@ export class shopping {
     this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
     .then(res => {
 
-      //console.log("result of query by order: ", res.rows)
+      if(!res.rows.length) return
 
-      let transactions = this.extractTransactonFromDocs(res.rows)
+      this.shopList = this.prepShoppingData(res.rows.map(row => row.doc)).sort(this.sortTransactionsForShopping)
 
-      //console.log("raw transactions extracted from res.rows: ",transactions)
+      if(!this.shopList.length) return
 
-      if(transactions.length == 0) return
-
-      if(transactions) this.term = 'Pended '+groupName
-
-      this.prepShoppingData(transactions.sort(this.sortTransactionsForShopping))
-
-      if(this.shopList.length == 0) return
+      this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
 
       this.saveShoppingResults(this.shopList, 'lockdown').then(_=>{
         this.initializeShopper()
@@ -99,42 +89,35 @@ export class shopping {
     })
   }
 
-  extractTransactonFromDocs(rows){
-    return rows.map(row => row.doc)
-  }
-
   //given an array of transactions, then build the shopList array
   //which has the extra info we need to track during the shopping process
   prepShoppingData(raw_transactions) {
 
-    this.shopList = [] //going to be an array of objects, where each object is {raw:{transaction}, extra:{extra_data}}
+    let shopList = [] //going to be an array of objects, where each object is {raw:{transaction}, extra:{extra_data}}
 
     for(var i = 0; i < raw_transactions.length; i++){
 
       if(raw_transactions[i].next[0].picked) continue
 
-      var extra_data = {} //this will track info needed during the miniapp running, and which we'd need to massage later before saving
-
-      extra_data.outcome = {
-        'exact_match':false,
-        'roughly_equal':false,
-        'slot_before':false,
-        'slot_after':false,
-        'missing':false,
+      //this will track info needed during the miniapp running, and which we'd need to massage later before saving
+      var extra_data = {
+        outcome:{
+          'exact_match':false,
+          'roughly_equal':false,
+          'slot_before':false,
+          'slot_after':false,
+          'missing':false,
+        },
+        basketNumber:this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
       }
 
-      extra_data.basketNumber = this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
       if(!(~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic))) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic)
 
-      this.shopList.push({raw: raw_transactions[i],extra: extra_data})
+      shopList.push({raw: raw_transactions[i],extra: extra_data})
     }
 
     this.getImageURLS() //must use an async call to the db
-    this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
-
-    //console.log("raw transactions given to prepShoppingData:",raw_transactions)
-    //console.log("shopping list generated:",this.shopList)
-
+    return shopList
   }
 
 
@@ -172,11 +155,11 @@ export class shopping {
     for(var i = 0; i < arr_enriched_transactions.length; i++){
 
       var reformated_transaction = arr_enriched_transactions[i].raw
-      var outcome = this.getOutcome(arr_enriched_transactions[i].extra)
       let next = reformated_transaction.next
 
       if(next[0]){
         if(key == 'shopped'){
+          var outcome = this.getOutcome(arr_enriched_transactions[i].extra)
           next[0].picked = {
             _id:new Date().toJSON(),
             basket:arr_enriched_transactions[i].extra.basketNumber,
@@ -184,10 +167,15 @@ export class shopping {
             matchType:outcome,
             user:this.user,
           }
+
         } else if(key == 'unlock'){
-          let res4 = delete next[0].picked
+
+          delete next[0].picked
+
         } else if(key == 'lockdown'){
+
           next[0].picked = {}
+
         }
       }
 
@@ -197,7 +185,6 @@ export class shopping {
     }
 
     console.log("saving these transactions",transactions_to_save)
-
     return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res))).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
@@ -207,7 +194,7 @@ export class shopping {
 
   moveShoppingForward(){
 
-    if(this.shoppingIndex == this.shopList.length -1){ //then we're finished
+    if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
 
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
       then(_=>{

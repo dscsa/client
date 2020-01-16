@@ -3775,10 +3775,21 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         var groups = [];
         res = res.rows;
 
-        for (var i = 0; i < res.length; i++) {
-          if (res[i].key[2] == null) continue;
-          if (res[i].key[3] == true) continue;
-          groups.push({ name: res[i].key[1], priority: res[i].key[2], locked: res[i].key[3] == null });
+        for (var _iterator = res, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+          var _ref;
+
+          if (_isArray) {
+            if (_i >= _iterator.length) break;
+            _ref = _iterator[_i++];
+          } else {
+            _i = _iterator.next();
+            if (_i.done) break;
+            _ref = _i.value;
+          }
+
+          var group = _ref;
+
+          if (group.key[2] != null && group.key[3] != true) groups.push({ name: group.key[1], priority: group.key[2], locked: group.key[3] == null });
         }
 
         _this2.groups = groups;
@@ -3790,15 +3801,15 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       this.db.transaction.query('currently-pended-by-group-priority-generic', { include_docs: true, reduce: false, startkey: [this.account._id, groupName], endkey: [this.account._id, groupName + '\uFFFF'] }).then(function (res) {
 
-        var transactions = _this3.extractTransactonFromDocs(res.rows);
+        if (!res.rows.length) return;
 
-        if (transactions.length == 0) return;
+        _this3.shopList = _this3.prepShoppingData(res.rows.map(function (row) {
+          return row.doc;
+        })).sort(_this3.sortTransactionsForShopping);
 
-        if (transactions) _this3.term = 'Pended ' + groupName;
+        if (!_this3.shopList.length) return;
 
-        _this3.prepShoppingData(transactions.sort(_this3.sortTransactionsForShopping));
-
-        if (_this3.shopList.length == 0) return;
+        _this3.filter = {};
 
         _this3.saveShoppingResults(_this3.shopList, 'lockdown').then(function (_) {
           _this3.initializeShopper();
@@ -3806,38 +3817,31 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       });
     };
 
-    shopping.prototype.extractTransactonFromDocs = function extractTransactonFromDocs(rows) {
-      return rows.map(function (row) {
-        return row.doc;
-      });
-    };
-
     shopping.prototype.prepShoppingData = function prepShoppingData(raw_transactions) {
 
-      this.shopList = [];
+      var shopList = [];
 
       for (var i = 0; i < raw_transactions.length; i++) {
 
         if (raw_transactions[i].next[0].picked) continue;
 
-        var extra_data = {};
+        var extra_data = {
+          outcome: {
+            'exact_match': false,
+            'roughly_equal': false,
+            'slot_before': false,
+            'slot_after': false,
+            'missing': false
+          },
+          basketNumber: this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' };
 
-        extra_data.outcome = {
-          'exact_match': false,
-          'roughly_equal': false,
-          'slot_before': false,
-          'slot_after': false,
-          'missing': false
-        };
-
-        extra_data.basketNumber = this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R';
         if (!~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic)) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic);
 
-        this.shopList.push({ raw: raw_transactions[i], extra: extra_data });
+        shopList.push({ raw: raw_transactions[i], extra: extra_data });
       }
 
       this.getImageURLS();
-      this.filter = {};
+      return shopList;
     };
 
     shopping.prototype.initializeShopper = function initializeShopper() {
@@ -3867,11 +3871,11 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       for (var i = 0; i < arr_enriched_transactions.length; i++) {
 
         var reformated_transaction = arr_enriched_transactions[i].raw;
-        var outcome = this.getOutcome(arr_enriched_transactions[i].extra);
         var next = reformated_transaction.next;
 
         if (next[0]) {
           if (key == 'shopped') {
+            var outcome = this.getOutcome(arr_enriched_transactions[i].extra);
             next[0].picked = {
               _id: new Date().toJSON(),
               basket: arr_enriched_transactions[i].extra.basketNumber,
@@ -3880,8 +3884,10 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
               user: this.user
             };
           } else if (key == 'unlock') {
-            var res4 = delete next[0].picked;
+
+            delete next[0].picked;
           } else if (key == 'lockdown') {
+
             next[0].picked = {};
           }
         }
@@ -3891,7 +3897,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       }
 
       console.log("saving these transactions", transactions_to_save);
-
       return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
         return console.log("results of saving" + JSON.stringify(res));
       }).catch(function (err) {
