@@ -3802,13 +3802,11 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       this.groupLoaded = false;
       this.orderSelectedToShop = true;
-      this.loadingMessage = 'Loading';
+      this.loadingMessage = 'Loading.';
 
       if (isLocked) return;
 
       this.db.transaction.query('currently-pended-by-group-priority-generic', { include_docs: true, reduce: false, startkey: [this.account._id, groupName], endkey: [this.account._id, groupName + '\uFFFF'] }).then(function (res) {
-
-        _this3.loadingMessage = 'Loading.';
 
         if (!res.rows.length) return;
 
@@ -3823,9 +3821,13 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         _this3.filter = {};
 
         _this3.saveShoppingResults(_this3.shopList, 'lockdown').then(function (_) {
-          _this3.loadingMessage = 'Loading...';
-          _this3.initializeShopper();
-        }).bind(_this3);
+          console.log("saved correctly");
+        }).catch(function (err) {
+          console.log("error -- do something here, like returning");
+        });
+
+        _this3.loadingMessage = 'Loading...';
+        _this3.initializeShopper();
       });
     };
 

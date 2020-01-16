@@ -71,14 +71,12 @@ export class shopping {
   selectGroup(isLocked, groupName) {
     this.groupLoaded = false
     this.orderSelectedToShop = true
-    this.loadingMessage = 'Loading'
+    this.loadingMessage = 'Loading.'
 
     if(isLocked) return; //TODO uncommed this when we're passed initial testing
 
     this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
     .then(res => {
-
-      this.loadingMessage = 'Loading.'
 
       if(!res.rows.length) return
 
@@ -91,9 +89,13 @@ export class shopping {
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
 
       this.saveShoppingResults(this.shopList, 'lockdown').then(_=>{
-        this.loadingMessage = 'Loading...'
-        this.initializeShopper()
-      }).bind(this)
+        console.log("saved correctly")
+      }).catch(err => {
+        console.log("error -- do something here, like returning");
+      })
+      
+      this.loadingMessage = 'Loading...'
+      this.initializeShopper()
 
     })
   }
