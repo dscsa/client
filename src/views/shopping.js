@@ -93,7 +93,7 @@ export class shopping {
       }).catch(err => {
         console.log("error -- do something here, like returning");
       })
-      
+
       this.loadingMessage = 'Loading...'
       this.initializeShopper()
 
@@ -224,11 +224,13 @@ export class shopping {
 
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
-      then(_=>{
-        this.shoppingIndex += 1
-        this.formComplete = (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
-        if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
-      }).bind(this)
+      catch(err => {
+        console.log("Error")
+      })
+      
+      this.shoppingIndex += 1
+      this.formComplete = (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
+      if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
 
     }
   }

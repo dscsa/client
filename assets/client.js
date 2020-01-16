@@ -3934,11 +3934,13 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           this.snackbar.show('Different drug name, enter new basket number');
         }
 
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
-          _this5.shoppingIndex += 1;
-          _this5.formComplete = _this5.shopList[_this5.shoppingIndex].extra.basketNumber.length > 1 && _this5.someOutcomeSelected(_this5.shopList[_this5.shoppingIndex].extra.outcome);
-          if (_this5.shoppingIndex == _this5.shopList.length - 1) _this5.setNextToSave();
-        }).bind(this);
+        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').catch(function (err) {
+          console.log("Error");
+        });
+
+        this.shoppingIndex += 1;
+        this.formComplete = this.shopList[this.shoppingIndex].extra.basketNumber.length > 1 && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome);
+        if (this.shoppingIndex == this.shopList.length - 1) this.setNextToSave();
       }
     };
 
