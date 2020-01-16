@@ -20,7 +20,7 @@
 
   <section class="mdl-grid au-animate" style="overflow-y:scroll">
 
-    <div if.bind = "!orderSelectedToShop" style="overflow-y:scroll">
+    <div if.bind = "!orderSelectedToShop" style="overflow-y:scroll; height:100%">
       <md-input
         autoselect
         value.bind="pendedFilter"
@@ -28,7 +28,7 @@
         Select Group
       </md-input>
 
-      <div repeat.for="pend of groups | pendedFilter:pendedFilter" style="overflow-y:scroll">
+      <div repeat.for="pend of groups | pendedFilter:pendedFilter">
         <div
           click.delegate="selectGroup(pend.locked, pend.name)"
           class="mdl-typography--title ${ term == 'Pended '+pend.name ? 'mdl-navigation__link--current' : ''}"
