@@ -3916,14 +3916,14 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       if (this.shoppingIndex == this.shopList.length - 1) {
 
+        this.resetShopper();
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
           _this5.refreshPendedGroups();
-          _this5.resetShopper();
         }).bind(this);
       } else {
         if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
           this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
-        } else {
+        } else if (this.shopList[this.shoppingIndex + 1].extra.basketNumber.length == 1) {
           this.snackbar.show('Different generic, enter new basket number');
         }
 
@@ -3962,7 +3962,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       if (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) {
         this.formComplete = true;
       } else {
-        this.snackbar.show('Must enter basket number');
+        this.snackbar.show('Enter basket number');
         return;
       }
 
@@ -4023,7 +4023,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       }
     };
 
-    shopping.prototype.someOutcomeSelected = function someOutcomeSelected(outcomeObj) {
+    shopping.prototype.someOutcomeSelected = function someOutcomeSelected(outcomeObj_all_docs) {
       return ~Object.values(outcomeObj).indexOf(true);
     };
 
@@ -4045,18 +4045,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         if (extraItemData.outcome[possibility]) res += possibility;
       }
       return res;
-    };
-
-    shopping.prototype.getPendId = function getPendId(transaction) {
-      if (transaction) {
-
-        var pendId = transaction.next[0] ? transaction.next[0].pended.group : null;
-        var created = transaction.next[0] ? transaction.next[0].pended._id : transaction._id;
-
-        return pendId ? pendId : created.slice(5, 16).replace('T', ' ');
-      }
-
-      return this.term.replace('Pended ', '').split(': ')[0];
     };
 
     shopping.prototype.sortOrders = function sortOrders(arr) {

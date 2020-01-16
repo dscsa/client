@@ -199,10 +199,10 @@ export class shopping {
 
     if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
 
+      this.resetShopper()
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
       then(_=>{
         this.refreshPendedGroups()
-        this.resetShopper()
       }).bind(this)
 
     } else {
@@ -210,7 +210,7 @@ export class shopping {
       //if next one has the same drug , then pass the basket number forward
       if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
-      } else {
+      } else if(this.shopList[this.shoppingIndex+1].extra.basketNumber.length == 1){
         this.snackbar.show('Different generic, enter new basket number')
       }
 
@@ -235,7 +235,7 @@ export class shopping {
   //will save all fully shopped items, and unlock remaining ones
   pauseShopping(){
     this.resetShopper() //do this first, then handle saving and redisplaying other data, so its more responsive
-    
+
     this.saveShoppingResults(this.shopList.slice(0,this.shoppingIndex), 'shopped').then(_=>{
       this.saveShoppingResults(this.shopList.slice(this.shoppingIndex), 'unlock').then(_=>{
         this.refreshPendedGroups() //recalculate in case there were changes, others picked orders, etc
@@ -253,7 +253,7 @@ export class shopping {
     if(this.shopList[this.shoppingIndex].extra.basketNumber.length > 1){
       this.formComplete = true;
     } else {
-      this.snackbar.show('Must enter basket number')
+      this.snackbar.show('Enter basket number')
       return
     }
 
@@ -319,7 +319,7 @@ export class shopping {
   }
 
   //shortcut to look at the outcome object and check if any values are set to true
-  someOutcomeSelected(outcomeObj){
+  someOutcomeSelected(outcomeObj_all_docs){
     return ~Object.values(outcomeObj).indexOf(true)
   }
 
@@ -342,20 +342,6 @@ export class shopping {
       if(extraItemData.outcome[possibility]) res += possibility //this could be made to append into a magic string if there's multiple conditions we want to allow
     }
     return res
-  }
-
-
-  getPendId(transaction) {
-    //getPendId from a transaction
-    if (transaction) {
-
-      const pendId  = transaction.next[0] ? transaction.next[0].pended.group : null
-      const created = transaction.next[0] ? transaction.next[0].pended._id : transaction._id
-
-      return pendId ? pendId : created.slice(5, 16).replace('T', ' ')  //Google App Script is using Pend Id as "Order# - Qty" and we want to group only by Order#.
-    }
-
-    return this.term.replace('Pended ', '').split(': ')[0]
   }
 
 
