@@ -76,10 +76,7 @@ export class shopping {
 
       if(!res.rows.length) return
 
-      this.shopList = this.prepShoppingData(res.rows.map(row => {
-        console.log(row.doc)
-        return row.doc
-      }).sort(this.sortTransactionsForShopping))
+      this.shopList = this.prepShoppingData(res.rows.map(row => row.doc).sort(this.sortTransactionsForShopping))
 
       if(!this.shopList.length) return
 
@@ -187,7 +184,7 @@ export class shopping {
 
     }
 
-    console.log("saving these transactions",transactions_to_save)
+    console.log("saving these transactions", JSON.stringify(transactions_to_save))
     return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res))).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
@@ -277,8 +274,7 @@ export class shopping {
 
 
   sortTransactionsForShopping(a, b) {
-    console.log(a)
-    console.log(b)
+
     var aName = a.drug.generic;
     var bName = b.drug.generic;
 

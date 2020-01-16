@@ -3804,7 +3804,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         if (!res.rows.length) return;
 
         _this3.shopList = _this3.prepShoppingData(res.rows.map(function (row) {
-          console.log(row.doc);
           return row.doc;
         }).sort(_this3.sortTransactionsForShopping));
 
@@ -3897,7 +3896,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         transactions_to_save.push(reformated_transaction);
       }
 
-      console.log("saving these transactions", transactions_to_save);
+      console.log("saving these transactions", JSON.stringify(transactions_to_save));
       return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
         return console.log("results of saving" + JSON.stringify(res));
       }).catch(function (err) {
@@ -3974,8 +3973,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.sortTransactionsForShopping = function sortTransactionsForShopping(a, b) {
-      console.log(a);
-      console.log(b);
+
       var aName = a.drug.generic;
       var bName = b.drug.generic;
 
