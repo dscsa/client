@@ -68,6 +68,7 @@ export class shopping {
   //requires selecting the right transactions, and creating the shopList array of object to store,
   //for each transaction, the raw data item from the dB, as well as the extra info we need to track while the app is runnign
   selectGroup(isLocked, groupName) {
+    this.groupLoaded = false
     this.orderSelectedToShop = true
 
     if(isLocked) return; //TODO uncommed this when we're passed initial testing
@@ -125,7 +126,7 @@ export class shopping {
   //Display and set relavant variables to display a group
   initializeShopper(){
     this.shoppingIndex = 0
-    this.orderSelectedToShop = true
+    this.groupLoaded = true
 
     if(this.shopList.length == 1){
       this.setNextToSave()
