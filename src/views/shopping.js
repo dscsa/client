@@ -79,7 +79,7 @@ export class shopping {
       this.shopList = this.prepShoppingData(res.rows.map(row => {
         console.log(row.doc)
         return row.doc
-      } )).sort(this.sortTransactionsForShopping)
+      }).sort(this.sortTransactionsForShopping))
 
       if(!this.shopList.length) return
 
