@@ -40,8 +40,8 @@
 
     <div if.bind = "orderSelectedToShop">
 
-      <div if.bind = "!groupLoaded" style="margin-top:50vh; margin-left:50vw">
-        Loading
+      <div if.bind = "!groupLoaded" style="margin-top:40vh; margin-left:35vw; font-size:5vh">
+        ${loadingMessage}
       </div>
 
       <div style="width:100%; height:100vh; position:relative" if.bind = "groupLoaded">
