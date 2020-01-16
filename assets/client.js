@@ -3924,7 +3924,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
           this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
         } else {
-          this.snackbar.show('Different drug name, enter new basket number');
+          this.snackbar.show('Different generic, enter new basket number');
         }
 
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped');
@@ -3946,10 +3946,11 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.pauseShopping = function pauseShopping() {
       var _this6 = this;
 
+      this.resetShopper();
+
       this.saveShoppingResults(this.shopList.slice(0, this.shoppingIndex), 'shopped').then(function (_) {
         _this6.saveShoppingResults(_this6.shopList.slice(_this6.shoppingIndex), 'unlock').then(function (_) {
           _this6.refreshPendedGroups();
-          _this6.resetShopper();
         }).bind(_this6);
       }).bind(this);
     };

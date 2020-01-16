@@ -17,7 +17,6 @@ export class shopping {
     this.orderSelectedToShop = false
     this.formComplete = false
     this.uniqueDrugsInOrder = []
-    this.loadingMessage = ''
 
     this.canActivate     = canActivate
     this.currentDate     = currentDate
@@ -48,7 +47,6 @@ export class shopping {
   refreshPendedGroups(){
     this.db.transaction.query('currently-pended-by-group-priority-generic', {group_level:4})
     .then(res => {
-      //console.log('result of query:', res)
       //key = [account._id, group, priority, picked (true, false, null=locked), full_doc]
       let groups = []
       res = res.rows
@@ -64,16 +62,12 @@ export class shopping {
 
 
 
-  //Given the pendedkey to identify the order, take all the items in that order
-  //and display them one at a time for shopper.
-  //requires selecting the right transactions, and creating the shopList array of object to store,
-  //for each transaction, the raw data item from the dB, as well as the extra info we need to track while the app is runnign
   selectGroup(isLocked, groupName) {
-    this.groupLoaded = false
-    this.orderSelectedToShop = true
-    this.loadingMessage = 'Loading.'
 
     if(isLocked) return; //TODO uncommed this when we're passed initial testing
+
+    this.groupLoaded = false
+    this.orderSelectedToShop = true
 
     this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
     .then(res => {
@@ -82,19 +76,12 @@ export class shopping {
 
       this.shopList = this.prepShoppingData(res.rows.map(row => row.doc).sort(this.sortTransactionsForShopping))
 
-      this.loadingMessage = 'Loading..'
-
       if(!this.shopList.length) return
 
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
 
-      this.saveShoppingResults(this.shopList, 'lockdown').then(_=>{
-        console.log("saved correctly")
-      }).catch(err => {
-        console.log("error -- do something here, like returning");
-      })
+      this.saveShoppingResults(this.shopList, 'lockdown')
 
-      this.loadingMessage = 'Loading...'
       this.initializeShopper()
 
     })
@@ -196,7 +183,12 @@ export class shopping {
     }
 
     console.log("saving these transactions", JSON.stringify(transactions_to_save))
-    return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res))).catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+    return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res)))
+    .catch(err => {
+      this.snackbar.error('Error loading/saving. Contact Adam', err)
+      console.log("error saving:", JSON.stringify(err))
+      this.resetShopper(); //in case error locking down
+    })
   }
 
 
@@ -219,15 +211,12 @@ export class shopping {
       if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
       } else {
-        this.snackbar.show('Different drug name, enter new basket number')
+        this.snackbar.show('Different generic, enter new basket number')
       }
 
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
-      catch(err => {
-        console.log("Error")
-      })
-      
+      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
+
       this.shoppingIndex += 1
       this.formComplete = (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
       if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
@@ -245,10 +234,11 @@ export class shopping {
 
   //will save all fully shopped items, and unlock remaining ones
   pauseShopping(){
+    this.resetShopper() //do this first, then handle saving and redisplaying other data, so its more responsive
+    
     this.saveShoppingResults(this.shopList.slice(0,this.shoppingIndex), 'shopped').then(_=>{
       this.saveShoppingResults(this.shopList.slice(this.shoppingIndex), 'unlock').then(_=>{
         this.refreshPendedGroups() //recalculate in case there were changes, others picked orders, etc
-        this.resetShopper()
       }).bind(this)
     }).bind(this)
   }
