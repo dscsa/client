@@ -3799,6 +3799,10 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.selectGroup = function selectGroup(isLocked, groupName) {
       var _this3 = this;
 
+      this.orderSelectedToShop = true;
+
+      if (isLocked) return;
+
       this.db.transaction.query('currently-pended-by-group-priority-generic', { include_docs: true, reduce: false, startkey: [this.account._id, groupName], endkey: [this.account._id, groupName + '\uFFFF'] }).then(function (res) {
 
         if (!res.rows.length) return;

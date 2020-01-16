@@ -68,8 +68,9 @@ export class shopping {
   //requires selecting the right transactions, and creating the shopList array of object to store,
   //for each transaction, the raw data item from the dB, as well as the extra info we need to track while the app is runnign
   selectGroup(isLocked, groupName) {
+    this.orderSelectedToShop = true
 
-    //if(isLocked) return; //TODO uncommed this when we're passed initial testing
+    if(isLocked) return; //TODO uncommed this when we're passed initial testing
 
     this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
     .then(res => {
