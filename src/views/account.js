@@ -94,13 +94,19 @@ export class account {
 
   switchUsers(){
 
+    console.log("switching users")
+
     if(!this.phoneInAccount(this.phone)) return this.snackbar.show('Phone number is not in this account')
+
+    console.log("passed the check")
 
     this.db.user.session.post({phone:this.phone, password:this.password, switchUsers:true})
     .then(_ => {
+      console.log("user switched")
       this.router.navigate('shipments')
     })
     .catch(err => {
+      console.log("error:", err)
       this.snackbar.error('Login failed', err)
     })
 
