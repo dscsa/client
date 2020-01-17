@@ -1562,7 +1562,6 @@ define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouc
       this.snackbar.show('Switching User');
 
       this.db.user.session.post({ phone: this.phone, password: this.password, switchUsers: true }).then(function (_) {
-        console.log("user switched");
         _this6.router.navigate('shipments');
       }).catch(function (err) {
         console.log("error:", err);
