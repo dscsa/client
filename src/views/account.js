@@ -100,6 +100,8 @@ export class account {
 
     console.log("passed the check")
 
+    this.snackbar.show(`Switching User`) //'transaction.csv'
+
     this.db.user.session.post({phone:this.phone, password:this.password, switchUsers:true})
     .then(_ => {
       console.log("user switched")
