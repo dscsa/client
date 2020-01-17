@@ -28,32 +28,29 @@
     </a>
   </md-drawer>
 
-  <dialog ref="dialog" class="mdl-dialog" style="width:800px; top:3%; height:35%;">
-
-    <section class="mdl-grid" style="margin-top:10vh;">
-      <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
-
-        <md-input name = "pro_phone" value.bind="phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
-        <md-input name = "pro_password" value.bind="password" type="password" required minlength="4">Password</md-input>
-        <md-button
-          name = "pro_switch_button"
-          raised color form
-          click.delegate="switchUsers()"
-          disabled.bind="disabledSwitch"
-          style="padding-top:16px">
-          Switch Users
-        </md-button>
-
-      </form>
-    </section>
-
-    <div class="mdl-dialog__actions">
-      <md-button click.delegate="closeSwitchUsersDialog()">Exit</md-button>
-    </div>
-
-  </dialog>
-  
   <section class="mdl-grid au-animate">
+    <dialog ref="dialog" class="mdl-dialog" style="width:800px; top:3%; height:35%;">
+
+      <section class="mdl-grid" style="margin-top:10vh;">
+        <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
+          <md-input name = "pro_phone" value.bind="phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
+          <md-input name = "pro_password" value.bind="password" type="password" required minlength="4">Password</md-input>
+          <md-button
+            name = "pro_switch_button"
+            raised color form
+            click.delegate="switchUsers()"
+            disabled.bind="disabledSwitch"
+            style="padding-top:16px">
+            Switch Users
+          </md-button>
+        </form>
+      </section>
+
+      <div class="mdl-dialog__actions">
+        <md-button click.delegate="closeSwitchUsersDialog()">Exit</md-button>
+      </div>
+    </dialog>
+
     <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--4-col full-height">
       <div class="mdl-card__title">
         <div class="mdl-card__title-text">
