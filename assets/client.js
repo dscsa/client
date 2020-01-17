@@ -1545,7 +1545,7 @@ define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouc
 
     account.prototype.phoneInAccount = function phoneInAccount(phone) {
       for (var i = 0; i < this.users.length; i++) {
-        if (this.users[i].phone == phone) return true;
+        if (this.users[i].phone.replace(/-/g, '') == phone.replace(/-/g, '')) return true;
       }
       return false;
     };
