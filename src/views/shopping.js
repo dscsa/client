@@ -35,6 +35,8 @@ export class shopping {
       this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
+      if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
+
       this.db.account.get(session.account._id).then(account => this.account = account)
 
       this.refreshPendedGroups()
@@ -319,7 +321,7 @@ export class shopping {
   }
 
   //shortcut to look at the outcome object and check if any values are set to true
-  someOutcomeSelected(outcomeObj_all_docs){
+  someOutcomeSelected(outcomeObj){
     return ~Object.values(outcomeObj).indexOf(true)
   }
 
