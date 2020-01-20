@@ -28,11 +28,11 @@
     </a>
   </md-drawer>
 
-  <section class="mdl-grid au-animate">
-    <dialog ref="dialog" class="mdl-dialog" style="width:800px; top:3%; height:35%;">
+  <section class="mdl-grid">
 
+    <dialog ref="dialog" class="mdl-dialog" style="width:800px; top:3%; height:35%;">
       <section class="mdl-grid" style="margin-top:10vh;">
-        <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
+        <form class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
           <md-input name = "pro_phone" value.bind="phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
           <md-input name = "pro_password" value.bind="password" type="password" required minlength="4">Password</md-input>
           <md-button
@@ -44,9 +44,8 @@
           </md-button>
         </form>
       </section>
-
       <div class="mdl-dialog__actions">
-        <md-button click.delegate="closeSwitchUsersDialog()">Exit</md-button>
+        <md-button click.delegate="closeSwitchUsersDialog()">Close</md-button>
       </div>
     </dialog>
 
@@ -66,7 +65,7 @@
       <div class="mdl-card__actions">
         <md-button color raised style="width:100%" name = "pro_create_user_button" if.bind="users.length != 0 && ! user._rev" form disabled click.delegate="addUser()">Create User</md-button>
         <md-button color name = "pro_switch_user_button" raised style="width:100%; padding-bottom:10px" click.delegate="showUserSwitchPage()">Switch Users</md-button>
-        <md-button color name = "pro_uninstall_button" raised style="width:100%" if.bind="users.length == 0 || user._id == session._id" click.delegate="logout()" disabled.bind="disableLogout">${ disableLogout || 'Uninstall' }</md-button>
+        <md-button color="accent" name = "pro_uninstall_button" raised style="width:100%" if.bind="users.length == 0 || user._id == session._id" click.delegate="logout()" disabled.bind="disableLogout">${ disableLogout || 'Uninstall' }</md-button>
         <md-button color="accent" name = "pro_delete_user_button" raised style="width:100%" if.bind="user._rev && user._id != session._id" click.delegate="deleteUser()">Delete User</md-button>
       </div>
     </form>
