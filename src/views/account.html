@@ -38,8 +38,9 @@
           <md-button
             name = "pro_switch_button"
             raised color form
-            click.delegate="switchUsers()"
-            style="padding-top:16px">
+            if.bind="users.length == 0 || user._id == session._id"
+            click.delegate="switchUsers($event)"
+            style="padding-top:16px; width:100%">
             Switch Users
           </md-button>
         </form>
@@ -64,7 +65,7 @@
       </div>
       <div class="mdl-card__actions">
         <md-button color raised style="width:100%" name = "pro_create_user_button" if.bind="users.length != 0 && ! user._rev" form disabled click.delegate="addUser()">Create User</md-button>
-        <md-button color name = "pro_switch_user_button" raised style="width:100%; padding-bottom:10px" click.delegate="showUserSwitchPage()">Switch Users</md-button>
+        <md-button color raised name = "pro_switch_user_button" if.bind="users.length == 0 || user._id == session._id" raised style="width:100%;" click.delegate="showUserSwitchPage($event)">Switch Users</md-button>
         <md-button color="accent" name = "pro_uninstall_button" raised style="width:100%" if.bind="users.length == 0 || user._id == session._id" click.delegate="logout()" disabled.bind="disableLogout">${ disableLogout || 'Uninstall' }</md-button>
         <md-button color="accent" name = "pro_delete_user_button" raised style="width:100%" if.bind="user._rev && user._id != session._id" click.delegate="deleteUser()">Delete User</md-button>
       </div>

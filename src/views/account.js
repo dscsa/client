@@ -81,7 +81,8 @@ export class account {
     //TODO reset checkbox and show snackbar if change not made
   }
 
-  showUserSwitchPage(){
+  showUserSwitchPage(event){
+    console.log("clicked on switch user button and read as: " + event.target.tagName)
     this.dialog.showModal()
   }
 
@@ -92,7 +93,8 @@ export class account {
     return false
   }
 
-  switchUsers(){
+  switchUsers(event){
+    console.log(event.target.tagName)
 
     console.log("switching users")
 
