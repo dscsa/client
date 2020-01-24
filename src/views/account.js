@@ -20,6 +20,7 @@ export class account {
     this.db.user.session.get().then(session => {
 
       this.session = session
+      this.switchUserText = "Switch User"
 
       //TODO allow a valueConverter for each state or do a new search
       this.db.account.allDocs({include_docs:true, endkey:'_design'}).then(accounts => {
@@ -81,8 +82,7 @@ export class account {
     //TODO reset checkbox and show snackbar if change not made
   }
 
-  showUserSwitchPage(event){
-    console.log("clicked on switch user button and read as: " + event.target.tagName)
+  showUserSwitchPage(){
     this.dialog.showModal()
   }
 
@@ -94,7 +94,7 @@ export class account {
   }
 
   switchUsers(event){
-    console.log(event.target.tagName)
+    console.log("clicked on switch user button and read as: " + event.target.tagName)
 
     console.log("switching users")
 
@@ -102,7 +102,9 @@ export class account {
 
     console.log("passed the check")
 
-    this.snackbar.show(`Switching User`) //'transaction.csv'
+    this.switchUserText = "Switching..."
+
+    //this.snackbar.show(`Switching User`) //'transaction.csv'
 
     this.db.user.session.post({phone:this.phone, password:this.password, switchUsers:true})
     .then(_ => {
