@@ -1554,9 +1554,7 @@ define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouc
     account.prototype.switchUsers = function switchUsers(event) {
       var _this6 = this;
 
-      console.log("clicked on switch user button and read as: " + event.target.tagName);
-
-      console.log("switching users");
+      console.log("clicked on switch user button and read as (should say BUTTON): " + event.target.tagName);
 
       if (!this.phoneInAccount(this.phone)) return this.snackbar.show('Phone number is not in this account');
 
@@ -1569,6 +1567,7 @@ define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouc
       }).catch(function (err) {
         console.log("error:", err);
         _this6.snackbar.error('Login failed', err);
+        _this6.switchUserText = "Switch User";
       });
     };
 

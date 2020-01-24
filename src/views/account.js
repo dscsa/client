@@ -94,9 +94,7 @@ export class account {
   }
 
   switchUsers(event){
-    console.log("clicked on switch user button and read as: " + event.target.tagName)
-
-    console.log("switching users")
+    console.log("clicked on switch user button and read as (should say BUTTON): " + event.target.tagName)
 
     if(!this.phoneInAccount(this.phone)) return this.snackbar.show('Phone number is not in this account')
 
@@ -104,7 +102,6 @@ export class account {
 
     this.switchUserText = "Switching..."
 
-    //this.snackbar.show(`Switching User`) //'transaction.csv'
 
     this.db.user.session.post({phone:this.phone, password:this.password, switchUsers:true})
     .then(_ => {
@@ -114,6 +111,8 @@ export class account {
     .catch(err => {
       console.log("error:", err)
       this.snackbar.error('Login failed', err)
+      this.switchUserText = "Switch User"
+
     })
 
   }
