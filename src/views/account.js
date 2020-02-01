@@ -20,6 +20,7 @@ export class account {
     this.db.user.session.get().then(session => {
 
       this.session = session
+      this.switchUserText = "Switch User"
 
       //TODO allow a valueConverter for each state or do a new search
       this.db.account.allDocs({include_docs:true, endkey:'_design'}).then(accounts => {
@@ -80,6 +81,47 @@ export class account {
     .catch(err => console.error('account.authorize', err))
     //TODO reset checkbox and show snackbar if change not made
   }
+
+  showUserSwitchPage(){
+    this.dialog.showModal()
+  }
+
+  phoneInAccount(phone){
+    for(var i = 0; i < this.users.length; i++){
+      if(this.users[i].phone.replace(/-/g,'') == phone.replace(/-/g,'')) return true
+    }
+    return false
+  }
+
+  switchUsers(event){
+    console.log("clicked on switch user button and read as (should say BUTTON): " + event.target.tagName)
+
+    if(!this.phoneInAccount(this.phone)) return this.snackbar.show('Phone number is not in this account')
+
+    console.log("passed the check")
+
+    this.switchUserText = "Switching..."
+
+
+    this.db.user.session.post({phone:this.phone, password:this.password, switchUsers:true})
+    .then(_ => {
+      //console.log("user switched")
+      this.router.navigate('shipments')
+    })
+    .catch(err => {
+      console.log("error:", err)
+      this.snackbar.error('Login failed', err)
+      this.switchUserText = "Switch User"
+
+    })
+
+  }
+
+
+  closeSwitchUsersDialog(){
+    this.dialog.close()
+  }
+
 
   logout() {
     this.disableLogout = 'Uninstalling...'

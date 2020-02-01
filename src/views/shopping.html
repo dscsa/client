@@ -13,14 +13,14 @@
   <require from="client/src/elems/form"></require>
 
   <style>
-    .mdl-button:hover { background-color:initial }
+    .mdl-button:hover { background-color:initial , overflow-y:scroll}
     .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}
   </style>
 
 
-  <section class="mdl-grid au-animate">
+  <section class="mdl-grid au-animate" style="overflow-y:scroll">
 
-    <div if.bind = "!orderSelectedToShop">
+    <div if.bind = "!orderSelectedToShop" style="overflow-y:scroll; height:100vh">
       <md-input
         autoselect
         value.bind="pendedFilter"
@@ -38,65 +38,72 @@
       </div>
     </div>
 
-    <div style="width:100%; height:100vh; position:relative" if.bind = "orderSelectedToShop">
+    <div if.bind = "orderSelectedToShop">
 
-      <div style="width:100%; display:inline-block; padding-bottom:5px">
-         <md-input  type="tel" style="float:left; font-size:20px; width:40%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input>
-         <md-button style="float:right; height:30px" color click.delegate="pauseShopping()">Pause</md-button>
+      <div if.bind = "!groupLoaded" style="margin-top:40vh; margin-left:35vw; font-size:5vh">
+        Loading...
       </div>
 
-      <div style="width:100%;">
-        <div style="font-size:4.6vh; line-height:5vh;">${shopList[shoppingIndex].raw.drug.generic}</div>
-        <div style="font-size:20px; line-height:25px;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
-      </div>
+      <div style="width:100%; height:100vh; position:relative" if.bind = "groupLoaded">
 
-      <div style="width:100%;display:inline-block; text-align:center;">
-
-        <div style="float:left; text-align:left; height:100%;vertical-align:middle">
-          <div style="font-size:55px; line-height:60px; padding-bottom:15px; margin-top:20px;">${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</div>
-          <div style="font-size:30px;padding-bottom:7px"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
-          <div style="font-size:20px"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
-        </div>
-        <img
-          style="height:50%;width:50%;float:right"
-          if.bind="shopList[shoppingIndex].extra.image"
-          src.bind="shopList[shoppingIndex].extra.image"/>
-      </div>
-
-      <div style="width:100%;display:inline-block; padding-bottom:5px">
-        <div style="width:50%; float:left">
-          <div style="font-size:20px; line-height:25px; margin-top:20px;word-wrap:break-word; padding-bottom:10px"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
-          <div style="font-size:20px; line-height:25px; padding-bottom:10px">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
-          <div style="font-size:20px; line-height:25px; padding-bottom:10px">Drug <b>${uniqueDrugsInOrder.indexOf(shopList[shoppingIndex].raw.drug.generic)+1}</b> of <b>${uniqueDrugsInOrder.length}</b></div>
-        </div>
-        <div style="width:50%; float:right">
-          <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "exact_match" click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "roughly_equal" click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/-3 Qty</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeThree" click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeFour" click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</md-checkbox></div>
-          <div><md-checkbox style= "font-size:25px;" name = "outcomeFive" click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</md-checkbox></div>
-        </div>
-      </div>
-
-      <div style="width:100%;display:inline-block; bottom:0">
-        <div style="float:left">
-          <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
+        <div style="width:100%; display:inline-block; padding-bottom:5px">
+           <md-input  type="tel" style="float:left; font-size:20px; width:40%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input>
+           <md-button style="float:right; height:30px" color click.delegate="pauseShopping()">Pause</md-button>
         </div>
 
-        <div style="float:right" >
-          <md-button style="float:right" disabled.bind="!formComplete" color raised click.delegate="moveShoppingForward()">${nextButtonText}</md-button>
+        <div style="width:100%;">
+          <div style="font-size:4.6vh; line-height:5vh;">${shopList[shoppingIndex].raw.drug.generic}</div>
+          <div style="font-size:20px; line-height:25px;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
         </div>
+
+        <div style="width:100%;display:inline-block; text-align:center;">
+
+          <div style="float:left; text-align:left; height:100%;vertical-align:middle">
+            <div style="font-size:55px; line-height:60px; padding-bottom:15px; margin-top:20px;">${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</div>
+            <div style="font-size:30px;padding-bottom:7px"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
+            <div style="font-size:20px"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
+          </div>
+          <img
+            style="height:50%;width:50%;float:right"
+            if.bind="shopList[shoppingIndex].extra.image"
+            src.bind="shopList[shoppingIndex].extra.image"/>
+        </div>
+
+        <div style="width:100%;display:inline-block; padding-bottom:5px">
+          <div style="width:50%; float:left">
+            <div style="font-size:20px; line-height:25px; margin-top:20px;word-wrap:break-word; padding-bottom:10px"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+            <div style="font-size:20px; line-height:25px; padding-bottom:10px">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
+            <div style="font-size:20px; line-height:25px; padding-bottom:10px">Drug <b>${uniqueDrugsInOrder.indexOf(shopList[shoppingIndex].raw.drug.generic)+1}</b> of <b>${uniqueDrugsInOrder.length}</b></div>
+          </div>
+          <div style="width:50%; float:right">
+            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "exact_match" click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</md-checkbox></div>
+            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "roughly_equal" click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/-3 Qty</md-checkbox></div>
+            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeThree" click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</md-checkbox></div>
+            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeFour" click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</md-checkbox></div>
+            <div><md-checkbox style= "font-size:25px;" name = "outcomeFive" click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</md-checkbox></div>
+          </div>
+        </div>
+
+        <div style="width:100%;display:inline-block; bottom:0">
+          <div style="float:left">
+            <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
+          </div>
+
+          <div style="float:right" >
+            <md-button style="float:right" disabled.bind="!formComplete" color raised click.delegate="moveShoppingForward()">${nextButtonText}</md-button>
+          </div>
+        </div>
+
+
+        <div style="margin:auto; font-size:7px">
+          ${shopList[shoppingIndex].raw._id}
+        </div>
+
+        <div>
+          <md-snackbar ref="snackbar"></md-snackbar>
+        </div>
+
       </div>
-
-
-      <div style="margin:auto; font-size:7px">
-        ${shopList[shoppingIndex].raw._id}
-      </div>
-
-      <div>
-        <md-snackbar ref="snackbar"></md-snackbar>
-      </div>
-
     </div>
 
   </section>
