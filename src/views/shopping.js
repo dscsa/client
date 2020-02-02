@@ -63,6 +63,22 @@ export class shopping {
   }
 
 
+  unlockGroup(groupName){
+    this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
+    .then(res => {
+
+      if(!res.rows.length) return;
+
+      let transactions = res.rows.map(function(row){ return {'raw':row.doc}})
+
+      console.log('want to unlock:',transactions)
+
+      this.saveShoppingResults(transactions, 'unlock').then(_ =>{
+        this.refreshPendedGroups()
+      })
+
+    })
+  }
 
   selectGroup(isLocked, groupName) {
 

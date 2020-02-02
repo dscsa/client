@@ -20,7 +20,7 @@
 
   <section class="mdl-grid au-animate" style="overflow-y:scroll">
 
-    <div if.bind = "!orderSelectedToShop" style="overflow-y:scroll; height:100vh">
+    <div if.bind = "!orderSelectedToShop" style="overflow-y:scroll; height:100vh; width:100vw">
       <md-input
         autoselect
         value.bind="pendedFilter"
@@ -34,6 +34,7 @@
           class="mdl-typography--title ${ term == 'Pended '+pend.name ? 'mdl-navigation__link--current' : ''}"
           style="font-size:30px; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding-bottom:50px">
           ${pend.name}
+          <md-button if.bind="pend.locked" style="float:right;" color="accent" raised click.delegate="unlockGroup(pend.name)">Unlock</md-button>
         </div>
       </div>
     </div>
