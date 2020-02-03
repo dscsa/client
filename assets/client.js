@@ -3800,7 +3800,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
           var group = _ref;
 
-          if (group.key[2] != null && group.key[3] != true) groups.push({ name: group.key[1], priority: group.key[2], locked: group.key[3] == null });
+          if (group.key[1].length > 0 && group.key[2] != null && group.key[3] != true) groups.push({ name: group.key[1], priority: group.key[2], locked: group.key[3] == null });
         }
 
         _this2.groups = groups;
@@ -3829,7 +3829,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.selectGroup = function selectGroup(isLocked, groupName) {
       var _this4 = this;
 
-      if (isLocked) return;
+      if (isLocked || groupName.length == 0) return;
 
       this.groupLoaded = false;
       this.orderSelectedToShop = true;

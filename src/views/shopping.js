@@ -54,7 +54,7 @@ export class shopping {
       res = res.rows
 
       for(var group of res){
-        if((group.key[2] != null) && (group.key[3] != true)) groups.push({name:group.key[1], priority:group.key[2], locked: group.key[3] == null})
+        if((group.key[1].length > 0) && (group.key[2] != null) && (group.key[3] != true)) groups.push({name:group.key[1], priority:group.key[2], locked: group.key[3] == null})
       }
 
       this.groups = groups
@@ -82,7 +82,7 @@ export class shopping {
 
   selectGroup(isLocked, groupName) {
 
-    if(isLocked) return; //TODO uncommed this when we're passed initial testing
+    if(isLocked || (groupName.length == 0)) return; //TODO uncommed this when we're passed initial testing
 
     this.groupLoaded = false
     this.orderSelectedToShop = true
