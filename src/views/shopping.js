@@ -26,6 +26,9 @@ export class shopping {
     //window.removeEventListener("hashchange", this.reset)
   }
 
+  canDeactivate(){
+    return confirm('Confirm you want to leave page');
+  }
 
 
   activate(params) {

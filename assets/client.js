@@ -3761,6 +3761,10 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
     shopping.prototype.deactivate = function deactivate() {};
 
+    shopping.prototype.canDeactivate = function canDeactivate() {
+      return confirm('Confirm you want to leave page');
+    };
+
     shopping.prototype.activate = function activate(params) {
       var _this = this;
 
