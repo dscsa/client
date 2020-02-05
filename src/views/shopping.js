@@ -33,14 +33,14 @@ export class shopping {
 
   activate(params) {
 
+
+
     this.db.user.session.get().then(session => {
 
       this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
       if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
-
-      this.db.account.get(session.account._id).then(account => this.account = account)
 
       this.refreshPendedGroups()
 
@@ -83,6 +83,7 @@ export class shopping {
     })
   }
 
+
   selectGroup(isLocked, groupName) {
 
     if(isLocked || (groupName.length == 0)) return; //TODO uncommed this when we're passed initial testing
@@ -90,54 +91,21 @@ export class shopping {
     this.groupLoaded = false
     this.orderSelectedToShop = true
 
-    this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
-    .then(res => {
 
-      if(!res.rows.length) return
-
-      this.shopList = this.prepShoppingData(res.rows.map(row => row.doc).sort(this.sortTransactionsForShopping))
-
-      if(!this.shopList.length) return
-
+    this.db.account.picking['post']({groupName:groupName, action:'load'}).then(res =>{
+    //this.db.account.picking['post']('1234567899').then(res =>{
+      console.log("yes?")
+      console.log(res)
+      this.shopList = res
+      //TODO: stuff here thats in the then statement below
+      //set shoplist to result
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
-
-      this.saveShoppingResults(this.shopList, 'lockdown')
-
       this.initializeShopper()
 
     })
+
   }
 
-  //given an array of transactions, then build the shopList array
-  //which has the extra info we need to track during the shopping process
-  prepShoppingData(raw_transactions) {
-
-    let shopList = [] //going to be an array of objects, where each object is {raw:{transaction}, extra:{extra_data}}
-
-    for(var i = 0; i < raw_transactions.length; i++){
-
-      if(raw_transactions[i].next[0].picked) continue
-
-      //this will track info needed during the miniapp running, and which we'd need to massage later before saving
-      var extra_data = {
-        outcome:{
-          'exact_match':false,
-          'roughly_equal':false,
-          'slot_before':false,
-          'slot_after':false,
-          'missing':false,
-        },
-        basketNumber:this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
-      }
-
-      if(!(~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic))) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic)
-
-      shopList.push({raw: raw_transactions[i],extra: extra_data})
-    }
-
-    this.getImageURLS() //must use an async call to the db
-    return shopList
-  }
 
 
   //Display and set relavant variables to display a group
@@ -297,33 +265,6 @@ export class shopping {
   }
 
 
-  sortTransactionsForShopping(a, b) {
-
-    var aName = a.drug.generic;
-    var bName = b.drug.generic;
-
-    //sort by drug name first
-    if(aName > bName) return -1
-    if(aName < bName) return 1
-
-    var aBin = a.bin
-    var bBin = b.bin
-
-    var aPack = aBin && aBin.length == 3
-    var bPack = bBin && bBin.length == 3
-
-    if (aPack > bPack) return -1
-    if (aPack < bPack) return 1
-
-    //Flip columns and rows for sorting, since shopping is easier if you never move backwards
-    var aFlip = aBin[0]+aBin[2]+aBin[1]+(aBin[3] || '')
-    var bFlip = bBin[0]+bBin[2]+bBin[1]+(bBin[3] || '')
-
-    if (aFlip > bFlip) return 1
-    if (aFlip < bFlip) return -1
-
-    return 0
-  }
 
   //makes the async call to drug db to get images for whichever drugs we have one
   getImageURLS(){

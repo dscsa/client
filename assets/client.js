@@ -3775,10 +3775,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
         if (!_this.account.hazards) _this.account.hazards = {};
 
-        _this.db.account.get(session.account._id).then(function (account) {
-          return _this.account = account;
-        });
-
         _this.refreshPendedGroups();
       });
     };
@@ -3838,49 +3834,14 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.groupLoaded = false;
       this.orderSelectedToShop = true;
 
-      this.db.transaction.query('currently-pended-by-group-priority-generic', { include_docs: true, reduce: false, startkey: [this.account._id, groupName], endkey: [this.account._id, groupName + '\uFFFF'] }).then(function (res) {
-
-        if (!res.rows.length) return;
-
-        _this4.shopList = _this4.prepShoppingData(res.rows.map(function (row) {
-          return row.doc;
-        }).sort(_this4.sortTransactionsForShopping));
-
-        if (!_this4.shopList.length) return;
+      this.db.account.picking['post']({ groupName: groupName, action: 'load' }).then(function (res) {
+        console.log("yes?");
+        console.log(res);
+        _this4.shopList = res;
 
         _this4.filter = {};
-
-        _this4.saveShoppingResults(_this4.shopList, 'lockdown');
-
         _this4.initializeShopper();
       });
-    };
-
-    shopping.prototype.prepShoppingData = function prepShoppingData(raw_transactions) {
-
-      var shopList = [];
-
-      for (var i = 0; i < raw_transactions.length; i++) {
-
-        if (raw_transactions[i].next[0].picked) continue;
-
-        var extra_data = {
-          outcome: {
-            'exact_match': false,
-            'roughly_equal': false,
-            'slot_before': false,
-            'slot_after': false,
-            'missing': false
-          },
-          basketNumber: this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' };
-
-        if (!~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic)) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic);
-
-        shopList.push({ raw: raw_transactions[i], extra: extra_data });
-      }
-
-      this.getImageURLS();
-      return shopList;
     };
 
     shopping.prototype.initializeShopper = function initializeShopper() {
@@ -4012,32 +3973,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.formatExp = function formatExp(rawStr) {
       var substr_arr = rawStr.slice(2, 7).split("-");
       return substr_arr[1] + "/" + substr_arr[0];
-    };
-
-    shopping.prototype.sortTransactionsForShopping = function sortTransactionsForShopping(a, b) {
-
-      var aName = a.drug.generic;
-      var bName = b.drug.generic;
-
-      if (aName > bName) return -1;
-      if (aName < bName) return 1;
-
-      var aBin = a.bin;
-      var bBin = b.bin;
-
-      var aPack = aBin && aBin.length == 3;
-      var bPack = bBin && bBin.length == 3;
-
-      if (aPack > bPack) return -1;
-      if (aPack < bPack) return 1;
-
-      var aFlip = aBin[0] + aBin[2] + aBin[1] + (aBin[3] || '');
-      var bFlip = bBin[0] + bBin[2] + bBin[1] + (bBin[3] || '');
-
-      if (aFlip > bFlip) return 1;
-      if (aFlip < bFlip) return -1;
-
-      return 0;
     };
 
     shopping.prototype.getImageURLS = function getImageURLS() {
