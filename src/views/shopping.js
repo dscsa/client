@@ -18,8 +18,6 @@ export class shopping {
     this.formComplete = false
     this.uniqueDrugsInOrder = []
 
-    this.unlockButtonText = 'UNLOCK';
-
     this.canActivate     = canActivate
     this.currentDate     = currentDate
   }
@@ -59,8 +57,15 @@ export class shopping {
 
   }
 
-  unlockGroup(groupName){
-    this.unlockButtonText = "...unlocking..."
+  unlockGroup(groupName, el){
+
+    //set the locked boolean to a string, just so we can have the buttons stay snappy
+    //it'll all be rewritten by the call to refresh that happens within the unlock call on the server anyway
+    for(var i = 0; i < this.groups.length; i++){
+      if(this.groups[i].name == groupName) this.groups[i].locked = 'unlocking'
+    }
+
+
     this.db.account.picking['post']({groupName:groupName, action:'unlock'}).then(res =>{
       console.log("result of unlocking:", res)
       this.groups = res
