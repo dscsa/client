@@ -49,7 +49,7 @@
 
         <div style="width:100%; display:inline-block; padding-bottom:5px">
            <md-input  type="tel" style="float:left; font-size:20px; width:40%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input>
-           <md-button style="float:right; height:30px" color click.delegate="pauseShopping()">Pause</md-button>
+           <md-button style="float:right; height:30px" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
         </div>
 
         <div style="width:100%;">

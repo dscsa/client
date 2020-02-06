@@ -200,14 +200,13 @@ export class shopping {
   }
 
   //will save all fully shopped items, and unlock remaining ones
-  pauseShopping(){
+  pauseShopping(groupName){
+
     this.resetShopper() //do this first, then handle saving and redisplaying other data, so its more responsive
 
-    this.saveShoppingResults(this.shopList.slice(0,this.shoppingIndex), 'shopped').then(_=>{
-      this.saveShoppingResults(this.shopList.slice(this.shoppingIndex), 'unlock').then(_=>{
-        this.refreshPendedGroups() //recalculate in case there were changes, others picked orders, etc
-      }).bind(this)
-    }).bind(this)
+    //all the values before current screen will already have been saved, so you just need to unlock the remainders
+    this.unlockGroup(groupName)
+
   }
 
 
