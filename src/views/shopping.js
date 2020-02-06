@@ -50,37 +50,21 @@ export class shopping {
 
 
   refreshPendedGroups(){
-    this.db.transaction.query('currently-pended-by-group-priority-generic', {group_level:4})
-    .then(res => {
-      //key = [account._id, group, priority, picked (true, false, null=locked), full_doc]
-      let groups = []
-      res = res.rows
 
-      for(var group of res){
-        if((group.key[1].length > 0) && (group.key[2] != null) && (group.key[3] != true)) groups.push({name:group.key[1], priority:group.key[2], locked: group.key[3] == null})
-      }
-
-      this.groups = groups
+    this.db.account.picking['post']({action:'refresh'}).then(res =>{
+      console.log("result of refresh:", res)
+      this.groups = res
     })
 
   }
 
-
   unlockGroup(groupName){
-    this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
-    .then(res => {
 
-      if(!res.rows.length) return;
-
-      let transactions = res.rows.map(function(row){ return {'raw':row.doc}})
-
-      console.log('want to unlock:',transactions)
-
-      this.saveShoppingResults(transactions, 'unlock').then(_ =>{
-        this.refreshPendedGroups()
-      })
-
+    this.db.account.picking['post']({groupName:groupName, action:'unlock'}).then(res =>{
+      console.log("result of unlocking:", res)
+      this.groups = res
     })
+
   }
 
 
@@ -92,15 +76,10 @@ export class shopping {
     this.orderSelectedToShop = true
 
     this.db.account.picking['post']({groupName:groupName, action:'load'}).then(res =>{
-    //this.db.account.picking['post']('1234567899').then(res =>{
-      console.log("yes?")
-      console.log(res)
+      console.log("result of loading",res)
       this.shopList = res
-      //TODO: stuff here thats in the then statement below
-      //set shoplist to result
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
       this.initializeShopper()
-
     })
 
   }

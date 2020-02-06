@@ -3782,47 +3782,18 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.refreshPendedGroups = function refreshPendedGroups() {
       var _this2 = this;
 
-      this.db.transaction.query('currently-pended-by-group-priority-generic', { group_level: 4 }).then(function (res) {
-        var groups = [];
-        res = res.rows;
-
-        for (var _iterator = res, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-          var _ref;
-
-          if (_isArray) {
-            if (_i >= _iterator.length) break;
-            _ref = _iterator[_i++];
-          } else {
-            _i = _iterator.next();
-            if (_i.done) break;
-            _ref = _i.value;
-          }
-
-          var group = _ref;
-
-          if (group.key[1].length > 0 && group.key[2] != null && group.key[3] != true) groups.push({ name: group.key[1], priority: group.key[2], locked: group.key[3] == null });
-        }
-
-        _this2.groups = groups;
+      this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
+        console.log("result of refresh:", res);
+        _this2.groups = res;
       });
     };
 
     shopping.prototype.unlockGroup = function unlockGroup(groupName) {
       var _this3 = this;
 
-      this.db.transaction.query('currently-pended-by-group-priority-generic', { include_docs: true, reduce: false, startkey: [this.account._id, groupName], endkey: [this.account._id, groupName + '\uFFFF'] }).then(function (res) {
-
-        if (!res.rows.length) return;
-
-        var transactions = res.rows.map(function (row) {
-          return { 'raw': row.doc };
-        });
-
-        console.log('want to unlock:', transactions);
-
-        _this3.saveShoppingResults(transactions, 'unlock').then(function (_) {
-          _this3.refreshPendedGroups();
-        });
+      this.db.account.picking['post']({ groupName: groupName, action: 'unlock' }).then(function (res) {
+        console.log("result of unlocking:", res);
+        _this3.groups = res;
       });
     };
 
@@ -3835,10 +3806,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.orderSelectedToShop = true;
 
       this.db.account.picking['post']({ groupName: groupName, action: 'load' }).then(function (res) {
-        console.log("yes?");
-        console.log(res);
+        console.log("result of loading", res);
         _this4.shopList = res;
-
         _this4.filter = {};
         _this4.initializeShopper();
       });
