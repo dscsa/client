@@ -91,7 +91,6 @@ export class shopping {
     this.groupLoaded = false
     this.orderSelectedToShop = true
 
-
     this.db.account.picking['post']({groupName:groupName, action:'load'}).then(res =>{
     //this.db.account.picking['post']('1234567899').then(res =>{
       console.log("yes?")
