@@ -18,6 +18,8 @@ export class shopping {
     this.formComplete = false
     this.uniqueDrugsInOrder = []
 
+    this.unlockButtonText = 'UNLOCK';
+
     this.canActivate     = canActivate
     this.currentDate     = currentDate
   }
@@ -32,7 +34,6 @@ export class shopping {
 
 
   activate(params) {
-
 
 
     this.db.user.session.get().then(session => {
@@ -59,7 +60,7 @@ export class shopping {
   }
 
   unlockGroup(groupName){
-
+    this.unlockButtonText = "...unlocking..."
     this.db.account.picking['post']({groupName:groupName, action:'unlock'}).then(res =>{
       console.log("result of unlocking:", res)
       this.groups = res
