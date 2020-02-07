@@ -2410,8 +2410,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.updateSelected(function (transaction) {
         var next = transaction.next;
         if (next[0] && next[0].pended) {
-          delete next[0].pended;
-          if (Object.keys(next[0]) == 0) next = [];
+          next = [];
         }
         transaction.isChecked = false;
         transaction.next = next;
