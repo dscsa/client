@@ -3922,9 +3922,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       for (var i = this.shoppingIndex; i < this.shopList.length; i++) {
         if (this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic || i == this.shopList.length - 1) {
-          console.log("move to index: ", i - 1);
-          this.shopList = this.arraymove(this.shopList, this.shoppingIndex, i - 1);
           this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
+          this.shopList = this.arraymove(this.shopList, this.shoppingIndex, i - 1);
+          return;
         }
       }
     };
