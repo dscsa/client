@@ -215,6 +215,31 @@ export class shopping {
 
   }
 
+  skipItem(){
+
+    if((this.shoppingIndex == this.shopList.length - 1) || (this.shopList[this.shoppingIndex+1].raw.drug.generic !== this.shopList[this.shoppingIndex].raw.drug.generic)) return this.snackbar.show('Cannot skip last item of generic')
+
+    for(var i = this.shoppingIndex; i < this.shopList.length; i++){
+      if((this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) || (i == this.shopList.length-1)){
+        console.log("move to index: ", i-1)
+        this.shopList = this.arraymove(this.shopList, this.shoppingIndex, i-1)
+        this.shopList[this.shoppingIndex].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
+
+      }
+    }
+
+
+  }
+
+
+  arraymove(arr, fromIndex, toIndex) {
+    var res = arr.slice(0);
+    var element = res[fromIndex];
+    res.splice(fromIndex, 1);
+    res.splice(toIndex, 0, element);
+    return res
+  }
+
 
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
