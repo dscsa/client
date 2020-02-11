@@ -36,7 +36,7 @@
           ${pend.name}
           <md-button if.bind="pend.locked" style="float:right; height:15px; line-height:10px" color="accent" raised click.delegate="unlockGroup(pend.name)">${pend.locked == 'unlocking' ? '...unlocking...' : 'unlock'}</md-button>
         </div>
-        <div if.bind = "pend.end_of_stack" style = "line-height:50px; border-bottom:5px solid black; padding-bottom:50px">End of today's stack</div>
+        <div if.bind = "pend.end_of_stack" style = "line-height:50px; padding-bottom:50px"><b>------End of today's stack----</b></div>
       </div>
     </div>
 
