@@ -313,24 +313,7 @@ export class shopping {
   }
 
 
-  //Currently sorts priority orders first, then ascending by group name
-  sortOrders(arr){ //given array of orders, sort appropriately.
-
-    arr = arr.sort((a,b) => {
-      let urgency1 = a.priority
-      let urgency2 = b.priority
-
-      if(urgency1 && !urgency2) return -1
-      if(!urgency1 && urgency2) return 1
-
-      let group1 = a.name
-      let group2 = b.name
-      if(group1 > group2) return 1
-      if(group1 < group2) return -1
-    })
-
-    return arr
-  }
+  
 
 }
 
@@ -353,7 +336,6 @@ export class pendedFilterValueConverter {
       }
     }
 
-    matches = shopping.prototype.sortOrders(matches)
     return matches
 
   }
