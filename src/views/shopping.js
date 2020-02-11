@@ -57,6 +57,7 @@ export class shopping {
 
   }
 
+
   unlockGroup(groupName, el){
 
     //set the locked boolean to a string, just so we can have the buttons stay snappy
@@ -89,7 +90,6 @@ export class shopping {
     })
 
   }
-
 
 
   //Display and set relavant variables to display a group
@@ -205,7 +205,8 @@ export class shopping {
     this.formComplete = true //you can't have left a screen if it wasn't complete
   }
 
-  //will save all fully shopped items, and unlock remaining ones
+
+  //all shopped items are already save, so just need to unlock the group, which will unlock remaining transactiosn on server
   pauseShopping(groupName){
 
     this.resetShopper() //do this first, then handle saving and redisplaying other data, so its more responsive
@@ -222,22 +223,12 @@ export class shopping {
     for(var i = this.shoppingIndex; i < this.shopList.length; i++){
       if((this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) || (i == this.shopList.length-1)){
         this.shopList[this.shoppingIndex+1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber //save basket number for item thats about to show up
-        this.shopList = this.arraymove(this.shopList, this.shoppingIndex, i-1)
+        this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i-1)
         return
       }
     }
 
   }
-
-
-  arraymove(arr, fromIndex, toIndex) {
-    var res = arr.slice(0);
-    var element = res[fromIndex];
-    res.splice(fromIndex, 1);
-    res.splice(toIndex, 0, element);
-    return res
-  }
-
 
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
@@ -265,25 +256,17 @@ export class shopping {
 
 //-------------Helpers--------------------------------
 
+  arrayMove(arr, fromIndex, toIndex) {
+    var res = arr.slice(0);
+    var element = res[fromIndex];
+    res.splice(fromIndex, 1);
+    res.splice(toIndex, 0, element);
+    return res
+  }
+
   formatExp(rawStr){
     let substr_arr = rawStr.slice(2,7).split("-")
     return substr_arr[1]+"/"+substr_arr[0]
-  }
-
-
-
-  //makes the async call to drug db to get images for whichever drugs we have one
-  getImageURLS(){
-
-    let saveImgCallback = (function(drug){
-      for(var n = 0; n < this.shopList.length; n++){
-        if(this.shopList[n].raw.drug._id == drug._id) this.shopList[n].extra.image = drug.image
-      }
-    }).bind(this)
-
-    for(var i = 0; i < this.shopList.length; i++){
-      this.db.drug.get(this.shopList[i].raw.drug._id).then(drug => saveImgCallback(drug)).catch(err=>console.log(err))
-    }
   }
 
   //shortcut to look at the outcome object and check if any values are set to true
@@ -312,8 +295,6 @@ export class shopping {
     return res
   }
 
-
-  
 
 }
 

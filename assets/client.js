@@ -3923,18 +3923,10 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       for (var i = this.shoppingIndex; i < this.shopList.length; i++) {
         if (this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic || i == this.shopList.length - 1) {
           this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
-          this.shopList = this.arraymove(this.shopList, this.shoppingIndex, i - 1);
+          this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i - 1);
           return;
         }
       }
-    };
-
-    shopping.prototype.arraymove = function arraymove(arr, fromIndex, toIndex) {
-      var res = arr.slice(0);
-      var element = res[fromIndex];
-      res.splice(fromIndex, 1);
-      res.splice(toIndex, 0, element);
-      return res;
     };
 
     shopping.prototype.selectShoppingOption = function selectShoppingOption(key) {
@@ -3957,26 +3949,17 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       }
     };
 
+    shopping.prototype.arrayMove = function arrayMove(arr, fromIndex, toIndex) {
+      var res = arr.slice(0);
+      var element = res[fromIndex];
+      res.splice(fromIndex, 1);
+      res.splice(toIndex, 0, element);
+      return res;
+    };
+
     shopping.prototype.formatExp = function formatExp(rawStr) {
       var substr_arr = rawStr.slice(2, 7).split("-");
       return substr_arr[1] + "/" + substr_arr[0];
-    };
-
-    shopping.prototype.getImageURLS = function getImageURLS() {
-
-      var saveImgCallback = function (drug) {
-        for (var n = 0; n < this.shopList.length; n++) {
-          if (this.shopList[n].raw.drug._id == drug._id) this.shopList[n].extra.image = drug.image;
-        }
-      }.bind(this);
-
-      for (var i = 0; i < this.shopList.length; i++) {
-        this.db.drug.get(this.shopList[i].raw.drug._id).then(function (drug) {
-          return saveImgCallback(drug);
-        }).catch(function (err) {
-          return console.log(err);
-        });
-      }
     };
 
     shopping.prototype.someOutcomeSelected = function someOutcomeSelected(outcomeObj) {
