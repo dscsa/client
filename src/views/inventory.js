@@ -363,8 +363,9 @@ export class inventory {
       //console.log("UP")
       let next = transaction.next
       if(next[0] && next[0].pended){
-       delete next[0].pended
-       if(Object.keys(next[0]) == 0) next = [] //don't want to leave an empty object, throws off other stuff
+        next = []
+       //delete next[0].pended
+       //if(Object.keys(next[0]) == 0) next = [] //don't want to leave an empty object, throws off other stuff
       }
       transaction.isChecked = false
       transaction.next = next //TODO: should this add a new object to transaction.next

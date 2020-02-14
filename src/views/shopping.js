@@ -26,9 +26,13 @@ export class shopping {
     //window.removeEventListener("hashchange", this.reset)
   }
 
+  canDeactivate(){
+    return confirm('Confirm you want to leave page');
+  }
 
 
   activate(params) {
+
 
     this.db.user.session.get().then(session => {
 
@@ -36,8 +40,6 @@ export class shopping {
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
       if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
-
-      this.db.account.get(session.account._id).then(account => this.account = account)
 
       this.refreshPendedGroups()
 
@@ -47,93 +49,46 @@ export class shopping {
 
 
   refreshPendedGroups(){
-    this.db.transaction.query('currently-pended-by-group-priority-generic', {group_level:4})
-    .then(res => {
-      //key = [account._id, group, priority, picked (true, false, null=locked), full_doc]
-      let groups = []
-      res = res.rows
 
-      for(var group of res){
-        if((group.key[2] != null) && (group.key[3] != true)) groups.push({name:group.key[1], priority:group.key[2], locked: group.key[3] == null})
-      }
-
-      this.groups = groups
+    this.db.account.picking['post']({action:'refresh'}).then(res =>{
+      console.log("result of refresh:", res)
+      this.groups = res
     })
 
   }
 
 
-  unlockGroup(groupName){
-    this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
-    .then(res => {
+  unlockGroup(groupName, el){
 
-      if(!res.rows.length) return;
+    //set the locked boolean to a string, just so we can have the buttons stay snappy
+    //it'll all be rewritten by the call to refresh that happens within the unlock call on the server anyway
+    for(var i = 0; i < this.groups.length; i++){
+      if(this.groups[i].name == groupName) this.groups[i].locked = 'unlocking'
+    }
 
-      let transactions = res.rows.map(function(row){ return {'raw':row.doc}})
 
-      console.log('want to unlock:',transactions)
-
-      this.saveShoppingResults(transactions, 'unlock').then(_ =>{
-        this.refreshPendedGroups()
-      })
-
+    this.db.account.picking['post']({groupName:groupName, action:'unlock'}).then(res =>{
+      console.log("result of unlocking:", res)
+      this.groups = res
     })
+
   }
+
 
   selectGroup(isLocked, groupName) {
 
-    if(isLocked) return; //TODO uncommed this when we're passed initial testing
+    if(isLocked || (groupName.length == 0)) return; //TODO uncommed this when we're passed initial testing
 
     this.groupLoaded = false
     this.orderSelectedToShop = true
 
-    this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id, groupName], endkey:[this.account._id,groupName +'\uffff']})
-    .then(res => {
-
-      if(!res.rows.length) return
-
-      this.shopList = this.prepShoppingData(res.rows.map(row => row.doc).sort(this.sortTransactionsForShopping))
-
-      if(!this.shopList.length) return
-
+    this.db.account.picking['post']({groupName:groupName, action:'load'}).then(res =>{
+      console.log("result of loading",res)
+      this.shopList = res
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
-
-      this.saveShoppingResults(this.shopList, 'lockdown')
-
       this.initializeShopper()
-
     })
-  }
 
-  //given an array of transactions, then build the shopList array
-  //which has the extra info we need to track during the shopping process
-  prepShoppingData(raw_transactions) {
-
-    let shopList = [] //going to be an array of objects, where each object is {raw:{transaction}, extra:{extra_data}}
-
-    for(var i = 0; i < raw_transactions.length; i++){
-
-      if(raw_transactions[i].next[0].picked) continue
-
-      //this will track info needed during the miniapp running, and which we'd need to massage later before saving
-      var extra_data = {
-        outcome:{
-          'exact_match':false,
-          'roughly_equal':false,
-          'slot_before':false,
-          'slot_after':false,
-          'missing':false,
-        },
-        basketNumber:this.account.hazards[raw_transactions[i].drug.generic] ? 'B' : raw_transactions[i].next[0].pended.priority == true ? 'G' : 'R' //a little optimization from the pharmacy, the rest of the basketnumber is just numbers
-      }
-
-      if(!(~this.uniqueDrugsInOrder.indexOf(raw_transactions[i].drug.generic))) this.uniqueDrugsInOrder.push(raw_transactions[i].drug.generic)
-
-      shopList.push({raw: raw_transactions[i],extra: extra_data})
-    }
-
-    this.getImageURLS() //must use an async call to the db
-    return shopList
   }
 
 
@@ -250,17 +205,30 @@ export class shopping {
     this.formComplete = true //you can't have left a screen if it wasn't complete
   }
 
-  //will save all fully shopped items, and unlock remaining ones
-  pauseShopping(){
+
+  //all shopped items are already save, so just need to unlock the group, which will unlock remaining transactiosn on server
+  pauseShopping(groupName){
+
     this.resetShopper() //do this first, then handle saving and redisplaying other data, so its more responsive
 
-    this.saveShoppingResults(this.shopList.slice(0,this.shoppingIndex), 'shopped').then(_=>{
-      this.saveShoppingResults(this.shopList.slice(this.shoppingIndex), 'unlock').then(_=>{
-        this.refreshPendedGroups() //recalculate in case there were changes, others picked orders, etc
-      }).bind(this)
-    }).bind(this)
+    //all the values before current screen will already have been saved, so you just need to unlock the remainders
+    this.unlockGroup(groupName)
+
   }
 
+  skipItem(){
+
+    if((this.shoppingIndex == this.shopList.length - 1) || (this.shopList[this.shoppingIndex+1].raw.drug.generic !== this.shopList[this.shoppingIndex].raw.drug.generic)) return this.snackbar.show('Cannot skip last item of generic')
+
+    for(var i = this.shoppingIndex; i < this.shopList.length; i++){
+      if((this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) || (i == this.shopList.length-1)){
+        this.shopList[this.shoppingIndex+1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber //save basket number for item thats about to show up
+        this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i-1)
+        return
+      }
+    }
+
+  }
 
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
@@ -288,52 +256,17 @@ export class shopping {
 
 //-------------Helpers--------------------------------
 
+  arrayMove(arr, fromIndex, toIndex) {
+    var res = arr.slice(0);
+    var element = res[fromIndex];
+    res.splice(fromIndex, 1);
+    res.splice(toIndex, 0, element);
+    return res
+  }
+
   formatExp(rawStr){
     let substr_arr = rawStr.slice(2,7).split("-")
     return substr_arr[1]+"/"+substr_arr[0]
-  }
-
-
-  sortTransactionsForShopping(a, b) {
-
-    var aName = a.drug.generic;
-    var bName = b.drug.generic;
-
-    //sort by drug name first
-    if(aName > bName) return -1
-    if(aName < bName) return 1
-
-    var aBin = a.bin
-    var bBin = b.bin
-
-    var aPack = aBin && aBin.length == 3
-    var bPack = bBin && bBin.length == 3
-
-    if (aPack > bPack) return -1
-    if (aPack < bPack) return 1
-
-    //Flip columns and rows for sorting, since shopping is easier if you never move backwards
-    var aFlip = aBin[0]+aBin[2]+aBin[1]+(aBin[3] || '')
-    var bFlip = bBin[0]+bBin[2]+bBin[1]+(bBin[3] || '')
-
-    if (aFlip > bFlip) return 1
-    if (aFlip < bFlip) return -1
-
-    return 0
-  }
-
-  //makes the async call to drug db to get images for whichever drugs we have one
-  getImageURLS(){
-
-    let saveImgCallback = (function(drug){
-      for(var n = 0; n < this.shopList.length; n++){
-        if(this.shopList[n].raw.drug._id == drug._id) this.shopList[n].extra.image = drug.image
-      }
-    }).bind(this)
-
-    for(var i = 0; i < this.shopList.length; i++){
-      this.db.drug.get(this.shopList[i].raw.drug._id).then(drug => saveImgCallback(drug)).catch(err=>console.log(err))
-    }
   }
 
   //shortcut to look at the outcome object and check if any values are set to true
@@ -363,25 +296,6 @@ export class shopping {
   }
 
 
-  //Currently sorts priority orders first, then ascending by group name
-  sortOrders(arr){ //given array of orders, sort appropriately.
-
-    arr = arr.sort((a,b) => {
-      let urgency1 = a.priority
-      let urgency2 = b.priority
-
-      if(urgency1 && !urgency2) return -1
-      if(!urgency1 && urgency2) return 1
-
-      let group1 = a.name
-      let group2 = b.name
-      if(group1 > group2) return 1
-      if(group1 < group2) return -1
-    })
-
-    return arr
-  }
-
 }
 
 //Allow user to search by pendId among all pended groups
@@ -403,7 +317,6 @@ export class pendedFilterValueConverter {
       }
     }
 
-    matches = shopping.prototype.sortOrders(matches)
     return matches
 
   }
