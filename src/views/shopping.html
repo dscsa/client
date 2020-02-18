@@ -46,15 +46,15 @@
         Loading...
       </div>
 
-      <div if.bind = "groupLoaded && !basketSaved" style="width:100%; display:inline-block">
-        <div style="position:fixed; bottom:0; padding-bottom:10vh; width:90%">
-          <div style="font-size:4vh; line-height:10vh">Enter new basket number:</div>
+      <div if.bind = "groupLoaded && !basketSaved" style="width:100vw; height:100vh; display:inline-block; overflow-y:scroll">
+        <div style="position:absolute; top:12vh; width:100%">
+          <div style="font-size:30px; line-height:10vh">Enter new basket number:</div>
           <div stlye="float:left"><md-input  type="tel" style="float:left; font-size:4vh; width:70%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input></div>
-          <div style="float:right"><md-button color raised click.delegate="saveBasketNumber()">Save</md-button></div>
+          <div style="float:right; padding-right:7vw; margin-top:2vh"><md-button color raised click.delegate="saveBasketNumber()">Save</md-button></div>
         </div>
       </div>
 
-      <div style="width:100%; height:100vh; position:relative" if.bind = "groupLoaded && basketSaved">
+      <div style="width:100vw; height:100vh; position:relative; overflow-y:scroll" if.bind = "groupLoaded && basketSaved">
 
         <div style="width:100%; display:inline-block; padding-bottom:5px">
            <md-button style="float:right; height:25px" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
