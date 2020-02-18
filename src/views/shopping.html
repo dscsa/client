@@ -46,12 +46,19 @@
         Loading...
       </div>
 
-      <div style="width:100%; height:100vh; position:relative" if.bind = "groupLoaded">
+      <div if.bind = "groupLoaded && !basketSaved" style="width:100%; display:inline-block">
+        <div style="position:fixed; bottom:0; padding-bottom:10vh; width:90%">
+          <div style="font-size:4vh; line-height:10vh">Enter new basket number:</div>
+          <div stlye="float:left"><md-input  type="tel" style="float:left; font-size:4vh; width:70%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input></div>
+          <div style="float:right"><md-button color raised click.delegate="saveBasketNumber()">Save</md-button></div>
+        </div>
+      </div>
+
+      <div style="width:100%; height:100vh; position:relative" if.bind = "groupLoaded && basketSaved">
 
         <div style="width:100%; display:inline-block; padding-bottom:5px">
-           <md-input  type="tel" style="float:left; font-size:20px; width:40%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input>
-           <md-button style="float:right; height:30px" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
-           <md-button style="float:right; height:30px" color click.delegate="skipItem()">Skip</md-button>
+           <md-button style="float:right; height:25px" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
+           <md-button style="float:left; height:25px" color click.delegate="skipItem()">Skip</md-button>
         </div>
 
         <div style="width:100%;">
@@ -62,7 +69,7 @@
         <div style="width:100%;display:inline-block; text-align:center;">
 
           <div style="float:left; text-align:left; height:100%;vertical-align:middle">
-            <div style="font-size:55px; line-height:60px; padding-bottom:15px; margin-top:20px;">${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</div>
+            <div style="font: 400 65px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>
             <div style="font-size:30px;padding-bottom:7px"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
             <div style="font-size:20px"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
           </div>
@@ -72,18 +79,20 @@
             src.bind="shopList[shoppingIndex].extra.image"/>
         </div>
 
-        <div style="width:100%;display:inline-block; padding-bottom:5px">
+        <div style="width:100%;display:inline-block; padding-bottom:1vh">
           <div style="width:50%; float:left">
             <div style="font-size:20px; line-height:25px; margin-top:20px;word-wrap:break-word; padding-bottom:10px"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
             <div style="font-size:20px; line-height:25px; padding-bottom:10px">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
             <div style="font-size:20px; line-height:25px; padding-bottom:10px">Drug <b>${shopList[shoppingIndex].extra.genericIndex.index}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.total}</b></div>
+            <div style="font-size:20px; line-height:25px; padding-bottom:10px">Basket: <b>${shopList[shoppingIndex].extra.basketNumber}</b></div>
+            <div style="font-size:15px; line-height:15px; padding-bottom:10px">NDC: ${shopList[shoppingIndex].raw.drug._id}</div>
           </div>
           <div style="width:50%; float:right">
-            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "exact_match" click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</md-checkbox></div>
-            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "roughly_equal" click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/-3 Qty</md-checkbox></div>
-            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeThree" click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</md-checkbox></div>
-            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeFour" click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</md-checkbox></div>
-            <div><md-checkbox style= "font-size:25px;" name = "outcomeFive" click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</md-checkbox></div>
+            <div style="font-size:4vh; padding-bottom:1.5vh"><md-checkbox name = "exact_match" click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match"></md-checkbox>Exact Match</div>
+            <div style="font-size:4vh; padding-bottom:1.5vh"><md-checkbox name = "roughly_equal" click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal"></md-checkbox>+/-3 Qty</div>
+            <div style="font-size:4vh; padding-bottom:1.5vh"><md-checkbox name = "outcomeThree" click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before"></md-checkbox>Slot Before</div>
+            <div style="font-size:4vh; padding-bottom:1.5vh"><md-checkbox name = "outcomeFour" click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after"></md-checkbox>Slot After</div>
+            <div style="font-size:4vh;"><md-checkbox name = "outcomeFive" click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing"></md-checkbox>Missing</div>
           </div>
         </div>
 

@@ -16,6 +16,10 @@ export class shopping {
     this.nextButtonText = '' //This can become 'Finish' or other more intuitive values depending on events
     this.orderSelectedToShop = false
     this.formComplete = false
+
+    this.basketSaved = false
+    this.currentBasket
+
     this.uniqueDrugsInOrder = []
 
     this.canActivate     = canActivate
@@ -97,6 +101,8 @@ export class shopping {
     this.shoppingIndex = 0
     this.groupLoaded = true
 
+    this.basketSaved = false
+
     if(this.shopList.length == 1){
       this.setNextToSave()
     } else {
@@ -168,6 +174,18 @@ export class shopping {
 
 //------------------Button controls-------------------------
 
+  saveBasketNumber(){
+    let basket = this.shopList[this.shoppingIndex].extra.basketNumber
+    console.log(basket)
+
+    if(basket.length <= 1){
+      this.snackbar.show('Must enter new basket number')
+    } else {
+      this.basketSaved = true
+    }
+
+  }
+
   moveShoppingForward(){
 
     if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
@@ -180,11 +198,10 @@ export class shopping {
 
     } else {
 
-      //if next one has the same drug , then pass the basket number forward
       if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
-      } else if(this.shopList[this.shoppingIndex+1].extra.basketNumber.length == 1){
-        this.snackbar.show('Different generic, enter new basket number')
+      } else {
+        this.basketSaved = false;
       }
 
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
