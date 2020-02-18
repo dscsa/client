@@ -54,7 +54,7 @@
         </div>
       </div>
 
-      <div style="width:100vw; height:100vh; position:relative; overflow-y:scroll" if.bind = "groupLoaded && basketSaved">
+      <div style="width:100%; height:100%; position:relative; overflow-y:scroll" if.bind = "groupLoaded && basketSaved">
 
         <div style="width:100%; display:inline-block;">
            <md-button style="float:right; height:2vh; line-height:2vh" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
@@ -71,25 +71,23 @@
           <div style="float:left; text-align:left; height:100%;vertical-align:middle">
             <div style="font: 400 65px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>
             <div style="font-size:30px;padding-bottom:3vh"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
-            <div style="font-size:20px"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
+            <div style="font-size:20px; padding-bottom:2vh"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
             <div style="font-size:20px;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
           </div>
-          <div
-          style="height:60%;width:50%;float:right">
             <img
+              style="height:30vh;width:50vw;float:right"
               if.bind="shopList[shoppingIndex].extra.image"
               src.bind="shopList[shoppingIndex].extra.image"/>
-          </div>
         </div>
 
         <div style="width:100%;display:inline-block; padding-bottom:1vh">
-          <div style="width:50%; float:left">
-            <div style="font-size:20px; line-height:25px; margin-top:20px;word-wrap:break-word; padding-bottom:1.5vh"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
-            <div style="font-size:20px; line-height:25px; padding-bottom:1.5vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
-            <div style="font-size:20px; line-height:25px; padding-bottom:1vh">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
-            <div style="font-size:20px; line-height:25px;">Drug <b>${shopList[shoppingIndex].extra.genericIndex.index}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.total}</b></div>
+          <div style="width:45%; height:100%; float:left; margin-top:7vh;">
+              <div style="font-size:3vh; line-height:3vh; word-wrap:break-word; padding-bottom:1.5vh"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:1.5vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
+              <div style="font-size:3vh; line-height:3vh;">Drug <b>${shopList[shoppingIndex].extra.genericIndex.index}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.total}</b></div>
           </div>
-          <div style="width:50%; float:right">
+          <div style="width:50%; float:right; margin-top:2vh">
             <div style="font-size:4vh; padding-bottom:2vh"><md-checkbox name = "exact_match" click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match"></md-checkbox>Exact Match</div>
             <div style="font-size:4vh; padding-bottom:2vh"><md-checkbox name = "roughly_equal" click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal"></md-checkbox>+/-3 Qty</div>
             <div style="font-size:4vh; padding-bottom:2vh"><md-checkbox name = "outcomeThree" click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before"></md-checkbox>Slot Before</div>
