@@ -174,17 +174,15 @@ export class shopping {
 
 //------------------Button controls-------------------------
 
-  saveBasketNumber(){
-    let basket = this.shopList[this.shoppingIndex].extra.basketNumber
-    console.log(basket)
-
-    if(basket.length <= 1){
-      this.snackbar.show('Must enter new basket number')
-    } else {
-      this.basketSaved = true
-    }
-
+  canSaveBasket(){
+    return (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1)
   }
+
+  saveBasketNumber(){
+    this.basketSaved = true
+  }
+
+
 
   moveShoppingForward(){
 
