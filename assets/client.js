@@ -3775,12 +3775,12 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       var _this = this;
 
       this.db.user.session.get().then(function (session) {
-
+        console.log('user acquired');
         _this.user = { _id: session._id };
         _this.account = { _id: session.account._id };
 
         if (!_this.account.hazards) _this.account.hazards = {};
-
+        console.log('about to call');
         _this.refreshPendedGroups();
       });
     };
@@ -3788,8 +3788,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.refreshPendedGroups = function refreshPendedGroups() {
       var _this2 = this;
 
+      console.log('refreshing');
       this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
-        console.log("result of refresh:", res);
+        console.log('refresh complet4e');
         _this2.groups = res;
       });
     };

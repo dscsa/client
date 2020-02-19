@@ -39,12 +39,12 @@ export class shopping {
 
 
     this.db.user.session.get().then(session => {
-
+      console.log('user acquired')
       this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
       if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
-
+      console.log('about to call')
       this.refreshPendedGroups()
 
     })
@@ -53,9 +53,10 @@ export class shopping {
 
 
   refreshPendedGroups(){
-
+    console.log('refreshing')
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
-      console.log("result of refresh:", res)
+      //console.log("result of refresh:", res)
+      console.log('refresh complet4e')
       this.groups = res
     })
 
