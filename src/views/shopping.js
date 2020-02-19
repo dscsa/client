@@ -252,13 +252,7 @@ export class shopping {
   selectShoppingOption(key){
 
     if(this.shopList[this.shoppingIndex].extra.outcome[key]) return //don't let thme uncheck, because radio buttons
-
-    if(this.shopList[this.shoppingIndex].extra.basketNumber.length > 1){
-      this.formComplete = true;
-    } else {
-      this.snackbar.show('Enter basket number')
-      return
-    }
+    this.formComplete = true;
 
     for(let outcome_option in this.shopList[this.shoppingIndex].extra.outcome){
       if(outcome_option !== key){
