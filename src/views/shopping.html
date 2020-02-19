@@ -61,21 +61,21 @@
            <md-button style="float:left; height:2vh; line-height:2vh" color click.delegate="skipItem()">Skip</md-button>
         </div>
 
-        <div style="width:100%; height:10vh; overflow-x:scroll">
-          <div style="font-size:4.5vh; line-height:6vh;">${shopList[shoppingIndex].raw.drug.generic}</div>
+        <div style="width:100%; height:11vh; overflow-x:scroll">
+          <div style="font-size:4.5vh; line-height:5vh;">${shopList[shoppingIndex].raw.drug.generic}</div>
           <div style="font-size:3vh; line-height:4vh;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
         </div>
 
         <div style="width:100%;display:inline-block; text-align:center;">
 
-          <div style="float:left; text-align:left; width:48vw; height:100%;vertical-align:middle">
+          <div style="float:left; text-align:left; width:47vw; height:100%;vertical-align:middle">
             <div style="font: 400 60px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>
             <div style="font-size:30px;padding-bottom:3vh"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
             <div style="font-size:20px; padding-bottom:2vh"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
             <div style="font-size:20px;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
           </div>
           <img
-              style="height:30vh;width:47vw;float:right"
+              style="height:30vh;width:43vw;float:right"
               if.bind="shopList[shoppingIndex].extra.image"
               src.bind="shopList[shoppingIndex].extra.image"/>
 
