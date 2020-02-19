@@ -69,15 +69,16 @@
         <div style="width:100%;display:inline-block; text-align:center;">
 
           <div style="float:left; text-align:left; width:50vw; height:100%;vertical-align:middle">
-            <div style="font: 400 65px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>
+            <div style="font: 400 60px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>
             <div style="font-size:30px;padding-bottom:3vh"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
             <div style="font-size:20px; padding-bottom:2vh"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
             <div style="font-size:20px;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
           </div>
-            <img
+          <img
               style="height:30vh;width:50vw;float:right"
               if.bind="shopList[shoppingIndex].extra.image"
               src.bind="shopList[shoppingIndex].extra.image"/>
+
         </div>
 
         <div style="width:100%;display:inline-block; padding-bottom:1vh">
