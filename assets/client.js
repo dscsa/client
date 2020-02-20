@@ -2567,7 +2567,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         return this.snackbar.show('Repack Qty Error');
       }
 
-      var next = this.transactions[0].next ? [{ pended: this.transactions[0].next[0].pended }] : [];
+      var next = this.transactions[0].next && this.transactions[0].next.pended ? [{ pended: this.transactions[0].next[0].pended }] : [];
 
       var newTransactions = [],
           createdAt = new Date().toJSON();

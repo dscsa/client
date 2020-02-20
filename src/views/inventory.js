@@ -537,7 +537,7 @@ export class inventory {
       return this.snackbar.show(`Repack Qty Error`)
     }
 
-    let next = this.transactions[0].next ? [{pended:this.transactions[0].next[0].pended}] :[]
+    let next = (this.transactions[0].next && this.transactions[0].next.pended) ? [{pended:this.transactions[0].next[0].pended}] : []
 
     //TODO: here you want to add the pended of the original transaction onto the new one don't you?
 
