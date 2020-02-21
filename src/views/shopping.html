@@ -24,7 +24,7 @@
       <md-input
         autoselect
         value.bind="pendedFilter"
-        style="padding-bottom:30px; width:auto">
+        style="padding-bottom:30px; font-size:18px; width:auto">
         Select Group
       </md-input>
 
@@ -46,44 +46,59 @@
         Loading...
       </div>
 
-      <div style="width:100%; height:100vh; position:relative" if.bind = "groupLoaded">
+      <div if.bind = "groupLoaded && !basketSaved" style="width:100vw; height:100vh; display:inline-block;">
+        <div style="position:absolute; top:12vh; width:100%">
+          <div style="font-size:30px; line-height:10vh">Enter new basket number:</div>
+          <div stlye="float:left"><md-input  type="tel" style="float:left; font-size:4vh; width:70%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input></div>
+          <div style="float:right; padding-right:7vw; margin-top:2vh"><md-button  disabled.bind = "shopList[shoppingIndex].extra.basketNumber.length <= 1" color raised click.delegate="saveBasketNumber()">Save</md-button></div>
+        </div>
+      </div>
 
-        <div style="width:100%; display:inline-block; padding-bottom:5px">
-           <md-input  type="tel" style="float:left; font-size:20px; width:40%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input>
-           <md-button style="float:right; height:30px" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
-           <md-button style="float:right; height:30px" color click.delegate="skipItem()">Skip</md-button>
+      <div style="width:100%; height:100%; position:relative; overflow-y:scroll" if.bind = "groupLoaded && basketSaved">
+
+        <div style="width:100%; display:inline-block;">
+           <md-button style="float:right; height:2vh; line-height:2vh" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
+           <md-button style="float:left; height:2vh; line-height:2vh" color click.delegate="skipItem()">Skip</md-button>
         </div>
 
-        <div style="width:100%;">
-          <div style="font-size:4.6vh; line-height:5vh;">${shopList[shoppingIndex].raw.drug.generic}</div>
-          <div style="font-size:20px; line-height:25px;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
+        <div style="width:100%; height:11vh; overflow-x:scroll">
+          <div style="font-size:4.5vh; line-height:5vh;">${shopList[shoppingIndex].raw.drug.generic}</div>
+          <div style="font-size:3vh; line-height:4vh;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
         </div>
 
         <div style="width:100%;display:inline-block; text-align:center;">
 
-          <div style="float:left; text-align:left; height:100%;vertical-align:middle">
-            <div style="font-size:55px; line-height:60px; padding-bottom:15px; margin-top:20px;">${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</div>
-            <div style="font-size:30px;padding-bottom:7px"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
-            <div style="font-size:20px"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
+          <div style="float:left; text-align:left; width:47vw; height:100%;vertical-align:middle">
+            <div style="font: 400 60px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>
+            <div style="font-size:30px;padding-bottom:3vh"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
+            <div style="font-size:20px; padding-bottom:2vh"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
+            <div style="font-size:20px;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
           </div>
           <img
-            style="height:50%;width:50%;float:right"
-            if.bind="shopList[shoppingIndex].extra.image"
-            src.bind="shopList[shoppingIndex].extra.image"/>
+              style="height:30vh;width:43vw;float:right"
+              if.bind="shopList[shoppingIndex].extra.image"
+              src.bind="shopList[shoppingIndex].extra.image"/>
+
         </div>
 
-        <div style="width:100%;display:inline-block; padding-bottom:5px">
-          <div style="width:50%; float:left">
-            <div style="font-size:20px; line-height:25px; margin-top:20px;word-wrap:break-word; padding-bottom:10px"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
-            <div style="font-size:20px; line-height:25px; padding-bottom:10px">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
-            <div style="font-size:20px; line-height:25px; padding-bottom:10px">Drug <b>${shopList[shoppingIndex].extra.genericIndex.index}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.total}</b></div>
+        <div style="width:100%;display:inline-block; padding-bottom:1vh">
+          <div style="width:45%; height:100%; float:left; margin-top:7vh;">
+              <div style="font-size:3vh; line-height:3vh; word-wrap:break-word; padding-bottom:1.5vh"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:1.5vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Item <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
+              <div style="font-size:3vh; line-height:3vh;">Drug <b>${shopList[shoppingIndex].extra.genericIndex.index}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.total}</b></div>
           </div>
-          <div style="width:50%; float:right">
-            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "exact_match" click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</md-checkbox></div>
-            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "roughly_equal" click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/-3 Qty</md-checkbox></div>
-            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeThree" click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</md-checkbox></div>
-            <div><md-checkbox style= "font-size:25px; padding-bottom:1vh" name = "outcomeFour" click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</md-checkbox></div>
-            <div><md-checkbox style= "font-size:25px;" name = "outcomeFive" click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</md-checkbox></div>
+          <div style="width:50%; float:right; margin-top:2vh">
+            <div style="width:40vw; font-size:3vh; line-height:5vh; height:5vh; padding-bottom:1.5vh; color: ${shopList[shoppingIndex].extra.outcome.exact_match ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.exact_match ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect"
+            click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</div>
+            <div style="width:40vw; font-size:3vh; line-height:5vh; height:5vh; padding-bottom:1.5vh; color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
+            click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/- 3 Qty</div>
+            <div style="width:40vw; font-size:3vh; line-height:5vh; height:5vh; padding-bottom:1.5vh; color: ${shopList[shoppingIndex].extra.outcome.slot_before ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_before ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
+            click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</div>
+            <div style="width:40vw; font-size:3vh; line-height:5vh; height:5vh; padding-bottom:1.5vh; color: ${shopList[shoppingIndex].extra.outcome.slot_after ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_after ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
+            click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</div>
+            <div style="width:40vw; font-size:3vh; line-height:5vh; height:5vh; padding-bottom:1vh; color: ${shopList[shoppingIndex].extra.outcome.missing ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.missing ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
+            click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</div>
           </div>
         </div>
 

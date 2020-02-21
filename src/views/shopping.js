@@ -16,6 +16,10 @@ export class shopping {
     this.nextButtonText = '' //This can become 'Finish' or other more intuitive values depending on events
     this.orderSelectedToShop = false
     this.formComplete = false
+
+    this.basketSaved = false
+    this.currentBasket
+
     this.uniqueDrugsInOrder = []
 
     this.canActivate     = canActivate
@@ -35,12 +39,12 @@ export class shopping {
 
 
     this.db.user.session.get().then(session => {
-
+      console.log('user acquired')
       this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
       if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
-
+      console.log('about to call')
       this.refreshPendedGroups()
 
     })
@@ -49,9 +53,10 @@ export class shopping {
 
 
   refreshPendedGroups(){
-
+    console.log('refreshing')
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
-      console.log("result of refresh:", res)
+      //console.log("result of refresh:", res)
+      console.log('refresh complet4e')
       this.groups = res
     })
 
@@ -96,6 +101,8 @@ export class shopping {
   initializeShopper(){
     this.shoppingIndex = 0
     this.groupLoaded = true
+
+    this.basketSaved = false
 
     if(this.shopList.length == 1){
       this.setNextToSave()
@@ -168,6 +175,16 @@ export class shopping {
 
 //------------------Button controls-------------------------
 
+  canSaveBasket(){
+    return (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1)
+  }
+
+  saveBasketNumber(){
+    this.basketSaved = true
+  }
+
+
+
   moveShoppingForward(){
 
     if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
@@ -180,11 +197,10 @@ export class shopping {
 
     } else {
 
-      //if next one has the same drug , then pass the basket number forward
       if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
-      } else if(this.shopList[this.shoppingIndex+1].extra.basketNumber.length == 1){
-        this.snackbar.show('Different generic, enter new basket number')
+      } else {
+        this.basketSaved = false;
       }
 
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
@@ -235,13 +251,7 @@ export class shopping {
   selectShoppingOption(key){
 
     if(this.shopList[this.shoppingIndex].extra.outcome[key]) return //don't let thme uncheck, because radio buttons
-
-    if(this.shopList[this.shoppingIndex].extra.basketNumber.length > 1){
-      this.formComplete = true;
-    } else {
-      this.snackbar.show('Enter basket number')
-      return
-    }
+    this.formComplete = true;
 
     for(let outcome_option in this.shopList[this.shoppingIndex].extra.outcome){
       if(outcome_option !== key){
