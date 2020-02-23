@@ -239,7 +239,6 @@ export class shopping {
 
   moveShoppingBackward(){
     if(this.shoppingIndex == 0) return //shouldn't appear, but extra protection :)
-
     //this.setNextToNext()
     this.shoppingIndex -= 1
     this.formComplete = true //you can't have left a screen if it wasn't complete
