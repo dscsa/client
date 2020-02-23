@@ -104,11 +104,11 @@ export class shopping {
 
     this.basketSaved = false
 
-    if(this.shopList.length == 1){
-      this.setNextToSave()
-    } else {
-      this.setNextToNext()
-    }
+    //if(this.shopList.length == 1){
+      //this.setNextToSave()
+    //} else {
+    //  this.setNextToNext()
+    //}
   }
 
 
@@ -138,6 +138,23 @@ export class shopping {
       if(next[0]){
         if(key == 'shopped'){
           var outcome = this.getOutcome(arr_enriched_transactions[i].extra)
+
+          if(outcome == 'missing'){
+            console.log("missing item! sending request to server to compensate for:", arr_enriched_transactions[i].raw.drug.generic)
+
+            this.db.account.picking['post']({groupName:arr_enriched_transactions[i].raw.next[0].pended.group, action:'missing_transaction',generic:arr_enriched_transactions[i].raw.drug.generic, qty:arr_enriched_transactions[i].raw.qty.to})
+            .then(res =>{
+              console.log(res)
+              if(res.length > 0){
+                this.shopList.push(res[0])
+                console.log("added to shoplist", res[0])
+              } else {
+                console.log("couldn't find item with same or greater qty to replace this")
+              }
+            })
+
+          }
+
           next[0].picked = {
             _id:new Date().toJSON(),
             basket:arr_enriched_transactions[i].extra.basketNumber,
@@ -189,10 +206,16 @@ export class shopping {
 
     if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
 
-      this.resetShopper()
+      //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
+
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
       then(_=>{
-        this.refreshPendedGroups()
+        if(this.shoppingIndex != this.shopList.length - 1){ //then we found something new
+          this.moveShoppingForward() //then call again, and it'll move it forward to next page
+        } else {
+          this.resetShopper()
+          this.refreshPendedGroups()
+        }
       }).bind(this)
 
     } else {
@@ -206,9 +229,10 @@ export class shopping {
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
 
+      //if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
+
       this.shoppingIndex += 1
       this.formComplete = (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
-      if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
 
     }
   }
@@ -216,7 +240,7 @@ export class shopping {
   moveShoppingBackward(){
     if(this.shoppingIndex == 0) return //shouldn't appear, but extra protection :)
 
-    this.setNextToNext()
+    //this.setNextToNext()
     this.shoppingIndex -= 1
     this.formComplete = true //you can't have left a screen if it wasn't complete
   }

@@ -108,7 +108,7 @@
           </div>
 
           <div style="float:right" >
-            <md-button style="float:right" disabled.bind="!formComplete" color raised click.delegate="moveShoppingForward()">${nextButtonText}</md-button>
+            <md-button style="float:right" disabled.bind="!formComplete" color raised click.delegate="moveShoppingForward()">${shoppingIndex == shopList.length -1 ? 'Complete Shopping' :  'Next'}</md-button>
           </div>
         </div>
 
