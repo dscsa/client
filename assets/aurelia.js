@@ -1,18 +1,18 @@
 /* @preserve
  * The MIT License (MIT)
- *
+ * 
  * Copyright (c) 2013-2018 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 /**
  * bluebird build version 3.7.1
@@ -2969,28 +2969,28 @@ _dereq_("./join")(
     Promise, PromiseArray, tryConvertToPromise, INTERNAL, async);
 Promise.Promise = Promise;
 Promise.version = "3.7.1";
-
-    util.toFastProperties(Promise);
-    util.toFastProperties(Promise.prototype);
-    function fillTypes(value) {
-        var p = new Promise(INTERNAL);
-        p._fulfillmentHandler0 = value;
-        p._rejectionHandler0 = value;
-        p._promise0 = value;
-        p._receiver0 = value;
-    }
-    // Complete slack tracking, opt out of field-type tracking and
-    // stabilize map
-    fillTypes({a: 1});
-    fillTypes({b: 2});
-    fillTypes({c: 3});
-    fillTypes(1);
-    fillTypes(function(){});
-    fillTypes(undefined);
-    fillTypes(false);
-    fillTypes(new Promise(INTERNAL));
-    debug.setBounds(Async.firstLineError, util.lastLineError);
-    return Promise;
+                                                         
+    util.toFastProperties(Promise);                                          
+    util.toFastProperties(Promise.prototype);                                
+    function fillTypes(value) {                                              
+        var p = new Promise(INTERNAL);                                       
+        p._fulfillmentHandler0 = value;                                      
+        p._rejectionHandler0 = value;                                        
+        p._promise0 = value;                                                 
+        p._receiver0 = value;                                                
+    }                                                                        
+    // Complete slack tracking, opt out of field-type tracking and           
+    // stabilize map                                                         
+    fillTypes({a: 1});                                                       
+    fillTypes({b: 2});                                                       
+    fillTypes({c: 3});                                                       
+    fillTypes(1);                                                            
+    fillTypes(function(){});                                                 
+    fillTypes(undefined);                                                    
+    fillTypes(false);                                                        
+    fillTypes(new Promise(INTERNAL));                                        
+    debug.setBounds(Async.firstLineError, util.lastLineError);               
+    return Promise;                                                          
 
 };
 
@@ -4037,13 +4037,13 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
     };
   }();
 
-
+  
 
   var Headers = exports.Headers = function () {
     function Headers() {
       var headers = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-
+      
 
       this.headers = {};
 
@@ -4103,7 +4103,7 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
 
   var RequestMessage = exports.RequestMessage = function () {
     function RequestMessage(method, url, content, headers) {
-
+      
 
       this.method = method;
       this.url = url;
@@ -4129,7 +4129,7 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
 
   var HttpResponseMessage = exports.HttpResponseMessage = function () {
     function HttpResponseMessage(requestMessage, xhr, responseType, reviver) {
-
+      
 
       this.requestMessage = requestMessage;
       this.statusCode = xhr.status;
@@ -4232,7 +4232,7 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
 
   var RequestMessageProcessor = exports.RequestMessageProcessor = function () {
     function RequestMessageProcessor(xhrType, xhrTransformers) {
-
+      
 
       this.XHRType = xhrType;
       this.xhrTransformers = xhrTransformers;
@@ -4427,7 +4427,7 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
     _inherits(JSONPRequestMessage, _RequestMessage);
 
     function JSONPRequestMessage(url, callbackParameterName) {
-
+      
 
       var _this2 = _possibleConstructorReturn(this, _RequestMessage.call(this, 'JSONP', url));
 
@@ -4441,7 +4441,7 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
 
   var JSONPXHR = function () {
     function JSONPXHR() {
-
+      
     }
 
     JSONPXHR.prototype.open = function open(method, url) {
@@ -4512,7 +4512,7 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
     _inherits(HttpRequestMessage, _RequestMessage2);
 
     function HttpRequestMessage(method, url, content, headers) {
-
+      
 
       var _this4 = _possibleConstructorReturn(this, _RequestMessage2.call(this, method, url, content, headers));
 
@@ -4530,7 +4530,7 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
     _inherits(ErrorHttpResponseMessage, _HttpResponseMessage);
 
     function ErrorHttpResponseMessage(responseMessage) {
-
+      
 
       var _this5 = _possibleConstructorReturn(this, _HttpResponseMessage.call(this, responseMessage.requestMessage, {
         response: responseMessage.response,
@@ -4548,7 +4548,7 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
 
   var RequestBuilder = exports.RequestBuilder = function () {
     function RequestBuilder(client) {
-
+      
 
       this.client = client;
       this.transformers = client.requestTransformers.slice(0);
@@ -4742,7 +4742,7 @@ define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'au
 
   var HttpClient = exports.HttpClient = function () {
     function HttpClient() {
-
+      
 
       this.isRequesting = false;
 
@@ -4863,11 +4863,11 @@ define('aurelia-animator-css/aurelia-animator-css',['exports', 'aurelia-templati
   exports.CssAnimator = undefined;
   exports.configure = configure;
 
-
+  
 
   var CssAnimator = exports.CssAnimator = function () {
     function CssAnimator() {
-
+      
 
       this.useAnimationDoneClasses = false;
       this.animationEnteredClass = 'au-entered';
@@ -5418,7 +5418,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   }
 
-
+  
 
   var _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2;
 
@@ -5798,7 +5798,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var ExpressionObserver = exports.ExpressionObserver = (_dec = connectable(), _dec2 = subscriberCollection(), _dec(_class = _dec2(_class = function () {
     function ExpressionObserver(scope, expression, observerLocator, lookupFunctions) {
-
+      
 
       this.scope = scope;
       this.expression = expression;
@@ -6250,7 +6250,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var ModifyCollectionObserver = exports.ModifyCollectionObserver = (_dec3 = subscriberCollection(), _dec3(_class2 = function () {
     function ModifyCollectionObserver(taskQueue, collection) {
-
+      
 
       this.taskQueue = taskQueue;
       this.queued = false;
@@ -6354,7 +6354,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
   }()) || _class2);
   var CollectionLengthObserver = exports.CollectionLengthObserver = (_dec4 = subscriberCollection(), _dec4(_class3 = function () {
     function CollectionLengthObserver(collection) {
-
+      
 
       this.collection = collection;
       this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
@@ -6506,7 +6506,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(ModifyArrayObserver, _ModifyCollectionObse);
 
     function ModifyArrayObserver(taskQueue, array) {
-
+      
 
       return _possibleConstructorReturn(this, _ModifyCollectionObse.call(this, taskQueue, array));
     }
@@ -6530,7 +6530,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var Expression = exports.Expression = function () {
     function Expression() {
-
+      
 
       this.isAssignable = false;
     }
@@ -6554,7 +6554,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(BindingBehavior, _Expression);
 
     function BindingBehavior(expression, name, args) {
-
+      
 
       var _this3 = _possibleConstructorReturn(this, _Expression.call(this));
 
@@ -6612,7 +6612,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(ValueConverter, _Expression2);
 
     function ValueConverter(expression, name, args) {
-
+      
 
       var _this4 = _possibleConstructorReturn(this, _Expression2.call(this));
 
@@ -6680,7 +6680,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(Assign, _Expression3);
 
     function Assign(target, value) {
-
+      
 
       var _this5 = _possibleConstructorReturn(this, _Expression3.call(this));
 
@@ -6712,7 +6712,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(Conditional, _Expression4);
 
     function Conditional(condition, yes, no) {
-
+      
 
       var _this6 = _possibleConstructorReturn(this, _Expression4.call(this));
 
@@ -6746,7 +6746,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(AccessThis, _Expression5);
 
     function AccessThis(ancestor) {
-
+      
 
       var _this7 = _possibleConstructorReturn(this, _Expression5.call(this));
 
@@ -6776,7 +6776,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(AccessScope, _Expression6);
 
     function AccessScope(name, ancestor) {
-
+      
 
       var _this8 = _possibleConstructorReturn(this, _Expression6.call(this));
 
@@ -6812,7 +6812,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(AccessMember, _Expression7);
 
     function AccessMember(object, name) {
-
+      
 
       var _this9 = _possibleConstructorReturn(this, _Expression7.call(this));
 
@@ -6858,7 +6858,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(AccessKeyed, _Expression8);
 
     function AccessKeyed(object, key) {
-
+      
 
       var _this10 = _possibleConstructorReturn(this, _Expression8.call(this));
 
@@ -6904,7 +6904,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(CallScope, _Expression9);
 
     function CallScope(name, args, ancestor) {
-
+      
 
       var _this11 = _possibleConstructorReturn(this, _Expression9.call(this));
 
@@ -6943,7 +6943,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(CallMember, _Expression10);
 
     function CallMember(object, name, args) {
-
+      
 
       var _this12 = _possibleConstructorReturn(this, _Expression10.call(this));
 
@@ -6986,7 +6986,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(CallFunction, _Expression11);
 
     function CallFunction(func, args) {
-
+      
 
       var _this13 = _possibleConstructorReturn(this, _Expression11.call(this));
 
@@ -7029,7 +7029,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(Binary, _Expression12);
 
     function Binary(operation, left, right) {
-
+      
 
       var _this14 = _possibleConstructorReturn(this, _Expression12.call(this));
 
@@ -7127,7 +7127,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(Unary, _Expression13);
 
     function Unary(operation, expression) {
-
+      
 
       var _this15 = _possibleConstructorReturn(this, _Expression13.call(this));
 
@@ -7164,7 +7164,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(LiteralPrimitive, _Expression14);
 
     function LiteralPrimitive(value) {
-
+      
 
       var _this16 = _possibleConstructorReturn(this, _Expression14.call(this));
 
@@ -7189,7 +7189,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(LiteralString, _Expression15);
 
     function LiteralString(value) {
-
+      
 
       var _this17 = _possibleConstructorReturn(this, _Expression15.call(this));
 
@@ -7214,7 +7214,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(LiteralTemplate, _Expression16);
 
     function LiteralTemplate(cooked, expressions, raw, tag) {
-
+      
 
       var _this18 = _possibleConstructorReturn(this, _Expression16.call(this));
 
@@ -7287,7 +7287,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(LiteralArray, _Expression17);
 
     function LiteralArray(elements) {
-
+      
 
       var _this19 = _possibleConstructorReturn(this, _Expression17.call(this));
 
@@ -7324,7 +7324,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(LiteralObject, _Expression18);
 
     function LiteralObject(keys, values) {
-
+      
 
       var _this20 = _possibleConstructorReturn(this, _Expression18.call(this));
 
@@ -7437,7 +7437,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
   if (typeof FEATURE_NO_UNPARSER === 'undefined') {
     exports.Unparser = _Unparser = function () {
       function Unparser(buffer) {
-
+        
 
         this.buffer = buffer;
       }
@@ -7641,7 +7641,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var ExpressionCloner = exports.ExpressionCloner = function () {
     function ExpressionCloner() {
-
+      
     }
 
     ExpressionCloner.prototype.cloneExpressionArray = function cloneExpressionArray(array) {
@@ -7743,7 +7743,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var Parser = exports.Parser = function () {
     function Parser() {
-
+      
 
       this.cache = Object.create(null);
     }
@@ -7768,7 +7768,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     }]);
 
     function ParserImplementation(src) {
-
+      
 
       this.idx = 0;
 
@@ -8557,7 +8557,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(ModifyMapObserver, _ModifyCollectionObse2);
 
     function ModifyMapObserver(taskQueue, map) {
-
+      
 
       return _possibleConstructorReturn(this, _ModifyCollectionObse2.call(this, taskQueue, map));
     }
@@ -8672,7 +8672,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var CapturedHandlerEntry = function () {
     function CapturedHandlerEntry(eventName) {
-
+      
 
       this.eventName = eventName;
       this.count = 0;
@@ -8699,7 +8699,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var DelegateHandlerEntry = function () {
     function DelegateHandlerEntry(eventName, eventManager) {
-
+      
 
       this.eventName = eventName;
       this.count = 0;
@@ -8754,7 +8754,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var DelegationEntryHandler = function () {
     function DelegationEntryHandler(entry, lookup, targetEvent) {
-
+      
 
       this.entry = entry;
       this.lookup = lookup;
@@ -8775,7 +8775,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var EventHandler = function () {
     function EventHandler(target, targetEvent, callback) {
-
+      
 
       this.target = target;
       this.targetEvent = targetEvent;
@@ -8791,7 +8791,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var DefaultEventStrategy = function () {
     function DefaultEventStrategy(eventManager) {
-
+      
 
       this.delegatedHandlers = {};
       this.capturedHandlers = {};
@@ -8869,7 +8869,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     function EventManager() {
       var escapeShadowRoot = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
-
+      
 
       this.elementHandlerLookup = {};
       this.eventStrategyLookup = {};
@@ -8966,7 +8966,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var EventSubscriber = exports.EventSubscriber = function () {
     function EventSubscriber(events) {
-
+      
 
       this.events = events;
       this.element = null;
@@ -9001,7 +9001,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var DirtyChecker = exports.DirtyChecker = function () {
     function DirtyChecker() {
-
+      
 
       this.tracked = [];
       this.checkDelay = 120;
@@ -9052,7 +9052,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var DirtyCheckProperty = exports.DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class5 = function () {
     function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
-
+      
 
       this.dirtyChecker = dirtyChecker;
       this.obj = obj;
@@ -9111,7 +9111,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var PrimitiveObserver = exports.PrimitiveObserver = function () {
     function PrimitiveObserver(primitive, propertyName) {
-
+      
 
       this.doNotCache = true;
 
@@ -9137,7 +9137,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var SetterObserver = exports.SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class7 = function () {
     function SetterObserver(taskQueue, obj, propertyName) {
-
+      
 
       this.taskQueue = taskQueue;
       this.obj = obj;
@@ -9213,7 +9213,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var XLinkAttributeObserver = exports.XLinkAttributeObserver = function () {
     function XLinkAttributeObserver(element, propertyName, attributeName) {
-
+      
 
       this.element = element;
       this.propertyName = propertyName;
@@ -9250,7 +9250,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var DataAttributeObserver = exports.DataAttributeObserver = function () {
     function DataAttributeObserver(element, propertyName) {
-
+      
 
       this.element = element;
       this.propertyName = propertyName;
@@ -9276,7 +9276,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var StyleObserver = exports.StyleObserver = function () {
     function StyleObserver(element, propertyName) {
-
+      
 
       this.element = element;
       this.propertyName = propertyName;
@@ -9358,7 +9358,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var ValueAttributeObserver = exports.ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_class8 = function () {
     function ValueAttributeObserver(element, propertyName, handler) {
-
+      
 
       this.element = element;
       this.propertyName = propertyName;
@@ -9417,7 +9417,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var CheckedObserver = exports.CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = function () {
     function CheckedObserver(element, handler, observerLocator) {
-
+      
 
       this.element = element;
       this.handler = handler;
@@ -9560,7 +9560,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var SelectValueObserver = exports.SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10 = function () {
     function SelectValueObserver(element, handler, observerLocator) {
-
+      
 
       this.element = element;
       this.handler = handler;
@@ -9763,7 +9763,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var ClassObserver = exports.ClassObserver = function () {
     function ClassObserver(element) {
-
+      
 
       this.element = element;
       this.doNotCache = true;
@@ -9841,7 +9841,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(ComputedExpression, _Expression19);
 
     function ComputedExpression(name, dependencies) {
-
+      
 
       var _this25 = _possibleConstructorReturn(this, _Expression19.call(this));
 
@@ -10102,7 +10102,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
     svgAnalyzer = function () {
       function SVGAnalyzer() {
-
+        
 
         if (createElement('<svg><altGlyph /></svg>').firstElementChild.nodeName === 'altglyph' && elements.altGlyph) {
           elements.altglyph = elements.altGlyph;
@@ -10129,7 +10129,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
   var presentationAttributes = exports.presentationAttributes = svgPresentationAttributes;
   var SVGAnalyzer = exports.SVGAnalyzer = svgAnalyzer || function () {
     function _class11() {
-
+      
     }
 
     _class11.prototype.isStandardSvgAttribute = function isStandardSvgAttribute() {
@@ -10141,7 +10141,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var ObserverLocator = exports.ObserverLocator = (_temp = _class12 = function () {
     function ObserverLocator(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
-
+      
 
       this.taskQueue = taskQueue;
       this.eventManager = eventManager;
@@ -10316,7 +10316,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var ObjectObservationAdapter = exports.ObjectObservationAdapter = function () {
     function ObjectObservationAdapter() {
-
+      
     }
 
     ObjectObservationAdapter.prototype.getObserver = function getObserver(object, propertyName, descriptor) {
@@ -10328,7 +10328,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var BindingExpression = exports.BindingExpression = function () {
     function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, lookupFunctions, attribute) {
-
+      
 
       this.observerLocator = observerLocator;
       this.targetProperty = targetProperty;
@@ -10348,7 +10348,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var Binding = exports.Binding = (_dec10 = connectable(), _dec10(_class13 = function () {
     function Binding(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
-
+      
 
       this.observerLocator = observerLocator;
       this.sourceExpression = sourceExpression;
@@ -10466,7 +10466,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var CallExpression = exports.CallExpression = function () {
     function CallExpression(observerLocator, targetProperty, sourceExpression, lookupFunctions) {
-
+      
 
       this.observerLocator = observerLocator;
       this.targetProperty = targetProperty;
@@ -10483,7 +10483,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var Call = exports.Call = function () {
     function Call(observerLocator, sourceExpression, target, targetProperty, lookupFunctions) {
-
+      
 
       this.sourceExpression = sourceExpression;
       this.target = target;
@@ -10541,7 +10541,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var ValueConverterResource = exports.ValueConverterResource = function () {
     function ValueConverterResource(name) {
-
+      
 
       this.name = name;
     }
@@ -10577,7 +10577,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var BindingBehaviorResource = exports.BindingBehaviorResource = function () {
     function BindingBehaviorResource(name) {
-
+      
 
       this.name = name;
     }
@@ -10613,7 +10613,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var ListenerExpression = exports.ListenerExpression = function () {
     function ListenerExpression(eventManager, targetEvent, sourceExpression, delegationStrategy, preventDefault, lookupFunctions) {
-
+      
 
       this.eventManager = eventManager;
       this.targetEvent = targetEvent;
@@ -10633,7 +10633,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var Listener = exports.Listener = function () {
     function Listener(eventManager, targetEvent, delegationStrategy, sourceExpression, target, preventDefault, lookupFunctions) {
-
+      
 
       this.eventManager = eventManager;
       this.targetEvent = targetEvent;
@@ -10704,7 +10704,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var NameExpression = exports.NameExpression = function () {
     function NameExpression(sourceExpression, apiName, lookupFunctions) {
-
+      
 
       this.sourceExpression = sourceExpression;
       this.apiName = apiName;
@@ -10742,7 +10742,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var NameBinder = function () {
     function NameBinder(sourceExpression, target, lookupFunctions) {
-
+      
 
       this.sourceExpression = sourceExpression;
       this.target = target;
@@ -10792,7 +10792,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
   var BindingEngine = exports.BindingEngine = (_temp2 = _class14 = function () {
     function BindingEngine(observerLocator, parser) {
-
+      
 
       this.observerLocator = observerLocator;
       this.parser = parser;
@@ -10875,7 +10875,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
     _inherits(ModifySetObserver, _ModifyCollectionObse3);
 
     function ModifySetObserver(taskQueue, set) {
-
+      
 
       return _possibleConstructorReturn(this, _ModifyCollectionObse3.call(this, taskQueue, set));
     }
@@ -11887,13 +11887,13 @@ define('aurelia-event-aggregator/aurelia-event-aggregator',['exports', 'aurelia-
     }
   }
 
-
+  
 
   var logger = LogManager.getLogger('event-aggregator');
 
   var Handler = function () {
     function Handler(messageType, callback) {
-
+      
 
       this.messageType = messageType;
       this.callback = callback;
@@ -11926,7 +11926,7 @@ define('aurelia-event-aggregator/aurelia-event-aggregator',['exports', 'aurelia-
 
   var EventAggregator = exports.EventAggregator = function () {
     function EventAggregator() {
-
+      
 
       this.eventLookup = {};
       this.messageHandlers = [];
@@ -12128,7 +12128,7 @@ define('aurelia-framework/aurelia-framework',['exports', 'aurelia-dependency-inj
     return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
-
+  
 
   function preventActionlessFormSubmit() {
     _aureliaPal.DOM.addEventListener('submit', function (evt) {
@@ -12143,7 +12143,7 @@ define('aurelia-framework/aurelia-framework',['exports', 'aurelia-dependency-inj
 
   var Aurelia = exports.Aurelia = function () {
     function Aurelia(loader, container, resources) {
-
+      
 
       this.loader = loader || new _aureliaPal.PLATFORM.Loader();
       this.container = container || new _aureliaDependencyInjection.Container().makeGlobal();
@@ -12414,7 +12414,7 @@ define('aurelia-framework/aurelia-framework',['exports', 'aurelia-dependency-inj
     function FrameworkConfiguration(aurelia) {
       var _this4 = this;
 
-
+      
 
       this.aurelia = aurelia;
       this.container = aurelia.container;
@@ -12658,7 +12658,7 @@ define('aurelia-history/aurelia-history',['exports'], function (exports) {
     value: true
   });
 
-
+  
 
   function mi(name) {
     throw new Error('History must implement ' + name + '().');
@@ -12666,7 +12666,7 @@ define('aurelia-history/aurelia-history',['exports'], function (exports) {
 
   var History = exports.History = function () {
     function History() {
-
+      
     }
 
     History.prototype.activate = function activate(options) {
@@ -13039,10 +13039,10 @@ define('aurelia-loader/aurelia-loader',['exports', 'aurelia-path', 'aurelia-meta
     };
   }();
 
-
+  
 
   var TemplateDependency = exports.TemplateDependency = function TemplateDependency(src, name) {
-
+    
 
     this.src = src;
     this.name = name;
@@ -13050,7 +13050,7 @@ define('aurelia-loader/aurelia-loader',['exports', 'aurelia-path', 'aurelia-meta
 
   var TemplateRegistryEntry = exports.TemplateRegistryEntry = function () {
     function TemplateRegistryEntry(address) {
-
+      
 
       this.templateIsLoaded = false;
       this.factoryIsReady = false;
@@ -13118,7 +13118,7 @@ define('aurelia-loader/aurelia-loader',['exports', 'aurelia-path', 'aurelia-meta
 
   var Loader = exports.Loader = function () {
     function Loader() {
-
+      
 
       this.templateRegistry = {};
     }
@@ -13205,11 +13205,11 @@ define('aurelia-loader-default/aurelia-loader-default',['exports', 'aurelia-load
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   }
 
-
+  
 
   var TextTemplateLoader = exports.TextTemplateLoader = function () {
     function TextTemplateLoader() {
-
+      
     }
 
     TextTemplateLoader.prototype.loadTemplate = function loadTemplate(loader, entry) {
@@ -13247,7 +13247,7 @@ define('aurelia-loader-default/aurelia-loader-default',['exports', 'aurelia-load
     _inherits(DefaultLoader, _Loader);
 
     function DefaultLoader() {
-
+      
 
       var _this = _possibleConstructorReturn(this, _Loader.call(this));
 
@@ -13475,7 +13475,7 @@ define('aurelia-logging/aurelia-logging',['exports'], function (exports) {
   exports.setLevel = setLevel;
   exports.getLevel = getLevel;
 
-
+  
 
   var logLevel = exports.logLevel = {
     none: 0,
@@ -13626,7 +13626,7 @@ define('aurelia-logging/aurelia-logging',['exports'], function (exports) {
 
   var Logger = exports.Logger = function () {
     function Logger(id) {
-
+      
 
       var cached = loggers[id];
       if (cached) {
@@ -13665,11 +13665,11 @@ define('aurelia-logging-console/aurelia-logging-console',["exports"], function (
     value: true
   });
 
-
+  
 
   var ConsoleAppender = exports.ConsoleAppender = function () {
     function ConsoleAppender() {
-
+      
     }
 
     ConsoleAppender.prototype.debug = function debug(logger) {
@@ -13742,7 +13742,7 @@ define('aurelia-metadata/aurelia-metadata',['exports', 'aurelia-pal'], function 
     return target;
   };
 
-
+  
 
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
     return typeof obj;
@@ -13792,7 +13792,7 @@ define('aurelia-metadata/aurelia-metadata',['exports', 'aurelia-pal'], function 
 
   var Origin = exports.Origin = function () {
     function Origin(moduleId, moduleMember) {
-
+      
 
       this.moduleId = moduleId;
       this.moduleMember = moduleMember;
@@ -15779,11 +15779,11 @@ define('aurelia-route-recognizer/aurelia-route-recognizer',['exports', 'aurelia-
   });
   exports.RouteRecognizer = exports.EpsilonSegment = exports.StarSegment = exports.DynamicSegment = exports.StaticSegment = exports.State = undefined;
 
-
+  
 
   var State = exports.State = function () {
     function State(charSpec) {
-
+      
 
       this.charSpec = charSpec;
       this.nextStates = [];
@@ -15863,7 +15863,7 @@ define('aurelia-route-recognizer/aurelia-route-recognizer',['exports', 'aurelia-
 
   var StaticSegment = exports.StaticSegment = function () {
     function StaticSegment(string, caseSensitive) {
-
+      
 
       this.string = string;
       this.caseSensitive = caseSensitive;
@@ -15890,7 +15890,7 @@ define('aurelia-route-recognizer/aurelia-route-recognizer',['exports', 'aurelia-
 
   var DynamicSegment = exports.DynamicSegment = function () {
     function DynamicSegment(name, optional) {
-
+      
 
       this.name = name;
       this.optional = optional;
@@ -15914,7 +15914,7 @@ define('aurelia-route-recognizer/aurelia-route-recognizer',['exports', 'aurelia-
 
   var StarSegment = exports.StarSegment = function () {
     function StarSegment(name) {
-
+      
 
       this.name = name;
     }
@@ -15937,7 +15937,7 @@ define('aurelia-route-recognizer/aurelia-route-recognizer',['exports', 'aurelia-
 
   var EpsilonSegment = exports.EpsilonSegment = function () {
     function EpsilonSegment() {
-
+      
     }
 
     EpsilonSegment.prototype.eachChar = function eachChar() {};
@@ -15955,7 +15955,7 @@ define('aurelia-route-recognizer/aurelia-route-recognizer',['exports', 'aurelia-
 
   var RouteRecognizer = exports.RouteRecognizer = function () {
     function RouteRecognizer() {
-
+      
 
       this.rootState = new State();
       this.names = {};
@@ -16157,7 +16157,7 @@ define('aurelia-route-recognizer/aurelia-route-recognizer',['exports', 'aurelia-
   }();
 
   var RecognizeResults = function RecognizeResults(queryParams) {
-
+    
 
     this.splice = Array.prototype.splice;
     this.slice = Array.prototype.slice;
@@ -17588,7 +17588,7 @@ define('aurelia-router', ['exports', 'aurelia-logging', 'aurelia-dependency-inje
                     ._createNavigationInstruction(path, currentInstruction)
                     .then(function (childInstruction) {
                     viewPortPlan.childNavigationInstruction = childInstruction;
-                    return _buildNavigationPlan(childInstruction,
+                    return _buildNavigationPlan(childInstruction, 
                     // is it safe to assume viewPortPlan has not been changed from previous assignment?
                     // if so, can just use local variable viewPortPlanStrategy
                     // there could be user code modifying viewport plan during _createNavigationInstruction?
@@ -17614,7 +17614,7 @@ define('aurelia-router', ['exports', 'aurelia-logging', 'aurelia-dependency-inje
      * @param newViewPortConfig if this is invoked on a viewport without any changes, based on new url, newViewPortConfig will be the existing viewport instruction
      * @internal exported for unit testing
      */
-    var determineActivationStrategy = function (currentNavInstruction, prevViewPortInstruction, newViewPortConfig,
+    var determineActivationStrategy = function (currentNavInstruction, prevViewPortInstruction, newViewPortConfig, 
     // indicates whether there is difference between old and new url params
     hasNewParams, forceLifecycleMinimum) {
         var newInstructionConfig = currentNavInstruction.config;
@@ -18625,7 +18625,7 @@ define('aurelia-task-queue/aurelia-task-queue',['exports', 'aurelia-pal'], funct
   });
   exports.TaskQueue = undefined;
 
-
+  
 
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
     return typeof obj;
@@ -18680,7 +18680,7 @@ define('aurelia-task-queue/aurelia-task-queue',['exports', 'aurelia-pal'], funct
     function TaskQueue() {
       var _this = this;
 
-
+      
 
       this.flushing = false;
       this.longStacks = false;
@@ -18894,7 +18894,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var _class, _temp, _class2, _temp2, _dec, _class3, _dec2, _class4, _dec3, _class5, _dec4, _class6, _dec5, _class7, _dec6, _class8, _class9, _temp3, _class10, _temp4, _class12, _dec7, _class14, _dec8, _class15, _class16, _temp5, _dec9, _class17, _dec10, _class18, _dec11, _class19;
 
-
+  
 
   var animationEvent = exports.animationEvent = {
     enterBegin: 'animation:enter:begin',
@@ -18930,7 +18930,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var Animator = exports.Animator = function () {
     function Animator() {
-
+      
     }
 
     Animator.prototype.enter = function enter(element) {
@@ -18966,7 +18966,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var CompositionTransactionNotifier = exports.CompositionTransactionNotifier = function () {
     function CompositionTransactionNotifier(owner) {
-
+      
 
       this.owner = owner;
       this.owner._compositionCount++;
@@ -18982,7 +18982,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var CompositionTransactionOwnershipToken = exports.CompositionTransactionOwnershipToken = function () {
     function CompositionTransactionOwnershipToken(owner) {
-
+      
 
       this.owner = owner;
       this.owner._ownershipToken = this;
@@ -19011,7 +19011,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var CompositionTransaction = exports.CompositionTransaction = function () {
     function CompositionTransaction() {
-
+      
 
       this._ownershipToken = null;
       this._compositionCount = 0;
@@ -19056,7 +19056,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ViewEngineHooksResource = exports.ViewEngineHooksResource = function () {
     function ViewEngineHooksResource() {
-
+      
     }
 
     ViewEngineHooksResource.prototype.initialize = function initialize(container, target) {
@@ -19088,7 +19088,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ElementEvents = exports.ElementEvents = (_temp = _class = function () {
     function ElementEvents(element) {
-
+      
 
       this.element = element;
       this.subscriptions = {};
@@ -19171,7 +19171,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var EventHandlerImpl = function () {
     function EventHandlerImpl(owner, eventName, handler, captureOrOptions, once) {
-
+      
 
       this.owner = owner;
       this.eventName = eventName;
@@ -19204,7 +19204,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ResourceLoadContext = exports.ResourceLoadContext = function () {
     function ResourceLoadContext() {
-
+      
 
       this.dependencies = {};
     }
@@ -19224,7 +19224,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     var targetShadowDOM = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     var compileSurrogate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-
+    
 
     this.targetShadowDOM = targetShadowDOM;
     this.compileSurrogate = compileSurrogate;
@@ -19235,7 +19235,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var BehaviorInstruction = exports.BehaviorInstruction = function () {
     function BehaviorInstruction() {
-
+      
     }
 
     BehaviorInstruction.enhance = function enhance() {
@@ -19300,7 +19300,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var TargetInstruction = exports.TargetInstruction = (_temp2 = _class2 = function () {
     function TargetInstruction() {
-
+      
     }
 
     TargetInstruction.shadowSlot = function shadowSlot(parentInjectorId) {
@@ -19400,7 +19400,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var RelativeViewStrategy = exports.RelativeViewStrategy = (_dec = viewStrategy(), _dec(_class3 = function () {
     function RelativeViewStrategy(path) {
-
+      
 
       this.path = path;
       this.absolutePath = null;
@@ -19425,7 +19425,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
   }()) || _class3);
   var ConventionalViewStrategy = exports.ConventionalViewStrategy = (_dec2 = viewStrategy(), _dec2(_class4 = function () {
     function ConventionalViewStrategy(viewLocator, origin) {
-
+      
 
       this.moduleId = origin.moduleId;
       this.viewUrl = viewLocator.convertOriginToViewUrl(origin);
@@ -19440,7 +19440,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
   }()) || _class4);
   var NoViewStrategy = exports.NoViewStrategy = (_dec3 = viewStrategy(), _dec3(_class5 = function () {
     function NoViewStrategy(dependencies, dependencyBaseUrl) {
-
+      
 
       this.dependencies = dependencies || null;
       this.dependencyBaseUrl = dependencyBaseUrl || '';
@@ -19480,7 +19480,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
   }()) || _class5);
   var TemplateRegistryViewStrategy = exports.TemplateRegistryViewStrategy = (_dec4 = viewStrategy(), _dec4(_class6 = function () {
     function TemplateRegistryViewStrategy(moduleId, entry) {
-
+      
 
       this.moduleId = moduleId;
       this.entry = entry;
@@ -19501,7 +19501,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
   }()) || _class6);
   var InlineViewStrategy = exports.InlineViewStrategy = (_dec5 = viewStrategy(), _dec5(_class7 = function () {
     function InlineViewStrategy(markup, dependencies, dependencyBaseUrl) {
-
+      
 
       this.markup = markup;
       this.dependencies = dependencies || null;
@@ -19539,7 +19539,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
   }()) || _class7);
   var StaticViewStrategy = exports.StaticViewStrategy = (_dec6 = viewStrategy(), _dec6(_class8 = function () {
     function StaticViewStrategy(config) {
-
+      
 
       if (typeof config === 'string' || config instanceof _aureliaPal.DOM.Element && config.tagName === 'TEMPLATE') {
         config = {
@@ -19626,7 +19626,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
   }()) || _class8);
   var ViewLocator = exports.ViewLocator = (_temp3 = _class9 = function () {
     function ViewLocator() {
-
+      
     }
 
     ViewLocator.prototype.getViewStrategy = function getViewStrategy(value) {
@@ -19713,7 +19713,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var BindingLanguage = exports.BindingLanguage = function () {
     function BindingLanguage() {
-
+      
     }
 
     BindingLanguage.prototype.inspectAttribute = function inspectAttribute(resources, elementName, attrName, attrValue) {
@@ -19743,7 +19743,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
 
     function SlotCustomAttribute(element) {
-
+      
 
       this.element = element;
       this.element.auSlotAttribute = this;
@@ -19756,7 +19756,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var PassThroughSlot = exports.PassThroughSlot = function () {
     function PassThroughSlot(anchor, name, destinationName, fallbackFactory) {
-
+      
 
       this.anchor = anchor;
       this.anchor.viewSlot = this;
@@ -19866,7 +19866,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ShadowSlot = exports.ShadowSlot = function () {
     function ShadowSlot(anchor, name, fallbackFactory) {
-
+      
 
       this.anchor = anchor;
       this.anchor.isContentProjectionSource = true;
@@ -20087,7 +20087,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ShadowDOM = exports.ShadowDOM = (_temp4 = _class10 = function () {
     function ShadowDOM() {
-
+      
     }
 
     ShadowDOM.getSlotName = function getSlotName(node) {
@@ -20299,7 +20299,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
 
     function ViewResources(parent, viewUrl) {
-
+      
 
       this.bindingLanguage = null;
 
@@ -20466,7 +20466,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var View = exports.View = function () {
     function View(container, viewFactory, fragment, controllers, bindings, children, slots) {
-
+      
 
       this.container = container;
       this.viewFactory = viewFactory;
@@ -20706,7 +20706,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     function ViewSlot(anchor, anchorIsContainer) {
       var animator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : Animator.instance;
 
-
+      
 
       this.anchor = anchor;
       this.anchorIsContainer = anchorIsContainer;
@@ -21135,7 +21135,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ProviderResolver = (0, _aureliaDependencyInjection.resolver)(_class12 = function () {
     function ProviderResolver() {
-
+      
     }
 
     ProviderResolver.prototype.get = function get(container, key) {
@@ -21398,7 +21398,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var BoundViewFactory = exports.BoundViewFactory = function () {
     function BoundViewFactory(parentContainer, viewFactory, partReplacements) {
-
+      
 
       this.parentContainer = parentContainer;
       this.viewFactory = viewFactory;
@@ -21435,7 +21435,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ViewFactory = exports.ViewFactory = function () {
     function ViewFactory(template, instructions, resources) {
-
+      
 
       this.isCaching = false;
 
@@ -21593,7 +21593,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ViewCompiler = exports.ViewCompiler = (_dec7 = (0, _aureliaDependencyInjection.inject)(BindingLanguage, ViewResources), _dec7(_class14 = function () {
     function ViewCompiler(bindingLanguage, resources) {
-
+      
 
       this.bindingLanguage = bindingLanguage;
       this.resources = resources;
@@ -22012,7 +22012,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ResourceModule = exports.ResourceModule = function () {
     function ResourceModule(moduleId) {
-
+      
 
       this.id = moduleId;
       this.moduleInstance = null;
@@ -22094,7 +22094,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ResourceDescription = exports.ResourceDescription = function () {
     function ResourceDescription(key, exportedValue, resourceTypeMeta) {
-
+      
 
       if (!resourceTypeMeta) {
         resourceTypeMeta = _aureliaMetadata.metadata.get(_aureliaMetadata.metadata.resource, exportedValue);
@@ -22139,7 +22139,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ModuleAnalyzer = exports.ModuleAnalyzer = function () {
     function ModuleAnalyzer() {
-
+      
 
       this.cache = Object.create(null);
     }
@@ -22262,7 +22262,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     function ProxyViewFactory(promise) {
       var _this8 = this;
 
-
+      
 
       promise.then(function (x) {
         return _this8.viewFactory = x;
@@ -22299,7 +22299,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ViewEngine = exports.ViewEngine = (_dec8 = (0, _aureliaDependencyInjection.inject)(_aureliaLoader.Loader, _aureliaDependencyInjection.Container, ViewCompiler, ModuleAnalyzer, ViewResources), _dec8(_class15 = (_temp5 = _class16 = function () {
     function ViewEngine(loader, container, viewCompiler, moduleAnalyzer, appResources) {
-
+      
 
       this.loader = loader;
       this.container = container;
@@ -22490,7 +22490,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var Controller = exports.Controller = function () {
     function Controller(behavior, instruction, viewModel, container) {
-
+      
 
       this.behavior = behavior;
       this.instruction = instruction;
@@ -22661,7 +22661,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var BehaviorPropertyObserver = exports.BehaviorPropertyObserver = (_dec9 = (0, _aureliaBinding.subscriberCollection)(), _dec9(_class17 = function () {
     function BehaviorPropertyObserver(taskQueue, obj, propertyName, selfSubscriber, initialValue) {
-
+      
 
       this.taskQueue = taskQueue;
       this.obj = obj;
@@ -22743,7 +22743,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var BindableProperty = exports.BindableProperty = function () {
     function BindableProperty(nameOrConfig) {
-
+      
 
       if (typeof nameOrConfig === 'string') {
         this.name = nameOrConfig;
@@ -22963,7 +22963,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var HtmlBehaviorResource = exports.HtmlBehaviorResource = function () {
     function HtmlBehaviorResource() {
-
+      
 
       this.elementName = null;
       this.attributeName = null;
@@ -23380,7 +23380,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ChildObserver = function () {
     function ChildObserver(config) {
-
+      
 
       this.name = config.name;
       this.changeHandler = config.changeHandler || this.name + 'Changed';
@@ -23452,7 +23452,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ChildObserverBinder = function () {
     function ChildObserverBinder(selector, viewHost, property, viewModel, controller, changeHandler, all) {
-
+      
 
       this.selector = selector;
       this.viewHost = viewHost;
@@ -23654,7 +23654,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var CompositionEngine = exports.CompositionEngine = (_dec10 = (0, _aureliaDependencyInjection.inject)(ViewEngine, ViewLocator), _dec10(_class18 = function () {
     function CompositionEngine(viewEngine, viewLocator) {
-
+      
 
       this.viewEngine = viewEngine;
       this.viewLocator = viewLocator;
@@ -23822,7 +23822,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var ElementConfigResource = exports.ElementConfigResource = function () {
     function ElementConfigResource() {
-
+      
     }
 
     ElementConfigResource.prototype.initialize = function initialize(container, target) {};
@@ -24032,7 +24032,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var TemplatingEngine = exports.TemplatingEngine = (_dec11 = (0, _aureliaDependencyInjection.inject)(_aureliaDependencyInjection.Container, ModuleAnalyzer, ViewCompiler, CompositionEngine), _dec11(_class19 = function () {
     function TemplatingEngine(container, moduleAnalyzer, viewCompiler, compositionEngine) {
-
+      
 
       this._container = container;
       this._moduleAnalyzer = moduleAnalyzer;
@@ -24129,13 +24129,13 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   }
 
-
+  
 
   var _class, _temp, _dec, _class2, _dec2, _class3, _class4, _temp2, _class5, _temp3;
 
   var AttributeMap = exports.AttributeMap = (_temp = _class = function () {
     function AttributeMap(svg) {
-
+      
 
       this.elements = Object.create(null);
       this.allElements = Object.create(null);
@@ -24208,7 +24208,7 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
 
   var InterpolationBindingExpression = exports.InterpolationBindingExpression = function () {
     function InterpolationBindingExpression(observerLocator, targetProperty, parts, mode, lookupFunctions, attribute) {
-
+      
 
       this.observerLocator = observerLocator;
       this.targetProperty = targetProperty;
@@ -24239,7 +24239,7 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
 
   var InterpolationBinding = exports.InterpolationBinding = function () {
     function InterpolationBinding(observerLocator, parts, target, targetProperty, mode, lookupFunctions) {
-
+      
 
       validateTarget(target, targetProperty);
       this.observerLocator = observerLocator;
@@ -24309,7 +24309,7 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
 
   var ChildInterpolationBinding = exports.ChildInterpolationBinding = (_dec = (0, _aureliaBinding.connectable)(), _dec(_class2 = function () {
     function ChildInterpolationBinding(target, observerLocator, sourceExpression, mode, lookupFunctions, targetProperty, left, right) {
-
+      
 
       if (target instanceof InterpolationBinding) {
         this.parent = target;
@@ -24414,7 +24414,7 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
 
   var LetExpression = exports.LetExpression = function () {
     function LetExpression(observerLocator, targetProperty, sourceExpression, lookupFunctions, toBindingContext) {
-
+      
 
       this.observerLocator = observerLocator;
       this.sourceExpression = sourceExpression;
@@ -24432,7 +24432,7 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
 
   var LetBinding = exports.LetBinding = (_dec2 = (0, _aureliaBinding.connectable)(), _dec2(_class3 = function () {
     function LetBinding(observerLocator, sourceExpression, targetProperty, lookupFunctions, toBindingContext) {
-
+      
 
       this.observerLocator = observerLocator;
       this.sourceExpression = sourceExpression;
@@ -24504,7 +24504,7 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
 
   var LetInterpolationBindingExpression = exports.LetInterpolationBindingExpression = function () {
     function LetInterpolationBindingExpression(observerLocator, targetProperty, parts, lookupFunctions, toBindingContext) {
-
+      
 
       this.observerLocator = observerLocator;
       this.targetProperty = targetProperty;
@@ -24522,7 +24522,7 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
 
   var LetInterpolationBinding = exports.LetInterpolationBinding = function () {
     function LetInterpolationBinding(observerLocator, targetProperty, parts, lookupFunctions, toBindingContext) {
-
+      
 
       this.observerLocator = observerLocator;
       this.parts = parts;
@@ -24571,7 +24571,7 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
 
   var SyntaxInterpreter = exports.SyntaxInterpreter = (_temp2 = _class4 = function () {
     function SyntaxInterpreter(parser, observerLocator, eventManager, attributeMap) {
-
+      
 
       this.parser = parser;
       this.observerLocator = observerLocator;
@@ -24780,7 +24780,7 @@ define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aure
     _inherits(TemplatingBindingLanguage, _BindingLanguage);
 
     function TemplatingBindingLanguage(parser, observerLocator, syntaxInterpreter, attributeMap) {
-
+      
 
       var _this = _possibleConstructorReturn(this, _BindingLanguage.call(this));
 
