@@ -169,11 +169,6 @@ export class inventory {
   }
 
   setTransactions(transactions = [], type, limit) {
-    if (transactions.length == limit) {
-      this.type = type
-      this.snackbar.show(`Displaying first 100 results`)
-    } else
-      this.type = null
 
     //Sort X00 bin alphabetically per Cindy's request.
     if ( ~ ['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term))
@@ -277,6 +272,13 @@ export class inventory {
     }
 
     const setTransactions = res => {
+
+      if (res.length == limit) {
+        this.type = type
+        this.snackbar.show(`Displaying first 100 results`)
+      } else {
+        this.type = null
+      }
 
       //Service inventory.qty includes everything that WAS in inventory at that date if this
       //is a past date some of these items may now be gone (e.g have a value in next property)

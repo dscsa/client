@@ -2219,11 +2219,6 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var type = arguments[1];
       var limit = arguments[2];
 
-      if (transactions.length == limit) {
-        this.type = type;
-        this.snackbar.show('Displaying first 100 results');
-      } else this.type = null;
-
       if (~['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term)) transactions = transactions.sort(function (a, b) {
         if (a.drug.generic < b.drug.generic) return -1;
         if (b.drug.generic < a.drug.generic) return 1;
@@ -2330,6 +2325,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       }
 
       var setTransactions = function setTransactions(res) {
+
+        if (res.length == limit) {
+          _this6.type = type;
+          _this6.snackbar.show('Displaying first 100 results');
+        } else {
+          _this6.type = null;
+        }
+
         var docs = [];
         for (var _iterator2 = res.rows, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
           var _ref2;
