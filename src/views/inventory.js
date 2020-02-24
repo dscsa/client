@@ -168,7 +168,7 @@ export class inventory {
     return transaction.isChecked = isChecked
   }
 
-  setTransactions(transactions = [], type, limit) {
+  setTransactions(transactions = [], type) {
 
     //Sort X00 bin alphabetically per Cindy's request.
     if ( ~ ['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term))
@@ -293,7 +293,7 @@ export class inventory {
         else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
       }
 
-      return this.setTransactions(docs, type, limit)
+      return this.setTransactions(docs, type)
 
     }
     this.db.transaction.query(query, opts).then(setTransactions)
