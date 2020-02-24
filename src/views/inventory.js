@@ -272,9 +272,9 @@ export class inventory {
     }
 
     const setTransactions = res => {
-      console.log(res.length)
+      console.log(res.rows.length)
       console.log(limit)
-      if (res.length == limit) {
+      if (res.rows.length == limit) {
         this.type = type
         this.snackbar.show(`Displaying first 100 results`)
       } else {

@@ -2325,9 +2325,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       }
 
       var setTransactions = function setTransactions(res) {
-        console.log(res.length);
+        console.log(res.rows.length);
         console.log(limit);
-        if (res.length == limit) {
+        if (res.rows.length == limit) {
           _this6.type = type;
           _this6.snackbar.show('Displaying first 100 results');
         } else {
