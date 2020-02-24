@@ -272,13 +272,15 @@ export class inventory {
     }
 
     const setTransactions = res => {
-
+      console.log(res.length)
+      console.log(limit)
       if (res.length == limit) {
         this.type = type
         this.snackbar.show(`Displaying first 100 results`)
       } else {
         this.type = null
       }
+      console.log(this.type)
 
       //Service inventory.qty includes everything that WAS in inventory at that date if this
       //is a past date some of these items may now be gone (e.g have a value in next property)
