@@ -2325,15 +2325,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       }
 
       var setTransactions = function setTransactions(res) {
-        console.log(res.rows.length);
-        console.log(limit);
         if (res.rows.length == limit) {
           _this6.type = type;
           _this6.snackbar.show('Displaying first 100 results');
         } else {
           _this6.type = null;
         }
-        console.log(_this6.type);
 
         var docs = [];
         for (var _iterator2 = res.rows, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
