@@ -90,6 +90,7 @@ export class shopping {
     this.db.account.picking['post']({groupName:groupName, action:'load'}).then(res =>{
       console.log("result of loading",res)
       this.shopList = res
+      this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
       this.initializeShopper()
     })
