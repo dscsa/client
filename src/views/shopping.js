@@ -37,7 +37,7 @@ export class shopping {
 
   activate(params) {
 
-
+    window.scrollTo(0,1)
     this.db.user.session.get().then(session => {
       console.log('user acquired')
       this.user    = { _id:session._id}
