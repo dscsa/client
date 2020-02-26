@@ -57,7 +57,7 @@
 
       <div style="width:100%; height:100%; position:relative; overflow-y:scroll" if.bind = "groupLoaded && basketSaved">
 
-        <div style="width:100%;display:inline-block;">
+        <div style="width:100%;display:inline-block;padding-bottom:0.5vh">
           <div style="float:left">
             <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
           </div>
@@ -69,7 +69,7 @@
 
 
 
-        <div style="width:100%; height:11vh; overflow-x:scroll">
+        <div style="width:100%; max-height:11vh; overflow-x:scroll">
           <div style="font-size:4.5vh; line-height:5vh;">${shopList[shoppingIndex].raw.drug.generic}</div>
           <div style="font-size:3vh; line-height:4vh;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
         </div>
@@ -93,7 +93,7 @@
         <div style="width:100%;display:inline-block; padding-bottom:1vh">
           <div style="width:45%; height:100%; float:left; margin-top:7vh;">
               <div style="font-size:3vh; line-height:3vh; word-wrap:break-word; padding-bottom:1.5vh"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
-              <div style="font-size:3vh; line-height:3vh; padding-bottom:1.5vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:2.5vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">(<b>${shoppingIndex+1}</b> of <b>${shopList.length}</b> total)</div>
               <div style="font-size:3vh; line-height:3vh;">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
