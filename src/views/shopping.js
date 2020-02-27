@@ -71,6 +71,7 @@ export class shopping {
       if(this.groups[i].name == groupName) this.groups[i].locked = 'unlocking'
     }
 
+    console.log(groupName);
 
     this.db.account.picking['post']({groupName:groupName, action:'unlock'}).then(res =>{
       console.log("result of unlocking:", res)
@@ -181,11 +182,13 @@ export class shopping {
     }
 
     console.log("saving these transactions", JSON.stringify(transactions_to_save))
+
     return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res)))
     .catch(err => {
       this.snackbar.error('Error loading/saving. Contact Adam', err)
       console.log("error saving:", JSON.stringify(err))
-      this.resetShopper(); //in case error locking down
+      return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify(err));
+      //this.resetShopper(); //in case error locking down
     })
   }
 
