@@ -46,82 +46,86 @@
         Loading...
       </div>
 
-      <div if.bind = "groupLoaded && !basketSaved" style="width:100vw; height:100vh; display:inline-block;">
-        <div style="position:absolute; top:12vh; width:100%">
+      <div if.bind = "groupLoaded && !basketSaved" style="width:100vw; height:100vh;">
+        <div style = "line-height:4vh; font-size:3vh; top:1vh; width:95vw; text-align:center">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+
+        <div style="position:absolute; top:7vh; width:100%; font-size:4vh; display:inline-block">
+          <div style="line-height:5vh">${shopList[shoppingIndex].raw.drug.generic}</div>
+          <div style="font-size:3vh; line-height:4vh;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
+        </div>
+
+        <div style="position:absolute; top:25vh; width:100%">
           <div style="font-size:30px; line-height:10vh">Enter new basket number:</div>
           <div stlye="float:left"><md-input  type="tel" style="float:left; font-size:4vh; width:70%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input></div>
           <div style="float:right; padding-right:7vw; margin-top:2vh"><md-button  disabled.bind = "shopList[shoppingIndex].extra.basketNumber.length <= 1" color raised click.delegate="saveBasketNumber()">Save</md-button></div>
         </div>
-        <div style="position:absolute; top:35vh; font-size:30px; line-height:10vh"><b>Next drug:</b><br>${shopList[shoppingIndex].raw.drug.generic}</div>
+
+        <md-button style="float:left; height:2vh; top:70vh; position:absolute; line-height:2vh;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
+
       </div>
 
       <div style="width:100%; height:100%; position:relative; overflow-y:scroll" if.bind = "groupLoaded && basketSaved">
 
         <div style="width:100%;display:inline-block;padding-bottom:0.5vh">
+
           <div style="float:left">
             <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
           </div>
+
+          <div style="font-size:3vh; float:left; width:30%; line-height:5vh; text-align:center;overflow-x:scroll;margin:0 auto">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
 
           <div style="float:right" >
             <md-button style="float:right" disabled.bind="!formComplete" color raised click.delegate="moveShoppingForward()">${shoppingIndex == shopList.length -1 ? 'Complete Shopping' :  'Next'}</md-button>
           </div>
         </div>
 
-        <!-- need to make the img height handling work. maybe have width flexible, so if landscape, give extra space -->
-        <div style="width:100%; max-height:11vmax; overflow-x:scroll">
-          <div style="font-size:4vmax; line-height:4.5vmax;">${shopList[shoppingIndex].raw.drug.generic}</div>
-          <div style="font-size:3vmax; line-height:3vmax;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
+
+        <div style="width:100%; max-height:11vh; overflow-x:scroll">
+          <div style="font-size:4.5vh; line-height:5vh;">${shopList[shoppingIndex].raw.drug.generic}</div>
+          <div style="font-size:3vh; line-height:4vh;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
+        </div>
+
+        <div style="width:100%;display:inline-block; text-align:center;">
+
+          <div style="float:left; text-align:left; width:47vw; height:100%;vertical-align:middle">
+            <div style="font: 400 60px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>
+            <div style="font-size:30px;padding-bottom:3vh"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
+            <div style="font-size:20px; padding-bottom:2vh"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
+          </div>
+          <div style="float:right; height:30vh; width:43vw; position:relative">
+            <img
+              style="max-height:100%;max-width:100%;height:auto;width:auto;position:absolute;top:0;bottom:0;left:0;right:0;margin:auto"
+              if.bind="shopList[shoppingIndex].extra.image"
+              src.bind="shopList[shoppingIndex].extra.image"/>
+          </div>
+        </div>
+
+        <div style="width:100%;display:inline-block; padding-bottom:0vh">
+          <div style="width:45%; height:100%; float:left; margin-top:7vh;">
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
+              <div style="font-size:3vh; line-height:3vh;">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
+          </div>
+          <div style="width:50%; float:right; margin-top:2vh">
+            <div style="width:40vw; text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh; color: ${shopList[shoppingIndex].extra.outcome.exact_match ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.exact_match ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect"
+            click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</div>
+            <div style="width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
+            click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/- 3 Qty</div>
+            <div style="width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.slot_before ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_before ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
+            click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</div>
+            <div style="width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.slot_after ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_after ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
+            click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</div>
+            <div style="width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh;padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.missing ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.missing ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
+            click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</div>
+          </div>
         </div>
 
 
-        <div style="display:inline-block; width:100%">
-          <div style="width:50vw; float:left;">
-
-            <div style="text-align:left; width:43vw; height:100%;vertical-align:middle; display:inline-block">
-              <div style="font:400 60px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:2vmax;"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>
-              <div style="float:left;font-size:3.5vmax;width:24vmax;padding-bottom:2vmax"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>
-              <div style="font-size:3.5vmax; padding-bottom:2vmax"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>
-              <div style="font-size:3.5vmax;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
-            </div>
-
-            <div style="width:43vw; height:100%; margin-top:4vh; text-align:left; display:inline-block">
-                <div style="font-size:3vh; float:left;padding-right:1vw; line-height:3vh; word-wrap:break-word; padding-bottom:1.5vh"><b>Group:</b> ${shopList[shoppingIndex].raw.next[0].pended.group}</div>
-                <div style="font-size:3vh; padding-right:1vw; line-height:3vh; padding-bottom:2.5vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
-                <div style="font-size:3vh; float:left;padding-right:1vw; line-height:3vh; padding-bottom:1vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
-                <div style="font-size:3vh; float:left;padding-right:1vw; line-height:3vh; padding-bottom:1vh">(<b>${shoppingIndex+1}</b> of <b>${shopList.length}</b> total)</div>
-                <div style="font-size:3vh; float:left;padding-right:1vw; line-height:3vh;">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
-            </div>
-
-            <div style="width:50vw; padding-top:4vh; display:inline-block;">
-               <md-button style="float:left; height:2vmax; line-height:2vmax;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
-               <md-button style="float:right; height:2vmax; line-height:2vmax" color click.delegate="skipItem()">Skip</md-button>
-            </div>
-
-          </div>
-
-          <div style="width:43vw; float:right; padding-bottom:1vh; display:inline-block">
-
-            <div style="height:30vh; width:100%; position:relative; float:left">
-              <img
-                style="max-height:100%;max-width:100%;height:auto;width:auto;position:absolute;top:0;bottom:0;left:0;right:0;margin:auto"
-                if.bind="shopList[shoppingIndex].extra.image"
-                src.bind="shopList[shoppingIndex].extra.image"/>
-            </div>
-
-            <div style="width:100%; margin-top:2vh; float:left; display:inline-block; text-align:center">
-              <div style="width:30vmin;  text-align:center; font-size:2.5vmax; line-height:5vmax; height:5vmax; padding-bottom:1.5vh; color: ${shopList[shoppingIndex].extra.outcome.exact_match ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.exact_match ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect"
-              click.delegate="selectShoppingOption('exact_match')" checked.bind="shopList[shoppingIndex].extra.outcome.exact_match">Exact Match</div>
-              <div style="width:22vmin;   text-align:center; font-size:2.5vmax; line-height:5vmax; height:5vmax; padding-bottom:1.5vh; color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
-              click.delegate="selectShoppingOption('roughly_equal')" checked.bind="shopList[shoppingIndex].extra.outcome.roughly_equal">+/- 3 Qty</div>
-              <div style="width:27vmin;   text-align:center; font-size:2.3vmax; line-height:5vmax; height:5vmax; padding-bottom:1.5vh; color: ${shopList[shoppingIndex].extra.outcome.slot_before ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_before ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
-              click.delegate="selectShoppingOption('slot_before')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_before">Slot Before</div>
-              <div style="width:24vmin;   text-align:center; font-size:2.3vmax; line-height:5vmax; height:5vmax; padding-bottom:1.5vh; color: ${shopList[shoppingIndex].extra.outcome.slot_after ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_after ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
-              click.delegate="selectShoppingOption('slot_after')" checked.bind="shopList[shoppingIndex].extra.outcome.slot_after">Slot After</div>
-              <div style="width:26vmin;   text-align:center; font-size:2.5vmax; line-height:5vmax; height:5vmax; padding-bottom:1vh; color: ${shopList[shoppingIndex].extra.outcome.missing ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.missing ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
-              click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</div>
-            </div>
-          </div>
-
+        <div style="width:60%; display:inline-block;padding-bottom:1vh">
+           <md-button style="float:left; height:2vh; line-height:2vh;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
+           <md-button style="float:right; height:2vh; line-height:2vh" color click.delegate="skipItem()">Skip</md-button>
         </div>
 
         <div style="margin:auto; font-size:7px">

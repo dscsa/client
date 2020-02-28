@@ -10,6 +10,7 @@ export class shopping {
     this.db      = db
     this.router  = router
 
+    this.portraitMode = true
     this.groups = []
     this.shopList = []
     this.shoppingIndex = -1
@@ -36,8 +37,12 @@ export class shopping {
 
 
   activate(params) {
+    window.addEventListener("orientationchange", function() {
+      this.portraitMode = (screen.orientation.angle == 0)
+      console.log(this.portraitMode)
+    });
 
-    window.scrollTo(0,1)
+    //window.scrollTo(0,1)
     this.db.user.session.get().then(session => {
       console.log('user acquired')
       this.user    = { _id:session._id}
@@ -146,10 +151,39 @@ export class shopping {
 
             this.db.account.picking['post']({groupName:arr_enriched_transactions[i].raw.next[0].pended.group, action:'missing_transaction',generic:arr_enriched_transactions[i].raw.drug.generic, qty:arr_enriched_transactions[i].raw.qty.to})
             .then(res =>{
-              console.log(res)
+              //console.log(res)
+              //console.log(res.length)
               if(res.length > 0){
+
+                //console.log("gonna find a place for it")
+                //console.log(this.shoppingIndex)
+                //console.log(this.shopList.length)
+
+                for(var n = this.shoppingIndex-1; n < this.shopList.length; n++){
+                  /*console.log(n)
+                  console.log(this.shopList[n])
+                  console.log(res[0].raw.drug.generic)
+                  console.log(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic)
+                  console.log("here?")*/
+                  if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
+                    //then increment the relative_index total
+                    console.log("incrementing")
+                    ////this.shopList[n].extra.genericIndex.relative_index[1] += 1
+                    //res[0].extra.genericIndex.global_index =   this.shopList[n].extra.genericIndex.global_index
+                    //res[0].extra.genericIndex.relative_index[0] += 1
+                    //res[0].extra.genericIndex.relative_index[1] += 1
+
+                  } else {
+                    //console.log("inserting")
+                    //then you've hit the next generic, so inser res[0] at n-1
+                    this.shopList.splice(n-1, 0, res[0])
+                    //console.log("added to shoplist at end of current generics", res[0])
+                    return
+                  }
+                }
+                //if you make it out here, then this is the last or only generic, so add to the very end of the shopList
                 this.shopList.push(res[0])
-                console.log("added to shoplist", res[0])
+                console.log("added to shoplist end", res[0])
               } else {
                 console.log("couldn't find item with same or greater qty to replace this")
               }
