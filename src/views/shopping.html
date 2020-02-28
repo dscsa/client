@@ -54,7 +54,7 @@
           <div style="font-size:3vh; line-height:4vh;" if.bind = "shopList[shoppingIndex].raw.drug.brand.length > 0">${shopList[shoppingIndex].raw.drug.brand}</div>
         </div>
 
-        <div style="position:absolute; top:25vh; width:100%">
+        <div style="position:absolute; top:24vh; width:100%">
           <div style="font-size:30px; line-height:10vh">Enter new basket number:</div>
           <div stlye="float:left"><md-input  type="tel" style="float:left; font-size:20px; width:70%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input></div>
           <div style="float:right; padding-right:7vw; margin-top:2vh"><md-button  disabled.bind = "shopList[shoppingIndex].extra.basketNumber.length <= 1" color raised click.delegate="saveBasketNumber()">Save</md-button></div>
