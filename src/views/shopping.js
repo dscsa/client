@@ -146,51 +146,6 @@ export class shopping {
         if(key == 'shopped'){
           var outcome = this.getOutcome(arr_enriched_transactions[i].extra)
 
-          if(outcome == 'missing'){
-            console.log("missing item! sending request to server to compensate for:", arr_enriched_transactions[i].raw.drug.generic)
-
-            this.db.account.picking['post']({groupName:arr_enriched_transactions[i].raw.next[0].pended.group, action:'missing_transaction',generic:arr_enriched_transactions[i].raw.drug.generic, qty:arr_enriched_transactions[i].raw.qty.to})
-            .then(res =>{
-              //console.log(res)
-              //console.log(res.length)
-              if(res.length > 0){
-
-                //console.log("gonna find a place for it")
-                //console.log(this.shoppingIndex)
-                //console.log(this.shopList.length)
-
-                for(var n = this.shoppingIndex-1; n < this.shopList.length; n++){
-                  /*console.log(n)
-                  console.log(this.shopList[n])
-                  console.log(res[0].raw.drug.generic)
-                  console.log(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic)
-                  console.log("here?")*/
-                  if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
-                    //then increment the relative_index total
-                    console.log("incrementing")
-                    ////this.shopList[n].extra.genericIndex.relative_index[1] += 1
-                    //res[0].extra.genericIndex.global_index =   this.shopList[n].extra.genericIndex.global_index
-                    //res[0].extra.genericIndex.relative_index[0] += 1
-                    //res[0].extra.genericIndex.relative_index[1] += 1
-
-                  } else {
-                    //console.log("inserting")
-                    //then you've hit the next generic, so inser res[0] at n-1
-                    this.shopList.splice(n-1, 0, res[0])
-                    //console.log("added to shoplist at end of current generics", res[0])
-                    return
-                  }
-                }
-                //if you make it out here, then this is the last or only generic, so add to the very end of the shopList
-                this.shopList.push(res[0])
-                console.log("added to shoplist end", res[0])
-              } else {
-                console.log("couldn't find item with same or greater qty to replace this")
-              }
-            })
-
-          }
-
           next[0].picked = {
             _id:new Date().toJSON(),
             basket:arr_enriched_transactions[i].extra.basketNumber,
@@ -242,19 +197,55 @@ export class shopping {
 
   moveShoppingForward(){
 
+    if(this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing'){
+      console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
+
+      this.db.account.picking['post']({groupName:this.shopList[this.shoppingIndex].raw.next[0].pended.group, action:'missing_transaction',generic:this.shopList[this.shoppingIndex].raw.drug.generic, qty:this.shopList[this.shoppingIndex].raw.qty.to})
+      .then(res =>{
+
+        if(res.length > 0){
+          let n = this.shoppingIndex-1 >= 0 ? this.shoppingIndex-1 : 0
+
+          for(n; n < this.shopList.length; n++){
+            if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
+              this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
+            } else {
+              res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
+              this.shopList.splice(n, 0, res[0]) //insert at the end
+              this.advanceShopping()
+              return
+            }
+          }
+
+          res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
+          this.shopList.push(res[0])
+          console.log("added to shoplist end", res[0])
+
+        } else {
+          console.log("couldn't find item with same or greater qty to replace this")
+        }
+        //then move forward/handle
+        this.advanceShopping()
+      })
+
+    } else {
+      this.advanceShopping()
+    }
+
+  }
+
+
+
+
+  advanceShopping(){
+
     if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
 
       //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
 
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
-      then(_=>{
-        if(this.shoppingIndex != this.shopList.length - 1){ //then we found something new
-          this.moveShoppingForward() //then call again, and it'll move it forward to next page
-        } else {
-          this.resetShopper()
-          this.refreshPendedGroups()
-        }
-      }).bind(this)
+      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
+      this.resetShopper()
+      this.refreshPendedGroups()
 
     } else {
 
@@ -263,16 +254,13 @@ export class shopping {
       } else {
         this.basketSaved = false;
       }
-
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
-
-      //if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
-
       this.shoppingIndex += 1
       this.formComplete = (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
 
     }
+
   }
 
   moveShoppingBackward(){
@@ -310,7 +298,7 @@ export class shopping {
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
   selectShoppingOption(key){
-
+    console.log(key)
     if(this.shopList[this.shoppingIndex].extra.outcome[key]) return //don't let thme uncheck, because radio buttons
     this.formComplete = true;
 
