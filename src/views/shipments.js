@@ -35,21 +35,19 @@ export class shipments {
   activate(params) {
     return this.db.user.session.get()
     .then(session  => {
+      console.log("here0", session)
       this.user = session._id
       return this.db.account.get(session.account._id)
     })
     .then(account => {
       this.account = {_id:account._id, name:account.name, default:account.default || {}}
+      console.log("ME", account)
       this.ordered = {[account._id]:account.ordered}
 
-      //TODO From View
-      //Get all accounts that this account has authorized
-      //let doneeAccounts = this.db.account.allDocs({keys:account.authorized, include_docs:true})
-      //let shipmentsSent = this.db.shipment.query({'account.from._id':account._id})
-
       //let recipientAccounts    = this.db.account.query('authorized', {key:account._id, include_docs:true}) //Get all accounts that have authorized this account
-      let senderAccounts    = this.db.account.allDocs({keys:account.authorized, include_docs:true})
-      let shipmentsReceived = this.db.shipment.allDocs({startkey:account._id+'\uffff', endkey:account._id, descending:true, include_docs:true}) //Get all shipments to this account
+      let senderAccounts    = this.db.account.query('all', {keys:account.authorized, include_docs:true})
+      let shipmentsReceived = this.db.shipment.query('recipient._id', {startkey:[account._id+'\uffff'], endkey:[account._id], descending:true, include_docs:true}) //Get all shipments to this account
+
       return Promise.all([senderAccounts, shipmentsReceived]).then(all => {
 
         [{rows:senderAccounts}, {rows:shipmentsReceived}] = all
