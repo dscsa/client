@@ -125,11 +125,11 @@ export class shopping {
 
     this.basketSaved = false
 
-    //if(this.shopList.length == 1){
-      //this.setNextToSave()
-    //} else {
-    //  this.setNextToNext()
-    //}
+    if(this.shopList.length == 1){
+      this.setNextToSave()
+    } else {
+      this.setNextToNext()
+    }
   }
 
 
@@ -212,6 +212,8 @@ export class shopping {
   moveShoppingForward(){
 
     if(this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing'){
+      this.setNextToLoading()
+
       console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
 
       this.db.account.picking['post']({groupName:this.shopList[this.shoppingIndex].raw.next[0].pended.group, action:'missing_transaction',generic:this.shopList[this.shoppingIndex].raw.drug.generic, qty:this.shopList[this.shoppingIndex].raw.qty.to})
@@ -240,6 +242,7 @@ export class shopping {
         }
 
         //then move forward/handle
+        this.setNextToNext()
         this.advanceShopping()
       })
       .catch(err => {
@@ -263,7 +266,7 @@ export class shopping {
       //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
 
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(_=>{
-        this.refreshPendedGroups()
+        this.refreshPendedGroups() //put in here to avoid race condition of reloading before the saving completes
       })
       this.resetShopper()
 
@@ -277,6 +280,9 @@ export class shopping {
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
       this.shoppingIndex += 1
+
+      if(this.shoppingIndex == this.shopList.length-1) this.setNextToSave()
+
       this.formComplete = (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
 
     }
@@ -285,7 +291,7 @@ export class shopping {
 
   moveShoppingBackward(){
     if(this.shoppingIndex == 0) return //shouldn't appear, but extra protection :)
-    //this.setNextToNext()
+    this.setNextToNext()
     this.shoppingIndex -= 1
     this.formComplete = true //you can't have left a screen if it wasn't complete
   }
@@ -355,6 +361,10 @@ export class shopping {
 
   warnAboutRequired(){
     this.snackbar.show('Basket number and outcome are required')
+  }
+
+  setNextToLoading(){
+    this.nextButtonText = 'Fetching Items'
   }
 
   setNextToSave(){
