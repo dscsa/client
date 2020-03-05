@@ -35,13 +35,11 @@ export class shipments {
   activate(params) {
     return this.db.user.session.get()
     .then(session  => {
-      console.log("here0", session)
       this.user = session._id
       return this.db.account.get(session.account._id)
     })
     .then(account => {
       this.account = {_id:account._id, name:account.name, default:account.default || {}}
-      console.log("ME", account)
       this.ordered = {[account._id]:account.ordered}
 
       //let recipientAccounts    = this.db.account.query('authorized', {key:account._id, include_docs:true}) //Get all accounts that have authorized this account

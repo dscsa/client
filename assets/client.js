@@ -3277,14 +3277,12 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       var _this = this;
 
       return this.db.user.session.get().then(function (session) {
-        console.log("here0", session);
         _this.user = session._id;
         return _this.db.account.get(session.account._id);
       }).then(function (account) {
         var _this$ordered;
 
         _this.account = { _id: account._id, name: account.name, default: account.default || {} };
-        console.log("ME", account);
         _this.ordered = (_this$ordered = {}, _this$ordered[account._id] = account.ordered, _this$ordered);
 
         var senderAccounts = _this.db.account.allDocs({ keys: account.authorized, include_docs: true });
