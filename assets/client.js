@@ -3287,7 +3287,9 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         console.log("ME", account);
         _this.ordered = (_this$ordered = {}, _this$ordered[account._id] = account.ordered, _this$ordered);
 
-        var senderAccounts = _this.db.account.query('all-accounts', { keys: account.authorized, include_docs: true });
+        var senderAccounts = _this.db.account.query('all-accounts', { keys: account.authorized, include_docs: true }).then(function (senderAccounts) {
+          console.log("me", senderAccounts);
+        });
         var shipmentsReceived = _this.db.shipment.query('recipient._id', { startkey: [account._id + '\uFFFF'], endkey: [account._id], descending: true, include_docs: true });
 
         return Promise.all([senderAccounts, shipmentsReceived]).then(function (all) {
