@@ -3925,6 +3925,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       var _this6 = this;
 
       if (this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing') {
+
         this.setNextToLoading();
 
         console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
@@ -3983,7 +3984,11 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped');
         this.shoppingIndex += 1;
 
-        if (this.shoppingIndex == this.shopList.length - 1) this.setNextToSave();
+        if (this.shoppingIndex == this.shopList.length - 1) {
+          this.setNextToSave();
+        } else {
+          this.setNextToNext();
+        }
 
         this.formComplete = this.shopList[this.shoppingIndex].extra.basketNumber.length > 1 && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome);
       }
