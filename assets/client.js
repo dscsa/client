@@ -1473,7 +1473,7 @@ define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouc
         _this.session = session;
         _this.switchUserText = "Switch User";
 
-        _this.db.account.query('all', { include_docs: true }).then(function (accounts) {
+        _this.db.account.query('all-accounts', { keys: ['2077750631', '2102275262'], include_docs: true }).then(function (accounts) {
           console.log("here0", accounts);
           _this.accounts = accounts.rows.map(function (account) {
             return account.doc;
@@ -3287,7 +3287,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         console.log("ME", account);
         _this.ordered = (_this$ordered = {}, _this$ordered[account._id] = account.ordered, _this$ordered);
 
-        var senderAccounts = _this.db.account.query('all', { keys: account.authorized, include_docs: true });
+        var senderAccounts = _this.db.account.query('all-accounts', { keys: account.authorized, include_docs: true });
         var shipmentsReceived = _this.db.shipment.query('recipient._id', { startkey: [account._id + '\uFFFF'], endkey: [account._id], descending: true, include_docs: true });
 
         return Promise.all([senderAccounts, shipmentsReceived]).then(function (all) {

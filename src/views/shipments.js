@@ -45,7 +45,7 @@ export class shipments {
       this.ordered = {[account._id]:account.ordered}
 
       //let recipientAccounts    = this.db.account.query('authorized', {key:account._id, include_docs:true}) //Get all accounts that have authorized this account
-      let senderAccounts    = this.db.account.query('all', {keys:account.authorized, include_docs:true})
+      let senderAccounts    = this.db.account.query('all-accounts', {keys:account.authorized, include_docs:true})
       let shipmentsReceived = this.db.shipment.query('recipient._id', {startkey:[account._id+'\uffff'], endkey:[account._id], descending:true, include_docs:true}) //Get all shipments to this account
 
       return Promise.all([senderAccounts, shipmentsReceived]).then(all => {
