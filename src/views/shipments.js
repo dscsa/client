@@ -44,7 +44,8 @@ export class shipments {
 
       //let recipientAccounts    = this.db.account.query('authorized', {key:account._id, include_docs:true}) //Get all accounts that have authorized this account
       let senderAccounts    = this.db.account.allDocs({keys:account.authorized, include_docs:true})
-      let shipmentsReceived = this.db.shipment.query('recipient._id', {startkey:[account._id+'\uffff'], endkey:[account._id], descending:true, include_docs:true}) //Get all shipments to this account
+      //TODO: can alldocs work here? I couldn't get startkey/endkey to work with it
+      let shipmentsReceived = this.db.shipment.query('account.to._id', {startkey:[account._id+'\uffff'], endkey:[account._id], descending:true, include_docs:true}) //Get all shipments to this account
 
       return Promise.all([senderAccounts, shipmentsReceived]).then(all => {
 
