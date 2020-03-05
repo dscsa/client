@@ -53,6 +53,10 @@ export class shopping {
       this.refreshPendedGroups()
 
     })
+    .catch(err => {
+      console.log("error getting user session:", JSON.stringify(err))
+      return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify(err));
+    })
 
   }
 
@@ -64,7 +68,10 @@ export class shopping {
       console.log('refresh complet4e')
       this.groups = res
     })
-
+    .catch(err => {
+      console.log("error refreshing pended groups:", JSON.stringify(err))
+      return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify(err));
+    })
   }
 
 
@@ -82,7 +89,10 @@ export class shopping {
       console.log("result of unlocking:", res)
       this.groups = res
     })
-
+    .catch(err => {
+      console.log("error unlocking order:", JSON.stringify(err))
+      return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify(err));
+    })
   }
 
 
@@ -99,6 +109,10 @@ export class shopping {
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
       this.initializeShopper()
+    })
+    .catch(err => {
+      console.log("error loading order:", JSON.stringify(err))
+      return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify(err));
     })
 
   }
@@ -224,8 +238,13 @@ export class shopping {
         } else {
           console.log("couldn't find item with same or greater qty to replace this")
         }
+
         //then move forward/handle
         this.advanceShopping()
+      })
+      .catch(err => {
+        console.log("error compensating for missing:", JSON.stringify(err))
+        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify(err));
       })
 
     } else {
@@ -243,9 +262,10 @@ export class shopping {
 
       //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
 
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
+      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(_=>{
+        this.refreshPendedGroups()
+      })
       this.resetShopper()
-      this.refreshPendedGroups()
 
     } else {
 

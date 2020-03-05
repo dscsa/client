@@ -3790,6 +3790,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         if (!_this.account.hazards) _this.account.hazards = {};
         console.log('about to call');
         _this.refreshPendedGroups();
+      }).catch(function (err) {
+        console.log("error getting user session:", JSON.stringify(err));
+        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify(err));
       });
     };
 
@@ -3800,6 +3803,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
         console.log('refresh complet4e');
         _this2.groups = res;
+      }).catch(function (err) {
+        console.log("error refreshing pended groups:", JSON.stringify(err));
+        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify(err));
       });
     };
 
@@ -3815,6 +3821,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.db.account.picking['post']({ groupName: groupName, action: 'unlock' }).then(function (res) {
         console.log("result of unlocking:", res);
         _this3.groups = res;
+      }).catch(function (err) {
+        console.log("error unlocking order:", JSON.stringify(err));
+        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify(err));
       });
     };
 
@@ -3832,6 +3841,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         _this4.pendedFilter = '';
         _this4.filter = {};
         _this4.initializeShopper();
+      }).catch(function (err) {
+        console.log("error loading order:", JSON.stringify(err));
+        return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify(err));
       });
     };
 
@@ -3933,6 +3945,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           }
 
           _this6.advanceShopping();
+        }).catch(function (err) {
+          console.log("error compensating for missing:", JSON.stringify(err));
+          return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify(err));
         });
       } else {
         this.advanceShopping();
@@ -3940,12 +3955,14 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.advanceShopping = function advanceShopping() {
+      var _this7 = this;
 
       if (this.shoppingIndex == this.shopList.length - 1) {
 
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped');
+        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
+          _this7.refreshPendedGroups();
+        });
         this.resetShopper();
-        this.refreshPendedGroups();
       } else {
 
         if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
