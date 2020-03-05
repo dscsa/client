@@ -54,8 +54,8 @@ export class shopping {
 
     })
     .catch(err => {
-      console.log("error getting user session:", JSON.stringify(err))
-      return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify(err));
+      console.log("error getting user session:", JSON.stringify({message:err.message, stack:err.stack}))
+      return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
     })
 
   }
@@ -69,8 +69,8 @@ export class shopping {
       this.groups = res
     })
     .catch(err => {
-      console.log("error refreshing pended groups:", JSON.stringify(err))
-      return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify(err));
+      console.log("error refreshing pended groups:", JSON.stringify({message:err.message, stack:err.stack}))
+      return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
     })
   }
 
@@ -90,8 +90,8 @@ export class shopping {
       this.groups = res
     })
     .catch(err => {
-      console.log("error unlocking order:", JSON.stringify(err))
-      return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify(err));
+      console.log("error unlocking order:", JSON.stringify({message:err.message, stack:err.stack}))
+      return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
     })
   }
 
@@ -111,8 +111,8 @@ export class shopping {
       this.initializeShopper()
     })
     .catch(err => {
-      console.log("error loading order:", JSON.stringify(err))
-      return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify(err));
+      console.log("error loading order:", JSON.stringify({message:err.message, stack:err.stack}))
+      return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
     })
 
   }
@@ -189,8 +189,8 @@ export class shopping {
     return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res)))
     .catch(err => {
       this.snackbar.error('Error loading/saving. Contact Adam', err)
-      console.log("error saving:", JSON.stringify(err))
-      return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify(err));
+      console.log("error saving:", JSON.stringify({message:err.message, stack:err.stack}))
+      return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
       //this.resetShopper(); //in case error locking down
     })
   }

@@ -3791,8 +3791,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         console.log('about to call');
         _this.refreshPendedGroups();
       }).catch(function (err) {
-        console.log("error getting user session:", JSON.stringify(err));
-        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify(err));
+        console.log("error getting user session:", JSON.stringify({ message: err.message, stack: err.stack }));
+        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, stack: err.stack }));
       });
     };
 
@@ -3804,8 +3804,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         console.log('refresh complet4e');
         _this2.groups = res;
       }).catch(function (err) {
-        console.log("error refreshing pended groups:", JSON.stringify(err));
-        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify(err));
+        console.log("error refreshing pended groups:", JSON.stringify({ message: err.message, stack: err.stack }));
+        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, stack: err.stack }));
       });
     };
 
@@ -3822,8 +3822,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         console.log("result of unlocking:", res);
         _this3.groups = res;
       }).catch(function (err) {
-        console.log("error unlocking order:", JSON.stringify(err));
-        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify(err));
+        console.log("error unlocking order:", JSON.stringify({ message: err.message, stack: err.stack }));
+        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, stack: err.stack }));
       });
     };
 
@@ -3842,8 +3842,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         _this4.filter = {};
         _this4.initializeShopper();
       }).catch(function (err) {
-        console.log("error loading order:", JSON.stringify(err));
-        return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify(err));
+        console.log("error loading order:", JSON.stringify({ message: err.message, stack: err.stack }));
+        return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, stack: err.stack }));
       });
     };
 
@@ -3908,8 +3908,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         return console.log("results of saving" + JSON.stringify(res));
       }).catch(function (err) {
         _this5.snackbar.error('Error loading/saving. Contact Adam', err);
-        console.log("error saving:", JSON.stringify(err));
-        return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify(err));
+        console.log("error saving:", JSON.stringify({ message: err.message, stack: err.stack }));
+        return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, stack: err.stack }));
       });
     };
 
