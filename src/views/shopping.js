@@ -226,9 +226,10 @@ export class shopping {
 
           console.log("before",this.shoppingIndex)
           let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
+          if(n < 0) n = 0 //dont go too far back obvi. Current bug that happens with skip shuffling indices incorrectly
           //let n = this.shoppingIndex-1 >= 0 ? this.shoppingIndex-1 : 0
           console.log("after",this.shoppingIndex)
-
+          console.log("res",res)
           for(n; n < this.shopList.length; n++){
             if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
               console.log("incrementing other order", n)

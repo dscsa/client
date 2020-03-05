@@ -3938,8 +3938,9 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
             console.log("before", _this6.shoppingIndex);
             var n = _this6.shoppingIndex - (_this6.shopList[_this6.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
+            if (n < 0) n = 0;
             console.log("after", _this6.shoppingIndex);
-
+            console.log("res", res);
             for (n; n < _this6.shopList.length; n++) {
               if (_this6.shopList[n].raw.drug.generic == res[0].raw.drug.generic) {
                 console.log("incrementing other order", n);
