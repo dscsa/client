@@ -211,7 +211,7 @@ export class shopping {
 
   moveShoppingForward(){
 
-    if(this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing'){
+    if((this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing') && (this.shopList[this.shoppingIndex].extra.saved != 'missing')){
 
       this.setNextToLoading()
 
@@ -221,6 +221,8 @@ export class shopping {
       .then(res =>{
 
         if(res.length > 0){
+
+          this.shopList[this.shoppingIndex].extra.saved = 'missing' //if someone goes back through items, dont want to retry this constantly
 
           console.log("before",this.shoppingIndex)
           let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
@@ -289,6 +291,7 @@ export class shopping {
         this.basketSaved = false;
       }
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
+
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
       this.shoppingIndex += 1
 

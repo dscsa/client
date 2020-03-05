@@ -3924,7 +3924,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.moveShoppingForward = function moveShoppingForward() {
       var _this6 = this;
 
-      if (this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing') {
+      if (this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing' && this.shopList[this.shoppingIndex].extra.saved != 'missing') {
 
         this.setNextToLoading();
 
@@ -3933,6 +3933,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         this.db.account.picking['post']({ groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group, action: 'missing_transaction', generic: this.shopList[this.shoppingIndex].raw.drug.generic, qty: this.shopList[this.shoppingIndex].raw.qty.to }).then(function (res) {
 
           if (res.length > 0) {
+
+            _this6.shopList[_this6.shoppingIndex].extra.saved = 'missing';
 
             console.log("before", _this6.shoppingIndex);
             var n = _this6.shoppingIndex - (_this6.shopList[_this6.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
@@ -3985,6 +3987,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         } else {
           this.basketSaved = false;
         }
+
 
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped');
         this.shoppingIndex += 1;
