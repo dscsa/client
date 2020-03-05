@@ -3935,17 +3935,12 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           if (res.length > 0) {
 
             _this6.shopList[_this6.shoppingIndex].extra.saved = 'missing';
-
-            console.log("before", _this6.shoppingIndex);
             var n = _this6.shoppingIndex - (_this6.shopList[_this6.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
-            console.log("after", _this6.shoppingIndex);
 
             for (n; n < _this6.shopList.length; n++) {
               if (_this6.shopList[n].raw.drug.generic == res[0].raw.drug.generic) {
-                console.log("incrementing other order", n);
                 _this6.shopList[n].extra.genericIndex.relative_index[1]++;
               } else {
-                console.log("adding at end of orders", n);
                 res[0].extra.genericIndex = { global_index: _this6.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this6.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this6.shopList[n - 1].extra.genericIndex.relative_index[1]] };
                 _this6.shopList.splice(n, 0, res[0]);
                 _this6.advanceShopping();
@@ -3955,14 +3950,13 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
             res[0].extra.genericIndex = { global_index: _this6.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this6.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this6.shopList[n - 1].extra.genericIndex.relative_index[1]] };
             _this6.shopList.push(res[0]);
-            console.log("added to shoplist end", res[0]);
           } else {
             console.log("couldn't find item with same or greater qty to replace this");
           }
 
           _this6.advanceShopping();
         }).catch(function (err) {
-          console.log("error", err);
+          console.log("error compensating for missing:", err);
           console.log("error compensating for missing:", JSON.stringify({ message: err.message, stack: err.stack }));
           return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, stack: err.stack }));
         });

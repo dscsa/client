@@ -224,17 +224,17 @@ export class shopping {
 
           this.shopList[this.shoppingIndex].extra.saved = 'missing' //if someone goes back through items, dont want to retry this constantly
 
-          console.log("before",this.shoppingIndex)
+          //console.log("before",this.shoppingIndex)
           let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
           //let n = this.shoppingIndex-1 >= 0 ? this.shoppingIndex-1 : 0
-          console.log("after",this.shoppingIndex)
+          //console.log("after",this.shoppingIndex)
 
           for(n; n < this.shopList.length; n++){
             if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
-              console.log("incrementing other order", n)
+              //console.log("incrementing other order", n)
               this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
             } else {
-              console.log("adding at end of orders", n)
+              //console.log("adding at end of orders", n)
               res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
               this.shopList.splice(n, 0, res[0]) //insert at the end
               this.advanceShopping()
@@ -244,7 +244,7 @@ export class shopping {
 
           res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
           this.shopList.push(res[0])
-          console.log("added to shoplist end", res[0])
+          //console.log("added to shoplist end", res[0])
 
         } else {
           console.log("couldn't find item with same or greater qty to replace this")
@@ -255,7 +255,7 @@ export class shopping {
         this.advanceShopping()
       })
       .catch(err => {
-        console.log("error",err)
+        console.log("error compensating for missing:",err)
         console.log("error compensating for missing:", JSON.stringify({message:err.message, stack:err.stack}))
         return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
       })
