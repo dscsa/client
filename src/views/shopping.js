@@ -221,12 +221,18 @@ export class shopping {
       .then(res =>{
 
         if(res.length > 0){
-          let n = this.shoppingIndex-1 >= 0 ? this.shoppingIndex-1 : 0
+
+          console.log("before",this.shoppingIndex)
+          let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
+          //let n = this.shoppingIndex-1 >= 0 ? this.shoppingIndex-1 : 0
+          console.log("after",this.shoppingIndex)
 
           for(n; n < this.shopList.length; n++){
             if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
+              console.log("incrementing other order", n)
               this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
             } else {
+              console.log("adding at end of orders", n)
               res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
               this.shopList.splice(n, 0, res[0]) //insert at the end
               this.advanceShopping()
@@ -243,12 +249,13 @@ export class shopping {
         }
 
         //then move forward/handle
-        this.setNextToNext()
+        //this.setNextToNext()
         this.advanceShopping()
       })
       .catch(err => {
-        console.log("error compensating for missing:", JSON.stringify(err))
-        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify(err));
+        console.log("error",err)
+        console.log("error compensating for missing:", JSON.stringify({message:err.message, stack:err.stack}))
+        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
       })
 
     } else {
@@ -272,6 +279,9 @@ export class shopping {
       this.resetShopper()
 
     } else {
+
+
+      //if you clikc MISSING on the first item in a group, it reverts to basketsaved =false
 
       if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
