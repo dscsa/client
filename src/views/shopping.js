@@ -214,6 +214,7 @@ export class shopping {
     if((this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing') && (this.shopList[this.shoppingIndex].extra.saved != 'missing')){
 
       this.setNextToLoading()
+      this.formComplete = false;
 
       console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
 
