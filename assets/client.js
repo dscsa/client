@@ -8,33 +8,6 @@ define('client/src/environment',["exports"], function (exports) {
     debug: true,
     testing: false };
 });
-define('client/src/libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
-});
-define('client/src/libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Pouch = exports.Pouch = function Pouch() {
-    _classCallCheck(this, Pouch);
-
-    return pouchdbClient;
-  };
-});
 define('client/src/elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';
 
@@ -814,6 +787,33 @@ define('client/src/elems/md-text',['exports', 'aurelia-framework'], function (ex
 
     return MdTextCustomElement;
   }()) || _class) || _class) || _class) || _class) || _class);
+});
+define('client/src/libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
+});
+define('client/src/libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Pouch = exports.Pouch = function Pouch() {
+    _classCallCheck(this, Pouch);
+
+    return pouchdbClient;
+  };
 });
 define('client/src/resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
   'use strict';
@@ -3926,8 +3926,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       if (this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing' && this.shopList[this.shoppingIndex].extra.saved != 'missing') {
 
-        this.setNextToLoading();
         this.formComplete = false;
+        this.setNextToLoading();
 
         console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
 
@@ -3936,12 +3936,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           if (res.length > 0) {
 
             _this6.shopList[_this6.shoppingIndex].extra.saved = 'missing';
-
-            console.log("before", _this6.shoppingIndex);
             var n = _this6.shoppingIndex - (_this6.shopList[_this6.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
             if (n < 0) n = 0;
-            console.log("after", _this6.shoppingIndex);
-            console.log("res", res);
             for (n; n < _this6.shopList.length; n++) {
               if (_this6.shopList[n].raw.drug.generic == res[0].raw.drug.generic) {
                 console.log("incrementing other order", n);
@@ -4021,10 +4017,20 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       if (this.shoppingIndex == this.shopList.length - 1 || this.shopList[this.shoppingIndex + 1].raw.drug.generic !== this.shopList[this.shoppingIndex].raw.drug.generic) return this.snackbar.show('Cannot skip last item of generic');
 
-      for (var i = this.shoppingIndex; i < this.shopList.length; i++) {
+      this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] = this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[1];
+
+      for (var i = this.shoppingIndex + 1; i < this.shopList.length; i++) {
+        if (this.shopList[i].raw.drug.generic == this.shopList[this.shoppingIndex].raw.drug.generic) {
+          console.log("decrementing");
+          this.shopList[i].extra.genericIndex.relative_index[0] -= 1;
+        }
+
         if (this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic || i == this.shopList.length - 1) {
+          console.log("moving ahead");
+
           this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
           this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i - 1);
+
           return;
         }
       }

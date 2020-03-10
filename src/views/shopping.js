@@ -213,8 +213,8 @@ export class shopping {
 
     if((this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing') && (this.shopList[this.shoppingIndex].extra.saved != 'missing')){
 
+      this.formComplete = false; //to disable the button
       this.setNextToLoading()
-      this.formComplete = false;
 
       console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
 
@@ -225,12 +225,12 @@ export class shopping {
 
           this.shopList[this.shoppingIndex].extra.saved = 'missing' //if someone goes back through items, dont want to retry this constantly
 
-          console.log("before",this.shoppingIndex)
+          //console.log("before",this.shoppingIndex)
           let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
           if(n < 0) n = 0 //dont go too far back obvi. Current bug that happens with skip shuffling indices incorrectly
           //let n = this.shoppingIndex-1 >= 0 ? this.shoppingIndex-1 : 0
-          console.log("after",this.shoppingIndex)
-          console.log("res",res)
+          //console.log("after",this.shoppingIndex)
+          //console.log("res",res)
           for(n; n < this.shopList.length; n++){
             if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
               console.log("incrementing other order", n)
@@ -331,11 +331,22 @@ export class shopping {
 
     if((this.shoppingIndex == this.shopList.length - 1) || (this.shopList[this.shoppingIndex+1].raw.drug.generic !== this.shopList[this.shoppingIndex].raw.drug.generic)) return this.snackbar.show('Cannot skip last item of generic')
 
-    for(var i = this.shoppingIndex; i < this.shopList.length; i++){
+    this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] = this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[1] //set it to the last index
+
+    for(var i = this.shoppingIndex+1; i < this.shopList.length; i++){
+      if(this.shopList[i].raw.drug.generic == this.shopList[this.shoppingIndex].raw.drug.generic){
+        console.log("decrementing")
+        this.shopList[i].extra.genericIndex.relative_index[0] -= 1 //decrement relative index count on all ones we pass
+      }
+
       if((this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) || (i == this.shopList.length-1)){
+        console.log("moving ahead") 
+
         this.shopList[this.shoppingIndex+1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber //save basket number for item thats about to show up
         this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i-1)
+
         return
+
       }
     }
 
