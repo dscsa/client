@@ -21,7 +21,7 @@ export class shopping {
     this.basketSaved = false
     this.currentBasket
 
-    this.uniqueDrugsInOrder = []
+    //this.uniqueDrugsInOrder = []
 
     this.canActivate     = canActivate
     this.currentDate     = currentDate
@@ -54,8 +54,8 @@ export class shopping {
 
     })
     .catch(err => {
-      console.log("error getting user session:", JSON.stringify({message:err.message, stack:err.stack}))
-      return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
+      console.log("error getting user session:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
     })
 
   }
@@ -69,8 +69,8 @@ export class shopping {
       this.groups = res
     })
     .catch(err => {
-      console.log("error refreshing pended groups:", JSON.stringify({message:err.message, stack:err.stack}))
-      return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
+      console.log("error refreshing pended groups:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
     })
   }
 
@@ -90,8 +90,8 @@ export class shopping {
       this.groups = res
     })
     .catch(err => {
-      console.log("error unlocking order:", JSON.stringify({message:err.message, stack:err.stack}))
-      return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
+      console.log("error unlocking order:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
     })
   }
 
@@ -111,8 +111,14 @@ export class shopping {
       this.initializeShopper()
     })
     .catch(err => {
-      console.log("error loading order:", JSON.stringify({message:err.message, stack:err.stack}))
-      return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
+      if(err.message == 'Unexpected end of JSON input'){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
+        var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
+        this.refreshPendedGroups();
+        this.resetShopper();
+      } else {
+        console.log("error loading order:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
+        return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
+      }
     })
 
   }
@@ -135,7 +141,7 @@ export class shopping {
 
   //Reset variables that we don't want to perserve from one order to the next
   resetShopper(){
-    this.uniqueDrugsInOrder = []
+    //this.uniqueDrugsInOrder = []
     this.orderSelectedToShop = false
     this.formComplete = false
   }
@@ -185,12 +191,17 @@ export class shopping {
     }
 
     console.log("saving these transactions", JSON.stringify(transactions_to_save))
+    let startTime = new Date().getTime()
 
-    return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res)))
+    return this.db.transaction.bulkDocs(transactions_to_save).then(res => {
+      let completeTime = new Date().getTime()
+      console.log("results of saving in " + (completeTime - startTime) + " ms", JSON.stringify(res))
+    })
     .catch(err => {
+      let completeTime = new Date().getTime()
       this.snackbar.error('Error loading/saving. Contact Adam', err)
-      console.log("error saving:", JSON.stringify({message:err.message, stack:err.stack}))
-      return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
+      console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
       //this.resetShopper(); //in case error locking down
     })
   }
@@ -258,8 +269,8 @@ export class shopping {
       })
       .catch(err => {
         console.log("error compensating for missing:",err)
-        console.log("error compensating for missing:", JSON.stringify({message:err.message, stack:err.stack}))
-        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, stack:err.stack}));
+        console.log("error compensating for missing:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
+        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
       })
 
     } else {
@@ -340,7 +351,7 @@ export class shopping {
       }
 
       if((this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) || (i == this.shopList.length-1)){
-        console.log("moving ahead") 
+        console.log("moving ahead")
 
         this.shopList[this.shoppingIndex+1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber //save basket number for item thats about to show up
         this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i-1)
