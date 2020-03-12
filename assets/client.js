@@ -3865,6 +3865,41 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.saveShoppingResults = function saveShoppingResults(arr_enriched_transactions, key) {
       var _this5 = this;
 
+      var transactions_to_save = prepResultsToSave(arr_enriched_transactions, key);
+
+      console.log("attempting to save these transactions", JSON.stringify(transactions_to_save));
+      var startTime = new Date().getTime();
+
+      return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
+        var completeTime = new Date().getTime();
+        console.log("results of saving in " + (completeTime - startTime) + " ms", JSON.stringify(res));
+      }).catch(function (err) {
+
+        var completeTime = new Date().getTime();
+        console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+
+        if (err.status == 0) {
+
+          console.log("trying to save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save));
+
+          return _this5.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
+            var finalTime = new Date().getTime();
+            console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
+            return confirm('Successful second saving of item');
+          }).catch(function (err) {
+            console.log("saving: empty object error the second time");
+            return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+          });
+        } else {
+
+          _this5.snackbar.error('Error loading/saving. Contact Adam', err);
+          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        }
+      });
+    };
+
+    shopping.prototype.prepResultsToSave = function prepResultsToSave(arr_enriched_transactions, key) {
+
       if (arr_enriched_transactions.length == 0) return Promise.resolve();
 
       var transactions_to_save = [];
@@ -3898,35 +3933,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         transactions_to_save.push(reformated_transaction);
       }
 
-      console.log("saving these transactions", JSON.stringify(transactions_to_save));
-      var startTime = new Date().getTime();
-
-      return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-        var completeTime = new Date().getTime();
-        console.log("results of saving in " + (completeTime - startTime) + " ms", JSON.stringify(res));
-      }).catch(function (err) {
-
-        var completeTime = new Date().getTime();
-        console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        console.log(err);
-        console.log(err.status);
-        console.log(Object.keys(err));
-        console.log(Object.values(err));
-        if (err.status = 0) {
-          console.log("trying to save one more time, in case it was just connectivity");
-          _this5.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-            var finalTime = new Date().getTime();
-            console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
-            return confirm('Successful second saving of item');
-          }).catch(function (err) {
-            console.log("saving: empty object error the second time");
-            return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-          });
-        } else {
-          _this5.snackbar.error('Error loading/saving. Contact Adam', err);
-          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        }
-      });
+      return transactions_to_save;
     };
 
     shopping.prototype.canSaveBasket = function canSaveBasket() {

@@ -143,9 +143,52 @@ export class shopping {
   }
 
 
+
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
   saveShoppingResults(arr_enriched_transactions, key){
+
+    let transactions_to_save = prepResultsToSave(arr_enriched_transactions, key) //massage data into our couchdb format
+
+    console.log("attempting to save these transactions", JSON.stringify(transactions_to_save))
+    let startTime = new Date().getTime()
+
+    return this.db.transaction.bulkDocs(transactions_to_save).then(res => {
+      //success!
+      let completeTime = new Date().getTime()
+      console.log("results of saving in " + (completeTime - startTime) + " ms", JSON.stringify(res))
+
+    })
+    .catch(err => {
+
+      let completeTime = new Date().getTime()
+      console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+
+      if(err.status == 0){ //then it's maybe a connection issue, try one more time
+
+        console.log("trying to save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save))
+
+        return this.db.transaction.bulkDocs(transactions_to_save).then(res => { //just try again
+          let finalTime = new Date().getTime()
+          console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res))
+          return confirm('Successful second saving of item')
+        })
+        .catch(err =>{
+          console.log("saving: empty object error the second time")
+          return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+        })
+
+      } else {
+
+        this.snackbar.error('Error loading/saving. Contact Adam', err)
+        return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+
+      }
+    })
+  }
+
+
+  prepResultsToSave(arr_enriched_transactions, key){
 
     if(arr_enriched_transactions.length == 0) return Promise.resolve()
 
@@ -186,39 +229,8 @@ export class shopping {
 
     }
 
-    console.log("saving these transactions", JSON.stringify(transactions_to_save))
-    let startTime = new Date().getTime()
-
-    return this.db.transaction.bulkDocs(transactions_to_save).then(res => {
-      let completeTime = new Date().getTime()
-      console.log("results of saving in " + (completeTime - startTime) + " ms", JSON.stringify(res))
-    })
-    .catch(err => {
-
-      let completeTime = new Date().getTime()
-      console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
-      console.log(err)
-      console.log(err.status)
-      console.log(Object.keys(err))
-      console.log(Object.values(err))
-      if(err.status = 0){ //then it's maybe a connection issue?
-        console.log("trying to save one more time, in case it was just connectivity")
-        this.db.transaction.bulkDocs(transactions_to_save).then(res => { //just try again
-          let finalTime = new Date().getTime()
-          console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res))
-          return confirm('Successful second saving of item')
-        })
-        .catch(err =>{
-          console.log("saving: empty object error the second time")
-          return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
-        })
-      } else {
-        this.snackbar.error('Error loading/saving. Contact Adam', err)
-        return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
-      }
-    })
+    return transactions_to_save
   }
-
 
 
 //------------------Button controls-------------------------
