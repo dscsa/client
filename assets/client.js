@@ -3983,6 +3983,17 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
           _this7.refreshPendedGroups();
         });
+
+        for (var i = this.groups.length - 1; i >= 0; i--) {
+          console.log(this.groups[i]);
+          if (this.groups[i].name == this.shopList[this.shoppingIndex].raw.next[0].pended.group) {
+            console.log("cutting out!");
+            this.groups.splice(i, 1);
+            console.log(this.groups);
+            break;
+          }
+        }
+
         this.resetShopper();
       } else {
 
