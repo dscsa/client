@@ -3882,13 +3882,15 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
           console.log("trying to save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save));
 
-          return _this5.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-            var finalTime = new Date().getTime();
-            console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
-            return confirm('Successful second saving of item');
-          }).catch(function (err) {
-            console.log("saving: empty object error the second time");
-            return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+          return delay(10000).then(function () {
+            return _this5.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
+              var finalTime = new Date().getTime();
+              console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
+              return confirm('Successful second saving of item');
+            }).catch(function (err) {
+              console.log("saving: empty object error the second time");
+              return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+            });
           });
         } else {
 
@@ -3942,6 +3944,12 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
     shopping.prototype.saveBasketNumber = function saveBasketNumber() {
       this.basketSaved = true;
+    };
+
+    shopping.prototype.delay = function delay(ms) {
+      return new Promise(function (resolve) {
+        return setTimeout(resolve, ms);
+      });
     };
 
     shopping.prototype.moveShoppingForward = function moveShoppingForward() {

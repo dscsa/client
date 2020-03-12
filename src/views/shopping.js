@@ -168,15 +168,19 @@ export class shopping {
 
         console.log("trying to save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save))
 
-        return this.db.transaction.bulkDocs(transactions_to_save).then(res => { //just try again
-          let finalTime = new Date().getTime()
-          console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res))
-          return confirm('Successful second saving of item')
-        })
-        .catch(err =>{
-          console.log("saving: empty object error the second time")
-          return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
-        })
+        return delay(10000).then(() => {
+          return this.db.transaction.bulkDocs(transactions_to_save).then(res => { //just try again
+            let finalTime = new Date().getTime()
+            console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res))
+            return confirm('Successful second saving of item')
+          })
+          .catch(err =>{
+            console.log("saving: empty object error the second time")
+            return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+          })
+        });
+
+
 
       } else {
 
@@ -243,7 +247,9 @@ export class shopping {
     this.basketSaved = true
   }
 
-
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   moveShoppingForward(){
 
