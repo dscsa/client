@@ -197,7 +197,9 @@ export class shopping {
 
       let completeTime = new Date().getTime()
       console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
-
+      console.log(err)
+      console.log(Object.keys(err))
+      console.log(Object.values(err))
       if(Object.keys(err).length == 0){ //then it's maybe a connection issue?
         console.log("trying to save one more time, in case it was just connectivity")
         this.db.transaction.bulkDocs(transactions_to_save).then(res => { //just try again
