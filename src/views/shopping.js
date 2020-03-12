@@ -359,7 +359,7 @@ export class shopping {
         //console.log("moving ahead")
 
         this.shopList[this.shoppingIndex+1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber //save basket number for item thats about to show up
-        this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i-1)
+        this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, (i == this.shopList.length-1) ? i : i-1)
 
         return
 
