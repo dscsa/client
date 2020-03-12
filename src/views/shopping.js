@@ -148,7 +148,7 @@ export class shopping {
   //handle appropriate saving
   saveShoppingResults(arr_enriched_transactions, key){
 
-    let transactions_to_save = prepResultsToSave(arr_enriched_transactions, key) //massage data into our couchdb format
+    let transactions_to_save = this.prepResultsToSave(arr_enriched_transactions, key) //massage data into our couchdb format
 
     console.log("attempting to save these transactions", JSON.stringify(transactions_to_save))
     let startTime = new Date().getTime()
@@ -166,9 +166,12 @@ export class shopping {
 
       if(err.status == 0){ //then it's maybe a connection issue, try one more time
 
-        console.log("trying to save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save))
+        console.log("going to try and save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save))
 
-        return delay(10000).then(() => {
+        return this.delay(3000).then(_=>{
+
+          console.log("waiting finished, sending again")
+
           return this.db.transaction.bulkDocs(transactions_to_save).then(res => { //just try again
             let finalTime = new Date().getTime()
             console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res))
@@ -178,8 +181,7 @@ export class shopping {
             console.log("saving: empty object error the second time")
             return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
           })
-        });
-
+        })
 
 
       } else {

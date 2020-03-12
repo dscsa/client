@@ -3865,7 +3865,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.saveShoppingResults = function saveShoppingResults(arr_enriched_transactions, key) {
       var _this5 = this;
 
-      var transactions_to_save = prepResultsToSave(arr_enriched_transactions, key);
+      var transactions_to_save = this.prepResultsToSave(arr_enriched_transactions, key);
 
       console.log("attempting to save these transactions", JSON.stringify(transactions_to_save));
       var startTime = new Date().getTime();
@@ -3880,9 +3880,12 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
         if (err.status == 0) {
 
-          console.log("trying to save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save));
+          console.log("going to try and save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save));
 
-          return delay(10000).then(function () {
+          return _this5.delay(3000).then(function (_) {
+
+            console.log("waiting finished, sending again");
+
             return _this5.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
               var finalTime = new Date().getTime();
               console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
