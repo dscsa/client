@@ -293,17 +293,15 @@ export class shopping {
         this.refreshPendedGroups() //put in here to avoid race condition of reloading before the saving completes
       })
 
+      //cut it out of the list, just until it refreshes anymay
       for(var i = this.groups.length -1 ; i >= 0; i--){
-        console.log(this.groups[i])
         if(this.groups[i].name == this.shopList[this.shoppingIndex].raw.next[0].pended.group){
-          console.log("cutting out!")
           this.groups.splice(i,1)
-          console.log(this.groups)
           break;
         }
       }
 
-      this.resetShopper()
+      this.resetShopper() //and send them back to the list, which'll update while they're there
 
     } else {
 
