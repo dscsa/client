@@ -3905,10 +3905,24 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         var completeTime = new Date().getTime();
         console.log("results of saving in " + (completeTime - startTime) + " ms", JSON.stringify(res));
       }).catch(function (err) {
+
         var completeTime = new Date().getTime();
-        _this5.snackbar.error('Error loading/saving. Contact Adam', err);
         console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+
+        if (Object.keys(err) == 0) {
+          console.log("trying to save one more time, in case it was just connectivity");
+          _this5.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
+            var finalTime = new Date().getTime();
+            console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
+            return confirm('Successful second saving of item');
+          }).catch(function (err) {
+            console.log("saving: empty object error the second time");
+            return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+          });
+        } else {
+          _this5.snackbar.error('Error loading/saving. Contact Adam', err);
+          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+        }
       });
     };
 
