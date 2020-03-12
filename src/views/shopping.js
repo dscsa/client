@@ -50,8 +50,8 @@ export class shopping {
 
     })
     .catch(err => {
-      console.log("error getting user session:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
-      return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
+      console.log("error getting user session:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
     })
 
   }
@@ -65,8 +65,8 @@ export class shopping {
       this.groups = res
     })
     .catch(err => {
-      console.log("error refreshing pended groups:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
-      return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
+      console.log("error refreshing pended groups:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
     })
   }
 
@@ -86,8 +86,8 @@ export class shopping {
       this.groups = res
     })
     .catch(err => {
-      console.log("error unlocking order:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
-      return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
+      console.log("error unlocking order:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
     })
   }
 
@@ -112,8 +112,8 @@ export class shopping {
         this.refreshPendedGroups();
         this.resetShopper();
       } else {
-        console.log("error loading order:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
-        return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
+        console.log("error loading order:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+        return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
       }
     })
 
@@ -196,11 +196,12 @@ export class shopping {
     .catch(err => {
 
       let completeTime = new Date().getTime()
-      console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
+      console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
       console.log(err)
+      console.log(err.status)
       console.log(Object.keys(err))
       console.log(Object.values(err))
-      if(Object.keys(err).length == 0){ //then it's maybe a connection issue?
+      if(err.status = 0){ //then it's maybe a connection issue?
         console.log("trying to save one more time, in case it was just connectivity")
         this.db.transaction.bulkDocs(transactions_to_save).then(res => { //just try again
           let finalTime = new Date().getTime()
@@ -209,11 +210,11 @@ export class shopping {
         })
         .catch(err =>{
           console.log("saving: empty object error the second time")
-          return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
+          return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
         })
       } else {
         this.snackbar.error('Error loading/saving. Contact Adam', err)
-        return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
+        return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
       }
     })
   }
@@ -280,8 +281,8 @@ export class shopping {
         this.advanceShopping()
       })
       .catch(err => {
-        console.log("error compensating for missing:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
-        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
+        console.log("error compensating for missing:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
       })
 
     } else {

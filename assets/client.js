@@ -3783,8 +3783,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         console.log('about to call refresh first time');
         _this.refreshPendedGroups();
       }).catch(function (err) {
-        console.log("error getting user session:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+        console.log("error getting user session:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
       });
     };
 
@@ -3796,8 +3796,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         console.log('refresh complete');
         _this2.groups = res;
       }).catch(function (err) {
-        console.log("error refreshing pended groups:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+        console.log("error refreshing pended groups:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
       });
     };
 
@@ -3813,8 +3813,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.db.account.picking['post']({ groupName: groupName, action: 'unlock' }).then(function (res) {
         _this3.groups = res;
       }).catch(function (err) {
-        console.log("error unlocking order:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+        console.log("error unlocking order:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
       });
     };
 
@@ -3838,8 +3838,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
           _this4.refreshPendedGroups();
           _this4.resetShopper();
         } else {
-          console.log("error loading order:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
-          return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+          console.log("error loading order:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+          return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
         }
       });
     };
@@ -3907,11 +3907,12 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       }).catch(function (err) {
 
         var completeTime = new Date().getTime();
-        console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+        console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
         console.log(err);
+        console.log(err.status);
         console.log(Object.keys(err));
         console.log(Object.values(err));
-        if (Object.keys(err).length == 0) {
+        if (err.status = 0) {
           console.log("trying to save one more time, in case it was just connectivity");
           _this5.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
             var finalTime = new Date().getTime();
@@ -3919,11 +3920,11 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
             return confirm('Successful second saving of item');
           }).catch(function (err) {
             console.log("saving: empty object error the second time");
-            return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+            return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
           });
         } else {
           _this5.snackbar.error('Error loading/saving. Contact Adam', err);
-          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
         }
       });
     };
@@ -3973,8 +3974,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
           _this6.advanceShopping();
         }).catch(function (err) {
-          console.log("error compensating for missing:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
-          return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
+          console.log("error compensating for missing:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+          return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
         });
       } else {
         this.advanceShopping();
