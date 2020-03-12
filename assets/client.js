@@ -3751,7 +3751,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.db = db;
       this.router = router;
 
-      this.portraitMode = true;
       this.groups = [];
       this.shopList = [];
       this.shoppingIndex = -1;
@@ -3775,18 +3774,13 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     shopping.prototype.activate = function activate(params) {
       var _this = this;
 
-      window.addEventListener("orientationchange", function () {
-        this.portraitMode = screen.orientation.angle == 0;
-        console.log(this.portraitMode);
-      });
-
       this.db.user.session.get().then(function (session) {
         console.log('user acquired');
         _this.user = { _id: session._id };
         _this.account = { _id: session.account._id };
 
         if (!_this.account.hazards) _this.account.hazards = {};
-        console.log('about to call');
+        console.log('about to call refresh first time');
         _this.refreshPendedGroups();
       }).catch(function (err) {
         console.log("error getting user session:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
@@ -3799,7 +3793,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       console.log('refreshing');
       this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
-        console.log('refresh complet4e');
+        console.log('refresh complete');
         _this2.groups = res;
       }).catch(function (err) {
         console.log("error refreshing pended groups:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
@@ -3817,7 +3811,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       console.log(groupName);
 
       this.db.account.picking['post']({ groupName: groupName, action: 'unlock' }).then(function (res) {
-        console.log("result of unlocking:", res);
         _this3.groups = res;
       }).catch(function (err) {
         console.log("error unlocking order:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
@@ -3834,7 +3827,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.orderSelectedToShop = true;
 
       this.db.account.picking['post']({ groupName: groupName, action: 'load' }).then(function (res) {
-        console.log("result of loading", res);
+        console.log("result of loading", JSON.stringify(res));
         _this4.shopList = res;
         _this4.pendedFilter = '';
         _this4.filter = {};
@@ -3946,10 +3939,8 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
             if (n < 0) n = 0;
             for (n; n < _this6.shopList.length; n++) {
               if (_this6.shopList[n].raw.drug.generic == res[0].raw.drug.generic) {
-                console.log("incrementing other order", n);
                 _this6.shopList[n].extra.genericIndex.relative_index[1]++;
               } else {
-                console.log("adding at end of orders", n);
                 res[0].extra.genericIndex = { global_index: _this6.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this6.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this6.shopList[n - 1].extra.genericIndex.relative_index[1]] };
                 _this6.shopList.splice(n, 0, res[0]);
                 _this6.advanceShopping();
@@ -3959,14 +3950,13 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
             res[0].extra.genericIndex = { global_index: _this6.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this6.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this6.shopList[n - 1].extra.genericIndex.relative_index[1]] };
             _this6.shopList.push(res[0]);
-            console.log("added to shoplist end", res[0]);
+            console.log("added to shoplist end", JSON.stringify(res[0]));
           } else {
             console.log("couldn't find item with same or greater qty to replace this");
           }
 
           _this6.advanceShopping();
         }).catch(function (err) {
-          console.log("error compensating for missing:", err);
           console.log("error compensating for missing:", JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
           return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ message: err.message, reason: err.reason, stack: err.stack }));
         });
@@ -4035,12 +4025,10 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
       for (var i = this.shoppingIndex + 1; i < this.shopList.length; i++) {
         if (this.shopList[i].raw.drug.generic == this.shopList[this.shoppingIndex].raw.drug.generic) {
-          console.log("decrementing");
           this.shopList[i].extra.genericIndex.relative_index[0] -= 1;
         }
 
         if (this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic || i == this.shopList.length - 1) {
-          console.log("moving ahead");
 
           this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
           this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i - 1);
@@ -4051,7 +4039,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
     };
 
     shopping.prototype.selectShoppingOption = function selectShoppingOption(key) {
-      console.log(key);
       if (this.shopList[this.shoppingIndex].extra.outcome[key]) return;
       this.formComplete = true;
 

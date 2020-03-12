@@ -10,7 +10,7 @@ export class shopping {
     this.db      = db
     this.router  = router
 
-    this.portraitMode = true
+    //this.portraitMode = true
     this.groups = []
     this.shopList = []
     this.shoppingIndex = -1
@@ -37,10 +37,6 @@ export class shopping {
 
 
   activate(params) {
-    window.addEventListener("orientationchange", function() {
-      this.portraitMode = (screen.orientation.angle == 0)
-      console.log(this.portraitMode)
-    });
 
     //window.scrollTo(0,1)
     this.db.user.session.get().then(session => {
@@ -49,7 +45,7 @@ export class shopping {
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
       if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
-      console.log('about to call')
+      console.log('about to call refresh first time')
       this.refreshPendedGroups()
 
     })
@@ -65,7 +61,7 @@ export class shopping {
     console.log('refreshing')
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
       //console.log("result of refresh:", res)
-      console.log('refresh complet4e')
+      console.log('refresh complete')
       this.groups = res
     })
     .catch(err => {
@@ -86,7 +82,7 @@ export class shopping {
     console.log(groupName);
 
     this.db.account.picking['post']({groupName:groupName, action:'unlock'}).then(res =>{
-      console.log("result of unlocking:", res)
+      //console.log("result of unlocking:", res)
       this.groups = res
     })
     .catch(err => {
@@ -104,7 +100,7 @@ export class shopping {
     this.orderSelectedToShop = true
 
     this.db.account.picking['post']({groupName:groupName, action:'load'}).then(res =>{
-      console.log("result of loading",res)
+      console.log("result of loading",JSON.stringify(res))
       this.shopList = res
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
@@ -244,10 +240,10 @@ export class shopping {
           //console.log("res",res)
           for(n; n < this.shopList.length; n++){
             if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
-              console.log("incrementing other order", n)
+              //console.log("incrementing other order", n)
               this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
             } else {
-              console.log("adding at end of orders", n)
+              //console.log("adding at end of orders", n)
               res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
               this.shopList.splice(n, 0, res[0]) //insert at the end
               this.advanceShopping()
@@ -257,7 +253,7 @@ export class shopping {
 
           res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
           this.shopList.push(res[0])
-          console.log("added to shoplist end", res[0])
+          console.log("added to shoplist end", JSON.stringify(res[0]))
 
         } else {
           console.log("couldn't find item with same or greater qty to replace this")
@@ -268,7 +264,6 @@ export class shopping {
         this.advanceShopping()
       })
       .catch(err => {
-        console.log("error compensating for missing:",err)
         console.log("error compensating for missing:", JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}))
         return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({message:err.message, reason: err.reason, stack:err.stack}));
       })
@@ -356,12 +351,12 @@ export class shopping {
 
     for(var i = this.shoppingIndex+1; i < this.shopList.length; i++){
       if(this.shopList[i].raw.drug.generic == this.shopList[this.shoppingIndex].raw.drug.generic){
-        console.log("decrementing")
+        //console.log("decrementing")
         this.shopList[i].extra.genericIndex.relative_index[0] -= 1 //decrement relative index count on all ones we pass
       }
 
       if((this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) || (i == this.shopList.length-1)){
-        console.log("moving ahead")
+        //console.log("moving ahead")
 
         this.shopList[this.shoppingIndex+1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber //save basket number for item thats about to show up
         this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i-1)
@@ -376,7 +371,7 @@ export class shopping {
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
   selectShoppingOption(key){
-    console.log(key)
+    //console.log(key)
     if(this.shopList[this.shoppingIndex].extra.outcome[key]) return //don't let thme uncheck, because radio buttons
     this.formComplete = true;
 
