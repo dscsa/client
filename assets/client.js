@@ -3889,7 +3889,6 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
             return _this5.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
               var finalTime = new Date().getTime();
               console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
-              return confirm('Successful second saving of item');
             }).catch(function (err) {
               console.log("saving: empty object error the second time");
               return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));

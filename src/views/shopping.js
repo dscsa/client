@@ -175,7 +175,7 @@ export class shopping {
           return this.db.transaction.bulkDocs(transactions_to_save).then(res => { //just try again
             let finalTime = new Date().getTime()
             console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res))
-            return confirm('Successful second saving of item')
+            //return confirm('Successful second saving of item')
           })
           .catch(err =>{
             console.log("saving: empty object error the second time")
