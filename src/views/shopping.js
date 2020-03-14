@@ -10,7 +10,7 @@ export class shopping {
     this.db      = db
     this.router  = router
 
-    this.portraitMode = true
+    //this.portraitMode = true
     this.groups = []
     this.shopList = []
     this.shoppingIndex = -1
@@ -21,7 +21,7 @@ export class shopping {
     this.basketSaved = false
     this.currentBasket
 
-    this.uniqueDrugsInOrder = []
+    //this.uniqueDrugsInOrder = []
 
     this.canActivate     = canActivate
     this.currentDate     = currentDate
@@ -37,10 +37,6 @@ export class shopping {
 
 
   activate(params) {
-    window.addEventListener("orientationchange", function() {
-      this.portraitMode = (screen.orientation.angle == 0)
-      console.log(this.portraitMode)
-    });
 
     //window.scrollTo(0,1)
     this.db.user.session.get().then(session => {
@@ -49,9 +45,13 @@ export class shopping {
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
       if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
-      console.log('about to call')
+      console.log('about to call refresh first time')
       this.refreshPendedGroups()
 
+    })
+    .catch(err => {
+      console.log("error getting user session:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
     })
 
   }
@@ -61,10 +61,13 @@ export class shopping {
     console.log('refreshing')
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
       //console.log("result of refresh:", res)
-      console.log('refresh complet4e')
+      console.log('refresh complete')
       this.groups = res
     })
-
+    .catch(err => {
+      console.log("error refreshing pended groups:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+    })
   }
 
 
@@ -79,10 +82,13 @@ export class shopping {
     console.log(groupName);
 
     this.db.account.picking['post']({groupName:groupName, action:'unlock'}).then(res =>{
-      console.log("result of unlocking:", res)
+      //console.log("result of unlocking:", res)
       this.groups = res
     })
-
+    .catch(err => {
+      console.log("error unlocking order:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+      return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+    })
   }
 
 
@@ -94,11 +100,21 @@ export class shopping {
     this.orderSelectedToShop = true
 
     this.db.account.picking['post']({groupName:groupName, action:'load'}).then(res =>{
-      console.log("result of loading",res)
+      console.log("result of loading",JSON.stringify(res))
       this.shopList = res
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
       this.initializeShopper()
+    })
+    .catch(err => {
+      if(err.message == 'Unexpected end of JSON input'){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
+        var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
+        this.refreshPendedGroups();
+        this.resetShopper();
+      } else {
+        console.log("error loading order:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+        return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+      }
     })
 
   }
@@ -111,25 +127,74 @@ export class shopping {
 
     this.basketSaved = false
 
-    //if(this.shopList.length == 1){
-      //this.setNextToSave()
-    //} else {
-    //  this.setNextToNext()
-    //}
+    if(this.shopList.length == 1){
+      this.setNextToSave()
+    } else {
+      this.setNextToNext()
+    }
   }
 
 
   //Reset variables that we don't want to perserve from one order to the next
   resetShopper(){
-    this.uniqueDrugsInOrder = []
+    //this.uniqueDrugsInOrder = []
     this.orderSelectedToShop = false
     this.formComplete = false
   }
 
 
+
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
   saveShoppingResults(arr_enriched_transactions, key){
+
+    let transactions_to_save = this.prepResultsToSave(arr_enriched_transactions, key) //massage data into our couchdb format
+
+    console.log("attempting to save these transactions", JSON.stringify(transactions_to_save))
+    let startTime = new Date().getTime()
+
+    return this.db.transaction.bulkDocs(transactions_to_save).then(res => {
+      //success!
+      let completeTime = new Date().getTime()
+      console.log("results of saving in " + (completeTime - startTime) + " ms", JSON.stringify(res))
+
+    })
+    .catch(err => {
+
+      let completeTime = new Date().getTime()
+      console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+
+      if(err.status == 0){ //then it's maybe a connection issue, try one more time
+
+        console.log("going to try and save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save))
+
+        return this.delay(3000).then(_=>{
+
+          console.log("waiting finished, sending again")
+
+          return this.db.transaction.bulkDocs(transactions_to_save).then(res => { //just try again
+            let finalTime = new Date().getTime()
+            console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res))
+            //return confirm('Successful second saving of item')
+          })
+          .catch(err =>{
+            console.log("saving: empty object error the second time")
+            return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+          })
+        })
+
+
+      } else {
+
+        this.snackbar.error('Error loading/saving. Contact Adam', err)
+        return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+
+      }
+    })
+  }
+
+
+  prepResultsToSave(arr_enriched_transactions, key){
 
     if(arr_enriched_transactions.length == 0) return Promise.resolve()
 
@@ -145,51 +210,6 @@ export class shopping {
       if(next[0]){
         if(key == 'shopped'){
           var outcome = this.getOutcome(arr_enriched_transactions[i].extra)
-
-          if(outcome == 'missing'){
-            console.log("missing item! sending request to server to compensate for:", arr_enriched_transactions[i].raw.drug.generic)
-
-            this.db.account.picking['post']({groupName:arr_enriched_transactions[i].raw.next[0].pended.group, action:'missing_transaction',generic:arr_enriched_transactions[i].raw.drug.generic, qty:arr_enriched_transactions[i].raw.qty.to})
-            .then(res =>{
-              //console.log(res)
-              //console.log(res.length)
-              if(res.length > 0){
-
-                //console.log("gonna find a place for it")
-                //console.log(this.shoppingIndex)
-                //console.log(this.shopList.length)
-
-                for(var n = this.shoppingIndex-1; n < this.shopList.length; n++){
-                  /*console.log(n)
-                  console.log(this.shopList[n])
-                  console.log(res[0].raw.drug.generic)
-                  console.log(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic)
-                  console.log("here?")*/
-                  if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
-                    //then increment the relative_index total
-                    console.log("incrementing")
-                    ////this.shopList[n].extra.genericIndex.relative_index[1] += 1
-                    //res[0].extra.genericIndex.global_index =   this.shopList[n].extra.genericIndex.global_index
-                    //res[0].extra.genericIndex.relative_index[0] += 1
-                    //res[0].extra.genericIndex.relative_index[1] += 1
-
-                  } else {
-                    //console.log("inserting")
-                    //then you've hit the next generic, so inser res[0] at n-1
-                    this.shopList.splice(n-1, 0, res[0])
-                    //console.log("added to shoplist at end of current generics", res[0])
-                    return
-                  }
-                }
-                //if you make it out here, then this is the last or only generic, so add to the very end of the shopList
-                this.shopList.push(res[0])
-                console.log("added to shoplist end", res[0])
-              } else {
-                console.log("couldn't find item with same or greater qty to replace this")
-              }
-            })
-
-          }
 
           next[0].picked = {
             _id:new Date().toJSON(),
@@ -215,17 +235,8 @@ export class shopping {
 
     }
 
-    console.log("saving these transactions", JSON.stringify(transactions_to_save))
-
-    return this.db.transaction.bulkDocs(transactions_to_save).then(res => console.log("results of saving" + JSON.stringify(res)))
-    .catch(err => {
-      this.snackbar.error('Error loading/saving. Contact Adam', err)
-      console.log("error saving:", JSON.stringify(err))
-      return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify(err));
-      //this.resetShopper(); //in case error locking down
-    })
+    return transactions_to_save
   }
-
 
 
 //------------------Button controls-------------------------
@@ -238,46 +249,122 @@ export class shopping {
     this.basketSaved = true
   }
 
-
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   moveShoppingForward(){
+
+    if((this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing') && (this.shopList[this.shoppingIndex].extra.saved != 'missing')){
+
+      this.formComplete = false; //to disable the button
+      this.setNextToLoading()
+
+      console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
+
+      this.db.account.picking['post']({groupName:this.shopList[this.shoppingIndex].raw.next[0].pended.group, action:'missing_transaction',generic:this.shopList[this.shoppingIndex].raw.drug.generic, qty:this.shopList[this.shoppingIndex].raw.qty.to})
+      .then(res =>{
+
+        if(res.length > 0){
+
+          this.shopList[this.shoppingIndex].extra.saved = 'missing' //if someone goes back through items, dont want to retry this constantly
+
+          //console.log("before",this.shoppingIndex)
+          let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
+          if(n < 0) n = 0 //dont go too far back obvi. Current bug that happens with skip shuffling indices incorrectly
+          //let n = this.shoppingIndex-1 >= 0 ? this.shoppingIndex-1 : 0
+          //console.log("after",this.shoppingIndex)
+          //console.log("res",res)
+          for(n; n < this.shopList.length; n++){
+            if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
+              //console.log("incrementing other order", n)
+              this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
+            } else {
+              //console.log("adding at end of orders", n)
+              res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
+              this.shopList.splice(n, 0, res[0]) //insert at the end
+              this.advanceShopping()
+              return
+            }
+          }
+
+          res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
+          this.shopList.push(res[0])
+          console.log("added to shoplist end", JSON.stringify(res[0]))
+
+        } else {
+          console.log("couldn't find item with same or greater qty to replace this")
+        }
+
+        //then move forward/handle
+        //this.setNextToNext()
+        this.advanceShopping()
+      })
+      .catch(err => {
+        console.log("error compensating for missing:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+      })
+
+    } else {
+      this.advanceShopping()
+    }
+
+  }
+
+
+
+
+  advanceShopping(){
 
     if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
 
       //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
 
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').
-      then(_=>{
-        if(this.shoppingIndex != this.shopList.length - 1){ //then we found something new
-          this.moveShoppingForward() //then call again, and it'll move it forward to next page
-        } else {
-          this.resetShopper()
-          this.refreshPendedGroups()
+      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(_=>{
+        //remove this group
+        this.refreshPendedGroups() //put in here to avoid race condition of reloading before the saving completes
+      })
+
+      //cut it out of the list, just until it refreshes anymay
+      for(var i = this.groups.length -1 ; i >= 0; i--){
+        if(this.groups[i].name == this.shopList[this.shoppingIndex].raw.next[0].pended.group){
+          this.groups.splice(i,1)
+          break;
         }
-      }).bind(this)
+      }
+
+      this.resetShopper() //and send them back to the list, which'll update while they're there
 
     } else {
+
+
+      //if you clikc MISSING on the first item in a group, it reverts to basketsaved =false
 
       if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
       } else {
         this.basketSaved = false;
       }
-
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
+
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
-
-      //if(this.shoppingIndex == this.shopList.length -1) this.setNextToSave()
-
       this.shoppingIndex += 1
+
+      if(this.shoppingIndex == this.shopList.length-1){
+        this.setNextToSave()
+      } else {
+        this.setNextToNext()
+      }
+
       this.formComplete = (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
 
     }
+
   }
 
   moveShoppingBackward(){
     if(this.shoppingIndex == 0) return //shouldn't appear, but extra protection :)
-    //this.setNextToNext()
+    this.setNextToNext()
     this.shoppingIndex -= 1
     this.formComplete = true //you can't have left a screen if it wasn't complete
   }
@@ -297,11 +384,22 @@ export class shopping {
 
     if((this.shoppingIndex == this.shopList.length - 1) || (this.shopList[this.shoppingIndex+1].raw.drug.generic !== this.shopList[this.shoppingIndex].raw.drug.generic)) return this.snackbar.show('Cannot skip last item of generic')
 
-    for(var i = this.shoppingIndex; i < this.shopList.length; i++){
+    this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] = this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[1] //set it to the last index
+
+    for(var i = this.shoppingIndex+1; i < this.shopList.length; i++){
+      if(this.shopList[i].raw.drug.generic == this.shopList[this.shoppingIndex].raw.drug.generic){
+        //console.log("decrementing")
+        this.shopList[i].extra.genericIndex.relative_index[0] -= 1 //decrement relative index count on all ones we pass
+      }
+
       if((this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) || (i == this.shopList.length-1)){
+        //console.log("moving ahead")
+
         this.shopList[this.shoppingIndex+1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber //save basket number for item thats about to show up
-        this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i-1)
+        this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, (i == this.shopList.length-1) ? i : i-1)
+
         return
+
       }
     }
 
@@ -310,7 +408,7 @@ export class shopping {
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
   selectShoppingOption(key){
-
+    //console.log(key)
     if(this.shopList[this.shoppingIndex].extra.outcome[key]) return //don't let thme uncheck, because radio buttons
     this.formComplete = true;
 
@@ -347,6 +445,10 @@ export class shopping {
 
   warnAboutRequired(){
     this.snackbar.show('Basket number and outcome are required')
+  }
+
+  setNextToLoading(){
+    this.nextButtonText = 'Fetching Items'
   }
 
   setNextToSave(){

@@ -22,8 +22,12 @@ export class account {
       this.session = session
       this.switchUserText = "Switch User"
 
+      //this.db.transaction.query('inventory-by-generic', {startkey:[this.account._id, 'month', date[0], date[1], drug.generic], endkey:[this.account._id, 'month', date[0], date[1], drug.generic, {}]})
+
+
       //TODO allow a valueConverter for each state or do a new search
-      this.db.account.allDocs({include_docs:true, endkey:'_design'}).then(accounts => {
+      this.db.account.query('all-accounts', {include_docs:true}).then(accounts => {
+        console.log("here0",accounts)
         this.accounts = accounts.rows.map(account => account.doc).filter(account => {
           if (account._id != session.account._id)
             return true
@@ -94,11 +98,11 @@ export class account {
   }
 
   switchUsers(event){
-    console.log("clicked on switch user button and read as (should say BUTTON): " + event.target.tagName)
+    //console.log("clicked on switch user button and read as (should say BUTTON): " + event.target.tagName)
 
     if(!this.phoneInAccount(this.phone)) return this.snackbar.show('Phone number is not in this account')
 
-    console.log("passed the check")
+    console.log("switching to user",this.phone, this.password)
 
     this.switchUserText = "Switching..."
 
