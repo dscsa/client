@@ -63,7 +63,7 @@
 
       </div>
 
-      <div style="width:100%; height:100%; position:relative; overflow-y:scroll" if.bind = "groupLoaded && basketSaved">
+      <div style="width:100%; height:90%; position:relative; overflow-y:visible" if.bind = "groupLoaded && basketSaved">
 
         <div style="width:100%;display:inline-block;padding-bottom:0.5vh">
 
@@ -71,7 +71,7 @@
             <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
           </div>
 
-          <div style="font-size:3vh; float:left; width:27%; line-height:5vh; text-align:center;overflow-x:scroll;margin:0 auto">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+          <div style="font-size:3vh; position:fixed; left:35%; width:30%; line-height:5vh; text-align:center; overflow-x:hidden;">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
 
           <div style="float:right" >
             <md-button style="float:right" disabled.bind="!formComplete" color raised click.delegate="moveShoppingForward()">${nextButtonText}</md-button>
@@ -105,7 +105,11 @@
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
-              <div style="font-size:3vh; line-height:3vh;">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
+              <div style="font-size:3vh; line-height:3vh; padding-bottom:5vh">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
+              <div style="width:60%; display:inline-block;">
+                 <md-button style="float:left; height:2vh; line-height:2vh;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
+                 <md-button style="float:right; height:2vh; line-height:2vh" color click.delegate="skipItem()">Skip</md-button>
+              </div>
           </div>
           <div style="width:50%; float:right; margin-top:2vh">
             <div style="width:40vw; text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh; color: ${shopList[shoppingIndex].extra.outcome.exact_match ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.exact_match ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect"
@@ -119,12 +123,6 @@
             <div style="width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh;padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.missing ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.missing ? '#00587b':''}"     class="mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } "
             click.delegate="selectShoppingOption('missing')" checked.bind="shopList[shoppingIndex].extra.outcome.missing">Missing</div>
           </div>
-        </div>
-
-
-        <div style="width:60%; display:inline-block;padding-bottom:1vh">
-           <md-button style="float:left; height:2vh; line-height:2vh;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
-           <md-button style="float:right; height:2vh; line-height:2vh" color click.delegate="skipItem()">Skip</md-button>
         </div>
 
         <div style="margin:auto; font-size:7px">
