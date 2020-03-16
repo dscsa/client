@@ -46,7 +46,7 @@
       </div>
 
       <div if.bind = "groupLoaded && !basketSaved" style="width:100vw; height:100vh;">
-        <div style = "font-size:3vh; position:fixed; left:20%; width:60%; line-height:5vh; text-align:center; overflow-x:hidden;">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+        <div style = "font-size:3vh; position:fixed; left:30%; width:40%; line-height:5vh; text-align:center; overflow-x:hidden;">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
 
         <div style="position:absolute; top:7vh; width:100%; font-size:4vh; display:inline-block">
           <div style="line-height:5vh">${shopList[shoppingIndex].raw.drug.generic}</div>
@@ -63,7 +63,7 @@
 
       </div>
 
-      <div style="width:100%; height:80%; position:relative; overflow-y:hidden" if.bind = "groupLoaded && basketSaved">
+      <div style="width:100%; position:relative; overflow-y:hidden" if.bind = "groupLoaded && basketSaved">
 
         <div style="width:100%;display:inline-block;padding-bottom:0.5vh">
 
@@ -71,7 +71,7 @@
             <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
           </div>
 
-          <div style="font-size:3vh; position:fixed; left:35%; width:30%; line-height:5vh; text-align:center; overflow-x:hidden;">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+          <div style="font-size:3vh; position:fixed; left:30%; width:40%; line-height:5vh; text-align:center; overflow-x:hidden;">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
 
           <div style="float:right" >
             <md-button style="float:right" disabled.bind="!formComplete" color raised click.delegate="moveShoppingForward()">${nextButtonText}</md-button>
@@ -99,14 +99,14 @@
           </div>
         </div>
 
-        <div style="width:100%;display:inline-block; padding-bottom:0vh">
-          <div style="width:45%; height:100%; float:left; margin-top:7vh;">
+        <div style="width:100%; display:inline-block; padding-bottom:0vh">
+          <div style="width:45%; float:left; margin-top:3vh;">
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:5vh">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
-              <div style="width:30%; display:inline-block;">
+              <div style="display:inline-block;">
                  <md-button style="float:left; height:2vh; line-height:2vh;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
                  <md-button style="float:right; height:2vh; line-height:2vh" color click.delegate="skipItem()">Skip</md-button>
               </div>
