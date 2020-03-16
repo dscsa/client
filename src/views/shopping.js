@@ -448,11 +448,11 @@ export class shopping {
   }
 
   setNextToLoading(){
-    this.nextButtonText = 'Fetching Items'
+    this.nextButtonText = 'Updating'
   }
 
   setNextToSave(){
-    this.nextButtonText = 'Complete Shopping'
+    this.nextButtonText = 'Complete'
   }
 
   setNextToNext(){
