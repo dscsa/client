@@ -46,7 +46,7 @@
       </div>
 
       <div if.bind = "groupLoaded && !basketSaved" style="width:100vw; height:100vh;">
-        <div style = "font-size:3vh; position:fixed; top:70px; left:30%; width:40%; line-height:5vh; text-align:center; overflow-x:hidden;">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+        <div style = "font-size:3vh; position:absolute; top:70px; left:30%; width:40%; line-height:5vh; text-align:center; overflow-x:hidden;">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
 
         <div style="position:absolute; top:7vh; width:100%; font-size:4vh; display:inline-block">
           <div style="line-height:5vh">${shopList[shoppingIndex].raw.drug.generic}</div>
@@ -71,7 +71,7 @@
             <md-button style="float:left" color raised show.bind="shoppingIndex>0"click.delegate="moveShoppingBackward()">Back</md-button>
           </div>
 
-          <div style="font-size:3vh; position:fixed; left:30%; width:40%; line-height:5vh; text-align:center; overflow-x:hidden;">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
+          <div style="font-size:3vh; position:absolute; left:30%; width:40%; line-height:5vh; text-align:center; overflow-x:hidden;">${shopList[shoppingIndex].raw.next[0].pended.group}</div>
 
           <div style="float:right" >
             <md-button style="float:right" disabled.bind="!formComplete" color raised click.delegate="moveShoppingForward()">${nextButtonText}</md-button>
