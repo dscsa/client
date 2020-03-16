@@ -28,7 +28,7 @@
         Select Group
       </md-input>
 
-      <div repeat.for="pend of groups | pendedFilter:pendedFilter" style="overflow-y:visible;">
+      <div repeat.for="pend of groups | pendedFilter:pendedFilter" style="overflow-y:scroll;">
         <div
           click.delegate="selectGroup(pend.locked, pend.name)"
           class="mdl-typography--title ${ term == 'Pended '+pend.name ? 'mdl-navigation__link--current' : ''}"
