@@ -20,15 +20,15 @@
 
   <section class="mdl-grid au-animate">
 
-    <div if.bind = "!orderSelectedToShop" style="height:100vh; width:100vw">
+    <div if.bind = "!orderSelectedToShop">
       <md-input
         autoselect
         value.bind="pendedFilter"
-        style="padding-bottom:30px; font-size:18px; width:90vw">
+        style="padding-bottom:15; font-size:18px; width:90vw;">
         Select Group
       </md-input>
 
-      <div style="overflow-y:scroll">
+      <div style="height:100vh; overflow-y:scroll">
         <div
           repeat.for="pend of groups | pendedFilter:pendedFilter"
           click.delegate="selectGroup(pend.locked, pend.name)"
