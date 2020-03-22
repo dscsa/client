@@ -3808,12 +3808,13 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         if (this.groups[i].name == groupName) this.groups[i].locked = 'unlocking';
       }
 
+      var start = Date.now();
       console.log(groupName);
 
-      this.db.account.picking['post']({ groupName: groupName, action: 'unlock' }).then(function (res) {
+      this.db.account.picking.post({ groupName: groupName, action: 'unlock' }).then(function (res) {
         _this3.groups = res;
       }).catch(function (err) {
-        console.log("error unlocking order:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        console.log("error unlocking order:", (Date.now() - start) / 1000, 'seconds', JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
         return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
       });
     };
@@ -3826,8 +3827,10 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
       this.groupLoaded = false;
       this.orderSelectedToShop = true;
 
-      this.db.account.picking['post']({ groupName: groupName, action: 'load' }).then(function (res) {
-        console.log("result of loading", JSON.stringify(res));
+      var start = Date.now();
+
+      this.db.account.picking.post({ groupName: groupName, action: 'load' }).then(function (res) {
+        console.log("result of loading: " + res.length, (Date.now() - start) / 1000, 'seconds');
         _this4.shopList = res;
         _this4.pendedFilter = '';
         _this4.filter = {};
