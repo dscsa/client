@@ -3964,7 +3964,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
 
         console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
 
-        this.db.account.picking['post']({ groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group, action: 'missing_transaction', generic: this.shopList[this.shoppingIndex].raw.drug.generic, qty: this.shopList[this.shoppingIndex].raw.qty.to }).then(function (res) {
+        this.db.account.picking['post']({ groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group, action: 'missing_transaction', ndc: this.shopList[this.shoppingIndex].raw.drug._id, generic: this.shopList[this.shoppingIndex].raw.drug.generic, qty: this.shopList[this.shoppingIndex].raw.qty.to }).then(function (res) {
 
           if (res.length > 0) {
 
