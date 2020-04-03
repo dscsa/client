@@ -225,13 +225,13 @@ let _drugSearch = {
       })
     }
 
-    console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term)
+    console.log('QUERY', 'term', term, 'this.term', _drugSearch._term)
 
     _drugSearch._term = term
 
-    ndc9 = this.db.drug.query('ndc9', _drugSearch.range(ndc9)).then(_drugSearch.map(start))
+    var ndc9 = this.db.drug.query('ndc9', _drugSearch.range(ndc9)).then(_drugSearch.map(start))
 
-    upc = this.db.drug.query('upc', _drugSearch.range(upc)).then(_drugSearch.map(start))
+    var upc = this.db.drug.query('upc', _drugSearch.range(upc)).then(_drugSearch.map(start))
 
     //TODO add in ES6 destructuing
     return _drugSearch._drugs = Promise.all([ndc9, upc]).then(([ndc9, upc]) => {
