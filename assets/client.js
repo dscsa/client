@@ -1057,11 +1057,10 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
       _drugSearch._term = term;
 
-      var ndcRange = _drugSearch.range(ndc9);
-      var upcRange = _drugSearch.range(upc);
+      var ndc9Range = _drugSearch.range(term.slice(0, 9));
+      var upcRange = _drugSearch.range(term.slice(0, 8));
 
-      var ndc9 = this.db.drug.query('ndc9', ndcRange).then(_drugSearch.map(start));
-
+      var ndc9 = this.db.drug.query('ndc9', ndc9Range).then(_drugSearch.map(start));
       var upc = this.db.drug.query('upc', upcRange).then(_drugSearch.map(start));
 
       return _drugSearch._drugs = Promise.all([ndc9, upc]).then(function (_ref2) {
@@ -1104,7 +1103,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         }unique = Object.keys(unique).map(function (key) {
           return _drugSearch.addPkgCode(term, unique[key]);
         });
-        console.log('QUERY', term, 'time ms', Date.now() - start, 'ndcRange', ndcRange, 'upcRange', upcRange, unique);
+        console.log('QUERY', term, 'time ms', Date.now() - start, 'ndc9Range', ndc9Range, 'upcRange', upcRange, unique);
         return unique;
       });
     }

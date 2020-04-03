@@ -238,12 +238,11 @@ let _drugSearch = {
 
     _drugSearch._term = term
 
-    const ndcRange = _drugSearch.range(ndc9)
-    const upcRange = _drugSearch.range(upc)
+    const ndc9Range = _drugSearch.range(term.slice(0,9))
+    const upcRange  = _drugSearch.range(term.slice(0,8))
 
-    var ndc9 = this.db.drug.query('ndc9', ndcRange).then(_drugSearch.map(start))
-
-    var upc = this.db.drug.query('upc', upcRange).then(_drugSearch.map(start))
+    var ndc9 = this.db.drug.query('ndc9', ndc9Range).then(_drugSearch.map(start))
+    var upc  = this.db.drug.query('upc', upcRange).then(_drugSearch.map(start))
 
     //TODO add in ES6 destructuing
     return _drugSearch._drugs = Promise.all([ndc9, upc]).then(([ndc9, upc]) => {
@@ -258,7 +257,7 @@ let _drugSearch = {
           unique[drug._id] = drug
 
       unique = Object.keys(unique).map(key => _drugSearch.addPkgCode(term, unique[key]))
-      console.log('QUERY', term, 'time ms', Date.now() - start, 'ndcRange', ndcRange, 'upcRange', upcRange, unique)
+      console.log('QUERY', term, 'time ms', Date.now() - start, 'ndc9Range', ndc9Range, 'upcRange', upcRange, unique)
       return unique
     })
   }
