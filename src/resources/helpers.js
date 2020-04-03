@@ -142,7 +142,7 @@ let _drugSearch = {
     //TODO this will not currently add unspecified NDCs like the filter above.  Does that matter?  Can we reuse code above?
     return _drugSearch._drugs = this.db.drug
       .query('name', _drugSearch.range(terms[0]))
-      .then(_drugSearch.map(start))
+      .then(res => res.rows.map(row => row.doc))
   },
 
   addPkgCode(term, drug) {
@@ -159,13 +159,6 @@ let _drugSearch = {
 
   range(term) {
     return {startkey:term, endkey:term+'\uffff', include_docs:true}
-  },
-
-  map(start) {
-    return res => {
-      console.log('query returned', res.rows.length, 'rows and took', Date.now() - start)
-      return res.rows.map(row => row.doc)
-    }
   },
 
   //For now we make this function stateful (using "this") to cache results
@@ -238,28 +231,24 @@ let _drugSearch = {
 
     _drugSearch._term = term
 
-    const ndc9Range = _drugSearch.range(term.slice(0,9))
-    const upcRange  = _drugSearch.range(term.slice(0,8))
+    const ndc11Range = _drugSearch.range(term)
+    const upc10Range = _drugSearch.range(term)
+    const ndc9Range  = _drugSearch.range(term.slice(0,9))
+    const upc8Range  = _drugSearch.range(term.slice(0,8))
 
-    var ndc9 = this.db.drug.query('ndc9', ndc9Range).then(_drugSearch.map(start))
-    var upc  = this.db.drug.query('upc', upcRange).then(_drugSearch.map(start))
-
-    //TODO add in ES6 destructuing
-    return _drugSearch._drugs = Promise.all([ndc9, upc]).then(([ndc9, upc]) => {
-
-      let unique = {}
-
-      for (const drug of ndc9)
-        unique[drug._id] = drug
-
-      for (const drug of upc)
-        if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc which is cutoff at 8 digits will have false positives
-          unique[drug._id] = drug
-
-      unique = Object.keys(unique).map(key => _drugSearch.addPkgCode(term, unique[key]))
-      console.log('QUERY', term, 'time ms', Date.now() - start, 'ndc9Range', ndc9Range, 'upcRange', upcRange, unique)
-      return unique
-    })
+    return _drugSearch._drugs = Promise.resolve({rows:[]})
+      .then(res => res.rows.length ? res : this.db.drug.query('ndc9', ndc11Range))
+      .then(res => res.rows.length ? res : this.db.drug.query('upc', upc10Range))
+      .then(res => res.rows.length ? res : this.db.drug.query('ndc9', ndc9Range))
+      .then(res => res.rows.length ? res : this.db.drug.query('upc', upc8Range))
+      .then(res => res.rows.map(row => {
+         _drugSearch.addPkgCode(term, row.doc)
+        return row.doc
+      }))
+      .then(drugs => {
+        console.log('QUERY', term, 'time ms', Date.now() - start, drugs)
+        return drugs
+      })
   }
 }
 

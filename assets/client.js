@@ -959,7 +959,11 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
       _drugSearch._term = term;
       console.log('drug search', term, _drugSearch.range(terms[0]));
 
-      return _drugSearch._drugs = this.db.drug.query('name', _drugSearch.range(terms[0])).then(_drugSearch.map(start));
+      return _drugSearch._drugs = this.db.drug.query('name', _drugSearch.range(terms[0])).then(function (res) {
+        return res.rows.map(function (row) {
+          return row.doc;
+        });
+      });
     },
     addPkgCode: function addPkgCode(term, drug) {
       var pkg, ndc9, upc;
@@ -975,15 +979,9 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     range: function range(term) {
       return { startkey: term, endkey: term + '\uFFFF', include_docs: true };
     },
-    map: function map(start) {
-      return function (res) {
-        console.log('query returned', res.rows.length, 'rows and took', Date.now() - start);
-        return res.rows.map(function (row) {
-          return row.doc;
-        });
-      };
-    },
     ndc: function ndc(_ndc, clearCache) {
+      var _this2 = this;
+
       var start = Date.now();
 
       var split = _ndc.split('-');
@@ -1057,60 +1055,33 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
       _drugSearch._term = term;
 
+      var ndc11Range = _drugSearch.range(term);
+      var upc10Range = _drugSearch.range(term);
       var ndc9Range = _drugSearch.range(term.slice(0, 9));
-      var upcRange = _drugSearch.range(term.slice(0, 8));
+      var upc8Range = _drugSearch.range(term.slice(0, 8));
 
-      var ndc9 = this.db.drug.query('ndc9', ndc9Range).then(_drugSearch.map(start));
-      var upc = this.db.drug.query('upc', upcRange).then(_drugSearch.map(start));
-
-      return _drugSearch._drugs = Promise.all([ndc9, upc]).then(function (_ref2) {
-        var ndc9 = _ref2[0],
-            upc = _ref2[1];
-
-
-        var unique = {};
-
-        for (var _iterator2 = ndc9, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-          var _ref3;
-
-          if (_isArray2) {
-            if (_i2 >= _iterator2.length) break;
-            _ref3 = _iterator2[_i2++];
-          } else {
-            _i2 = _iterator2.next();
-            if (_i2.done) break;
-            _ref3 = _i2.value;
-          }
-
-          var drug = _ref3;
-
-          unique[drug._id] = drug;
-        }for (var _iterator3 = upc, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-          var _ref4;
-
-          if (_isArray3) {
-            if (_i3 >= _iterator3.length) break;
-            _ref4 = _iterator3[_i3++];
-          } else {
-            _i3 = _iterator3.next();
-            if (_i3.done) break;
-            _ref4 = _i3.value;
-          }
-
-          var _drug = _ref4;
-
-          if (_drug.upc.length != 9 && term.length != 11) unique[_drug._id] = _drug;
-        }unique = Object.keys(unique).map(function (key) {
-          return _drugSearch.addPkgCode(term, unique[key]);
+      return _drugSearch._drugs = Promise.resolve({ rows: [] }).then(function (res) {
+        return res.rows.length ? res : _this2.db.drug.query('ndc9', ndc11Range);
+      }).then(function (res) {
+        return res.rows.length ? res : _this2.db.drug.query('upc', upc10Range);
+      }).then(function (res) {
+        return res.rows.length ? res : _this2.db.drug.query('ndc9', ndc9Range);
+      }).then(function (res) {
+        return res.rows.length ? res : _this2.db.drug.query('upc', upc8Range);
+      }).then(function (res) {
+        return res.rows.map(function (row) {
+          _drugSearch.addPkgCode(term, row.doc);
+          return row.doc;
         });
-        console.log('QUERY', term, 'time ms', Date.now() - start, 'ndc9Range', ndc9Range, 'upcRange', upcRange, unique);
-        return unique;
+      }).then(function (drugs) {
+        console.log('QUERY', term, 'time ms', Date.now() - start, drugs);
+        return drugs;
       });
     }
   };
 
   function drugSearch() {
-    var _this2 = this;
+    var _this3 = this;
 
     if (!this.term) return Promise.resolve([]);
 
@@ -1124,7 +1095,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
     return this._search = Promise.resolve(this._search).then(function (_) {
       var start2 = Date.now();
-      var res = _drugSearch[type].call(_this2, term, clearCache);
+      var res = _drugSearch[type].call(_this3, term, clearCache);
       console.log('drugSearch', type, term, 'wait for previous query', start2 - start1, 'query time', Date.now() - start2);
       return res;
     }).catch(function (err) {
@@ -1135,19 +1106,19 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   function groupDrugs(drugs, ordered) {
 
     var groups = {};
-    for (var _iterator4 = drugs, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
-      var _ref5;
+    for (var _iterator2 = drugs, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+      var _ref2;
 
-      if (_isArray4) {
-        if (_i4 >= _iterator4.length) break;
-        _ref5 = _iterator4[_i4++];
+      if (_isArray2) {
+        if (_i2 >= _iterator2.length) break;
+        _ref2 = _iterator2[_i2++];
       } else {
-        _i4 = _iterator4.next();
-        if (_i4.done) break;
-        _ref5 = _i4.value;
+        _i2 = _iterator2.next();
+        if (_i2.done) break;
+        _ref2 = _i2.value;
       }
 
-      var drug = _ref5;
+      var drug = _ref2;
 
       var generic = drug.generic;
       groups[generic] = groups[generic] || { generic: generic, name: drugName(drug, ordered), drugs: [] };
@@ -1183,43 +1154,43 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     return { month: date[0].slice(0, 2), year: year };
   }
 
-  function toJsonDate(_ref6) {
-    var month = _ref6.month,
-        year = _ref6.year;
+  function toJsonDate(_ref3) {
+    var month = _ref3.month,
+        year = _ref3.year;
 
     console.log('date', month, year, new Date('20' + year, month - 1, 1).toJSON());
     return new Date('20' + year, month - 1, 1).toJSON();
   }
 
   function waitForDrugsToIndex() {
-    var _this3 = this;
+    var _this4 = this;
 
     this.db.drug.drugIsIndexed.get().then(function (_) {
-      _this3.drugsIndexed = true;
-      _this3.placeholder = "Search Drugs By Generic Name Or NDC...";
+      _this4.drugsIndexed = true;
+      _this4.placeholder = "Search Drugs By Generic Name Or NDC...";
     });
   }
 
-  function canActivate(_, next, _ref7) {
-    var router = _ref7.router;
+  function canActivate(_, next, _ref4) {
+    var router = _ref4.router;
 
     return this.db.user.session.get().then(function (session) {
 
       var loggedIn = session && session.account;
 
-      for (var _iterator5 = router.navigation, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
-        var _ref8;
+      for (var _iterator3 = router.navigation, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+        var _ref5;
 
-        if (_isArray5) {
-          if (_i5 >= _iterator5.length) break;
-          _ref8 = _iterator5[_i5++];
+        if (_isArray3) {
+          if (_i3 >= _iterator3.length) break;
+          _ref5 = _iterator3[_i3++];
         } else {
-          _i5 = _iterator5.next();
-          if (_i5.done) break;
-          _ref8 = _i5.value;
+          _i3 = _iterator3.next();
+          if (_i3.done) break;
+          _ref5 = _i3.value;
         }
 
-        var route = _ref8;
+        var route = _ref5;
 
         route.isVisible = loggedIn ? route.config.roles && ~route.config.roles.indexOf('user') : !route.config.roles;
       }var canActivate = next.navModel.isVisible || !next.nav;
@@ -1231,7 +1202,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   }
 
   function getHistory(id) {
-    var _this4 = this;
+    var _this5 = this;
 
     return this.db.transaction.history.get(id).then(function (_history) {
       console.log('history', id, _history);
@@ -1247,7 +1218,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
       return JSON.stringify(_history, function (k, v) {
         if (Array.isArray(v)) return v;
 
-        var status = _this4.status || 'pickup';
+        var status = _this5.status || 'pickup';
         var fromName = 'From: ' + v.shipment.account.from.name;
         var fromStreet = v.shipment.account.from.street;
         var fromAddress = v.shipment.account.from.city + ', ' + v.shipment.account.from.state + ' ' + v.shipment.account.from.zip;
