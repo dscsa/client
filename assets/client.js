@@ -1117,7 +1117,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     var term = this.term.trim();
     var type = /^[\d-]+$/.test(term) ? 'ndc' : 'name';
 
-    if (type == 'ndc' && this.term.length < 6 || type == 'name' && this.term.length < 3) return Promise.resolve([]);
+    if (type == 'ndc' && this.term.length < 4 || type == 'name' && this.term.length < 3) return Promise.resolve([]);
 
     var clearCache = this._savingDrug;
     var start1 = Date.now();

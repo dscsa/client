@@ -271,7 +271,7 @@ export function drugSearch() {
   const term = this.term.trim()
   const type = /^[\d-]+$/.test(term) ? 'ndc' : 'name'
 
-  if ((type == 'ndc' && this.term.length < 6) || (type == 'name' && this.term.length < 3))
+  if ((type == 'ndc' && this.term.length < 4) || (type == 'name' && this.term.length < 3))
     return Promise.resolve([])
 
   //When adding a new NDC for an existing drug search term is the same but we want the
