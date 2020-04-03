@@ -992,7 +992,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
       if (term.length == 12 && term[0] == '3') term = term.slice(1, -1);
 
       if (term.startsWith(_drugSearch._term) && !clearCache) {
-        console.log('FILTER', 'term', term, 'this.term', _drugSearch._term);
+        console.log('FILTER', 'base', _drugSearch._term, 'filtered for', this.term);
         return _drugSearch._drugs.then(function (drugs) {
 
           var matches = {
@@ -1031,13 +1031,25 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
             }
           }
 
-          if (matches.ndc11.length) return matches.ndc11;
+          if (matches.ndc11.length) {
+            console.log('matched ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8);
+            return matches.ndc11;
+          }
 
-          if (matches.upc10.length) return matches.upc10;
+          if (matches.upc10.length) {
+            console.log('matched upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8);
+            return matches.upc10;
+          }
 
-          if (matches.ndc9.length) return matches.ndc9;
+          if (matches.ndc9.length) {
+            console.log('matches.ndc9', matches.ndc9, 'matches.upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.upc8', matches.upc8);
+            return matches.ndc9;
+          }
 
-          if (matches.upc8.length) return matches.upc8;
+          if (matches.upc8.length) {
+            console.log('matched upc8', matches.upc8, 'matches.ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9);
+            return matches.upc8;
+          }
         });
       }
 
@@ -1106,10 +1118,13 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     if (type == 'ndc' && this.term.length < 5 || type == 'name' && this.term.length < 3) return Promise.resolve([]);
 
     var clearCache = this._savingDrug;
+    var start = Date.now();
 
     return this._search = Promise.resolve(this._search).then(function (_) {
-      console.log('drugSearch', type, term);
+      console.log('drugSearch', type, term, 'time ms', start - Date.now());
       return _drugSearch[type].call(_this2, term, clearCache);
+    }).catch(function (err) {
+      return console.log('drugSearch error', err);
     });
   }
 
