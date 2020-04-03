@@ -275,13 +275,16 @@ export function drugSearch() {
   //When adding a new NDC for an existing drug search term is the same but we want the
   //results to display the new drug too, so we need to disable filtering old results
   const clearCache = this._savingDrug
-  const start = Date.now()
+  const start1 = Date.now()
+
 
   //always do searches serially
   return this._search = Promise.resolve(this._search)
     .then(_ => {
-      console.log('drugSearch', type, term, 'time ms', Date.now() - start)
-      return _drugSearch[type].call(this, term, clearCache)
+      const start2 = Date.now()
+      var res = _drugSearch[type].call(this, term, clearCache)
+      console.log('drugSearch', type, term, 'wait for previous query', start2 - start1, 'query time', Date.now() - start2)
+      return res
     })
     .catch(err => console.log('drugSearch error', err))
 }

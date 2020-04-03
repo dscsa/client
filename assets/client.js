@@ -1118,11 +1118,13 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     if (type == 'ndc' && this.term.length < 5 || type == 'name' && this.term.length < 3) return Promise.resolve([]);
 
     var clearCache = this._savingDrug;
-    var start = Date.now();
+    var start1 = Date.now();
 
     return this._search = Promise.resolve(this._search).then(function (_) {
-      console.log('drugSearch', type, term, 'time ms', Date.now() - start);
-      return _drugSearch[type].call(_this2, term, clearCache);
+      var start2 = Date.now();
+      var res = _drugSearch[type].call(_this2, term, clearCache);
+      console.log('drugSearch', type, term, 'wait for previous query', start2 - start1, 'query time', Date.now() - start2);
+      return res;
     }).catch(function (err) {
       return console.log('drugSearch error', err);
     });
