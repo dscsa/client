@@ -181,7 +181,7 @@ let _drugSearch = {
 
     //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
     if (term.startsWith(_drugSearch._term) && ! clearCache) {
-      console.log('FILTER', 'base', _drugSearch._term, 'filtered for', this.term)
+
       return _drugSearch._drugs.then(drugs => {
 
         var matches = {
@@ -210,33 +210,31 @@ let _drugSearch = {
         }
 
         if (matches.ndc11.length) {
-          console.log(term, 'matched ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8)
+          console.log('FILTER', term, 'time ms', Date.now() - start, 'matched ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8)
           return matches.ndc11
         }
 
         if (matches.upc10.length) {
-          console.log(term, 'matched upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8)
+          console.log('FILTER', term, 'time ms', Date.now() - start, 'matched upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8)
           return matches.upc10
         }
 
         if (matches.ndc9.length) {
-          console.log(term, 'matches.ndc9', matches.ndc9, 'matches.upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.upc8', matches.upc8)
+          console.log('FILTER', term, 'time ms', Date.now() - start, 'matches.ndc9', matches.ndc9, 'matches.upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.upc8', matches.upc8)
           return matches.ndc9
         }
 
         //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc  which is cutoff at 8 digits will have false positives
         //(drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc)
         if (matches.upc8.length) {
-          console.log(term, 'matched upc8', matches.upc8, 'matches.ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9)
+          console.log('FILTER', term, 'time ms', Date.now() - start, 'matched upc8', matches.upc8, 'matches.ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9)
           return matches.upc8
         }
 
-        console.log(term, 'no ndc matches')
+        console.log('FILTER', term, 'time ms', Date.now() - start, 'no ndc matches')
 
       })
     }
-
-    console.log('QUERY', 'term', term, 'this.term', _drugSearch._term)
 
     _drugSearch._term = term
 
@@ -257,7 +255,7 @@ let _drugSearch = {
           unique[drug._id] = drug
 
       unique = Object.keys(unique).map(key => _drugSearch.addPkgCode(term, unique[key]))
-      console.log('query returned', unique.length, 'rows and took', Date.now() - start)
+      console.log('QUERY', term, 'time ms', Date.now() - start, unique)
       return unique
     })
   }
