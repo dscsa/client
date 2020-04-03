@@ -79,14 +79,15 @@ export class shopping {
       if(this.groups[i].name == groupName) this.groups[i].locked = 'unlocking'
     }
 
+    var start = Date.now();
     console.log(groupName);
 
-    this.db.account.picking['post']({groupName:groupName, action:'unlock'}).then(res =>{
+    this.db.account.picking.post({groupName:groupName, action:'unlock'}).then(res =>{
       //console.log("result of unlocking:", res)
       this.groups = res
     })
     .catch(err => {
-      console.log("error unlocking order:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+      console.log("error unlocking order:", (Date.now() - start)/1000, 'seconds', JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
       return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
     })
   }
@@ -99,8 +100,10 @@ export class shopping {
     this.groupLoaded = false
     this.orderSelectedToShop = true
 
-    this.db.account.picking['post']({groupName:groupName, action:'load'}).then(res =>{
-      console.log("result of loading",JSON.stringify(res))
+    var start = Date.now();
+
+    this.db.account.picking.post({groupName:groupName, action:'load'}).then(res =>{
+      console.log("result of loading: "+res.length, (Date.now() - start)/1000, 'seconds')
       this.shopList = res
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
@@ -448,11 +451,11 @@ export class shopping {
   }
 
   setNextToLoading(){
-    this.nextButtonText = 'Fetching Items'
+    this.nextButtonText = 'Updating'
   }
 
   setNextToSave(){
-    this.nextButtonText = 'Complete Shopping'
+    this.nextButtonText = 'Complete'
   }
 
   setNextToNext(){
