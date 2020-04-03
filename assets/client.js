@@ -1057,9 +1057,12 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
       _drugSearch._term = term;
 
-      var ndc9 = this.db.drug.query('ndc9', _drugSearch.range(ndc9)).then(_drugSearch.map(start));
+      var ndcRange = _drugSearch.range(ndc9);
+      var upcRange = _drugSearch.range(upc);
 
-      var upc = this.db.drug.query('upc', _drugSearch.range(upc)).then(_drugSearch.map(start));
+      var ndc9 = this.db.drug.query('ndc9', ndcRange).then(_drugSearch.map(start));
+
+      var upc = this.db.drug.query('upc', upcRange).then(_drugSearch.map(start));
 
       return _drugSearch._drugs = Promise.all([ndc9, upc]).then(function (_ref2) {
         var ndc9 = _ref2[0],
@@ -1101,7 +1104,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         }unique = Object.keys(unique).map(function (key) {
           return _drugSearch.addPkgCode(term, unique[key]);
         });
-        console.log('QUERY', term, 'time ms', Date.now() - start, unique);
+        console.log('QUERY', term, 'time ms', Date.now() - start, 'ndcRange', ndcRange, 'upcRange', upcRange, unique);
         return unique;
       });
     }
@@ -1115,7 +1118,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     var term = this.term.trim();
     var type = /^[\d-]+$/.test(term) ? 'ndc' : 'name';
 
-    if (type == 'ndc' && this.term.length < 5 || type == 'name' && this.term.length < 3) return Promise.resolve([]);
+    if (type == 'ndc' && this.term.length < 6 || type == 'name' && this.term.length < 3) return Promise.resolve([]);
 
     var clearCache = this._savingDrug;
     var start1 = Date.now();
@@ -1827,7 +1830,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       return this.drugSearch().then(function (drugs) {
         _this5.groups = _this5.groupDrugs(drugs, _this5.account.ordered);
-        console.log(drugs.length, _this5.groups.length, _this5.groups);
+        console.log('drugs.js search()', drugs.length, _this5.groups.length, _this5.groups);
       });
     };
 

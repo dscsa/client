@@ -238,9 +238,12 @@ let _drugSearch = {
 
     _drugSearch._term = term
 
-    var ndc9 = this.db.drug.query('ndc9', _drugSearch.range(ndc9)).then(_drugSearch.map(start))
+    const ndcRange = _drugSearch.range(ndc9)
+    const upcRange = _drugSearch.range(upc)
 
-    var upc = this.db.drug.query('upc', _drugSearch.range(upc)).then(_drugSearch.map(start))
+    var ndc9 = this.db.drug.query('ndc9', ndcRange).then(_drugSearch.map(start))
+
+    var upc = this.db.drug.query('upc', upcRange).then(_drugSearch.map(start))
 
     //TODO add in ES6 destructuing
     return _drugSearch._drugs = Promise.all([ndc9, upc]).then(([ndc9, upc]) => {
@@ -255,7 +258,7 @@ let _drugSearch = {
           unique[drug._id] = drug
 
       unique = Object.keys(unique).map(key => _drugSearch.addPkgCode(term, unique[key]))
-      console.log('QUERY', term, 'time ms', Date.now() - start, unique)
+      console.log('QUERY', term, 'time ms', Date.now() - start, 'ndcRange', ndcRange, 'upcRange', upcRange, unique)
       return unique
     })
   }
@@ -269,7 +272,7 @@ export function drugSearch() {
   const term = this.term.trim()
   const type = /^[\d-]+$/.test(term) ? 'ndc' : 'name'
 
-  if ((type == 'ndc' && this.term.length < 5) || (type == 'name' && this.term.length < 3))
+  if ((type == 'ndc' && this.term.length < 6) || (type == 'name' && this.term.length < 3))
     return Promise.resolve([])
 
   //When adding a new NDC for an existing drug search term is the same but we want the
