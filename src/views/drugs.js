@@ -174,7 +174,7 @@ export class drugs {
   search() {
     return this.drugSearch().then(drugs => {
       this.groups = this.groupDrugs(drugs, this.account.ordered)
-      console.log(drugs.length, this.groups.length, this.groups, this.account.ordered)
+      console.log(drugs.length, this.groups.length, this.groups)
     })
   }
 

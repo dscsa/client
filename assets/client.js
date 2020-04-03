@@ -1098,13 +1098,18 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   function drugSearch() {
     var _this2 = this;
 
-    if (!this.term || this.term.length < 3) return Promise.resolve([]);
+    if (!this.term) return Promise.resolve([]);
+
+    var term = this.term.trim();
+    var type = /^[\d-]+$/.test(term) ? 'ndc' : 'name';
+
+    if (type == 'ndc' && this.term.length < 5 || type == 'name' && this.term.length < 3) return Promise.resolve([]);
 
     var clearCache = this._savingDrug;
-    var term = this.term.trim();
 
     return this._search = Promise.resolve(this._search).then(function (_) {
-      return _drugSearch[/^[\d-]+$/.test(term) ? 'ndc' : 'name'].call(_this2, term, clearCache);
+      console.log('drugSearch', type, term);
+      return _drugSearch[type].call(_this2, term, clearCache);
     });
   }
 
@@ -1805,7 +1810,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
 
       return this.drugSearch().then(function (drugs) {
         _this5.groups = _this5.groupDrugs(drugs, _this5.account.ordered);
-        console.log(drugs.length, _this5.groups.length, _this5.groups, _this5.account.ordered);
+        console.log(drugs.length, _this5.groups.length, _this5.groups);
       });
     };
 

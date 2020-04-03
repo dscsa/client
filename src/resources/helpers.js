@@ -253,17 +253,24 @@ let _drugSearch = {
 }
 
 export function drugSearch() {
-  if ( ! this.term || this.term.length < 3)
+
+  if ( ! this.term)
+    return Promise.resolve([])
+
+  const term = this.term.trim()
+  const type = /^[\d-]+$/.test(term) ? 'ndc' : 'name'
+
+  if ((type == 'ndc' && this.term.length < 5) || (type == 'name' && this.term.length < 3))
     return Promise.resolve([])
 
   //When adding a new NDC for an existing drug search term is the same but we want the
   //results to display the new drug too, so we need to disable filtering old results
   const clearCache = this._savingDrug
-  const term = this.term.trim()
 
   //always do searches serially
   return this._search = Promise.resolve(this._search).then(_ => {
-    return _drugSearch[/^[\d-]+$/.test(term) ? 'ndc' : 'name'].call(this, term, clearCache)
+    console.log('drugSearch', type, term)
+    return _drugSearch[type].call(this, term, clearCache)
   })
 }
 
