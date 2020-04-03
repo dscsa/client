@@ -15,9 +15,16 @@ Development > Server > Client > CSV, Pouch
 ```
 # create and cd into the folder in which you want to install
 npm install dscsa/development
+rm -R dscsa/node_modules/server
+rm -R dscsa/node_modules/client
+rm -R dscsa/node_modules/pouch
+rm -R dscsa/node_modules/dscsa
 
-# add development, server, client, pouch, and csv
-# as repositories to your git client and link to github
+# Github Client -> "Clone Repository..."
+server -> dscsa/node_modules/server
+client -> dscsa/node_modules/client
+pouch -> dscsa/node_modules/pouch
+csv -> dscsa/node_modules/csv
 
 # build the client with watch and run server
 # will ask for couchdb credentials on first run
