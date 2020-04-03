@@ -985,25 +985,60 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     },
     ndc: function ndc(_ndc, clearCache) {
       var start = Date.now();
-      var term = _ndc.replace(/-/g, '');
+
+      var split = _ndc.split('-');
+      var term = split.join('');
 
       if (term.length == 12 && term[0] == '3') term = term.slice(1, -1);
 
-      var ndc9 = term.slice(0, 9);
-      var upc = term.slice(0, 8);
-
       if (term.startsWith(_drugSearch._term) && !clearCache) {
-        console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term);
+        console.log('FILTER', 'term', term, 'this.term', _drugSearch._term);
         return _drugSearch._drugs.then(function (drugs) {
-          var filtered = drugs.filter(filter);
-          return term.length == 9 || term.length == 11 ? filtered.reverse() : filtered;
+
+          var matches = {
+            ndc11: [],
+            ndc9: [],
+            upc10: [],
+            upc8: []
+          };
+
+          for (var _iterator = drugs, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+            var _ref;
+
+            if (_isArray) {
+              if (_i >= _iterator.length) break;
+              _ref = _iterator[_i++];
+            } else {
+              _i = _iterator.next();
+              if (_i.done) break;
+              _ref = _i.value;
+            }
+
+            var drug = _ref;
+
+            if (drug.ndc9.startsWith(term)) matches.ndc11.push(drug);
+
+            if (drug.upc.startsWith(term)) matches.upc10.push(drug);
+
+            if (drug.ndc9.startsWith(term.slice(0, 9))) {
+              _drugSearch.addPkgCode(term, drug);
+              matches.ndc9.push(drug);
+            }
+
+            if (drug.upc.startsWith(term.slice(0, 8))) {
+              _drugSearch.addPkgCode(term, drug);
+              matches.upc8.push(drug);
+            }
+          }
+
+          if (matches.ndc11.length) return matches.ndc11;
+
+          if (matches.upc10.length) return matches.upc10;
+
+          if (matches.ndc9.length) return matches.ndc9;
+
+          if (matches.upc8.length) return matches.upc8;
         });
-      }
-
-      function filter(drug) {
-        _drugSearch.addPkgCode(term, drug);
-
-        return drug.ndc9.startsWith(ndc9) || drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc);
       }
 
       console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term);
@@ -1014,29 +1049,14 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
       upc = this.db.drug.query('upc', _drugSearch.range(upc)).then(_drugSearch.map(start));
 
-      return _drugSearch._drugs = Promise.all([ndc9, upc]).then(function (_ref) {
-        var ndc9 = _ref[0],
-            upc = _ref[1];
+      return _drugSearch._drugs = Promise.all([ndc9, upc]).then(function (_ref2) {
+        var ndc9 = _ref2[0],
+            upc = _ref2[1];
 
 
         var unique = {};
 
-        for (var _iterator = ndc9, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-          var _ref2;
-
-          if (_isArray) {
-            if (_i >= _iterator.length) break;
-            _ref2 = _iterator[_i++];
-          } else {
-            _i = _iterator.next();
-            if (_i.done) break;
-            _ref2 = _i.value;
-          }
-
-          var drug = _ref2;
-
-          unique[drug._id] = drug;
-        }for (var _iterator2 = upc, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+        for (var _iterator2 = ndc9, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
           var _ref3;
 
           if (_isArray2) {
@@ -1048,7 +1068,22 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
             _ref3 = _i2.value;
           }
 
-          var _drug = _ref3;
+          var drug = _ref3;
+
+          unique[drug._id] = drug;
+        }for (var _iterator3 = upc, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+          var _ref4;
+
+          if (_isArray3) {
+            if (_i3 >= _iterator3.length) break;
+            _ref4 = _iterator3[_i3++];
+          } else {
+            _i3 = _iterator3.next();
+            if (_i3.done) break;
+            _ref4 = _i3.value;
+          }
+
+          var _drug = _ref4;
 
           if (_drug.upc.length != 9 && term.length != 11) unique[_drug._id] = _drug;
         }unique = Object.keys(unique).map(function (key) {
@@ -1076,19 +1111,19 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   function groupDrugs(drugs, ordered) {
 
     var groups = {};
-    for (var _iterator3 = drugs, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-      var _ref4;
+    for (var _iterator4 = drugs, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+      var _ref5;
 
-      if (_isArray3) {
-        if (_i3 >= _iterator3.length) break;
-        _ref4 = _iterator3[_i3++];
+      if (_isArray4) {
+        if (_i4 >= _iterator4.length) break;
+        _ref5 = _iterator4[_i4++];
       } else {
-        _i3 = _iterator3.next();
-        if (_i3.done) break;
-        _ref4 = _i3.value;
+        _i4 = _iterator4.next();
+        if (_i4.done) break;
+        _ref5 = _i4.value;
       }
 
-      var drug = _ref4;
+      var drug = _ref5;
 
       var generic = drug.generic;
       groups[generic] = groups[generic] || { generic: generic, name: drugName(drug, ordered), drugs: [] };
@@ -1124,9 +1159,9 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     return { month: date[0].slice(0, 2), year: year };
   }
 
-  function toJsonDate(_ref5) {
-    var month = _ref5.month,
-        year = _ref5.year;
+  function toJsonDate(_ref6) {
+    var month = _ref6.month,
+        year = _ref6.year;
 
     console.log('date', month, year, new Date('20' + year, month - 1, 1).toJSON());
     return new Date('20' + year, month - 1, 1).toJSON();
@@ -1141,26 +1176,26 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     });
   }
 
-  function canActivate(_, next, _ref6) {
-    var router = _ref6.router;
+  function canActivate(_, next, _ref7) {
+    var router = _ref7.router;
 
     return this.db.user.session.get().then(function (session) {
 
       var loggedIn = session && session.account;
 
-      for (var _iterator4 = router.navigation, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
-        var _ref7;
+      for (var _iterator5 = router.navigation, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
+        var _ref8;
 
-        if (_isArray4) {
-          if (_i4 >= _iterator4.length) break;
-          _ref7 = _iterator4[_i4++];
+        if (_isArray5) {
+          if (_i5 >= _iterator5.length) break;
+          _ref8 = _iterator5[_i5++];
         } else {
-          _i4 = _iterator4.next();
-          if (_i4.done) break;
-          _ref7 = _i4.value;
+          _i5 = _iterator5.next();
+          if (_i5.done) break;
+          _ref8 = _i5.value;
         }
 
-        var route = _ref7;
+        var route = _ref8;
 
         route.isVisible = loggedIn ? route.config.roles && ~route.config.roles.indexOf('user') : !route.config.roles;
       }var canActivate = next.navModel.isVisible || !next.nav;

@@ -171,28 +171,58 @@ let _drugSearch = {
   //For now we make this function stateful (using "this") to cache results
   ndc(ndc, clearCache) {
     const start = Date.now()
-    var term = ndc.replace(/-/g, '')
+
+    var split = ndc.split('-')
+    var term  = split.join('')
 
     //This is a UPC barcode ('3'+10 digit upc+checksum).
     if (term.length == 12 && term[0] == '3')
       term = term.slice(1, -1)
 
-    var ndc9 = term.slice(0, 9)
-    var upc  = term.slice(0, 8)
-
     //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
     if (term.startsWith(_drugSearch._term) && ! clearCache) {
-      console.log('FILTER', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term)
+      console.log('FILTER', 'term', term, 'this.term', _drugSearch._term)
       return _drugSearch._drugs.then(drugs => {
-        let filtered = drugs.filter(filter)
-        return term.length == 9 || term.length == 11 ? filtered.reverse() : filtered
-      })
-    }
 
-    function filter(drug) {
-      _drugSearch.addPkgCode(term, drug)
-      //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc  which is cutoff at 8 digits will have false positives
-      return drug.ndc9.startsWith(ndc9) || (drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc))
+        var matches = {
+          ndc11:[],
+          ndc9:[],
+          upc10:[],
+          upc8:[]
+        }
+
+        for (const drug of drugs) {
+          if (drug.ndc9.startsWith(term))
+            matches.ndc11.push(drug)
+
+          if (drug.upc.startsWith(term))
+            matches.upc10.push(drug)
+
+          if (drug.ndc9.startsWith(term.slice(0,9))) {
+            _drugSearch.addPkgCode(term, drug)
+            matches.ndc9.push(drug)
+          }
+
+          if (drug.upc.startsWith(term.slice(0,8))) {
+            _drugSearch.addPkgCode(term, drug)
+            matches.upc8.push(drug)
+          }
+        }
+
+        if (matches.ndc11.length)
+          return matches.ndc11
+
+        if (matches.upc10.length)
+          return matches.upc10
+
+        if (matches.ndc9.length)
+          return matches.ndc9
+
+        //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc  which is cutoff at 8 digits will have false positives
+        //(drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc)
+        if (matches.upc8.length)
+          return matches.upc8
+      })
     }
 
     console.log('QUERY', 'ndc9', ndc9, 'upc', upc, 'term', term, 'this.term', _drugSearch._term)
