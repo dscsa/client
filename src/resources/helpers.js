@@ -236,18 +236,45 @@ let _drugSearch = {
     const ndc9Range  = _drugSearch.range(term.slice(0,9))
     const upc8Range  = _drugSearch.range(term.slice(0,8))
 
-    return _drugSearch._drugs = Promise.resolve({rows:[]})
-      .then(res => res.rows.length ? res : this.db.drug.query('ndc9', ndc11Range))
-      .then(res => res.rows.length ? res : this.db.drug.query('upc', upc10Range))
-      .then(res => res.rows.length ? res : this.db.drug.query('ndc9', ndc9Range))
-      .then(res => res.rows.length ? res : this.db.drug.query('upc', upc8Range))
-      .then(res => res.rows.map(row => {
-         _drugSearch.addPkgCode(term, row.doc)
-        return row.doc
-      }))
-      .then(drugs => {
-        console.log('QUERY', term, 'time ms', Date.now() - start, drugs)
-        return drugs
+    return _drugSearch._drugs = this.db.drug.query('ndc9', ndc11Range)
+      .then(res => {
+        if ( ! res.rows.length)
+          return this.db.drug.query('upc', upc10Range)
+
+        res.type = res.type || 'matched ndc11'
+        return res
+      })
+      .then(res => {
+        if ( ! res.rows.length)
+          return this.db.drug.query('ndc9', ndc9Range)
+
+        res.type = res.type || 'matched upc10'
+        return res
+      })
+      .then(res => {
+        if ( ! res.rows.length)
+          return this.db.drug.query('upc', upc8Range)
+
+        res.type = res.type || 'matched ndc9'
+        return res
+      })
+      .then(res => {
+
+        if ( ! res.rows.length)
+          res.type = 'no ndc match'
+        else
+          res.type = res.type || 'matched upc8'
+          
+        return res
+      })
+      .then(res => {
+
+        console.log('QUERY', term, res.type, 'time ms', Date.now() - start, res.rows)
+
+        return res.rows.map(row => {
+           _drugSearch.addPkgCode(term, row.doc)
+          return row.doc
+        })
       })
   }
 }

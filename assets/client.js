@@ -1060,22 +1060,34 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
       var ndc9Range = _drugSearch.range(term.slice(0, 9));
       var upc8Range = _drugSearch.range(term.slice(0, 8));
 
-      return _drugSearch._drugs = Promise.resolve({ rows: [] }).then(function (res) {
-        return res.rows.length ? res : _this2.db.drug.query('ndc9', ndc11Range);
+      return _drugSearch._drugs = this.db.drug.query('ndc9', ndc11Range).then(function (res) {
+        if (!res.rows.length) return _this2.db.drug.query('upc', upc10Range);
+
+        res.type = res.type || 'matched ndc11';
+        return res;
       }).then(function (res) {
-        return res.rows.length ? res : _this2.db.drug.query('upc', upc10Range);
+        if (!res.rows.length) return _this2.db.drug.query('ndc9', ndc9Range);
+
+        res.type = res.type || 'matched upc10';
+        return res;
       }).then(function (res) {
-        return res.rows.length ? res : _this2.db.drug.query('ndc9', ndc9Range);
+        if (!res.rows.length) return _this2.db.drug.query('upc', upc8Range);
+
+        res.type = res.type || 'matched ndc9';
+        return res;
       }).then(function (res) {
-        return res.rows.length ? res : _this2.db.drug.query('upc', upc8Range);
+
+        if (!res.rows.length) res.type = 'no ndc match';else res.type = res.type || 'matched upc8';
+
+        return res;
       }).then(function (res) {
+
+        console.log('QUERY', term, res.type, 'time ms', Date.now() - start, res.rows);
+
         return res.rows.map(function (row) {
           _drugSearch.addPkgCode(term, row.doc);
           return row.doc;
         });
-      }).then(function (drugs) {
-        console.log('QUERY', term, 'time ms', Date.now() - start, drugs);
-        return drugs;
       });
     }
   };
