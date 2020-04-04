@@ -999,7 +999,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         var ndc9Query = this.db.drug.query('ndc9', ndc9Range);
         var upc8Query = this.db.drug.query('upc', upc8Range);
 
-        return _drugSearch._drugs = Promise.all([ndc9Query, upc8Query]).then(function (_ref) {
+        _drugSearch._drugs = Promise.all([ndc9Query, upc8Query]).then(function (_ref) {
           var ndc9 = _ref[0],
               upc = _ref[1];
 

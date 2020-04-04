@@ -188,7 +188,7 @@ let _drugSearch = {
       const upc8Query = this.db.drug.query('upc', upc8Range)
 
       //TODO add in ES6 destructuing
-      return _drugSearch._drugs = Promise.all([ndc9Query, upc8Query]).then(([ndc9, upc]) => {
+      _drugSearch._drugs = Promise.all([ndc9Query, upc8Query]).then(([ndc9, upc]) => {
 
        let unique = {}
 
