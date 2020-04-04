@@ -1068,10 +1068,10 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
           var drug = _ref4;
 
 
-          if (drug.ndc9.startsWith(term)) matches.ndc11.push(drug);else if (drug.upc.startsWith(term)) matches.upc10.push(drug);else if (drug.ndc9.startsWith(term.slice(0, 9))) {
+          if (drug.ndc9.startsWith(term)) matches.ndc11.push(drug);else if (drug.upc.startsWith(term)) matches.upc10.push(drug);else if (term.startsWith(drug.ndc9)) {
             _drugSearch.addPkgCode(term, drug);
             matches.ndc9.push(drug);
-          } else if (drug.upc.startsWith(term.slice(0, 8))) {
+          } else if (term.startsWith(drug.upc)) {
             _drugSearch.addPkgCode(term, drug);
             matches.upc8.push(drug);
           }

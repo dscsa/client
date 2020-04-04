@@ -222,12 +222,12 @@ let _drugSearch = {
         else if (drug.upc.startsWith(term))
           matches.upc10.push(drug)
 
-        else if (drug.ndc9.startsWith(term.slice(0,9))) {
+        else if (term.startsWith(drug.ndc9)) {
           _drugSearch.addPkgCode(term, drug)
           matches.ndc9.push(drug)
         }
 
-        else if (drug.upc.startsWith(term.slice(0,8))) {
+        else if (term.startsWith(drug.upc)) {
           _drugSearch.addPkgCode(term, drug)
           matches.upc8.push(drug)
         }
