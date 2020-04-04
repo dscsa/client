@@ -105,6 +105,7 @@ export function toggleDrawer() {
 let _drugSearch = {
   name(term, clearCache) {
     const start = Date.now()
+    const terms = term.toLowerCase().replace('.', '\\.').split(/, |[, ]/g)
 
     if ( ! term.startsWith(_drugSearch._term) || clearCache) {
       _drugSearch._term = term
@@ -122,7 +123,6 @@ let _drugSearch = {
     }
 
     //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
-    const terms = term.toLowerCase().replace('.', '\\.').split(/, |[, ]/g)
     const regex = RegExp('(?=.*'+terms.join(')(?=.*( |0)')+')', 'i') //Use lookaheads to search for each word separately (no order).  Even the first term might be the 2nd generic
     return _drugSearch._drugs
       .then(drugs => {
@@ -192,10 +192,10 @@ let _drugSearch = {
 
        let unique = {}
 
-       for (const drug of ndc9)
+       for (const drug of ndc9.rows)
          unique[drug.doc._id] = drug.doc
 
-       for (const drug of upc)
+       for (const drug of upc.rows)
          if (drug.doc.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc which is cutoff at 8 digits will have false positives
            unique[drug.doc._id] = drug.doc
 

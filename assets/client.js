@@ -929,6 +929,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
   var _drugSearch = {
     name: function name(term, clearCache) {
       var start = Date.now();
+      var terms = term.toLowerCase().replace('.', '\\.').split(/, |[, ]/g);
 
       if (!term.startsWith(_drugSearch._term) || clearCache) {
         _drugSearch._term = term;
@@ -944,7 +945,6 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         });
       }
 
-      var terms = term.toLowerCase().replace('.', '\\.').split(/, |[, ]/g);
       var regex = RegExp('(?=.*' + terms.join(')(?=.*( |0)') + ')', 'i');
       return _drugSearch._drugs.then(function (drugs) {
 
@@ -1006,7 +1006,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
           var unique = {};
 
-          for (var _iterator = ndc9, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+          for (var _iterator = ndc9.rows, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
             var _ref2;
 
             if (_isArray) {
@@ -1021,7 +1021,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
             var drug = _ref2;
 
             unique[drug.doc._id] = drug.doc;
-          }for (var _iterator2 = upc, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+          }for (var _iterator2 = upc.rows, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
             var _ref3;
 
             if (_isArray2) {
