@@ -1036,8 +1036,8 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
             var _drug = _ref3;
 
             if (_drug.doc.upc.length != 9 && term.length != 11) unique[_drug.doc._id] = _drug.doc;
-          }unique = Object.values(unique).map(function (drug) {
-            return _drugSearch.addPkgCode(term, drug);
+          }unique = Object.keys(unique).map(function (key) {
+            return _drugSearch.addPkgCode(term, unique[key]);
           });
           console.log('QUERY', term, 'time ms', Date.now() - start, 'ndc9Range', ndc9Range, 'upc8Range', upc8Range, unique);
           return unique;
@@ -1119,12 +1119,12 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
     if (type == 'ndc' && this.term.length < 5 || type == 'name' && this.term.length < 3) return Promise.resolve([]);
 
     var clearCache = this._savingDrug;
-    var start1 = Date.now();
+    var start = Date.now();
 
     return this._search = Promise.resolve(this._search).then(function (_) {
-      var start2 = Date.now();
-      var res = _drugSearch[type].call(_this2, term, clearCache);
-      console.log('drugSearch', type, term, 'wait for previous query', start2 - start1, 'query time', Date.now() - start2);
+      return _drugSearch[type].call(_this2, term, clearCache);
+    }).then(function (res) {
+      console.log('drugSearch', type, term, 'wait for previous query', 'query time', Date.now() - start);
       return res;
     }).catch(function (err) {
       return console.log('drugSearch error', err);

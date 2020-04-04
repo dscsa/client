@@ -199,7 +199,7 @@ let _drugSearch = {
          if (drug.doc.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc which is cutoff at 8 digits will have false positives
            unique[drug.doc._id] = drug.doc
 
-       unique = Object.values(unique).map(drug => _drugSearch.addPkgCode(term, drug))
+       unique = Object.keys(unique).map(key => _drugSearch.addPkgCode(term, unique[key]))
        console.log('QUERY', term, 'time ms', Date.now() - start, 'ndc9Range', ndc9Range, 'upc8Range', upc8Range, unique)
        return unique
       })
@@ -274,15 +274,14 @@ export function drugSearch() {
   //When adding a new NDC for an existing drug search term is the same but we want the
   //results to display the new drug too, so we need to disable filtering old results
   const clearCache = this._savingDrug
-  const start1 = Date.now()
+  const start = Date.now()
 
 
   //always do searches serially
   return this._search = Promise.resolve(this._search)
-    .then(_ => {
-      const start2 = Date.now()
-      var res = _drugSearch[type].call(this, term, clearCache)
-      console.log('drugSearch', type, term, 'wait for previous query', start2 - start1, 'query time', Date.now() - start2)
+    .then(_ => _drugSearch[type].call(this, term, clearCache))
+    .then(res => {
+      console.log('drugSearch', type, term, 'wait for previous query', 'query time', Date.now() - start)
       return res
     })
     .catch(err => console.log('drugSearch error', err))
