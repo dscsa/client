@@ -1067,43 +1067,18 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
           var drug = _ref4;
 
-          if (drug.ndc9.startsWith(term)) matches.ndc11.push(drug);
 
-          if (drug.upc.startsWith(term)) matches.upc10.push(drug);
-
-          if (drug.ndc9.startsWith(term.slice(0, 9))) {
+          if (drug.ndc9.startsWith(term)) matches.ndc11.push(drug);else if (drug.upc.startsWith(term)) matches.upc10.push(drug);else if (drug.ndc9.startsWith(term.slice(0, 9))) {
             _drugSearch.addPkgCode(term, drug);
             matches.ndc9.push(drug);
-          }
-
-          if (drug.upc.startsWith(term.slice(0, 8))) {
+          } else if (drug.upc.startsWith(term.slice(0, 8))) {
             _drugSearch.addPkgCode(term, drug);
             matches.upc8.push(drug);
           }
         }
 
-        if (matches.ndc11.length) {
-          console.log('FILTER', term, 'time ms', Date.now() - start, 'matched ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8);
-          return matches.ndc11;
-        }
-
-        if (matches.upc10.length) {
-          console.log('FILTER', term, 'time ms', Date.now() - start, 'matched upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8);
-          return matches.upc10;
-        }
-
-        if (matches.ndc9.length) {
-          console.log('FILTER', term, 'time ms', Date.now() - start, 'matches.ndc9', matches.ndc9, 'matches.upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.upc8', matches.upc8);
-          return matches.ndc9;
-        }
-
-        if (matches.upc8.length) {
-          console.log('FILTER', term, 'time ms', Date.now() - start, 'matched upc8', matches.upc8, 'matches.ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9);
-          return matches.upc8;
-        }
-
-        console.log('FILTER', term, 'time ms', Date.now() - start, 'no ndc matches');
-        return [];
+        console.log('FILTER', term, 'time ms', Date.now() - start, 'matches.ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8);
+        return [].concat(matches.ndc11, matches.upc10, matches.ndc9, matches.upc8);
       });
     }
   };
