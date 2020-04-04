@@ -107,42 +107,47 @@ let _drugSearch = {
     const start = Date.now()
     const terms = term.toLowerCase().replace('.', '\\.').split(/, |[, ]/g)
 
-    //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
-    if (term.startsWith(_drugSearch._term) && ! clearCache) {
-      const regex = RegExp('(?=.*'+terms.join(')(?=.*( |0)')+')', 'i') //Use lookaheads to search for each word separately (no order).  Even the first term might be the 2nd generic
-      return _drugSearch._drugs
-        .then(drugs => {
+    if ( ! term.startsWith(_drugSearch._term) || clearCache) {
+      _drugSearch._term = term
+      var nameRange = _drugSearch.range(terms[0])
 
-          var unknowns = {} //Add one "Unspecified" NDC result per unique generic name
+      //TODO this will not currently add unspecified NDCs like the filter above.  Does that matter?  Can we reuse code above?
+      _drugSearch._drugs = this.db.drug
+        .query('name', nameRange)
+        .then(res => {
 
-          return drugs.filter(drug => {
-            let isMatch = regex.test(drug.generic+' '+(drug.brand || '')+' '+(drug.labeler || ''))
+          console.log('QUERY', term, res.rows.length, 'rows and took', Date.now() - start, nameRange)
 
-            if (isMatch && ! unknowns[drug.generic]) {
-              var unknown = JSON.parse(JSON.stringify(drug))
-              unknown.labeler = ''
-              unknown._id = "Unspecified"
-              unknowns[drug.generic] = unknown
-            }
-
-            return isMatch
-          })
-          .concat(Object.values(unknowns))
-        })
-        .then(drugs => {
-          console.log('generic filter returned', drugs.length, 'rows and took', Date.now() - start, 'term', term, 'cache', _drugSearch._term)
-          _drugSearch._term = term
-          return drugs
+          return res.rows.map(row => row.doc)
         })
     }
 
-    _drugSearch._term = term
-    console.log('drug search', term, _drugSearch.range(terms[0]))
+    //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
+    const regex = RegExp('(?=.*'+terms.join(')(?=.*( |0)')+')', 'i') //Use lookaheads to search for each word separately (no order).  Even the first term might be the 2nd generic
+    return _drugSearch._drugs
+      .then(drugs => {
 
-    //TODO this will not currently add unspecified NDCs like the filter above.  Does that matter?  Can we reuse code above?
-    return _drugSearch._drugs = this.db.drug
-      .query('name', _drugSearch.range(terms[0]))
-      .then(_drugSearch.map(start))
+        var unknowns = {} //Add one "Unspecified" NDC result per unique generic name
+
+        return drugs.filter(drug => {
+          let isMatch = regex.test(drug.generic+' '+(drug.brand || '')+' '+(drug.labeler || ''))
+
+          if (isMatch && ! unknowns[drug.generic]) {
+            var unknown = JSON.parse(JSON.stringify(drug))
+            unknown.labeler = ''
+            unknown._id = "Unspecified"
+            unknowns[drug.generic] = unknown
+          }
+
+          return isMatch
+        })
+        .concat(Object.values(unknowns))
+      })
+      .then(drugs => {
+        console.log('FILTER', term, drugs.length, 'rows and took', Date.now() - start, 'cache', _drugSearch._term)
+        _drugSearch._term = term
+        return drugs
+      })
   },
 
   addPkgCode(term, drug) {
@@ -161,13 +166,6 @@ let _drugSearch = {
     return {startkey:term, endkey:term+'\uffff', include_docs:true}
   },
 
-  map(start) {
-    return res => {
-      console.log('query returned', res.rows.length, 'rows and took', Date.now() - start)
-      return res.rows.map(row => row.doc)
-    }
-  },
-
   //For now we make this function stateful (using "this") to cache results
   ndc(ndc, clearCache) {
     const start = Date.now()
@@ -180,85 +178,63 @@ let _drugSearch = {
       term = term.slice(1, -1)
 
     //We do caching here if user is typing in ndc one digit at a time since PouchDB's speed varies a lot (50ms - 2000ms)
-    if (term.startsWith(_drugSearch._term) && ! clearCache) {
+    if ( ! term.startsWith(_drugSearch._term) || clearCache) {
 
-      return _drugSearch._drugs.then(drugs => {
+      _drugSearch._term = term
 
-        var matches = {
-          ndc11:[],
-          ndc9:[],
-          upc10:[],
-          upc8:[]
-        }
+      const ndc9Range  = _drugSearch.range(term.slice(0,9))
+      const upc8Range  = _drugSearch.range(term.slice(0,8))
+      const ndc9Query = this.db.drug.query('ndc9', ndc9Range)
+      const upc8Query = this.db.drug.query('upc', upc8Range)
 
-        for (const drug of drugs) {
-          if (drug.ndc9.startsWith(term))
-            matches.ndc11.push(drug)
+      //TODO add in ES6 destructuing
+      _drugSearch._drugs = Promise.all([ndc9Query, upc8Query]).then(([ndc9, upc]) => {
 
-          if (drug.upc.startsWith(term))
-            matches.upc10.push(drug)
+       let unique = {}
 
-          if (drug.ndc9.startsWith(term.slice(0,9))) {
-            _drugSearch.addPkgCode(term, drug)
-            matches.ndc9.push(drug)
-          }
+       for (const drug of ndc9.rows)
+         unique[drug.doc._id] = drug.doc
 
-          if (drug.upc.startsWith(term.slice(0,8))) {
-            _drugSearch.addPkgCode(term, drug)
-            matches.upc8.push(drug)
-          }
-        }
+       for (const drug of upc.rows)
+         if (drug.doc.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc which is cutoff at 8 digits will have false positives
+           unique[drug.doc._id] = drug.doc
 
-        if (matches.ndc11.length) {
-          console.log('FILTER', term, 'time ms', Date.now() - start, 'matched ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8)
-          return matches.ndc11
-        }
-
-        if (matches.upc10.length) {
-          console.log('FILTER', term, 'time ms', Date.now() - start, 'matched upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8)
-          return matches.upc10
-        }
-
-        if (matches.ndc9.length) {
-          console.log('FILTER', term, 'time ms', Date.now() - start, 'matches.ndc9', matches.ndc9, 'matches.upc10', matches.upc10, 'matches.ndc11', matches.ndc11, 'matches.upc8', matches.upc8)
-          return matches.ndc9
-        }
-
-        //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc  which is cutoff at 8 digits will have false positives
-        //(drug.upc.length != 9 && term.length != 11 && drug.upc.startsWith(upc)
-        if (matches.upc8.length) {
-          console.log('FILTER', term, 'time ms', Date.now() - start, 'matched upc8', matches.upc8, 'matches.ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9)
-          return matches.upc8
-        }
-
-        console.log('FILTER', term, 'time ms', Date.now() - start, 'no ndc matches')
-
+       unique = Object.keys(unique).map(key => _drugSearch.addPkgCode(term, unique[key]))
+       console.log('QUERY', term, 'time ms', Date.now() - start, 'ndc9Range', ndc9Range, 'upc8Range', upc8Range, unique)
+       return unique
       })
     }
 
-    _drugSearch._term = term
+    return _drugSearch._drugs.then(drugs => {
 
-    const ndc9Range = _drugSearch.range(term.slice(0,9))
-    const upcRange  = _drugSearch.range(term.slice(0,8))
+      var matches = {
+        ndc11:[],
+        ndc9:[],
+        upc10:[],
+        upc8:[]
+      }
 
-    var ndc9 = this.db.drug.query('ndc9', ndc9Range).then(_drugSearch.map(start))
-    var upc  = this.db.drug.query('upc', upcRange).then(_drugSearch.map(start))
+      for (const drug of drugs) {
 
-    //TODO add in ES6 destructuing
-    return _drugSearch._drugs = Promise.all([ndc9, upc]).then(([ndc9, upc]) => {
+        if (drug.ndc9.startsWith(term))
+          matches.ndc11.push(drug)
 
-      let unique = {}
+        else if (drug.upc.startsWith(term))
+          matches.upc10.push(drug)
 
-      for (const drug of ndc9)
-        unique[drug._id] = drug
+        else if (term.startsWith(drug.ndc9)) {
+          _drugSearch.addPkgCode(term, drug)
+          matches.ndc9.push(drug)
+        }
 
-      for (const drug of upc)
-        if (drug.upc.length != 9 && term.length != 11) //If upc.length = 9 then the ndc9 code should await a match, otherwise the upc which is cutoff at 8 digits will have false positives
-          unique[drug._id] = drug
+        else if (term.startsWith(drug.upc)) {
+          _drugSearch.addPkgCode(term, drug)
+          matches.upc8.push(drug)
+        }
+      }
 
-      unique = Object.keys(unique).map(key => _drugSearch.addPkgCode(term, unique[key]))
-      console.log('QUERY', term, 'time ms', Date.now() - start, 'ndc9Range', ndc9Range, 'upcRange', upcRange, unique)
-      return unique
+      console.log('FILTER', term, 'time ms', Date.now() - start, 'matches.ndc11', matches.ndc11, 'matches.upc10', matches.upc10, 'matches.ndc9', matches.ndc9, 'matches.upc8', matches.upc8)
+      return [...matches.ndc11, ... matches.upc10, ...matches.ndc9, ... matches.upc8]
     })
   }
 }
@@ -271,21 +247,20 @@ export function drugSearch() {
   const term = this.term.trim()
   const type = /^[\d-]+$/.test(term) ? 'ndc' : 'name'
 
-  if ((type == 'ndc' && this.term.length < 4) || (type == 'name' && this.term.length < 3))
+  if ((type == 'ndc' && this.term.length < 5) || (type == 'name' && this.term.length < 3))
     return Promise.resolve([])
 
   //When adding a new NDC for an existing drug search term is the same but we want the
   //results to display the new drug too, so we need to disable filtering old results
   const clearCache = this._savingDrug
-  const start1 = Date.now()
+  const start = Date.now()
 
 
   //always do searches serially
   return this._search = Promise.resolve(this._search)
-    .then(_ => {
-      const start2 = Date.now()
-      var res = _drugSearch[type].call(this, term, clearCache)
-      console.log('drugSearch', type, term, 'wait for previous query', start2 - start1, 'query time', Date.now() - start2)
+    .then(_ => _drugSearch[type].call(this, term, clearCache))
+    .then(res => {
+      console.log('drugSearch', type, term, 'wait for previous query', 'query time', Date.now() - start)
       return res
     })
     .catch(err => console.log('drugSearch error', err))
