@@ -116,7 +116,7 @@ let _drugSearch = {
         .query('name', nameRange)
         .then(res => {
 
-          console.log('QUERY', term, drugs.length, 'rows and took', Date.now() - start, nameRange)
+          console.log('QUERY', term, res.rows.length, 'rows and took', Date.now() - start, nameRange)
 
           return res.rows.map(row => row.doc)
         })

@@ -937,7 +937,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
 
         _drugSearch._drugs = this.db.drug.query('name', nameRange).then(function (res) {
 
-          console.log('QUERY', term, drugs.length, 'rows and took', Date.now() - start, nameRange);
+          console.log('QUERY', term, res.rows.length, 'rows and took', Date.now() - start, nameRange);
 
           return res.rows.map(function (row) {
             return row.doc;
