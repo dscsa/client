@@ -118,12 +118,18 @@ export class inventory {
     let transactions_to_update = this.extractTransactions(pendId, '') //gives an array of transactions that need to have priority toggled, then saved
 
     for(let i = 0; i < transactions_to_update.length; i++){
-      if(typeof transactions_to_update[i].next[0].pended.priority != 'undefined' && transactions_to_update[i].next[0].pended.priority == null) continue;
+      if(typeof transactions_to_update[i].next[0].pended.priority != 'undefined' && transactions_to_update[i].next[0].pended.priority == null) continue; //then it's locked so don't
       transactions_to_update[i].next[0].pended.priority = transactions_to_update[i].next[0].pended.priority ? !transactions_to_update[i].next[0].pended.priority : true; //if it exists, flip, otherwise that means never added, so make true
     }
 
     return this.db.transaction.bulkDocs(transactions_to_update)
-    .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
+    .then(res => {
+      console.log('priority switched for pendId:', pendId)
+      console.log('results:',res)
+    }).catch(err => {
+      console.log("error with toggling priority", JSON.stringify(err))
+      this.snackbar.error('Error toggling priority', err)
+    })
     //extract all the transactions, switch their priority, update the group's priority tag in this.pended[], and save
   }
 

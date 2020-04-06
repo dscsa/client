@@ -788,33 +788,6 @@ define('client/src/elems/md-text',['exports', 'aurelia-framework'], function (ex
     return MdTextCustomElement;
   }()) || _class) || _class) || _class) || _class) || _class);
 });
-define('client/src/libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
-});
-define('client/src/libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Pouch = exports.Pouch = function Pouch() {
-    _classCallCheck(this, Pouch);
-
-    return pouchdbClient;
-  };
-});
 define('client/src/resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
   'use strict';
 
@@ -1497,6 +1470,33 @@ define('client/src/resources/value-converters',['exports', '../resources/helpers
     return toArrayValueConverter;
   }();
 });
+define('client/src/libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
+});
+define('client/src/libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Pouch = exports.Pouch = function Pouch() {
+    _classCallCheck(this, Pouch);
+
+    return pouchdbClient;
+  };
+});
 define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _helpers) {
   'use strict';
 
@@ -1533,7 +1533,6 @@ define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouc
         _this.switchUserText = "Switch User";
 
         _this.db.account.query('all-accounts', { include_docs: true }).then(function (accounts) {
-          console.log("here0", accounts);
           _this.accounts = accounts.rows.map(function (account) {
             return account.doc;
           }).filter(function (account) {
@@ -2218,8 +2217,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         transactions_to_update[i].next[0].pended.priority = transactions_to_update[i].next[0].pended.priority ? !transactions_to_update[i].next[0].pended.priority : true;
       }
 
-      return this.db.transaction.bulkDocs(transactions_to_update).catch(function (err) {
-        return _this4.snackbar.error('Error removing inventory. Please reload and try again', err);
+      return this.db.transaction.bulkDocs(transactions_to_update).then(function (res) {
+        console.log('priority switched for pendId:', pendId);
+        console.log('results:', res);
+      }).catch(function (err) {
+        console.log("error with toggling priority", JSON.stringify(err));
+        _this4.snackbar.error('Error toggling priority', err);
       });
     };
 
@@ -3340,6 +3343,10 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         return _this.db.account.get(session.account._id);
       }).then(function (account) {
         var _this$ordered;
+
+        _this.db.user.get(_this.user).then(function (user) {
+          _this.router.routes[2].navModel.setTitle(user.name.first);
+        });
 
         _this.account = { _id: account._id, name: account.name, default: account.default || {} };
         _this.ordered = (_this$ordered = {}, _this$ordered[account._id] = account.ordered, _this$ordered);
