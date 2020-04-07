@@ -260,7 +260,7 @@ export class shopping {
 //------------------Button controls-------------------------
 
   canSaveBasket(){
-    return (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1)
+    return (this.shopList[this.shoppingIndex].extra.basketNumber.length < 3) && (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1)
   }
 
   saveBasketNumber(){
@@ -292,28 +292,24 @@ export class shopping {
 
           this.shopList[this.shoppingIndex].extra.saved = 'missing' //if someone goes back through items, dont want to retry this constantly
 
-          //console.log("before",this.shoppingIndex)
-          let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
-          if(n < 0) n = 0 //dont go too far back obvi. Current bug that happens with skip shuffling indices incorrectly
-          //let n = this.shoppingIndex-1 >= 0 ? this.shoppingIndex-1 : 0
-          //console.log("after",this.shoppingIndex)
-          //console.log("res",res)
-          for(n; n < this.shopList.length; n++){
-            if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
-              //console.log("incrementing other order", n)
-              this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
-            } else {
-              //console.log("adding at end of orders", n)
-              res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
-              this.shopList.splice(n, 0, res[0]) //insert at the end
-              this.advanceShopping()
-              return
+          for(var j = 0; j < res.length; j++){
+            //console.log("before",this.shoppingIndex)
+            let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
+            if(n < 0) n = 0 //dont go too far back obvi. Current bug that happens with skip shuffling indices incorrectly
+            for(n; n < this.shopList.length; n++){
+              if(this.shopList[n].raw.drug.generic == res[j].raw.drug.generic){
+                this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
+              } else {
+                res[j].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
+                this.shopList.splice(n, 0, res[j]) //insert at the end
+                this.advanceShopping()
+                return
+              }
             }
+            res[j].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
+            this.shopList.push(res[j])
+            console.log("added to shoplist end", JSON.stringify(res[j]))
           }
-
-          res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
-          this.shopList.push(res[0])
-          console.log("added to shoplist end", JSON.stringify(res[0]))
 
         } else {
           console.log("couldn't find item with same or greater qty to replace this")
