@@ -21,6 +21,11 @@
   <section class="mdl-grid au-animate">
 
     <div if.bind = "!orderSelectedToShop">
+      
+      <div>
+        Picked Today: ${pickedCount}
+      </div>
+
       <md-input
         autoselect
         value.bind="pendedFilter"

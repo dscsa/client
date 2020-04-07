@@ -17,7 +17,6 @@ export class shopping {
     this.nextButtonText = '' //This can become 'Finish' or other more intuitive values depending on events
     this.orderSelectedToShop = false
     this.formComplete = false
-
     this.basketSaved = false
     this.currentBasket
 
@@ -56,9 +55,24 @@ export class shopping {
 
   }
 
+  updatePickedCount(){
+    console.log("going to update picked count")
+    var date = new Date()
+    var [year,month,day] = date.toJSON().split('T')[0].split('-')
+
+    this.db.transaction.query('picked-by-user-from-shipment', {startkey: [this.account._id, this.user._id, year, month, day], endkey: [this.account._id, this.user._id, year, month, day, {}]})
+    .then(res => {
+      console.log("updating picked count with res: ", res.rows[0].value[0].sum)
+      this.pickedCount = res.rows[0].value[0].sum
+    })
+  }
 
   refreshPendedGroups(){
     console.log('refreshing')
+
+    this.updatePickedCount()
+
+
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
       //console.log("result of refresh:", res)
       console.log('refresh complete')
@@ -143,6 +157,7 @@ export class shopping {
     //this.uniqueDrugsInOrder = []
     this.orderSelectedToShop = false
     this.formComplete = false
+    this.updatePickedCount()
   }
 
 
