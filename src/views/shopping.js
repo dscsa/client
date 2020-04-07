@@ -267,6 +267,11 @@ export class shopping {
     this.basketSaved = true
   }
 
+  addBasket(){
+    this.basketSaved = false
+    this.shopList[this.shoppingIndex].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber[0] //only keep type of basket
+  }
+
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -355,14 +360,14 @@ export class shopping {
 
     } else {
 
-
-      //if you clikc MISSING on the first item in a group, it reverts to basketsaved =false
-
-      if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
-        this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
-      } else {
-        this.basketSaved = false;
+      if(this.shopList[this.shoppingIndex + 1].extra.basketNumber.length <= 1){
+        if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
+          this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
+        } else {
+          this.basketSaved = false;
+        }
       }
+
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
 
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
