@@ -21,7 +21,7 @@
   <section class="mdl-grid au-animate">
 
     <div if.bind = "!orderSelectedToShop">
-      
+
       <div>
         Picked Today: ${pickedCount}
       </div>
@@ -108,6 +108,7 @@
         <div style="width:100%; display:inline-block; padding-bottom:0vh">
           <div style="width:45%; float:left; margin-top:3vh;">
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
+              <div if.bind = "shoppingIndex < shopList.length - 1" style="font-size:3vh; line-height:3vh; padding-bottom:1vh"><b>Next Bin: </b><span style="color:${shopList[shoppingIndex].raw.bin == shopList[shoppingIndex+1].raw.bin ? 'red' : ((shopList[shoppingIndex].raw.bin.length == 4) && (shopList[shoppingIndex].raw.bin.slice(0,-1) == shopList[shoppingIndex+1].raw.bin.slice(0,-1)) ? 'orange' : '')}">${shopList[shoppingIndex+1].raw.bin}</span></div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
