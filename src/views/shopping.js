@@ -43,6 +43,9 @@ export class shopping {
       this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
+      this.db.user.get(this.user._id).then(user => {this.router.routes[2].navModel.setTitle(user.name.first)}) //st 'Account to display their name
+
+
       if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
       console.log('about to call refresh first time')
       this.refreshPendedGroups()

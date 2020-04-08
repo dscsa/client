@@ -45,7 +45,7 @@ export class inventory {
   activate(params) {
     //TODO find a more elegant way to accomplish this
     window.addEventListener("hashchange", this.reset)
-
+    window.addEventListener("visibilitychange", _ => this.syncPended())
     //TODO replace this with page state library
 
     this.db.user.session.get().then(session => {
@@ -53,24 +53,45 @@ export class inventory {
       this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
-      this.db.account.get(session.account._id).then(account => this.account = account)
+      this.db.user.get(this.user._id).then(user => {this.router.routes[2].navModel.setTitle(user.name.first)}) //st 'Account to display their name
 
+      this.db.account.get(session.account._id).then(account => {
+        this.account = account
+
+        this.syncPended(1).then(_ => {
+          let keys = Object.keys(params)
+          if (keys[0]) this.selectTerm(keys[0], params[keys[0]])
+        })
+        setInterval(_ => this.syncPended(), 5 * 60 * 1000) //pull and update the pended every five minutes
+
+      })
+
+
+    })
+  }
+
+  //Refreshes the pended drawer. With a setinterval and eventlistener, this should
+  //run every 5 minutes, and whenever the user opens the page (either first time or
+  //returning from another tab)
+  syncPended(inActivate = false){
+    console.log(document.visibilityState)
+
+    if((inActivate) || (document.visibilityState == 'visible')){
+      console.log("syncing!")
       //Since pended are set into an object rather than array we don't have control to append to
       //beginning or end (object keys are iterated in the order they are added), this will always
       //push new pended keys to the last keys in the object.  But we want new keys to be listed first
       //in the pended drawer so we use unshift to reverse the order inside the pendedFilter which means
       //we do NOT want to reverse the order here (they would be reversed twice which would negate it)
-      this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id], endkey:[this.account._id, {}]})
+      return this.db.transaction.query('currently-pended-by-group-priority-generic', {include_docs:true, reduce:false, startkey:[this.account._id], endkey:[this.account._id, {}]})
       .then(res => {
+        this.pended = {}
+        this.shoppingSyncPended = {}
         this.setPended(res.rows.map(row => row.doc))
         this.refreshPended() //not needed on development without this on production, blank drawer on inital load
       })
-      .then(_ => {
-        let keys = Object.keys(params)
-        if (keys[0])
-          this.selectTerm(keys[0], params[keys[0]])
-      })
-    })
+    }
+
   }
 
   clickOnGroupInDrawer(event,pendId){
@@ -295,7 +316,7 @@ export class inventory {
       //But not sure how this would affect other views.  Would need to test on test server
       let docs = []
       for (let row of res.rows) {
-        if ( ! row.doc.next.length) docs.push(row.doc)
+        if ( (!row.doc.next.length) || (type == 'bin') ) docs.push(row.doc)
         else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
       }
 
