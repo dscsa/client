@@ -62,7 +62,7 @@
         <div style="position:absolute; top:24vh; width:100%">
           <div style="font-size:30px; line-height:10vh">Enter new basket number:</div>
           <div stlye="float:left"><md-input  type="tel" style="float:left; font-size:20px; width:70%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input></div>
-          <div style="float:right; padding-right:7vw; margin-top:2vh"><md-button  disabled.bind = "!(shopList[shoppingIndex].extra.basketNumber.length == 3)" color raised click.delegate="saveBasketNumber()">Save</md-button></div>
+          <div style="float:right; padding-right:7vw; margin-top:2vh"><md-button  disabled.bind = "!((shopList[shoppingIndex].extra.basketNumber.length >= 3) && (shopList[shoppingIndex].extra.basketNumber.length <= 4))" color raised click.delegate="saveBasketNumber()">Save</md-button></div>
         </div>
 
         <md-button style="float:left; height:2vh; top:70vh; position:absolute; line-height:2vh;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
