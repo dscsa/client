@@ -75,7 +75,6 @@ export class shopping {
 
     this.updatePickedCount()
 
-
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
       //console.log("result of refresh:", res)
       console.log('refresh complete')
@@ -261,10 +260,6 @@ export class shopping {
 
 
 //------------------Button controls-------------------------
-
-  canSaveBasket(){
-    return (this.shopList[this.shoppingIndex].extra.basketNumber.length < 3) && (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && RegExp('[s|r|b|g][0-9]{2}').test(this.shopList[this.shoppingIndex].extra.basketNumber)
-  }
 
   saveBasketNumber(){
     this.basketSaved = true
