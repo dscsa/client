@@ -263,7 +263,7 @@ export class shopping {
 //------------------Button controls-------------------------
 
   canSaveBasket(){
-    return (this.shopList[this.shoppingIndex].extra.basketNumber.length < 3) && (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1)
+    return (this.shopList[this.shoppingIndex].extra.basketNumber.length < 3) && (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && RegExp('[s|r|b|g][0-9]{2}').test(this.shopList[this.shoppingIndex].extra.basketNumber)
   }
 
   saveBasketNumber(){
