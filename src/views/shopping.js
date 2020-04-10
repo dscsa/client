@@ -17,7 +17,6 @@ export class shopping {
     this.nextButtonText = '' //This can become 'Finish' or other more intuitive values depending on events
     this.orderSelectedToShop = false
     this.formComplete = false
-
     this.basketSaved = false
     this.currentBasket
 
@@ -44,6 +43,9 @@ export class shopping {
       this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
+      this.db.user.get(this.user._id).then(user => {this.router.routes[2].navModel.setTitle(user.name.first)}) //st 'Account to display their name
+
+
       if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
       console.log('about to call refresh first time')
       this.refreshPendedGroups()
@@ -56,9 +58,23 @@ export class shopping {
 
   }
 
+  updatePickedCount(){
+    //console.log("going to update picked count")
+    var date = new Date()
+    var [year,month,day] = date.toJSON().split('T')[0].split('-')
+
+    this.db.transaction.query('picked-by-user-from-shipment', {startkey: [this.account._id, this.user._id, year, month, day], endkey: [this.account._id, this.user._id, year, month, day, {}]})
+    .then(res => {
+      //console.log("updating picked count with res: ", res.rows[0].value[0].sum)
+      this.pickedCount = res.rows[0].value[0].sum
+    })
+  }
 
   refreshPendedGroups(){
     console.log('refreshing')
+
+    this.updatePickedCount()
+
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
       //console.log("result of refresh:", res)
       console.log('refresh complete')
@@ -110,7 +126,7 @@ export class shopping {
       this.initializeShopper()
     })
     .catch(err => {
-      if(err.message == 'Unexpected end of JSON input'){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
+      if(( ~ err.message.indexOf('Unexpected end of JSON input')) || ( ~ err.message.indexOf('Unexpected EOF'))){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
         var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
         this.refreshPendedGroups();
         this.resetShopper();
@@ -143,6 +159,7 @@ export class shopping {
     //this.uniqueDrugsInOrder = []
     this.orderSelectedToShop = false
     this.formComplete = false
+    this.updatePickedCount()
   }
 
 
@@ -244,12 +261,13 @@ export class shopping {
 
 //------------------Button controls-------------------------
 
-  canSaveBasket(){
-    return (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1)
-  }
-
   saveBasketNumber(){
     this.basketSaved = true
+  }
+
+  addBasket(){
+    this.basketSaved = false
+    this.shopList[this.shoppingIndex].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber[0] //only keep type of basket
   }
 
   delay(ms) {
@@ -272,35 +290,37 @@ export class shopping {
 
           this.shopList[this.shoppingIndex].extra.saved = 'missing' //if someone goes back through items, dont want to retry this constantly
 
-          //console.log("before",this.shoppingIndex)
-          let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
-          if(n < 0) n = 0 //dont go too far back obvi. Current bug that happens with skip shuffling indices incorrectly
-          //let n = this.shoppingIndex-1 >= 0 ? this.shoppingIndex-1 : 0
-          //console.log("after",this.shoppingIndex)
-          //console.log("res",res)
-          for(n; n < this.shopList.length; n++){
-            if(this.shopList[n].raw.drug.generic == res[0].raw.drug.generic){
-              //console.log("incrementing other order", n)
-              this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
-            } else {
-              //console.log("adding at end of orders", n)
-              res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
-              this.shopList.splice(n, 0, res[0]) //insert at the end
-              this.advanceShopping()
-              return
-            }
-          }
+          for(var j = 0; j < res.length; j++){
 
-          res[0].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
-          this.shopList.push(res[0])
-          console.log("added to shoplist end", JSON.stringify(res[0]))
+            let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
+            if(n < 0) n = 0 //dont go too far back obvi. Current bug that happens with skip shuffling indices incorrectly
+            let inserted = false
+
+            for(n; n < this.shopList.length; n++){ //try to insert it at end of current generic
+
+              if(this.shopList[n].raw.drug.generic == res[j].raw.drug.generic){
+                this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
+              } else {
+                res[j].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
+                this.shopList.splice(n, 0, res[j]) //insert at the end of the current generic
+                inserted = true
+                n = this.shopList.length
+                //this.advanceShopping()
+              }
+            }
+
+            if(!inserted){ //then we are last/only generic, and add at end of shoplist
+              res[j].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
+              this.shopList.push(res[j])
+            }
+
+          }
 
         } else {
           console.log("couldn't find item with same or greater qty to replace this")
         }
 
         //then move forward/handle
-        //this.setNextToNext()
         this.advanceShopping()
       })
       .catch(err => {
@@ -340,14 +360,14 @@ export class shopping {
 
     } else {
 
-
-      //if you clikc MISSING on the first item in a group, it reverts to basketsaved =false
-
-      if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
-        this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
-      } else {
-        this.basketSaved = false;
+      if(this.shopList[this.shoppingIndex + 1].extra.basketNumber.length <= 1){
+        if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
+          this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
+        } else {
+          this.basketSaved = false;
+        }
       }
+
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
 
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
@@ -381,6 +401,7 @@ export class shopping {
     //all the values before current screen will already have been saved, so you just need to unlock the remainders
     this.unlockGroup(groupName)
 
+    this.refreshPendedGroups();
   }
 
   skipItem(){

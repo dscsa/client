@@ -27,7 +27,6 @@ export class account {
 
       //TODO allow a valueConverter for each state or do a new search
       this.db.account.query('all-accounts', {include_docs:true}).then(accounts => {
-        console.log("here0",accounts)
         this.accounts = accounts.rows.map(account => account.doc).filter(account => {
           if (account._id != session.account._id)
             return true

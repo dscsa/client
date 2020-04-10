@@ -21,6 +21,11 @@
   <section class="mdl-grid au-animate">
 
     <div if.bind = "!orderSelectedToShop">
+
+      <div>
+        Picked Today: ${pickedCount ? pickedCount : 0}
+      </div>
+
       <md-input
         autoselect
         value.bind="pendedFilter"
@@ -55,9 +60,11 @@
         </div>
 
         <div style="position:absolute; top:24vh; width:100%">
-          <div style="font-size:30px; line-height:10vh">Enter new basket number:</div>
-          <div stlye="float:left"><md-input  type="tel" style="float:left; font-size:20px; width:70%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input></div>
-          <div style="float:right; padding-right:7vw; margin-top:2vh"><md-button  disabled.bind = "shopList[shoppingIndex].extra.basketNumber.length <= 1" color raised click.delegate="saveBasketNumber()">Save</md-button></div>
+          <form name="basket_adding_form">
+            <div style="font-size:30px; line-height:10vh">Enter new basket number:</div>
+            <div stlye="float:left"><md-input maxlength.bind="4" pattern="[s|S|r|R|b|B|g|G][0-9]{2,3}" required type="tel" style="float:left; font-size:20px; width:70%;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input></div>
+            <div style="float:right; padding-right:7vw; margin-top:2vh"><md-button color form = "basket_adding_form" raised click.delegate="saveBasketNumber()">Save</md-button></div>
+          </form>
         </div>
 
         <md-button style="float:left; height:2vh; top:70vh; position:absolute; line-height:2vh;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
@@ -103,7 +110,8 @@
         <div style="width:100%; display:inline-block; padding-bottom:0vh">
           <div style="width:45%; float:left; margin-top:3vh;">
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
-              <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>
+              <div if.bind = "shoppingIndex < shopList.length - 1" style="font-size:3vh; line-height:3vh; padding-bottom:1vh"><b>Next Bin: </b><span style="color:${shopList[shoppingIndex].raw.bin == shopList[shoppingIndex+1].raw.bin ? 'red' : ((shopList[shoppingIndex].raw.bin.length == 4) && (shopList[shoppingIndex].raw.bin.slice(0,-1) == shopList[shoppingIndex+1].raw.bin.slice(0,-1)) ? 'orange' : '')}">${shopList[shoppingIndex+1].raw.bin}</span></div>
+              <div click.delegate="addBasket()" style="padding-left:0; padding-bottom:0; font-size:3vh; height:3vh; line-height:3vh; padding-bottom:1vh"><span style="color:#000066"><b>Basket:</b></span> ${shopList[shoppingIndex].extra.basketNumber}</div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:5vh">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
