@@ -6,6 +6,18 @@ Dependency structure
 Development > Server > Client > CSV, Pouch
 ```
 
+### Restart Server (Reboot, Change Instance Type)
+```
+#mount volume
+lsblk                            #details http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
+sudo mount /dev/<volume> /dscsa  #most likely nvme1n1
+
+#start server
+sudo node /dscsa/node_modules/server        
+ctrl c (to stop server)
+sudo forever start /dscsa/node_modules/server  #forever list, forever stop
+```
+
 ### install development
 ##### note: dscsa/development is a large install because it depends on gulp for bundling, babel for transpiling, and protractor for testing.
 - [install node](https://nodejs.org/en/download/current)
@@ -78,7 +90,7 @@ ssh -i /path/to/private-key ubuntu@<elastic-ip>
 sudo mkdir /dscsa
 lsblk                            #details http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
 sudo mkfs -t ext4 /dev/<volume>  #only make filesystem, if new empty volume.
-sudo mount /dev/<volume> /dscsa
+sudo mount /dev/<volume> /dscsa  #most likely nvme1n1
 cd /dscsa
 
 #install couchdb http://docs.couchdb.org/en/2.2.0/install/unix.html
