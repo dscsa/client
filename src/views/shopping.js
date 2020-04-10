@@ -126,7 +126,7 @@ export class shopping {
       this.initializeShopper()
     })
     .catch(err => {
-      if(err.message == 'Unexpected end of JSON input'){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
+      if(( ~ err.message.indexOf('Unexpected end of JSON input')) || ( ~ err.message.indexOf('Unexpected EOF'))){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
         var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
         this.refreshPendedGroups();
         this.resetShopper();

@@ -3920,7 +3920,7 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
         _this5.filter = {};
         _this5.initializeShopper();
       }).catch(function (err) {
-        if (err.message == 'Unexpected end of JSON input') {
+        if (~err.message.indexOf('Unexpected end of JSON input') || ~err.message.indexOf('Unexpected EOF')) {
           var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
           _this5.refreshPendedGroups();
           _this5.resetShopper();
