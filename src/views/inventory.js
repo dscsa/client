@@ -74,7 +74,7 @@ export class inventory {
   //run every 5 minutes, and whenever the user opens the page (either first time or
   //returning from another tab)
   syncPended(inActivate = false){
-    console.log(document.visibilityState)
+    //console.log(document.visibilityState)
 
     if((inActivate) || (document.visibilityState == 'visible')){
       console.log("syncing!")
@@ -498,8 +498,8 @@ export class inventory {
 
     }
 
-    console.log(this.shoppingSyncPended)
-    console.log(this.pended)
+    //console.log(this.shoppingSyncPended)
+    //console.log(this.pended)
 
   }
 

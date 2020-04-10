@@ -23,7 +23,7 @@
     <div if.bind = "!orderSelectedToShop">
 
       <div>
-        Picked Today: ${pickedCount}
+        Picked Today: ${pickedCount ? pickedCount : 0}
       </div>
 
       <md-input
