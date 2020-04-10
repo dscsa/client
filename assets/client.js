@@ -4060,21 +4060,27 @@ define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pou
             _this7.shopList[_this7.shoppingIndex].extra.saved = 'missing';
 
             for (var j = 0; j < res.length; j++) {
+
               var n = _this7.shoppingIndex - (_this7.shopList[_this7.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
               if (n < 0) n = 0;
+              var inserted = false;
+
               for (n; n < _this7.shopList.length; n++) {
+
                 if (_this7.shopList[n].raw.drug.generic == res[j].raw.drug.generic) {
                   _this7.shopList[n].extra.genericIndex.relative_index[1]++;
                 } else {
                   res[j].extra.genericIndex = { global_index: _this7.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this7.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this7.shopList[n - 1].extra.genericIndex.relative_index[1]] };
                   _this7.shopList.splice(n, 0, res[j]);
-                  _this7.advanceShopping();
-                  return;
+                  inserted = true;
+                  n = _this7.shopList.length;
                 }
               }
-              res[j].extra.genericIndex = { global_index: _this7.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this7.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this7.shopList[n - 1].extra.genericIndex.relative_index[1]] };
-              _this7.shopList.push(res[j]);
-              console.log("added to shoplist end", JSON.stringify(res[j]));
+
+              if (!inserted) {
+                res[j].extra.genericIndex = { global_index: _this7.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this7.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this7.shopList[n - 1].extra.genericIndex.relative_index[1]] };
+                _this7.shopList.push(res[j]);
+              }
             }
           } else {
             console.log("couldn't find item with same or greater qty to replace this");

@@ -291,22 +291,29 @@ export class shopping {
           this.shopList[this.shoppingIndex].extra.saved = 'missing' //if someone goes back through items, dont want to retry this constantly
 
           for(var j = 0; j < res.length; j++){
-            //console.log("before",this.shoppingIndex)
+
             let n = this.shoppingIndex - (this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] - 1) //so you update all the items of this generic
             if(n < 0) n = 0 //dont go too far back obvi. Current bug that happens with skip shuffling indices incorrectly
-            for(n; n < this.shopList.length; n++){
+            let inserted = false
+
+            for(n; n < this.shopList.length; n++){ //try to insert it at end of current generic
+
               if(this.shopList[n].raw.drug.generic == res[j].raw.drug.generic){
                 this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
               } else {
                 res[j].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
-                this.shopList.splice(n, 0, res[j]) //insert at the end
-                this.advanceShopping()
-                return
+                this.shopList.splice(n, 0, res[j]) //insert at the end of the current generic
+                inserted = true
+                n = this.shopList.length
+                //this.advanceShopping()
               }
             }
-            res[j].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
-            this.shopList.push(res[j])
-            console.log("added to shoplist end", JSON.stringify(res[j]))
+
+            if(!inserted){ //then we are last/only generic, and add at end of shoplist
+              res[j].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
+              this.shopList.push(res[j])
+            }
+
           }
 
         } else {
@@ -314,7 +321,6 @@ export class shopping {
         }
 
         //then move forward/handle
-        //this.setNextToNext()
         this.advanceShopping()
       })
       .catch(err => {
