@@ -316,7 +316,7 @@ export class inventory {
       //But not sure how this would affect other views.  Would need to test on test server
       let docs = []
       for (let row of res.rows) {
-        if (!row.doc.next.length) docs.push(row.doc)
+        if (!row.doc.next.length || (type == 'bin' && row.doc.next[0].pended && !row.doc.next[0].picked)) docs.push(row.doc)
         else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
       }
 

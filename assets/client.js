@@ -2407,7 +2407,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
           var row = _ref2;
 
-          if (!row.doc.next.length) docs.push(row.doc);else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc);
+          if (!row.doc.next.length || type == 'bin' && row.doc.next[0].pended && !row.doc.next[0].picked) docs.push(row.doc);else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc);
         }
 
         return _this7.setTransactions(docs, type);
