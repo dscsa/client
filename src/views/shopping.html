@@ -110,11 +110,14 @@
         <div style="width:100%; display:inline-block; padding-bottom:0vh">
           <div style="width:45%; float:left; margin-top:3vh;">
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
-              <div if.bind = "shoppingIndex < shopList.length - 1" style="font-size:3vh; line-height:3vh; padding-bottom:1vh"><b>Next Bin: </b><span style="color:${shopList[shoppingIndex].raw.bin == shopList[shoppingIndex+1].raw.bin ? 'red' : ((shopList[shoppingIndex].raw.bin.length == 4) && (shopList[shoppingIndex].raw.bin.slice(0,-1) == shopList[shoppingIndex+1].raw.bin.slice(0,-1)) ? 'orange' : '')}">${shopList[shoppingIndex+1].raw.bin}</span></div>
-              <div click.delegate="addBasket()" style="padding-left:0; padding-bottom:0; font-size:3vh; height:3vh; line-height:3vh; padding-bottom:1vh"><span style="color:#000066"><b>Basket:</b></span> ${shopList[shoppingIndex].extra.basketNumber}</div>
-              <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
-              <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
-              <div style="font-size:3vh; line-height:3vh; padding-bottom:5vh">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
+              <div if.bind = "shoppingIndex < shopList.length - 1" style="font-size:3vh; line-height:3vh; padding-bottom:.5vh"><b>Next Bin: </b><span style="color:${shopList[shoppingIndex].raw.bin == shopList[shoppingIndex+1].raw.bin ? 'red' : ((shopList[shoppingIndex].raw.bin.length == 4) && (shopList[shoppingIndex].raw.bin.slice(0,-1) == shopList[shoppingIndex+1].raw.bin.slice(0,-1)) ? 'orange' : '')}">${shopList[shoppingIndex+1].raw.bin}</span></div>
+              <div>
+                <div class = "mdl-button mdl-js-button mdl-js-ripple-effect" click.delegate="addBasket()" style="font-size:3vh; color:#00587B; padding-left:0; margin-top:.25vh; padding-bottom:1vh; padding-right:0px; padding-top:0px;height:3vh; line-height:3vh;" >Basket:</div>
+                <span style= "font-size:3vh;">${shopList[shoppingIndex].extra.basketNumber}</span>
+              </div>
+              <div style="font-size:2vh; line-height:2vh; padding-top:2vh; padding-bottom:0.5vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
+              <div style="font-size:2vh; line-height:2vh; padding-bottom:0,5vh">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>
+              <div style="font-size:2vh; line-height:2vh; padding-bottom:3vh">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
               <div style="display:inline-block;">
                  <md-button style="float:left; height:2vh; line-height:2vh;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
                  <md-button style="float:right; height:2vh; line-height:2vh" color click.delegate="skipItem()">Skip</md-button>

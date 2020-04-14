@@ -316,7 +316,7 @@ export class inventory {
       //But not sure how this would affect other views.  Would need to test on test server
       let docs = []
       for (let row of res.rows) {
-        if ( (!row.doc.next.length) || (type == 'bin') ) docs.push(row.doc)
+        if (!row.doc.next.length || (type == 'bin' && row.doc.next[0].pended && !row.doc.next[0].picked)) docs.push(row.doc)
         else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
       }
 
@@ -414,9 +414,20 @@ export class inventory {
     let toPend = []
     let repackQty = pendQty
     let pended_obj = {_id:new Date().toJSON(), user:this.user, repackQty: repackQty, group: group}
+
+    //if group is priority, add that to the pended_obj
+    let transactions_in_group = this.extractTransactions(group, '') //gives an array of transactions that need to have priority toggled, then saved
+    console.log("other transactions already in group:", transactions_in_group)
+
+    for(let i = 0; i < transactions_in_group.length; i++){ //TODO: write this in more compact code, or change when revamping the priority toggle functionality
+      if(transactions_in_group[i].next[0].pended.priority){
+         pended_obj.priority = true;
+         break
+      }
+    }
+
     let pendId = group// this.getPendId({next})
-    console.log("pending inventory:")
-    console.log(pended_obj)
+
     this.updateSelected(transaction => {
       let next = transaction.next ? transaction.next : [{}]
       if(next.length == 0){
@@ -540,8 +551,9 @@ export class inventory {
 
   disposeInventory() {
     const disposed_obj = { _id: new Date().toJSON(), user:  this.user  }
-
     this.updateSelected(transaction => {
+      console.log("disposing:", transaction)
+
       let next = transaction.next
       if(next.length == 0) next = [{}]
       next[0].disposed = disposed_obj //so we don't modify other data
