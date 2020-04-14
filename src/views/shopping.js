@@ -66,7 +66,8 @@ export class shopping {
     this.db.transaction.query('picked-by-user-from-shipment', {startkey: [this.account._id, this.user._id, year, month, day], endkey: [this.account._id, this.user._id, year, month, day, {}]})
     .then(res => {
       //console.log("updating picked count with res: ", res.rows[0].value[0].sum)
-      this.pickedCount = res.rows[0].value[0].sum
+      console.log(res)
+      this.pickedCount = res.rows[0].value[0].count
     })
   }
 
