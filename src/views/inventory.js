@@ -414,9 +414,20 @@ export class inventory {
     let toPend = []
     let repackQty = pendQty
     let pended_obj = {_id:new Date().toJSON(), user:this.user, repackQty: repackQty, group: group}
+
+    //if group is priority, add that to the pended_obj
+    let transactions_in_group = this.extractTransactions(group, '') //gives an array of transactions that need to have priority toggled, then saved
+    console.log("other transactions already in group:", transactions_in_group)
+
+    for(let i = 0; i < transactions_in_group.length; i++){ //TODO: write this in more compact code, or change when revamping the priority toggle functionality
+      if(transactions_in_group[i].next[0].pended.priority){
+         pended_obj.priority = true;
+         break
+      }
+    }
+
     let pendId = group// this.getPendId({next})
-    console.log("pending inventory:")
-    console.log(pended_obj)
+
     this.updateSelected(transaction => {
       let next = transaction.next ? transaction.next : [{}]
       if(next.length == 0){

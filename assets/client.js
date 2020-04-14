@@ -2486,9 +2486,19 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var toPend = [];
       var repackQty = pendQty;
       var pended_obj = { _id: new Date().toJSON(), user: this.user, repackQty: repackQty, group: group };
+
+      var transactions_in_group = this.extractTransactions(group, '');
+      console.log("other transactions already in group:", transactions_in_group);
+
+      for (var i = 0; i < transactions_in_group.length; i++) {
+        if (transactions_in_group[i].next[0].pended.priority) {
+          pended_obj.priority = true;
+          break;
+        }
+      }
+
       var pendId = group;
-      console.log("pending inventory:");
-      console.log(pended_obj);
+
       this.updateSelected(function (transaction) {
         var next = transaction.next ? transaction.next : [{}];
         if (next.length == 0) {
