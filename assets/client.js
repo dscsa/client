@@ -2407,7 +2407,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
           var row = _ref2;
 
-          if (!row.doc.next.length || type == 'bin') docs.push(row.doc);else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc);
+          if (!row.doc.next.length) docs.push(row.doc);else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc);
         }
 
         return _this7.setTransactions(docs, type);
@@ -2600,8 +2600,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     inventory.prototype.disposeInventory = function disposeInventory() {
       var disposed_obj = { _id: new Date().toJSON(), user: this.user };
-
       this.updateSelected(function (transaction) {
+        console.log("disposing:", transaction);
+
         var next = transaction.next;
         if (next.length == 0) next = [{}];
         next[0].disposed = disposed_obj;
