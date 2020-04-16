@@ -204,6 +204,7 @@
           class="mdl-menu__item--full-bleed-divider">
           Pick
           <md-input
+            pattern="[s|S|r|R|b|B|g|G][0-9]{2,3}"
             value.bind="basketNumber"
             placeholder="Basket"
             disabled.bind=" ! filter.checked.count"
