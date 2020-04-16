@@ -3549,15 +3549,15 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
     shopping.prototype.saveBasketNumber = function saveBasketNumber() {
       this.basketSaved = true;
-      this.currentGenericBaskets = this.allBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
+      this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
     };
 
-    shopping.prototype.allBaskets = function allBaskets(generic) {
+    shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
       var list_of_baskets = '';
       for (var i = 0; i < this.shopList.length; i++) {
         if (this.shopList[i].extra.basketNumber.length > 1 && !~list_of_baskets.indexOf(this.shopList[i].extra.basketNumber) && this.shopList[i].raw.drug.generic == generic) list_of_baskets += ',' + this.shopList[i].extra.basketNumber;
       }
-      return list_of_baskets;
+      this.currentGenericBaskets = list_of_baskets;
     };
 
     shopping.prototype.addBasket = function addBasket() {
@@ -3649,6 +3649,8 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
           } else {
             this.basketSaved = false;
           }
+        } else if (this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
+          this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic);
         }
 
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped');
@@ -3666,6 +3668,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
     shopping.prototype.moveShoppingBackward = function moveShoppingBackward() {
       if (this.shoppingIndex == 0) return;
+      if (this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic);
       this.setNextToNext();
       this.shoppingIndex -= 1;
       this.formComplete = true;

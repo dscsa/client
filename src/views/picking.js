@@ -261,11 +261,11 @@ export class shopping {
 
   saveBasketNumber(){
     this.basketSaved = true
-    this.currentGenericBaskets = this.allBaskets(this.shopList[this.shoppingIndex].raw.drug.generic)
+    this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic)
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front
-  allBaskets(generic){
+  gatherBaskets(generic){
     let list_of_baskets = ''
     for(var i = 0; i < this.shopList.length; i++){
       if((this.shopList[i].extra.basketNumber.length > 1)
@@ -273,7 +273,7 @@ export class shopping {
         && (this.shopList[i].raw.drug.generic == generic))
             list_of_baskets += ',' + (this.shopList[i].extra.basketNumber)
     }
-    return list_of_baskets
+    this.currentGenericBaskets = list_of_baskets
   }
 
   addBasket(){
@@ -377,6 +377,8 @@ export class shopping {
         } else {
           this.basketSaved = false;
         }
+      } else if(this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic){
+        this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic)
       }
 
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
@@ -398,6 +400,7 @@ export class shopping {
 
   moveShoppingBackward(){
     if(this.shoppingIndex == 0) return //shouldn't appear, but extra protection :)
+    if(this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic)
     this.setNextToNext()
     this.shoppingIndex -= 1
     this.formComplete = true //you can't have left a screen if it wasn't complete
