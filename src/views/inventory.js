@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, drugSearch, groupDrugs, drugName, waitForDrugsToIndex, toggleDrawer, getHistory, currentDate} from '../resources/helpers'
+import {clearNextProperty, canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, drugSearch, groupDrugs, drugName, waitForDrugsToIndex, toggleDrawer, getHistory, currentDate} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class inventory {
@@ -18,6 +18,7 @@ export class inventory {
     this.placeholder     = "Search by generic name, ndc, exp, or bin" //Put in while database syncs
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcuts    = expShortcuts
+    this.clearNextProperty = clearNextProperty
     this.qtyShortcutsKeydown    = qtyShortcuts
     this.removeTransactionIfQty0 = removeTransactionIfQty0
     this.saveTransaction = saveTransaction
@@ -385,24 +386,17 @@ export class inventory {
     .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
-  //TODO: when we unpend, is that when it would transition to the picked stage? Or just get rid of the pended property of next?
   unpendInventory() {
     const term = this.repacks.drug.generic
     this.updateSelected(transaction => {
-      //console.log(transaction)
-      //console.log("UP")
-      let next = transaction.next
-      if(next[0] && next[0].pended){
-        next = []
-       //delete next[0].pended
-       //if(Object.keys(next[0]) == 0) next = [] //don't want to leave an empty object, throws off other stuff
-      }
+      console.log("gonna unpend:", transaction)
+      let next = this.clearNextProperty(transaction.next, 'pended')
+      console.log("new next:", next)
       transaction.isChecked = false
-      transaction.next = next //TODO: should this add a new object to transaction.next
-      //transaction.next = []
+      transaction.next = next
     })
-    //We must let these transactions save without next for them to appear back in inventory
-   .then(_ => term ? this.selectTerm('generic', term) : this.term = '')
+
+   .then(_ => term ? this.selectTerm('generic', term) : this.term = '') //We must let these transactions save without next for them to appear back in inventory
   }
 
   //Three OPTIONS

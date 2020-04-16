@@ -1,7 +1,7 @@
 import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
-import {canActivate, expShortcuts, currentDate} from '../resources/helpers'
+import {canActivate, clearNextProperty, currentDate} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class shopping {
@@ -10,7 +10,6 @@ export class shopping {
     this.db      = db
     this.router  = router
 
-    //this.portraitMode = true
     this.groups = []
     this.shopList = []
     this.shoppingIndex = -1
@@ -18,12 +17,11 @@ export class shopping {
     this.orderSelectedToShop = false
     this.formComplete = false
     this.basketSaved = false
-    this.currentBasket
-
-    //this.uniqueDrugsInOrder = []
 
     this.canActivate     = canActivate
     this.currentDate     = currentDate
+    this.clearNextProperty = clearNextProperty
+
   }
 
   deactivate() { //TODO: not sure if we need this here?
@@ -100,7 +98,6 @@ export class shopping {
     console.log(groupName);
 
     this.db.account.picking.post({groupName:groupName, action:'unlock'}).then(res =>{
-      //console.log("result of unlocking:", res)
       this.groups = res
     })
     .catch(err => {
