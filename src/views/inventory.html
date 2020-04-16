@@ -57,7 +57,7 @@
             checked.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].drawerCheck" >
           </md-checkbox>
           <div
-          style="display:inline-block; padding-right:10px" if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.found"><b>${shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.basket}</b></div>
+          style="display:inline-block; padding-right:10px" if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.found"><b>${shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.allBaskets}</b></div>
           ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
         </div>
       </div>

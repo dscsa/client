@@ -113,7 +113,7 @@
               <div if.bind = "shoppingIndex < shopList.length - 1" style="font-size:3vh; line-height:3vh; padding-bottom:.5vh"><b>Next Bin: </b><span style="color:${shopList[shoppingIndex].raw.bin == shopList[shoppingIndex+1].raw.bin ? 'red' : ((shopList[shoppingIndex].raw.bin.length == 4) && (shopList[shoppingIndex].raw.bin.slice(0,-1) == shopList[shoppingIndex+1].raw.bin.slice(0,-1)) ? 'orange' : '')}">${shopList[shoppingIndex+1].raw.bin}</span></div>
               <div>
                 <div class = "mdl-button mdl-js-button mdl-js-ripple-effect" click.delegate="addBasket()" style="font-size:3vh; color:#00587B; padding-left:0; margin-top:.25vh; padding-bottom:1vh; padding-right:0px; padding-top:0px;height:3vh; line-height:3vh;" >Basket:</div>
-                <span style= "font-size:3vh;">${shopList[shoppingIndex].extra.basketNumber}</span>
+                <span style= "font-size:2.5vh; ">${currentGenericBaskets}</span>
               </div>
               <div style="font-size:2vh; line-height:2vh; padding-top:2vh; padding-bottom:0.5vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
               <div style="font-size:2vh; line-height:2vh; padding-bottom:0,5vh">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>

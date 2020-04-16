@@ -506,6 +506,11 @@ export class inventory {
       this.shoppingSyncPended[pendId][label].basketInfo.found = this.shoppingSyncPended[pendId][label].basketInfo.found ? this.shoppingSyncPended[pendId][label].basketInfo.found : basketFound
       this.shoppingSyncPended[pendId][label].basketInfo.notFound = this.shoppingSyncPended[pendId][label].basketInfo.notFound ? this.shoppingSyncPended[pendId][label].basketInfo.notFound : !basketFound
       this.shoppingSyncPended[pendId][label].basketInfo.basket = this.shoppingSyncPended[pendId][label].basketInfo.basket ? this.shoppingSyncPended[pendId][label].basketInfo.basket : (basketFound ? transaction.next[0].picked.basket  : null )
+      if(basketFound){
+        let basket = transaction.next[0].picked.basket
+        if(!this.shoppingSyncPended[pendId][label].basketInfo.allBaskets) this.shoppingSyncPended[pendId][label].basketInfo.allBaskets = []
+        if(!(~this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.indexOf(basket))) this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.unshift(basket)
+      }
 
     }
 
