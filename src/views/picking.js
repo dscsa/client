@@ -270,7 +270,7 @@ export class shopping {
     for(var i = 0; i < this.shopList.length; i++){
       if((this.shopList[i].extra.basketNumber.length > 1)
         && (!(~ list_of_baskets.indexOf(this.shopList[i].extra.basketNumber)))
-        && (this.shopList[i].raw.drug.generic = generic))
+        && (this.shopList[i].raw.drug.generic == generic))
             list_of_baskets += ',' + (this.shopList[i].extra.basketNumber)
     }
     return list_of_baskets

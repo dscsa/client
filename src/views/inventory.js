@@ -389,9 +389,7 @@ export class inventory {
   unpendInventory() {
     const term = this.repacks.drug.generic
     this.updateSelected(transaction => {
-      console.log("gonna unpend:", transaction)
       let next = this.clearNextProperty(transaction.next, 'pended')
-      console.log("new next:", next)
       transaction.isChecked = false
       transaction.next = next
     })
@@ -408,18 +406,18 @@ export class inventory {
     let repackQty = pendQty
     let pended_obj = {_id:new Date().toJSON(), user:this.user, repackQty: repackQty, group: group}
 
-    //if group is priority, add that to the pended_obj
     let transactions_in_group = this.extractTransactions(group, '') //gives an array of transactions that need to have priority toggled, then saved
     console.log("other transactions already in group:", transactions_in_group)
 
-    for(let i = 0; i < transactions_in_group.length; i++){ //TODO: write this in more compact code, or change when revamping the priority toggle functionality
+    //TODO: cleaner to consolidate this into extractTransactions and return two values there
+    for(let i = 0; i < transactions_in_group.length; i++){
       if(transactions_in_group[i].next[0].pended.priority){
          pended_obj.priority = true;
          break
       }
     }
 
-    let pendId = group// this.getPendId({next})
+    let pendId = group
 
     this.updateSelected(transaction => {
       let next = transaction.next ? transaction.next : [{}]
@@ -443,6 +441,29 @@ export class inventory {
       label += ': '+this.pended[pendId][this.repacks.drug.generic].label //must wait until after setPended
 
     this.selectTerm('pended', label)
+  }
+
+  pickInventory(basketNumber){
+
+    if(!basketNumber.length) return //TODO: do we want more functionality from this?
+
+    console.log("trying to pick into " + basketNumber)
+
+    this.updateSelected(transaction => {
+      console.log("picking:", transaction)
+
+      let next = transaction.next
+      if(next.length && next[0].picked && next[0].picked._id) next[0].picked.basket = basketNumber
+
+      transaction.next = next
+
+    }).then(_ => {
+      this.syncPended().then(_ => {
+        this.selectTerm('pended',this.term.split(":")[0].replace("Pended ",""))
+      })
+
+    })
+
   }
 
   sortPended(a, b) {
@@ -858,6 +879,7 @@ export class inventory {
 
     this.pendToId  = ''
     this.pendToQty = ''
+    this.basketNumber = ''
     this.repacks   = this.setRepacks()
     this.matches   = this.setMatchingPends(this.repacks.drug)
 

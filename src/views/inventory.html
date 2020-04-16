@@ -198,6 +198,19 @@
           </md-input>
         </li>
         <li
+          name="pro_pick"
+          disabled.bind=" ! filter.checked.count"
+          click.delegate="pickInventory(basketNumber)"
+          class="mdl-menu__item--full-bleed-divider">
+          Pick
+          <md-input
+            value.bind="basketNumber"
+            placeholder="Basket"
+            disabled.bind=" ! filter.checked.count"
+            style="width:60px; font-size:14px">
+          </md-input>
+        </li>
+        <li
           name="pro_print_selected"
           disabled.bind=" ! filter.checked.count"
           click.delegate="printLabels()">

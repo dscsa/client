@@ -10,7 +10,7 @@ export function expShortcuts($event, $index) {
 export function clearNextProperty(old_next, property){
   if(old_next.length){
     if( (property == 'pended') || (Array.isArray(old_next[0])) ) return [] //if pended, remove whole array. shouldnt see any arrays, but just in case
-    if(old_next[property]) delete old_next[property]
+    if(old_next[0][property]) delete old_next[0][property]
     if(!Object.keys(old_next[0]).length) return [] //if it's empty object then return empty array
   } //else it's already empty, so do nothing
   return old_next
