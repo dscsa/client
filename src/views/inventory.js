@@ -395,7 +395,6 @@ export class inventory {
       transaction.isChecked = false
       transaction.next = next
     })
-
    .then(_ => term ? this.selectTerm('generic', term) : this.term = '') //We must let these transactions save without next for them to appear back in inventory
   }
 

@@ -264,15 +264,16 @@ export class shopping {
     this.currentGenericBaskets = this.allBaskets(this.shopList[this.shoppingIndex].raw.drug.generic)
   }
 
+  //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front
   allBaskets(generic){
-    let list_of_baskets = []
+    let list_of_baskets = ''
     for(var i = 0; i < this.shopList.length; i++){
       if((this.shopList[i].extra.basketNumber.length > 1)
         && (!(~ list_of_baskets.indexOf(this.shopList[i].extra.basketNumber)))
         && (this.shopList[i].raw.drug.generic = generic))
-            list_of_baskets.unshift(this.shopList[i].extra.basketNumber)
+            list_of_baskets += ',' + (this.shopList[i].extra.basketNumber)
     }
-    return list_of_baskets.sort((a,b) => { return (a == this.shopList[this.shoppingIndex].extra.basketNumber)}).join(",")
+    return list_of_baskets
   }
 
   addBasket(){
