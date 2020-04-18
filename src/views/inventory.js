@@ -2,7 +2,7 @@ import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
-import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, drugSearch, groupDrugs, drugName, waitForDrugsToIndex, toggleDrawer, getHistory, currentDate} from '../resources/helpers'
+import {clearNextProperty, canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, drugSearch, groupDrugs, drugName, waitForDrugsToIndex, toggleDrawer, getHistory, currentDate} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class inventory {
@@ -18,6 +18,7 @@ export class inventory {
     this.placeholder     = "Search by generic name, ndc, exp, or bin" //Put in while database syncs
     this.waitForDrugsToIndex = waitForDrugsToIndex
     this.expShortcuts    = expShortcuts
+    this.clearNextProperty = clearNextProperty
     this.qtyShortcutsKeydown    = qtyShortcuts
     this.removeTransactionIfQty0 = removeTransactionIfQty0
     this.saveTransaction = saveTransaction
@@ -385,24 +386,14 @@ export class inventory {
     .catch(err => this.snackbar.error('Error removing inventory. Please reload and try again', err))
   }
 
-  //TODO: when we unpend, is that when it would transition to the picked stage? Or just get rid of the pended property of next?
   unpendInventory() {
     const term = this.repacks.drug.generic
     this.updateSelected(transaction => {
-      //console.log(transaction)
-      //console.log("UP")
-      let next = transaction.next
-      if(next[0] && next[0].pended){
-        next = []
-       //delete next[0].pended
-       //if(Object.keys(next[0]) == 0) next = [] //don't want to leave an empty object, throws off other stuff
-      }
+      let next = this.clearNextProperty(transaction.next, 'pended')
       transaction.isChecked = false
-      transaction.next = next //TODO: should this add a new object to transaction.next
-      //transaction.next = []
+      transaction.next = next
     })
-    //We must let these transactions save without next for them to appear back in inventory
-   .then(_ => term ? this.selectTerm('generic', term) : this.term = '')
+   .then(_ => term ? this.selectTerm('generic', term) : this.term = '') //We must let these transactions save without next for them to appear back in inventory
   }
 
   //Three OPTIONS
@@ -415,18 +406,18 @@ export class inventory {
     let repackQty = pendQty
     let pended_obj = {_id:new Date().toJSON(), user:this.user, repackQty: repackQty, group: group}
 
-    //if group is priority, add that to the pended_obj
     let transactions_in_group = this.extractTransactions(group, '') //gives an array of transactions that need to have priority toggled, then saved
     console.log("other transactions already in group:", transactions_in_group)
 
-    for(let i = 0; i < transactions_in_group.length; i++){ //TODO: write this in more compact code, or change when revamping the priority toggle functionality
+    //TODO: cleaner to consolidate this into extractTransactions and return two values there
+    for(let i = 0; i < transactions_in_group.length; i++){
       if(transactions_in_group[i].next[0].pended.priority){
          pended_obj.priority = true;
          break
       }
     }
 
-    let pendId = group// this.getPendId({next})
+    let pendId = group
 
     this.updateSelected(transaction => {
       let next = transaction.next ? transaction.next : [{}]
@@ -450,6 +441,29 @@ export class inventory {
       label += ': '+this.pended[pendId][this.repacks.drug.generic].label //must wait until after setPended
 
     this.selectTerm('pended', label)
+  }
+
+  pickInventory(basketNumber){
+
+    if(!basketNumber.length) return //TODO: do we want more functionality from this?
+
+    console.log("trying to pick into " + basketNumber)
+
+    this.updateSelected(transaction => {
+      console.log("picking:", transaction)
+
+      let next = transaction.next
+      if(next.length && next[0].picked && next[0].picked._id) next[0].picked.basket = basketNumber
+
+      transaction.next = next
+
+    }).then(_ => {
+      this.syncPended().then(_ => {
+        this.selectTerm('pended',this.term.split(":")[0].replace("Pended ",""))
+      })
+
+    })
+
   }
 
   sortPended(a, b) {
@@ -506,6 +520,11 @@ export class inventory {
       this.shoppingSyncPended[pendId][label].basketInfo.found = this.shoppingSyncPended[pendId][label].basketInfo.found ? this.shoppingSyncPended[pendId][label].basketInfo.found : basketFound
       this.shoppingSyncPended[pendId][label].basketInfo.notFound = this.shoppingSyncPended[pendId][label].basketInfo.notFound ? this.shoppingSyncPended[pendId][label].basketInfo.notFound : !basketFound
       this.shoppingSyncPended[pendId][label].basketInfo.basket = this.shoppingSyncPended[pendId][label].basketInfo.basket ? this.shoppingSyncPended[pendId][label].basketInfo.basket : (basketFound ? transaction.next[0].picked.basket  : null )
+      if(basketFound){
+        let basket = transaction.next[0].picked.basket
+        if(!this.shoppingSyncPended[pendId][label].basketInfo.allBaskets) this.shoppingSyncPended[pendId][label].basketInfo.allBaskets = []
+        if(!(~this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.indexOf(basket))) this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.unshift(basket)
+      }
 
     }
 
@@ -860,6 +879,7 @@ export class inventory {
 
     this.pendToId  = ''
     this.pendToQty = ''
+    this.basketNumber = ''
     this.repacks   = this.setRepacks()
     this.matches   = this.setMatchingPends(this.repacks.drug)
 
