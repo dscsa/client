@@ -1727,7 +1727,7 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     drugs.prototype.addDays = function addDays(days) {
       var date = new Date();
       date.setDate(+days + date.getDate());
-      return date.toJSON().slice(0, 10);
+      return (days ? date : new Date()).toJSON().slice(0, 10);
     };
 
     drugs.prototype.selectGroup = function selectGroup(group, autoselectDrug) {
@@ -1995,7 +1995,6 @@ define('client/src/views/drugs',['exports', 'aurelia-framework', 'aurelia-router
     drugs.prototype.saveAccount = function saveAccount() {
       var _this9 = this;
 
-      console.log('before saveAccount()', this.group.generic, this.drug.generic);
       return this.db.account.put(this.account).catch(function (_) {
         console.log('after saveAccount()', _this9.group.generic, _this9.drug.generic);
         _this9.snackbar.show('Error while saving: ' + (err.reason || err.message));

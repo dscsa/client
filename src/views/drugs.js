@@ -76,7 +76,7 @@ export class drugs {
   addDays(days) {
     let date  = new Date()
     date.setDate(+days + date.getDate())
-    return date.toJSON().slice(0, 10)
+    return (days ? date : new Date()).toJSON().slice(0, 10) //because the days field can be null if account doesnt have default property set
   }
 
   //Four entrances.
@@ -342,7 +342,6 @@ export class drugs {
   // }
 
   saveAccount() {
-    console.log('before saveAccount()', this.group.generic, this.drug.generic)
     return this.db.account.put(this.account).catch(_ => {
       console.log('after saveAccount()', this.group.generic, this.drug.generic)
       this.snackbar.show(`Error while saving: ${err.reason || err.message}`)
