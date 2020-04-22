@@ -72,7 +72,7 @@ export class shopping {
   refreshPendedGroups(){
     console.log('refreshing')
 
-    this.updatePickedCount()
+    this.updatePickedCount()  //async call to the user-metrics tracking views
 
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
       //console.log("result of refresh:", res)

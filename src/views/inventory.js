@@ -409,12 +409,12 @@ export class inventory {
     let transactions_in_group = this.extractTransactions(group, '') //gives an array of transactions that need to have priority toggled, then saved
     console.log("other transactions already in group:", transactions_in_group)
 
+    let should_lock = false
+
     //TODO: cleaner to consolidate this into extractTransactions and return two values there
     for(let i = 0; i < transactions_in_group.length; i++){
-      if(transactions_in_group[i].next[0].pended.priority){
-         pended_obj.priority = true;
-         break
-      }
+      if(transactions_in_group[i].next[0].pended.priority) pended_obj.priority = true;
+      if(transactions_in_group[i].next[0].picked && !transactions_in_group[i].next[0].picked._id) should_lock = true //if items are fully picked, dont lock. if theyre currently locked, this should be too
     }
 
     let pendId = group
@@ -425,6 +425,7 @@ export class inventory {
         next = [{}]
       }
       next[0].pended = pended_obj
+      if(should_lock) next[0].picked = {}
       transaction.isChecked = false
       transaction.next = next
       toPend.push(transaction)

@@ -2497,11 +2497,11 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var transactions_in_group = this.extractTransactions(group, '');
       console.log("other transactions already in group:", transactions_in_group);
 
+      var should_lock = false;
+
       for (var i = 0; i < transactions_in_group.length; i++) {
-        if (transactions_in_group[i].next[0].pended.priority) {
-          pended_obj.priority = true;
-          break;
-        }
+        if (transactions_in_group[i].next[0].pended.priority) pended_obj.priority = true;
+        if (transactions_in_group[i].next[0].picked && !transactions_in_group[i].next[0].picked._id) should_lock = true;
       }
 
       var pendId = group;
@@ -2512,6 +2512,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           next = [{}];
         }
         next[0].pended = pended_obj;
+        if (should_lock) next[0].picked = {};
         transaction.isChecked = false;
         transaction.next = next;
         toPend.push(transaction);
