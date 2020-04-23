@@ -347,7 +347,6 @@ export class inventory {
   }
 
   refreshPended() {
-    //console.log(this.pended)
 
     //Aurelia doesn't provide an Object setter to detect arbitrary keys so we need
     //to trigger and update using Object.assign rather than just adding a property
