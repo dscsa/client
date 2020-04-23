@@ -72,7 +72,7 @@ export class shopping {
   refreshPendedGroups(){
     console.log('refreshing')
 
-    this.updatePickedCount()
+    this.updatePickedCount()  //async call to the user-metrics tracking views
 
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
       //console.log("result of refresh:", res)
@@ -232,7 +232,7 @@ export class shopping {
           next[0].picked = {
             _id:new Date().toJSON(),
             basket:arr_enriched_transactions[i].extra.basketNumber,
-            repackQty: reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from,
+            repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : (reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from),
             matchType:outcome,
             user:this.user,
           }
@@ -294,7 +294,7 @@ export class shopping {
 
       console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
 
-      this.db.account.picking['post']({groupName:this.shopList[this.shoppingIndex].raw.next[0].pended.group, action:'missing_transaction',ndc:this.shopList[this.shoppingIndex].raw.drug._id, generic:this.shopList[this.shoppingIndex].raw.drug.generic, qty:this.shopList[this.shoppingIndex].raw.qty.to})
+      this.db.account.picking['post']({groupName:this.shopList[this.shoppingIndex].raw.next[0].pended.group, action:'missing_transaction',ndc:this.shopList[this.shoppingIndex].raw.drug._id, generic:this.shopList[this.shoppingIndex].raw.drug.generic, qty:this.shopList[this.shoppingIndex].raw.qty.to, repackQty:this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty})
       .then(res =>{
 
         if(res.length > 0){
