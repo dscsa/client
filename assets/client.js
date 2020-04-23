@@ -1236,7 +1236,7 @@ define('client/src/resources/helpers',['exports', 'aurelia-router'], function (e
         var fromStreet = v.shipment.account.from.street;
         var fromAddress = v.shipment.account.from.city + ', ' + v.shipment.account.from.state + ' ' + v.shipment.account.from.zip;
         var date = pad(v._id.slice(0, 10), 20);
-        var qty = '<a href=\'//' + window.location.hostname + ':5984/_utils/#database/transaction/' + v._id + '\' target=\'_blank\'>' + pad('Quantity ' + (v.qty.to || v.qty.from), 20) + '</a>';
+        var qty = '<a href=\'https://' + window.location.hostname + ':5984/_utils/#database/transaction/' + v._id + '\' target=\'_blank\'>' + pad('Quantity ' + (v.qty.to || v.qty.from), 20) + '</a>';
         var tracking = pad(v.type, 20);
         var toName = '';
         var toStreet = '';
