@@ -232,7 +232,7 @@ export class shopping {
           next[0].picked = {
             _id:new Date().toJSON(),
             basket:arr_enriched_transactions[i].extra.basketNumber,
-            repackQty: reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from,
+            repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : (reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from),
             matchType:outcome,
             user:this.user,
           }
