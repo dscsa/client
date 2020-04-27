@@ -59,7 +59,7 @@ export class join {
     })
     .then(_ => {
       console.log('join success', _)
-      return this.router.navigate('shipments')
+      return this.router.navigate('picking')
     })
     .catch(err => {
       this.disabled = false
@@ -69,7 +69,7 @@ export class join {
 
       if (err.message == "Document update conflict")
         err.message = "phone number must be unique"
-        
+
       this.snackbar.error('Join failed', err)
     })
   }

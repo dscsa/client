@@ -109,7 +109,7 @@ export class account {
     this.db.user.session.post({phone:this.phone, password:this.password, switchUsers:true})
     .then(_ => {
       //console.log("user switched")
-      this.router.navigate('shipments')
+      this.router.navigate('picking')
     })
     .catch(err => {
       console.log("error:", err)
