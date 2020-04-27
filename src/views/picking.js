@@ -458,6 +458,10 @@ export class shopping {
       }
     }
 
+    if(key == 'missing') this.setNextToNext()
+
+
+
   }
 
 
