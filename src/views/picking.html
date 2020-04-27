@@ -40,6 +40,7 @@
           class="mdl-typography--title ${ term == 'Pended '+pend.name ? 'mdl-navigation__link--current' : ''}"
           style="font-size:30px; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding-bottom: 50px;">
           ${pend.name}
+          <span style ="font-size:15px;font-weight:200">(${pend.baskets.join(",")})</span>
           <md-button if.bind="pend.locked" style="float:right; height:15px; line-height:10px" color="accent" raised click.delegate="unlockGroup(pend.name)">${pend.locked == 'unlocking' ? '...unlocking...' : 'unlock'}</md-button>
         </div>
       </div>

@@ -75,8 +75,6 @@ export class shopping {
     this.updatePickedCount()  //async call to the user-metrics tracking views
 
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
-      //console.log("result of refresh:", res)
-      console.log('refresh complete')
       this.groups = res
     })
     .catch(err => {
