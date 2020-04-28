@@ -138,7 +138,7 @@
               <div style="font-size:2vh; line-height:2vh; padding-bottom:3vh">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>
               <div style="display:inline-block;">
                  <md-button style="float:left; height:2vh; line-height:2vh;" color click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">Pause</md-button>
-                 <md-button style="float:right; height:2vh; line-height:2vh" color click.delegate="skipItem()">Skip</md-button>
+                 <md-button if.bind = "(shoppingIndex < shopList.length - 1) && (shopList[shoppingIndex].raw.drug.generic == shopList[shoppingIndex+1].raw.drug.generic)" style="float:right; height:2vh; line-height:2vh" color click.delegate="skipItem()">Skip</md-button>
               </div>
           </div>
           <div style="width:50%; float:right; margin-top:2vh">
