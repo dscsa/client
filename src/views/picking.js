@@ -17,6 +17,8 @@ export class shopping {
     this.orderSelectedToShop = false
     this.formComplete = false
     this.basketSaved = false
+    this.currentCart = ''
+    this.basketOptions = ['S','R','G','B']
 
     this.canActivate     = canActivate
     this.currentDate     = currentDate
@@ -140,7 +142,7 @@ export class shopping {
     this.shoppingIndex = 0
     this.groupLoaded = true
 
-    this.basketSaved = false
+    this.addBasket()
 
     if(this.shopList.length == 1){
       this.setNextToSave()
@@ -229,7 +231,7 @@ export class shopping {
 
           next[0].picked = {
             _id:new Date().toJSON(),
-            basket:arr_enriched_transactions[i].extra.basketNumber,
+            basket:arr_enriched_transactions[i].extra.fullBasket,
             repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : (reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from),
             matchType:outcome,
             user:this.user,
@@ -259,6 +261,9 @@ export class shopping {
 
   saveBasketNumber(){
     this.basketSaved = true
+    this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber
+    if((this.shopList[this.shoppingIndex].extra.basketLetter != 'G') &&
+      (this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0])) this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0]
     this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic)
   }
 
@@ -266,17 +271,18 @@ export class shopping {
   gatherBaskets(generic){
     let list_of_baskets = ''
     for(var i = 0; i < this.shopList.length; i++){
-      if((this.shopList[i].extra.basketNumber.length > 1)
-        && (!(~ list_of_baskets.indexOf(this.shopList[i].extra.basketNumber)))
+      if(
+        (this.shopList[i].extra.fullBasket)
+        && (!(~ list_of_baskets.indexOf(this.shopList[i].extra.fullBasket)))
         && (this.shopList[i].raw.drug.generic == generic))
-            list_of_baskets += ',' + (this.shopList[i].extra.basketNumber)
+            list_of_baskets += ',' + (this.shopList[i].extra.fullBasket)
     }
     this.currentGenericBaskets = list_of_baskets
   }
 
   addBasket(){
     this.basketSaved = false
-    this.shopList[this.shoppingIndex].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber[0] //only keep type of basket
+    if(this.shopList[this.shoppingIndex].extra.basketLetter != 'G') this.shopList[this.shoppingIndex].extra.basketNumber = this.currentCart
   }
 
   delay(ms) {
@@ -373,7 +379,7 @@ export class shopping {
         if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
           this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
         } else {
-          this.basketSaved = false;
+          this.addBasket()
         }
       } else if(this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic)
