@@ -142,13 +142,14 @@ export class shopping {
     this.shoppingIndex = 0
     this.groupLoaded = true
 
-    this.addBasket()
-
     if(this.shopList.length == 1){
       this.setNextToSave()
     } else {
       this.setNextToNext()
     }
+
+    this.addBasket()
+
   }
 
 
@@ -462,7 +463,11 @@ export class shopping {
       }
     }
 
-    if(key == 'missing') this.setNextToNext()
+    if(key == 'missing'){
+      this.setNextToNext()
+    } else if(this.shoppingIndex == this.shopList.length-1){
+      this.setNextToSave()
+    }
 
 
 
@@ -538,7 +543,7 @@ export class pendedFilterValueConverter {
           for(var n = 0; n < pended[i].baskets.length; n++){
             if(~pended[i].baskets[n].toLowerCase().indexOf(term)){  //If not a name match, check the baskets
               matches.unshift(pended[i])
-              continue
+              break //only want to unshift it once
             }
           }
         }
