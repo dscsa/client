@@ -528,10 +528,19 @@ export class pendedFilterValueConverter {
     if(term.trim().length == 0){
       matches = pended
     } else {
+
       for(var i = 0; i < pended.length; i++){
+
         if((~pended[i].name.toLowerCase().indexOf(term)) || (term.trim().length == 0)){
           matches.unshift(pended[i])
           continue
+        } else if(pended[i].baskets.length > 0){
+          for(var n = 0; n < pended[i].baskets.length; n++){
+            if(~pended[i].baskets[n].toLowerCase().indexOf(term)){  //If not a name match, check the baskets
+              matches.unshift(pended[i])
+              continue
+            }
+          }
         }
       }
     }
