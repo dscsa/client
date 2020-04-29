@@ -3454,7 +3454,6 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
     shopping.prototype.initializeShopper = function initializeShopper() {
       this.shoppingIndex = 0;
-      this.groupLoaded = true;
 
       if (this.shopList.length == 1) {
         this.setNextToSave();
@@ -3463,6 +3462,8 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       }
 
       this.addBasket();
+
+      this.groupLoaded = true;
     };
 
     shopping.prototype.resetShopper = function resetShopper() {

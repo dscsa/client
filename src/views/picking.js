@@ -141,7 +141,6 @@ export class shopping {
   //Display and set relavant variables to display a group
   initializeShopper(){
     this.shoppingIndex = 0
-    this.groupLoaded = true
 
     if(this.shopList.length == 1){
       this.setNextToSave()
@@ -150,6 +149,8 @@ export class shopping {
     }
 
     this.addBasket()
+
+    this.groupLoaded = true
 
   }
 
