@@ -3930,19 +3930,18 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
 
       this.shipmentDrawerYear = this.shipmentDrawerYearChoices[0];
       this.db.shipment.query('account.to._id', { startkey: [this.account._id], endkey: [this.account._id + '\uFFFF'], group_level: 2 }).then(function (res) {
-        var years = res.rows.map(function (row) {
+        _this2.shipmentDrawerYearChoices = res.rows.map(function (row) {
           return row.key[1];
         }).sort(function (a, b) {
           return b - a;
         });
-        _this2.shipmentDrawerYearChoices = years;
-        console.log(_this2.shipmentDrawerYearChoices);
       });
     };
 
     shipments.prototype.refocusWithNewShipments = function refocusWithNewShipments() {
-      console.log("DOOOOWOP");
-      this.setInstructionsText("Loading shipments", false);
+      this.setInstructionsText("...Loading shipments...", false);
+      this.filter = '';
+      this.shipments = {};
       this.focusInput('#drawer_filter');
     };
 
@@ -3951,7 +3950,6 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
 
       var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-      console.log("change yeaer to:" + this.shipmentDrawerYear);
 
       var senderAccounts = this.db.account.allDocs({ keys: this.account.authorized, include_docs: true });
 

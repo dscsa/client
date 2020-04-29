@@ -79,22 +79,21 @@ export class shipments {
 
   initializeDrawer(){
     this.shipmentDrawerYear = this.shipmentDrawerYearChoices[0] //set it to current year so the page can load with at least that
+    //Run query w/o docs to get the list of years for options in the dropdown
     this.db.shipment.query('account.to._id',{startkey:[this.account._id], endkey:[this.account._id+'\uffff'], group_level:2}).then(res =>{
-      let years = res.rows.map(row => row.key[1]).sort((a,b) => b-a)
-      this.shipmentDrawerYearChoices = years
-      console.log(this.shipmentDrawerYearChoices)
+      this.shipmentDrawerYearChoices = res.rows.map(row => row.key[1]).sort((a,b) => b-a)
     })
   }
 
   //called imediately when switching the year. refocuses ont he filter
   refocusWithNewShipments(){
-    console.log("DOOOOWOP")
-    this.setInstructionsText("Loading shipments",false)
+    this.setInstructionsText("...Loading shipments...",false)
+    this.filter = ''
+    this.shipments = {}
     this.focusInput('#drawer_filter')
   }
 
   gatherShipments(params = {}){
-    console.log("change yeaer to:" + this.shipmentDrawerYear)
 
     let senderAccounts    = this.db.account.allDocs({keys:this.account.authorized, include_docs:true})
 
