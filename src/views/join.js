@@ -59,7 +59,7 @@ export class join {
     })
     .then(_ => {
       console.log('join success', _)
-      return this.router.navigate('picking')
+      return this.router.navigate('shipments')
     })
     .catch(err => {
       this.disabled = false
