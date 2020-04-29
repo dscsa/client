@@ -13,11 +13,12 @@
   <require from="client/src/elems/form"></require>
   <md-drawer autofocus>
     <md-input
+      id="drawer_filter"
       name = "pro_filter_input"
       value.bind="filter"
       autoselect
       style="padding:0 8px; width:auto">
-      Filter shipments ${ role.accounts } you
+      ${instructionsText}
     </md-input>
     <!-- <md-switch
       checked.one-way="role.account == 'to'"
@@ -40,6 +41,14 @@
       <div class="mdl-typography--title" innerHtml.bind="shipment.account[role.accounts].name | bold:filter"></div>
       <div style="font-size:12px" innerHtml.bind="shipment._id.slice(11, 21)+', '+(shipment.tracking.slice(-6) || shipment.tracking) | bold:filter"></div>
     </a>
+    <md-select
+      name = "pro_year_choice"
+      change.delegate="refocusWithNewShipments()"
+      input.delegate="gatherShipments()  & debounce:100"
+      style="font-size: 20px; width:60px; margin:auto"
+      value.bind="shipmentDrawerYear"
+      options.bind="shipmentDrawerYearChoices"
+    </md-select>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height">

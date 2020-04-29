@@ -1,7 +1,7 @@
 import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
-import {canActivate, clearNextProperty, currentDate} from '../resources/helpers'
+import {canActivate, clearNextProperty, focusInput, currentDate} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class shopping {
@@ -19,6 +19,7 @@ export class shopping {
     this.basketSaved = false
     this.currentCart = ''
     this.basketOptions = ['S','R','G','B']
+    this.focusInput      = focusInput
 
     this.canActivate     = canActivate
     this.currentDate     = currentDate
@@ -282,6 +283,7 @@ export class shopping {
   }
 
   addBasket(){
+    this.focusInput('#basket_number_input') //TODO focus on the input line
     this.basketSaved = false
     if(this.shopList[this.shoppingIndex].extra.basketLetter != 'G') this.shopList[this.shoppingIndex].extra.basketNumber = this.currentCart
   }
