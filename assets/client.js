@@ -3454,6 +3454,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
     shopping.prototype.initializeShopper = function initializeShopper() {
       this.shoppingIndex = 0;
+      this.groupLoaded = true;
 
       if (this.shopList.length == 1) {
         this.setNextToSave();
@@ -3462,8 +3463,6 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       }
 
       this.addBasket();
-
-      this.groupLoaded = true;
     };
 
     shopping.prototype.resetShopper = function resetShopper() {
@@ -3651,6 +3650,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
         if (!this.shopList[this.shoppingIndex + 1].extra.fullBasket) {
           if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
+            this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter;
             this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket;
           } else {
             this.addBasket();

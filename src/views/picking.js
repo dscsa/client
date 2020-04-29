@@ -141,6 +141,7 @@ export class shopping {
   //Display and set relavant variables to display a group
   initializeShopper(){
     this.shoppingIndex = 0
+    this.groupLoaded = true
 
     if(this.shopList.length == 1){
       this.setNextToSave()
@@ -149,8 +150,6 @@ export class shopping {
     }
 
     this.addBasket()
-
-    this.groupLoaded = true
 
   }
 
@@ -381,6 +380,7 @@ export class shopping {
 
       if(!this.shopList[this.shoppingIndex + 1].extra.fullBasket){
         if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
+          this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter //push that forward if they changed it at some point
           this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket
         } else {
           this.addBasket()
