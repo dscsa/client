@@ -2600,8 +2600,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         this.shoppingSyncPended[pendId][label].drawerCheck = typeof transaction.next[0].pended.priority == 'undefined' ? true : transaction.next[0].pended.priority != null;
 
         this.shoppingSyncPended[pendId][label].locked = this.shoppingSyncPended[pendId].locked;
-
-        var basketFound = transaction.next[0].picked ? transaction.next[0].picked.basket ? true : false : false;
+        var basketFound = transaction.next[0].picked && transaction.next[0].picked.basket && transaction.next[0].picked.matchType != 'missing';
         this.shoppingSyncPended[pendId][label].basketInfo = this.shoppingSyncPended[pendId][label].basketInfo || {};
         this.shoppingSyncPended[pendId][label].basketInfo.found = this.shoppingSyncPended[pendId][label].basketInfo.found ? this.shoppingSyncPended[pendId][label].basketInfo.found : basketFound;
         this.shoppingSyncPended[pendId][label].basketInfo.notFound = this.shoppingSyncPended[pendId][label].basketInfo.notFound ? this.shoppingSyncPended[pendId][label].basketInfo.notFound : !basketFound;
