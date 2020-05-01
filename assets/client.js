@@ -1604,7 +1604,7 @@ define('client/src/views/account',['exports', 'aurelia-framework', '../libs/pouc
       this.switchUserText = "Switching...";
 
       this.db.user.session.post({ phone: this.phone, password: this.password, switchUsers: true }).then(function (_) {
-        _this6.router.navigate('shipments');
+        _this6.router.navigate('picking');
       }).catch(function (err) {
         console.log("error:", err);
         _this6.snackbar.error('Login failed', err);
@@ -2600,8 +2600,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         this.shoppingSyncPended[pendId][label].drawerCheck = typeof transaction.next[0].pended.priority == 'undefined' ? true : transaction.next[0].pended.priority != null;
 
         this.shoppingSyncPended[pendId][label].locked = this.shoppingSyncPended[pendId].locked;
-
-        var basketFound = transaction.next[0].picked ? transaction.next[0].picked.basket ? true : false : false;
+        var basketFound = transaction.next[0].picked && transaction.next[0].picked.basket;
         this.shoppingSyncPended[pendId][label].basketInfo = this.shoppingSyncPended[pendId][label].basketInfo || {};
         this.shoppingSyncPended[pendId][label].basketInfo.found = this.shoppingSyncPended[pendId][label].basketInfo.found ? this.shoppingSyncPended[pendId][label].basketInfo.found : basketFound;
         this.shoppingSyncPended[pendId][label].basketInfo.notFound = this.shoppingSyncPended[pendId][label].basketInfo.notFound ? this.shoppingSyncPended[pendId][label].basketInfo.notFound : !basketFound;
@@ -2609,7 +2608,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         if (basketFound) {
           var basket = transaction.next[0].picked.basket;
           if (!this.shoppingSyncPended[pendId][label].basketInfo.allBaskets) this.shoppingSyncPended[pendId][label].basketInfo.allBaskets = [];
-          if (!~this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.indexOf(basket)) this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.unshift(basket);
+          if (!~this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.indexOf(basket) && transaction.next[0].picked.matchType !== 'missing') this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.unshift(basket);
         }
       }
     };
@@ -3299,7 +3298,7 @@ define('client/src/views/login',['exports', 'aurelia-framework', 'aurelia-router
 
         return Promise.all(loading.syncing);
       }).then(function (resources) {
-        _this.router.navigate('shipments');
+        _this.router.navigate('picking');
       }).catch(function (err) {
         _this.disabled = false;
         _this.snackbar.error('Login failed', err);
@@ -3339,6 +3338,9 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       this.orderSelectedToShop = false;
       this.formComplete = false;
       this.basketSaved = false;
+      this.currentCart = '';
+      this.basketOptions = ['S', 'R', 'G', 'B'];
+      this.focusInput = _helpers.focusInput;
 
       this.canActivate = _helpers.canActivate;
       this.currentDate = _helpers.currentDate;
@@ -3396,7 +3398,6 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       this.updatePickedCount();
 
       this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
-        console.log('refresh complete');
         _this3.groups = res;
       }).catch(function (err) {
         console.log("error refreshing pended groups:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
@@ -3454,13 +3455,13 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       this.shoppingIndex = 0;
       this.groupLoaded = true;
 
-      this.basketSaved = false;
-
       if (this.shopList.length == 1) {
         this.setNextToSave();
       } else {
         this.setNextToNext();
       }
+
+      this.addBasket(this.shoppingIndex);
     };
 
     shopping.prototype.resetShopper = function resetShopper() {
@@ -3526,7 +3527,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
             next[0].picked = {
               _id: new Date().toJSON(),
-              basket: arr_enriched_transactions[i].extra.basketNumber,
+              basket: arr_enriched_transactions[i].extra.fullBasket,
               repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from,
               matchType: outcome,
               user: this.user
@@ -3548,21 +3549,25 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.saveBasketNumber = function saveBasketNumber() {
+      console.log("saving basket");
       this.basketSaved = true;
+      this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber;
+      if (this.shopList[this.shoppingIndex].extra.basketLetter != 'G' && this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0]) this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0];
       this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
+      console.log(this.currentCart);
     };
 
     shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
       var list_of_baskets = '';
       for (var i = 0; i < this.shopList.length; i++) {
-        if (this.shopList[i].extra.basketNumber.length > 1 && !~list_of_baskets.indexOf(this.shopList[i].extra.basketNumber) && this.shopList[i].raw.drug.generic == generic) list_of_baskets += ',' + this.shopList[i].extra.basketNumber;
+        if (this.shopList[i].extra.fullBasket && !~list_of_baskets.indexOf(this.shopList[i].extra.fullBasket) && this.shopList[i].raw.drug.generic == generic) list_of_baskets += ',' + this.shopList[i].extra.fullBasket;
       }
       this.currentGenericBaskets = list_of_baskets;
     };
 
-    shopping.prototype.addBasket = function addBasket() {
+    shopping.prototype.addBasket = function addBasket(index) {
       this.basketSaved = false;
-      this.shopList[this.shoppingIndex].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber[0];
+      if (this.shopList[index].extra.basketLetter != 'G') this.shopList[index].extra.basketNumber = this.currentCart;
     };
 
     shopping.prototype.delay = function delay(ms) {
@@ -3643,11 +3648,12 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         this.resetShopper();
       } else {
 
-        if (this.shopList[this.shoppingIndex + 1].extra.basketNumber.length <= 1) {
+        if (!this.shopList[this.shoppingIndex + 1].extra.fullBasket) {
           if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
-            this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
+            this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter;
+            this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket;
           } else {
-            this.basketSaved = false;
+            this.addBasket(this.shoppingIndex + 1);
           }
         } else if (this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
           this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic);
@@ -3662,7 +3668,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
           this.setNextToNext();
         }
 
-        this.formComplete = this.shopList[this.shoppingIndex].extra.basketNumber.length > 1 && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome);
+        this.formComplete = this.shopList[this.shoppingIndex].extra.fullBasket && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome);
       }
     };
 
@@ -3695,7 +3701,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
         if (this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic || i == this.shopList.length - 1) {
 
-          this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
+          this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket;
           this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i == this.shopList.length - 1 ? i : i - 1);
 
           return;
@@ -3713,6 +3719,12 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         } else {
           this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = true;
         }
+      }
+
+      if (key == 'missing') {
+        this.setNextToNext();
+      } else if (this.shoppingIndex == this.shopList.length - 1) {
+        this.setNextToSave();
       }
     };
 
@@ -3776,10 +3788,19 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       if (term.trim().length == 0) {
         matches = pended;
       } else {
+
         for (var i = 0; i < pended.length; i++) {
+
           if (~pended[i].name.toLowerCase().indexOf(term) || term.trim().length == 0) {
             matches.unshift(pended[i]);
             continue;
+          } else if (pended[i].baskets.length > 0) {
+            for (var n = 0; n < pended[i].baskets.length; n++) {
+              if (~pended[i].baskets[n].toLowerCase().indexOf(term)) {
+                matches.unshift(pended[i]);
+                break;
+              }
+            }
           }
         }
       }
@@ -3857,6 +3878,10 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       this.toggleDrawer = _helpers.toggleDrawer;
       this.drugSearch = _helpers.drugSearch;
       this.canActivate = _helpers.canActivate;
+      this.instructionsText = 'Filter shipments';
+
+      this.shipmentDrawerYearChoices = [new Date().getFullYear(), 2019];
+      this.shipmentDrawerYear = null;
     }
 
     shipments.prototype.activate = function activate(params) {
@@ -3875,61 +3900,20 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         _this.account = { _id: account._id, name: account.name, default: account.default || {} };
         _this.ordered = (_this$ordered = {}, _this$ordered[account._id] = account.ordered, _this$ordered);
 
-        var senderAccounts = _this.db.account.allDocs({ keys: account.authorized, include_docs: true });
+        _this.initializeDrawer();
 
-        var shipmentsReceived = _this.db.shipment.query('account.to._id', { startkey: [account._id + '\uFFFF'], endkey: [account._id], descending: true, include_docs: true });
-
-        return Promise.all([senderAccounts, shipmentsReceived]).then(function (all) {
-          senderAccounts = all[0].rows;
-          shipmentsReceived = all[1].rows;
-
-          var selected = void 0,
-              map = { to: {}, from: {} };
-
-          _this.accounts = {
-            from: [''].concat(senderAccounts.map(function (account) {
-              var doc = account.doc;
-
-              if (!doc) {
-                console.error('doc property is not set', account, senderAccounts);
-                return {};
-              }
-
-              _this.ordered[doc._id] = doc.ordered;
-              return map.from[doc._id] = { _id: doc._id, name: doc.name };
-            }).sort(function (a, b) {
-              if (a.name > b.name) return 1;
-              if (a.name < b.name) return -1;
-            }))
-          };
-
-          _this.shipment = {};
-
-          var accountRef = function accountRef(role) {
-            return function (_ref) {
-              var doc = _ref.doc;
-
-              _this.setStatus(doc);
-
-              if (map[role][doc.account[role]._id]) doc.account[role] = map[role][doc.account[role]._id];
-
-              if (params.id === doc._id) selected = doc;
-
-              return doc;
-            };
-          };
-
-          _this.role = selected ? { accounts: 'to', shipments: 'from' } : { accounts: 'from', shipments: 'to' };
-
-          _this.shipments.to = shipmentsReceived.map(accountRef('from'));
-
-          _this.selectShipment(selected);
-        }).catch(function (err) {
-          return console.log('promise all err', err);
+        _this.gatherShipments(params).then(function (_) {
+          return _this.setInstructionsText("", true);
         });
       }).catch(function (err) {
         console.error('Could not get session for user.  Please verify user registration and login are functioning properly');
       });
+    };
+
+    shipments.prototype.setInstructionsText = function setInstructionsText(str) {
+      var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      this.instructionsText = reset ? "Filter shipments " + this.role.accounts + " you" : str;
     };
 
     shipments.prototype.selectShipment = function selectShipment(shipment, toggleDrawer) {
@@ -3939,6 +3923,88 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       this.setUrl('/' + shipment._id);
       this.setShipment(shipment);
       this.setTransactions(shipment._id);
+    };
+
+    shipments.prototype.initializeDrawer = function initializeDrawer() {
+      var _this2 = this;
+
+      this.shipmentDrawerYear = this.shipmentDrawerYearChoices[0];
+      this.db.shipment.query('account.to._id', { startkey: [this.account._id], endkey: [this.account._id + '\uFFFF'], group_level: 2 }).then(function (res) {
+        _this2.shipmentDrawerYearChoices = res.rows.map(function (row) {
+          return row.key[1];
+        }).sort(function (a, b) {
+          return b - a;
+        });
+      });
+    };
+
+    shipments.prototype.refocusWithNewShipments = function refocusWithNewShipments() {
+      this.setInstructionsText("...Loading shipments...", false);
+      this.filter = '';
+      this.shipments = {};
+      this.focusInput('#drawer_filter');
+    };
+
+    shipments.prototype.gatherShipments = function gatherShipments() {
+      var _this3 = this;
+
+      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+
+      var senderAccounts = this.db.account.allDocs({ keys: this.account.authorized, include_docs: true });
+
+      var shipmentsReceived = this.db.shipment.query('account.to._id', { startkey: [this.account._id, this.shipmentDrawerYear.toString() + '\uFFFF'], endkey: [this.account._id, this.shipmentDrawerYear.toString()], descending: true, reduce: false, include_docs: true });
+
+      return Promise.all([senderAccounts, shipmentsReceived]).then(function (all) {
+        senderAccounts = all[0].rows;
+        shipmentsReceived = all[1].rows;
+
+        var selected = void 0,
+            map = { to: {}, from: {} };
+
+        _this3.accounts = {
+          from: [''].concat(senderAccounts.map(function (account) {
+            var doc = account.doc;
+
+            if (!doc) {
+              console.error('doc property is not set', account, senderAccounts);
+              return {};
+            }
+
+            _this3.ordered[doc._id] = doc.ordered;
+            return map.from[doc._id] = { _id: doc._id, name: doc.name };
+          }).sort(function (a, b) {
+            if (a.name > b.name) return 1;
+            if (a.name < b.name) return -1;
+          }))
+        };
+
+        _this3.shipment = {};
+
+        var accountRef = function accountRef(role) {
+          return function (_ref) {
+            var doc = _ref.doc;
+
+            _this3.setStatus(doc);
+
+            if (map[role][doc.account[role]._id]) doc.account[role] = map[role][doc.account[role]._id];
+
+            if (params.id === doc._id) selected = doc;
+
+            return doc;
+          };
+        };
+
+        _this3.role = selected ? { accounts: 'to', shipments: 'from' } : { accounts: 'from', shipments: 'to' };
+
+        _this3.shipments.to = shipmentsReceived.map(accountRef('from'));
+
+        _this3.setInstructionsText("", true);
+
+        _this3.selectShipment(selected);
+      }).catch(function (err) {
+        return console.log('promise all err', err);
+      });
     };
 
     shipments.prototype.emptyShipment = function emptyShipment() {
@@ -3964,17 +4030,17 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     };
 
     shipments.prototype.setTransactions = function setTransactions(shipmentId) {
-      var _this2 = this;
+      var _this4 = this;
 
       this.diffs = [];
 
       if (!shipmentId) return this.transactions = [];
 
       this.db.transaction.query('shipment._id', { key: [this.account._id, shipmentId], include_docs: true, descending: true }).then(function (res) {
-        _this2.transactions = res.rows.map(function (row) {
+        _this4.transactions = res.rows.map(function (row) {
           return row.doc;
         });
-        _this2.setCheckboxes();
+        _this4.setCheckboxes();
       }).catch(function (err) {
         return console.log('err', err);
       });
@@ -4015,28 +4081,28 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     };
 
     shipments.prototype.saveShipment = function saveShipment() {
-      var _this3 = this;
+      var _this5 = this;
 
       return this.db.shipment.put(this.shipment).then(function (res) {
-        _this3.setStatus(_this3.shipment);
+        _this5.setStatus(_this5.shipment);
       });
     };
 
     shipments.prototype.moveTransactionsToShipment = function moveTransactionsToShipment(shipment) {
-      var _this4 = this;
+      var _this6 = this;
 
       Promise.all(this.transactions.map(function (transaction) {
         if (transaction.isChecked) {
           transaction.shipment = { _id: shipment._id };
-          return _this4.db.transaction.put(transaction);
+          return _this6.db.transaction.put(transaction);
         }
       })).then(function (_) {
-        return _this4.selectShipment(shipment);
+        return _this6.selectShipment(shipment);
       });
     };
 
     shipments.prototype.createShipment = function createShipment() {
-      var _this5 = this;
+      var _this7 = this;
 
       if (this.shipment.tracking == 'New Tracking #') delete this.shipment.tracking;
 
@@ -4044,9 +4110,9 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       this.setStatus(this.shipment);
 
       this.db.shipment.post(this.shipment).then(function (res) {
-        return _this5.moveTransactionsToShipment(_this5.shipment);
+        return _this7.moveTransactionsToShipment(_this7.shipment);
       }).catch(function (err) {
-        return console.error('createShipment error', err, _this5.shipment);
+        return console.error('createShipment error', err, _this7.shipment);
       });
     };
 
@@ -4110,11 +4176,11 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     };
 
     shipments.prototype.setDestroyedMessage = function setDestroyedMessage(order) {
-      var _this6 = this;
+      var _this8 = this;
 
       if (order && order.destroyedMessage && !this.destroyedMessage) this.destroyedMessage = setTimeout(function (_) {
-        delete _this6.destroyedMessage;
-        _this6.snackbar.show(order.destroyedMessage);
+        delete _this8.destroyedMessage;
+        _this8.snackbar.show(order.destroyedMessage);
       }, 500);
     };
 
@@ -4174,24 +4240,24 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     };
 
     shipments.prototype.search = function search() {
-      var _this7 = this;
+      var _this9 = this;
 
       this.drugSearch().then(function (drugs) {
-        _this7.drugs = drugs;
-        _this7.drug = drugs[0];
+        _this9.drugs = drugs;
+        _this9.drug = drugs[0];
       });
     };
 
     shipments.prototype.autocompleteShortcuts = function autocompleteShortcuts($event) {
-      var _this8 = this;
+      var _this10 = this;
 
       this.scrollSelect($event, this.drug, this.drugs, function (drug) {
-        return _this8.drug = drug;
+        return _this10.drug = drug;
       });
 
       if ($event.which == 13) {
         Promise.resolve(this._search).then(function (_) {
-          return _this8.addTransaction(_this8.drug);
+          return _this10.addTransaction(_this10.drug);
         });
         return false;
       }
@@ -4202,7 +4268,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     };
 
     shipments.prototype.addTransaction = function addTransaction(drug, transaction) {
-      var _this9 = this;
+      var _this11 = this;
 
       if (!drug) return this.snackbar.show('Cannot find drug matching this search');
 
@@ -4249,18 +4315,18 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
           console.log('indate inventory', minDays, date, inventory);
           var row = inventory.rows[0];
           order.indateInventory = row ? row.value[0].sum : 0;
-          console.log('order.inventory', _this9.indateInventory);
+          console.log('order.inventory', _this11.indateInventory);
         });
       }
 
       setTimeout(function (_) {
-        return _this9.focusInput('#exp_0');
+        return _this11.focusInput('#exp_0');
       }, 50);
 
       return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
-        return _this9.db.transaction.post(transaction).catch(function (err) {
-          _this9.snackbar.error('Transaction could not be added: ', err);
-          _this9.transactions.shift();
+        return _this11.db.transaction.post(transaction).catch(function (err) {
+          _this11.snackbar.error('Transaction could not be added: ', err);
+          _this11.transactions.shift();
         });
       });
     };
@@ -4271,7 +4337,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     };
 
     shipments.prototype.exportCSV = function exportCSV() {
-      var _this10 = this;
+      var _this12 = this;
 
       var name = 'Shipment ' + this.shipment._id + '.csv';
       this.csv.fromJSON(name, this.transactions.map(function (transaction) {
@@ -4282,25 +4348,25 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
           'drug.generics': transaction.drug.generics.map(function (generic) {
             return generic.name + " " + generic.strength;
           }).join(';'),
-          shipment: _this10.shipment
+          shipment: _this12.shipment
         };
       }));
     };
 
     shipments.prototype.importCSV = function importCSV() {
-      var _this11 = this;
+      var _this13 = this;
 
       this.csv.toJSON(this.$file.files[0], function (parsed) {
-        _this11.$file.value = '';
+        _this13.$file.value = '';
         return Promise.all(parsed.map(function (transaction) {
           transaction._err = undefined;
           transaction._id = undefined;
           transaction._rev = undefined;
-          transaction.shipment._id = _this11.shipment._id;
+          transaction.shipment._id = _this13.shipment._id;
           transaction.next = JSON.parse(transaction.next);
 
-          return _this11.db.drug.get(transaction.drug._id).then(function (drug) {
-            return _this11.addTransaction(drug, transaction);
+          return _this13.db.drug.get(transaction.drug._id).then(function (drug) {
+            return _this13.addTransaction(drug, transaction);
           }).then(function (_) {
             return undefined;
           }).catch(function (err) {
@@ -4309,448 +4375,14 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
           });
         }));
       }).then(function (rows) {
-        return _this11.snackbar.show('Import Succesful');
+        return _this13.snackbar.show('Import Succesful');
       }).catch(function (err) {
-        return _this11.snackbar.error('Import Error', err);
+        return _this13.snackbar.error('Import Error', err);
       });
     };
 
     return shipments;
   }()) || _class);
-});
-define('client/src/views/shopping',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.pendedFilterValueConverter = exports.shopping = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var shopping = exports.shopping = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router), _dec(_class = function () {
-    function shopping(db, router) {
-      _classCallCheck(this, shopping);
-
-      this.db = db;
-      this.router = router;
-
-      this.groups = [];
-      this.shopList = [];
-      this.shoppingIndex = -1;
-      this.nextButtonText = '';
-      this.orderSelectedToShop = false;
-      this.formComplete = false;
-
-      this.basketSaved = false;
-      this.currentBasket;
-
-      this.canActivate = _helpers.canActivate;
-      this.currentDate = _helpers.currentDate;
-    }
-
-    shopping.prototype.deactivate = function deactivate() {};
-
-    shopping.prototype.canDeactivate = function canDeactivate() {
-      return confirm('Confirm you want to leave page');
-    };
-
-    shopping.prototype.activate = function activate(params) {
-      var _this = this;
-
-      this.db.user.session.get().then(function (session) {
-        console.log('user acquired');
-        _this.user = { _id: session._id };
-        _this.account = { _id: session.account._id };
-
-        if (!_this.account.hazards) _this.account.hazards = {};
-        console.log('about to call refresh first time');
-        _this.refreshPendedGroups();
-      }).catch(function (err) {
-        console.log("error getting user session:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.refreshPendedGroups = function refreshPendedGroups() {
-      var _this2 = this;
-
-      console.log('refreshing');
-      this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
-        console.log('refresh complete');
-        _this2.groups = res;
-      }).catch(function (err) {
-        console.log("error refreshing pended groups:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.unlockGroup = function unlockGroup(groupName, el) {
-      var _this3 = this;
-
-      for (var i = 0; i < this.groups.length; i++) {
-        if (this.groups[i].name == groupName) this.groups[i].locked = 'unlocking';
-      }
-
-      var start = Date.now();
-      console.log(groupName);
-
-      this.db.account.picking.post({ groupName: groupName, action: 'unlock' }).then(function (res) {
-        _this3.groups = res;
-      }).catch(function (err) {
-        console.log("error unlocking order:", (Date.now() - start) / 1000, 'seconds', JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.selectGroup = function selectGroup(isLocked, groupName) {
-      var _this4 = this;
-
-      if (isLocked || groupName.length == 0) return;
-
-      this.groupLoaded = false;
-      this.orderSelectedToShop = true;
-
-      var start = Date.now();
-
-      this.db.account.picking.post({ groupName: groupName, action: 'load' }).then(function (res) {
-        console.log("result of loading: " + res.length, (Date.now() - start) / 1000, 'seconds');
-        _this4.shopList = res;
-        _this4.pendedFilter = '';
-        _this4.filter = {};
-        _this4.initializeShopper();
-      }).catch(function (err) {
-        if (err.message == 'Unexpected end of JSON input') {
-          var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
-          _this4.refreshPendedGroups();
-          _this4.resetShopper();
-        } else {
-          console.log("error loading order:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-          return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        }
-      });
-    };
-
-    shopping.prototype.initializeShopper = function initializeShopper() {
-      this.shoppingIndex = 0;
-      this.groupLoaded = true;
-
-      this.basketSaved = false;
-
-      if (this.shopList.length == 1) {
-        this.setNextToSave();
-      } else {
-        this.setNextToNext();
-      }
-    };
-
-    shopping.prototype.resetShopper = function resetShopper() {
-      this.orderSelectedToShop = false;
-      this.formComplete = false;
-    };
-
-    shopping.prototype.saveShoppingResults = function saveShoppingResults(arr_enriched_transactions, key) {
-      var _this5 = this;
-
-      var transactions_to_save = this.prepResultsToSave(arr_enriched_transactions, key);
-
-      console.log("attempting to save these transactions", JSON.stringify(transactions_to_save));
-      var startTime = new Date().getTime();
-
-      return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-        var completeTime = new Date().getTime();
-        console.log("results of saving in " + (completeTime - startTime) + " ms", JSON.stringify(res));
-      }).catch(function (err) {
-
-        var completeTime = new Date().getTime();
-        console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-
-        if (err.status == 0) {
-
-          console.log("going to try and save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save));
-
-          return _this5.delay(3000).then(function (_) {
-
-            console.log("waiting finished, sending again");
-
-            return _this5.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-              var finalTime = new Date().getTime();
-              console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
-            }).catch(function (err) {
-              console.log("saving: empty object error the second time");
-              return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-            });
-          });
-        } else {
-
-          _this5.snackbar.error('Error loading/saving. Contact Adam', err);
-          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        }
-      });
-    };
-
-    shopping.prototype.prepResultsToSave = function prepResultsToSave(arr_enriched_transactions, key) {
-
-      if (arr_enriched_transactions.length == 0) return Promise.resolve();
-
-      var transactions_to_save = [];
-
-      for (var i = 0; i < arr_enriched_transactions.length; i++) {
-
-        var reformated_transaction = arr_enriched_transactions[i].raw;
-        var next = reformated_transaction.next;
-
-        if (next[0]) {
-          if (key == 'shopped') {
-            var outcome = this.getOutcome(arr_enriched_transactions[i].extra);
-
-            next[0].picked = {
-              _id: new Date().toJSON(),
-              basket: arr_enriched_transactions[i].extra.basketNumber,
-              repackQty: reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from,
-              matchType: outcome,
-              user: this.user
-            };
-          } else if (key == 'unlock') {
-
-            delete next[0].picked;
-          } else if (key == 'lockdown') {
-
-            next[0].picked = {};
-          }
-        }
-
-        reformated_transaction.next = next;
-        transactions_to_save.push(reformated_transaction);
-      }
-
-      return transactions_to_save;
-    };
-
-    shopping.prototype.canSaveBasket = function canSaveBasket() {
-      return this.shopList[this.shoppingIndex].extra.basketNumber.length > 1;
-    };
-
-    shopping.prototype.saveBasketNumber = function saveBasketNumber() {
-      this.basketSaved = true;
-    };
-
-    shopping.prototype.delay = function delay(ms) {
-      return new Promise(function (resolve) {
-        return setTimeout(resolve, ms);
-      });
-    };
-
-    shopping.prototype.moveShoppingForward = function moveShoppingForward() {
-      var _this6 = this;
-
-      if (this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing' && this.shopList[this.shoppingIndex].extra.saved != 'missing') {
-
-        this.formComplete = false;
-        this.setNextToLoading();
-
-        console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
-
-        this.db.account.picking['post']({ groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group, action: 'missing_transaction', ndc: this.shopList[this.shoppingIndex].raw.drug._id, generic: this.shopList[this.shoppingIndex].raw.drug.generic, qty: this.shopList[this.shoppingIndex].raw.qty.to }).then(function (res) {
-
-          if (res.length > 0) {
-
-            _this6.shopList[_this6.shoppingIndex].extra.saved = 'missing';
-            var n = _this6.shoppingIndex - (_this6.shopList[_this6.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
-            if (n < 0) n = 0;
-            for (n; n < _this6.shopList.length; n++) {
-              if (_this6.shopList[n].raw.drug.generic == res[0].raw.drug.generic) {
-                _this6.shopList[n].extra.genericIndex.relative_index[1]++;
-              } else {
-                res[0].extra.genericIndex = { global_index: _this6.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this6.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this6.shopList[n - 1].extra.genericIndex.relative_index[1]] };
-                _this6.shopList.splice(n, 0, res[0]);
-                _this6.advanceShopping();
-                return;
-              }
-            }
-
-            res[0].extra.genericIndex = { global_index: _this6.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this6.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this6.shopList[n - 1].extra.genericIndex.relative_index[1]] };
-            _this6.shopList.push(res[0]);
-            console.log("added to shoplist end", JSON.stringify(res[0]));
-          } else {
-            console.log("couldn't find item with same or greater qty to replace this");
-          }
-
-          _this6.advanceShopping();
-        }).catch(function (err) {
-          console.log("error compensating for missing:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-          return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        });
-      } else {
-        this.advanceShopping();
-      }
-    };
-
-    shopping.prototype.advanceShopping = function advanceShopping() {
-      var _this7 = this;
-
-      if (this.shoppingIndex == this.shopList.length - 1) {
-
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
-          _this7.refreshPendedGroups();
-        });
-
-        for (var i = this.groups.length - 1; i >= 0; i--) {
-          if (this.groups[i].name == this.shopList[this.shoppingIndex].raw.next[0].pended.group) {
-            this.groups.splice(i, 1);
-            break;
-          }
-        }
-
-        this.resetShopper();
-      } else {
-
-        if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
-          this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
-        } else {
-          this.basketSaved = false;
-        }
-
-
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped');
-        this.shoppingIndex += 1;
-
-        if (this.shoppingIndex == this.shopList.length - 1) {
-          this.setNextToSave();
-        } else {
-          this.setNextToNext();
-        }
-
-        this.formComplete = this.shopList[this.shoppingIndex].extra.basketNumber.length > 1 && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome);
-      }
-    };
-
-    shopping.prototype.moveShoppingBackward = function moveShoppingBackward() {
-      if (this.shoppingIndex == 0) return;
-      this.setNextToNext();
-      this.shoppingIndex -= 1;
-      this.formComplete = true;
-    };
-
-    shopping.prototype.pauseShopping = function pauseShopping(groupName) {
-
-      this.resetShopper();
-      this.unlockGroup(groupName);
-    };
-
-    shopping.prototype.skipItem = function skipItem() {
-
-      if (this.shoppingIndex == this.shopList.length - 1 || this.shopList[this.shoppingIndex + 1].raw.drug.generic !== this.shopList[this.shoppingIndex].raw.drug.generic) return this.snackbar.show('Cannot skip last item of generic');
-
-      this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] = this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[1];
-
-      for (var i = this.shoppingIndex + 1; i < this.shopList.length; i++) {
-        if (this.shopList[i].raw.drug.generic == this.shopList[this.shoppingIndex].raw.drug.generic) {
-          this.shopList[i].extra.genericIndex.relative_index[0] -= 1;
-        }
-
-        if (this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic || i == this.shopList.length - 1) {
-
-          this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber;
-          this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, i == this.shopList.length - 1 ? i : i - 1);
-
-          return;
-        }
-      }
-    };
-
-    shopping.prototype.selectShoppingOption = function selectShoppingOption(key) {
-      if (this.shopList[this.shoppingIndex].extra.outcome[key]) return;
-      this.formComplete = true;
-
-      for (var outcome_option in this.shopList[this.shoppingIndex].extra.outcome) {
-        if (outcome_option !== key) {
-          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = false;
-        } else {
-          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = true;
-        }
-      }
-    };
-
-    shopping.prototype.arrayMove = function arrayMove(arr, fromIndex, toIndex) {
-      var res = arr.slice(0);
-      var element = res[fromIndex];
-      res.splice(fromIndex, 1);
-      res.splice(toIndex, 0, element);
-      return res;
-    };
-
-    shopping.prototype.formatExp = function formatExp(rawStr) {
-      var substr_arr = rawStr.slice(2, 7).split("-");
-      return substr_arr[1] + "/" + substr_arr[0];
-    };
-
-    shopping.prototype.someOutcomeSelected = function someOutcomeSelected(outcomeObj) {
-      return ~Object.values(outcomeObj).indexOf(true);
-    };
-
-    shopping.prototype.warnAboutRequired = function warnAboutRequired() {
-      this.snackbar.show('Basket number and outcome are required');
-    };
-
-    shopping.prototype.setNextToLoading = function setNextToLoading() {
-      this.nextButtonText = 'Updating';
-    };
-
-    shopping.prototype.setNextToSave = function setNextToSave() {
-      this.nextButtonText = 'Complete';
-    };
-
-    shopping.prototype.setNextToNext = function setNextToNext() {
-      this.nextButtonText = 'Next';
-    };
-
-    shopping.prototype.getOutcome = function getOutcome(extraItemData) {
-      var res = '';
-      for (var possibility in extraItemData.outcome) {
-        if (extraItemData.outcome[possibility]) res += possibility;
-      }
-      return res;
-    };
-
-    return shopping;
-  }()) || _class);
-
-  var pendedFilterValueConverter = exports.pendedFilterValueConverter = function () {
-    function pendedFilterValueConverter() {
-      _classCallCheck(this, pendedFilterValueConverter);
-    }
-
-    pendedFilterValueConverter.prototype.toView = function toView() {
-      var pended = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var term = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-
-      term = term.toLowerCase();
-      var matches = [];
-
-      if (term.trim().length == 0) {
-        matches = pended;
-      } else {
-        for (var i = 0; i < pended.length; i++) {
-          if (~pended[i].name.toLowerCase().indexOf(term) || term.trim().length == 0) {
-            matches.unshift(pended[i]);
-            continue;
-          }
-        }
-      }
-
-      return matches;
-    };
-
-    return pendedFilterValueConverter;
-  }();
 });
 define('text!client/src/elems/md-autocomplete.html', ['module'], function(module) { module.exports = "<template style=\"box-shadow:none\">\n  <!-- z-index of 2 is > than checkboxes which have z-index of 1 -->\n  <md-autocomplete-wrap\n    ref=\"form\"\n    class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\"\n    style=\"z-index:2; width:100%; padding-top:10px\">\n    <input class=\"md-input mdl-textfield__input\"\n      name = \"pro_input_field\"\n      value.bind=\"value\"\n      disabled.bind=\"disabled\"\n      placeholder.bind=\"placeholder || ''\"\n      focus.trigger=\"toggleResults()\"\n      focusout.delegate=\"toggleResults($event)\"\n      style=\"font-size:20px;\">\n    <div show.bind=\"showResults\"\n      tabindex=\"-1\"\n      style=\"width:100%; overflow-y:scroll; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); max-height: 400px !important;\"\n      class=\"md-autocomplete-suggestions\">\n      <slot></slot>\n    </div>\n  </md-autocomplete-wrap>\n  <style>\n  @-webkit-keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @-webkit-keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  @keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  md-autocomplete {\n    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);\n    border-radius: 2px;\n    display: block;\n    height: 40px;\n    position: relative;\n    overflow: visible;\n    min-width: 190px; }\n    md-autocomplete[md-floating-label] {\n      padding-bottom: 26px;\n      box-shadow: none;\n      border-radius: 0;\n      background: transparent;\n      height: auto; }\n      md-autocomplete[md-floating-label] md-input-container {\n        padding-bottom: 0; }\n      md-autocomplete[md-floating-label] md-autocomplete-wrap {\n        height: auto; }\n      md-autocomplete[md-floating-label] button {\n        top: auto;\n        bottom: 5px; }\n    md-autocomplete md-autocomplete-wrap {\n      display: block;\n      position: relative;\n      overflow: visible;\n      height: 40px; }\n      md-autocomplete md-autocomplete-wrap md-progress-linear {\n        position: absolute;\n        bottom: 0;\n        left: 0;\n        width: 100%;\n        height: 3px;\n        transition: none; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear .md-container {\n          transition: none;\n          top: auto;\n          height: 3px; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter.ng-enter-active {\n            opacity: 1; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave.ng-leave-active {\n            opacity: 0; }\n    md-autocomplete input:not(.md-input) {\n      position: absolute;\n      left: 0;\n      top: 0;\n      width: 100%;\n      box-sizing: border-box;\n      border: none;\n      box-shadow: none;\n      padding: 0 15px;\n      font-size: 14px;\n      line-height: 40px;\n      height: 40px;\n      outline: none;\n      background: transparent; }\n      md-autocomplete input:not(.md-input)::-ms-clear {\n        display: none; }\n    md-autocomplete button {\n      position: absolute;\n      top: 10px;\n      right: 10px;\n      line-height: 20px;\n      text-align: center;\n      width: 20px;\n      height: 20px;\n      cursor: pointer;\n      border: none;\n      border-radius: 50%;\n      padding: 0;\n      font-size: 12px;\n      background: transparent; }\n      md-autocomplete button:after {\n        content: '';\n        position: absolute;\n        top: -6px;\n        right: -6px;\n        bottom: -6px;\n        left: -6px;\n        border-radius: 50%;\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        opacity: 0;\n        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }\n      md-autocomplete button:focus {\n        outline: none; }\n        md-autocomplete button:focus:after {\n          -webkit-transform: scale(1);\n                  transform: scale(1);\n          opacity: 1; }\n      md-autocomplete button md-icon {\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        -webkit-transform: translate3d(-50%, -50%, 0) scale(0.9);\n                transform: translate3d(-50%, -50%, 0) scale(0.9); }\n        md-autocomplete button md-icon path {\n          stroke-width: 0; }\n      md-autocomplete button.ng-enter {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-enter.ng-enter-active {\n          -webkit-transform: scale(1);\n                  transform: scale(1); }\n      md-autocomplete button.ng-leave {\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-leave.ng-leave-active {\n          -webkit-transform: scale(0);\n                  transform: scale(0); }\n    @media screen and (-ms-high-contrast: active) {\n      md-autocomplete input {\n        border: 1px solid #fff; }\n      md-autocomplete li:focus {\n        color: #fff; } }\n\n  .md-autocomplete-suggestions table, .md-autocomplete-suggestions ul {\n    table-layout:auto;  //added by adam\n    width:100%;         //added by adam\n    background:white;   //added by adam\n    position: relative;\n    margin: 0;\n    list-style: none;\n    padding: 0;\n    z-index: 100; }\n    .md-autocomplete-suggestions li {\n      line-height: 48px; //separated by adam\n    }\n    .md-autocomplete-suggestions li, .md-autocomplete-suggestions tr {\n      /*added by adam */\n      width:100%;\n      text-align: left;\n      position: static !important;\n      text-transform: none;\n      /* end addition */\n      cursor: pointer;\n      font-size: 14px;\n      overflow: hidden;\n\n      transition: background 0.15s linear;\n      text-overflow: ellipsis; }\n      .md-autocomplete-suggestions li.ng-enter, .md-autocomplete-suggestions li.ng-hide-remove {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-in 0.2s;\n                animation: md-autocomplete-list-in 0.2s; }\n      .md-autocomplete-suggestions li.ng-leave, .md-autocomplete-suggestions li.ng-hide-add {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-out 0.2s;\n                animation: md-autocomplete-list-out 0.2s; }\n      .md-autocomplete-suggestions li:focus {\n        outline: none; }\n  </style>\n</template>\n"; });
 define('text!client/src/elems/md-button.html', ['module'], function(module) { module.exports = "<template style=\"display:inline-block; height:36px; line-height:36px\">\n  <button\n    ref=\"button\"\n    type=\"button\"\n    disabled.two-way=\"disabled\"\n    click.delegate=\"click($event)\"\n    class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n    style=\"width:100%; height:inherit; line-height:inherit\">\n    <slot style=\"padding:auto\"></slot>\n  </button>\n</template>\n<!-- type=\"button\" because a button inside a form has its type implicitly set to submit. And the spec says that the first button or input with type=\"submit\" is triggered on enter -->\n<!-- two-way because FormCustomAttribute can set button's disabled property directly -->\n"; });
@@ -4769,7 +4401,6 @@ define('text!client/src/views/index.html', ['module'], function(module) { module
 define('text!client/src/views/inventory.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from='client/src/elems/md-table'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-switch\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-autocomplete\"></require>\n  <require from=\"client/src/elems/md-menu\"></require>\n  <require from=\"client/src/elems/form\"></require>\n  <style>\n    .mdl-button:hover { background-color:initial }\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n    .mdl-layout__drawer { width:280px; transform:translateX(-290px); overflow-x:hidden; }\n  </style>\n  <md-drawer>\n    <md-input\n      autoselect\n      value.bind=\"pendedFilter\"\n      style=\"padding:0 8px; width:auto\">\n      Filter pended inventory\n    </md-input>\n    <div repeat.for=\"pend of pended | pendedFilter:pendedFilter\">\n\n      <div style=\"display:inline-block; width:100%\">\n        <div\n          click.delegate=\"clickOnGroupInDrawer($event,pend.key)\"\n          class=\"mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}\"\n          style=\"font-size:14px; float:left;font-weight:600; cursor:pointer; color:#757575; padding:8px;\">\n          ${pend.key}\n        </div>\n        <md-switch\n          name = \"groupPrioritySwitch\"\n          style=\"float:right; margin-right:12px\"\n          checked.one-way=\"shoppingSyncPended[pend.key].priority\"\n          disabled.bind = \"shoppingSyncPended[pend.key].locked\"\n          click.trigger=\"clickOnGroupInDrawer($event,pend.key)\">\n        </md-switch>\n      </div>\n\n      <div style=\"display:inline-block; width:100%\"\n        repeat.for=\"pendedDrug of pend.val | toArray\">\n        <div\n          name=\"pro_pended_items\"\n          class=\"mdl-navigation__link ${ term == 'Pended '+pend.key+': '+pendedDrug.val.label ? 'mdl-navigation__link--current' : ''}\"\n          click.delegate=\"clickOnTransactionInDrawer(false,$event,pend.key,pendedDrug.val.label)\"\n          style=\"font-size:12px; display:inline-block; width:100%; cursor:pointer; padding:1px 0 1px 8px; line-height:18px\">\n          <md-checkbox\n            if.bind = \"shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.notFound\"\n            name = \"transactionDrawerCheckbox\"\n            style=\"display:inline-block\"\n            disabled.bind = \"shoppingSyncPended[pend.key][pendedDrug.val.label].locked\"\n            click.trigger = \"clickOnTransactionInDrawer(true,$event,pend.key,pendedDrug.val.label)\"\n            checked.bind = \"shoppingSyncPended[pend.key][pendedDrug.val.label].drawerCheck\" >\n          </md-checkbox>\n          <div\n          style=\"display:inline-block; padding-right:10px\" if.bind = \"shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.found\"><b>${shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.allBaskets}</b></div>\n          ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }\n        </div>\n      </div>\n\n\n    </div>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed\"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->\n      <div show.bind=\"transactions.length\" class=\"mdl-card__supporting-text\" style=\"padding-left:24px; white-space:nowrap\">\n        <div>\n          <div class=\"mdl-card__title\" style=\"padding:4px 0 8px 0\">\n            <div style=\"width:60%\"></div>\n            <div style=\"width:20%\">Qty</div>\n            <div style=\"width:20%\">Count</div>\n          </div>\n          <md-checkbox name = \"pro_checkall\" style=\"width:60%; margin-bottom:3px\" click.delegate=\"toggleVisibleChecks()\" checked.bind=\"filter.checked.visible\">Selected</md-checkbox>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${filter.checked.qty}</div>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${filter.checked.count}</div>\n        </div>\n        <div name = \"pro_ndc_filter\" repeat.for=\"ndc of filter.ndc | toArray:true\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title\" style=\"padding:16px 0 4px 0\">\n            <div style=\"width:60%\">Ndc Filter</div>\n          </div>\n          <md-checkbox name = \"pro_checkbox\" style=\"width:60%; margin-bottom:3px\" click.delegate=\"refreshFilter(ndc)\" checked.bind=\"ndc.val.isChecked\">${ndc.key}</md-checkbox>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${ndc.val.qty}</div>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${ndc.val.count}</div>\n        </div>\n        <div name = \"pro_exp_filter\" repeat.for=\"exp of filter.exp | toArray:true\" style=\"padding:0\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title\" style=\"padding:16px 0 4px 0\">\n            <div style=\"width:60%\">Exp Filter</div>\n          </div>\n          <md-checkbox name = \"pro_checkbox\" style=\"width:60%; margin-bottom:3px\" click.delegate=\"refreshFilter(exp)\" checked.bind=\"exp.val.isChecked\">${exp.key}</md-checkbox>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${exp.val.qty}</div>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${exp.val.count}</div>\n        </div>\n        <div name = \"pro_repack_filter\" repeat.for=\"repack of filter.repack | toArray:true\" style=\"padding:0\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title\" style=\"padding:16px 0 4px 0\">\n            <div style=\"width:60%\">Repack Filter</div>\n          </div>\n          <md-checkbox name = \"pro_checkbox\" style=\"width:60%; margin-bottom:3px\" click.delegate=\"refreshFilter(repack)\" checked.bind=\"repack.val.isChecked\">${repack.key}</md-checkbox>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${repack.val.qty}</div>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${repack.val.count}</div>\n        </div>\n        <div name = \"pro_form_filter\" repeat.for=\"form of filter.form | toArray:true\" style=\"padding:0\">\n          <div if.bind=\"$index == 0\" class=\"mdl-card__title\" style=\"padding:16px 0 4px 0\">\n            <div style=\"width:60%\">Form Filter</div>\n          </div>\n          <md-checkbox name = \"pro_checkbox\" style=\"width:60%; margin-bottom:3px\" click.delegate=\"refreshFilter(form)\" checked.bind=\"form.val.isChecked\">${form.key}</md-checkbox>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${form.val.qty}</div>\n          <div style=\"width:18%; display:inline-block; vertical-align:top\">${form.val.count}</div>\n        </div>\n      </div>\n      <div class=\"mdl-card__actions\" style=\"text-align:center\">\n        <md-button show.bind=\"type\" click.delegate=\"selectInventory(type, term)\">Show All Results</md-button>\n      </div>\n    </div>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--9-col full-height\">\n      <md-autocomplete\n        name = \"pro_searchbar\"\n        placeholder.bind=\"placeholder\"\n        value.bind=\"term\"\n        input.delegate=\"search() & debounce\"\n        keyup.delegate=\"scrollGroups($event) & debounce:50\"\n        style=\"margin:0px 24px; padding-right:15px\">\n        <table md-table>\n          <tr\n            name = \"pro_search_res\"\n            repeat.for=\"group of groups\"\n            click.delegate=\"selectTerm('generic', group.generic)\"\n            class=\"${ group.generic == term && 'is-selected'}\">\n            <td\n              style=\"min-width:70%\"\n              class=\"mdl-data-table__cell--non-numeric\"\n              innerHTML.bind=\"group.name | bold:term\">\n            </td>\n            <td style=\"max-width:30%\">\n              ${ account.ordered[group.generic] ? 'Price:$'+(account.ordered[group.generic].price30 ? account.ordered[group.generic].price30+'/30' : account.ordered[group.generic].price90+'/90')+' days, Min Qty:'+(account.ordered[group.generic].minQty || account.default.minQty) +', Min Days:'+(ordered[group.generic].minDays ||  account.default.minDays) : ''}\n            </td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <md-menu ref=\"menu\" name=\"pro_menu\" mousedown.delegate=\"openMenu($event)\" style=\"position:absolute; z-index:2; top:10px; right:5px;\">\n        <li\n          class=\"mdl-menu__item--full-bleed-divider\"\n          style =\"width:150px\"\n          name = \"pro_export\"\n          click.delegate=\"exportCSV()\">\n          Export Inventory\n        </li>\n        <li\n          style =\"width:150px\"\n          name = \"pro_dispense\"\n          disabled.bind=\" ! filter.checked.count\"\n          click.delegate=\"dispenseInventory()\">\n          Dispense Selected\n        </li>\n        <li\n          class=\"mdl-menu__item--full-bleed-divider\"\n          disabled.bind=\" ! filter.checked.count\"\n          click.delegate=\"disposeInventory()\">\n          Dispose Selected\n        </li>\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          name=\"pro_pend\"\n          show.bind=\"term.slice(0,6) == 'Pended'\"\n          disabled.bind=\" ! filter.checked.count\"\n          click.delegate=\"unpendInventory()\">\n          Unpend Selected\n        </li>\n        <li\n          repeat.for=\"match of matches\"\n          name=\"pro_pend\"\n          class=\"mdl-menu__item\"\n          click.delegate=\"pendInventory(match.pendId, match.pendQty)\">\n          Pend to ${match.pendId}\n        </li>\n        <li\n          name=\"pro_pend\"\n          disabled.bind=\" ! filter.checked.count\"\n          click.delegate=\"pendInventory(pendToId, pendToQty)\"\n          class=\"mdl-menu__item--full-bleed-divider\">\n          Pend\n          <md-input\n            value.bind=\"pendToId\"\n            placeholder=\"Name\"\n            disabled.bind=\" ! filter.checked.count\"\n            style=\"width:40px; font-size:14px\">\n          </md-input>\n          <md-input\n            type=\"number\"\n            min.bind=\"1\"\n            value.bind=\"pendToQty\"\n            placeholder=\"Qty\"\n            disabled.bind=\" ! filter.checked.count\"\n            style=\"width:40px; font-size:14px\">\n          </md-input>\n        </li>\n        <li\n          name=\"pro_pick\"\n          disabled.bind=\" ! filter.checked.count\"\n          click.delegate=\"pickInventory(basketNumber)\"\n          class=\"mdl-menu__item--full-bleed-divider\">\n          Pick\n          <md-input\n            pattern=\"[s|S|r|R|b|B|g|G][0-9]{2,3}\"\n            value.bind=\"basketNumber\"\n            placeholder=\"Basket\"\n            disabled.bind=\" ! filter.checked.count\"\n            style=\"width:60px; font-size:14px\">\n          </md-input>\n        </li>\n        <li\n          name=\"pro_print_selected\"\n          disabled.bind=\" ! filter.checked.count\"\n          click.delegate=\"printLabels()\">\n          Print Selected\n        </li>\n        <form>\n          <li form\n            name=\"pro_repack_selected\"\n            disabled.bind=\" ! repacks.drug || ! filter.checked.count\"\n            click.delegate=\"repackInventory()\">\n            Repack Selected\n          </li>\n          <li repeat.for=\"repack of repacks\" style=\"padding:0 16px\">\n            <md-input\n              required.bind=\" ! $last\"\n              type=\"number\"\n              name = \"pro_repack_qty\"\n              value.bind=\"repack.qty | number\"\n              min.bind=\"1\"\n              max.bind=\"repack.qty + repacks.excessQty\"\n              input.delegate=\"setRepackRows(repack, $last, $index) & debounce:500\"\n              disabled.bind=\" ! filter.checked.count\"\n              style=\"width:40px;\">\n              Qty\n            </md-input>\n            <md-input\n              required.bind=\"repack.qty\"\n              name = \"pro_repack_exp\"\n              value.bind=\"repack.exp | date\"\n              pattern=\"(0?[1-9]|1[012])/(1\\d|2\\d)\"\n              disabled.bind=\" ! filter.checked.count\"\n              style=\"width:40px;\">\n              Exp\n            </md-input>\n            <md-input\n              required.bind=\"repack.qty\"\n              name = \"pro_repack_bin\"\n              value.bind=\"repack.bin\"\n              pattern=\"[A-Z]\\d{2}\"\n              disabled.bind=\" ! filter.checked.count\"\n              style=\"width:40px;\">\n              Bin\n            </md-input>\n          </li>\n        </form>\n      </md-menu>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div class=\"table-wrap\">\n        <div show.bind=\"noResults\" style=\"margin:24px\">No Results</div>\n        <table show.bind=\" ! noResults && transactions.length\" md-table>\n          <thead>\n            <tr>\n              <th style=\"width:50px; padding:0\"></th>\n              <th class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0\">Drug</th>\n              <th style=\"width:80px\" class=\"mdl-data-table__cell--non-numeric\">Form</th>\n              <th style=\"width:100px\" class=\"mdl-data-table__cell--non-numeric\">Ndc</th>\n              <th style=\"text-align:left; width:60px;\">Exp</th>\n              <th style=\"text-align:left; width:60px;\">Qty</th>\n              <th style=\"text-align:left; width:60px;\">Bin</th>\n              <th style=\"width:48px\"></th>\n            </tr>\n          </thead>\n          <tr name = \"pro_transaction\" repeat.for=\"transaction of transactions | inventoryFilter:filter:term\" input.delegate=\"saveAndReconcileTransaction(transaction) & debounce:1000\">\n            <td style=\"padding:0\">\n              <md-checkbox name = \"pro_transaction_checkbox\" click.delegate=\"toggleCheck(transaction)\" checked.bind=\"transaction.isChecked\"></md-checkbox>\n            </td>\n            <td class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0; overflow:hidden\">${ transaction.drug.generic  & oneTime }</td>\n            <td class=\"mdl-data-table__cell--non-numeric\">${ transaction.drug.form  & oneTime }</td>\n            <td class=\"mdl-data-table__cell--non-numeric\">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') & oneTime }</td>\n            <td style=\"padding:0\">\n              <md-input\n                name = \"pro_transaction_exp\"\n                id.bind=\"'exp_'+$index\"\n                required\n                keydown.delegate=\"expShortcuts($event, $index)\"\n                pattern=\"(0?[1-9]|1[012])/(1\\d|2\\d)\"\n                value.bind=\"transaction.exp.to | date\"\n                style=\"width:40px; margin-bottom:-8px\"\n                placeholder>\n              </md-input>\n            </td>\n            <td style=\"padding:0\">\n              <md-input\n                name = \"pro_transaction_qty\"\n                id.bind=\"'qty_'+$index\"\n                required\n                keydown.delegate=\"qtyShortcutsKeydown($event, $index)\"\n                input.trigger=\"qtyShortcutsInput($event, $index) & debounce:300\"\n                disabled.bind=\"transaction.next[0] && ! transaction.next[0].pended\"\n                type=\"number\"\n                value.bind=\"transaction.qty.to | number\"\n                style=\"width:40px; margin-bottom:-8px\"\n                max.bind=\"3000\"\n                placeholder>\n              </md-input>\n            </td>\n            <!-- <td style=\"padding:0\">\n              <md-input\n                value.bind=\"transaction.rx.from\"\n                style=\"width:40px; margin-bottom:-8px\"\n                placeholder>\n              </md-input>\n            </td> -->\n            <td style=\"padding:0\">\n              <md-input\n                name = \"pro_transaction_bin\"\n                id.bind=\"'bin_'+$index\"\n                required\n                keydown.delegate=\"binShortcuts($event, $index)\"\n                pattern=\"[A-Z]\\d{2}|[A-Za-z]\\d{3}\"\n                value.bind=\"transaction.bin\"\n                style=\"width:40px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px\"\n                maxlength.bind=\"4\"\n                placeholder>\n              </md-input>\n            </td>\n            <td name=\"pro_repack_icon\" style=\"padding:0 0 0 16px\">\n              <i name=\"pro_icon\" click.delegate=\"showHistoryDialog(transaction._id)\" show.bind=\"isRepack(transaction)\" class=\"material-icons\" style=\"font-size:20px; cursor:pointer\">delete_sweep</i>\n              <i name=\"pro_icon\" click.delegate=\"showHistoryDialog(transaction._id)\" show.bind=\"! isRepack(transaction)\" class=\"material-icons show-on-hover\" style=\"font-size:20px; margin-left:-2px; margin-right:2px; cursor:pointer\">history</i>\n            </td>\n          </tr>\n        </table>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n    <dialog ref=\"dialog\" class=\"mdl-dialog\" style=\"width:800px; top:3%; height:90%; overflow-y:scroll\">\n    <h4 class=\"mdl-dialog__title\" style=\"padding: 3px 0\">History</h4>\n    <div class=\"mdl-dialog__content\" innerhtml.bind=\"history\" style=\"white-space:pre-wrap; font-family:monospace; padding:16px 2px\"></div>\n    <div class=\"mdl-dialog__actions\">\n      <md-button click.delegate=\"closeHistoryDialog()\">Close</md-button>\n    </div>\n  </dialog>\n  </section>\n</template>\n"; });
 define('text!client/src/views/join.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/md-loading\"></require>\n  <require from=\"client/src/elems/form\"></require>\n  <style>md-input { height:65px }</style>\n  <section class=\"mdl-grid\" style=\"height:80vh;\">\n    <form class=\"mdl-cell mdl-cell--11-col mdl-cell--middle mdl-grid\" style=\"margin:0 auto; max-width:930px\">\n      <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col\" style=\"padding:16px\">\n        <div class=\"mdl-card__title\" style=\"padding-left:0\">\n          <div class=\"mdl-card__title-text\">\n            Register Your Facility\n          </div>\n        </div>\n        <md-input value.bind=\"account.name\" name = \"pro_facility\" required>Facility</md-input>\n        <md-input value.bind=\"account.license\" name = \"pro_license\" required>License</md-input>\n        <md-input value.bind=\"account.phone\" type=\"tel\" name = \"pro_facility_phone\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Facility Phone</md-input>\n        <md-input value.bind=\"account.street\" name = \"pro_street\" required>Street</md-input>\n        <div class=\"mdl-grid\" style=\"padding:0; margin:0 -8px\">\n          <md-input value.bind=\"account.city\" name = \"pro_city\" class=\"mdl-cell mdl-cell--7-col\" required>City</md-input>\n          <md-input value.bind=\"account.state\" name = \"pro_state\" pattern=\"^[A-Z]{2}$\" class=\"mdl-cell mdl-cell--2-col\" required>State</md-input>\n          <md-input value.bind=\"account.zip\" name = \"pro_zip\" pattern=\"^\\d{5}$\" class=\"mdl-cell mdl-cell--3-col\" required>Zip</md-input>\n        </div>\n      </div>\n      <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col\" style=\"padding:16px\">\n        <div class=\"mdl-grid\" style=\"padding:0; margin:-8px\">\n          <md-input value.bind=\"user.name.first\" name = \"pro_first_name\" class=\"mdl-cell mdl-cell--6-col\" required>First Name</md-input>\n          <md-input value.bind=\"user.name.last\" name = \"pro_last_name\" class=\"mdl-cell mdl-cell--6-col\" required>Last Name</md-input>\n        </div>\n        <md-input value.bind=\"user.email\" type=\"email\" name = \"pro_email\" pattern=\"[\\w._-]{2,}@[\\w_-]{3,}\\.(com|org|net|gov)\" required>Email</md-input>\n        <md-input value.bind=\"user.phone\" type=\"tel\" name = \"pro_personal_phone\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Personal Phone</md-input>\n        <md-input value.bind=\"user.password\" name = \"pro_password\" required>Password</md-input>\n        <md-checkbox checked.bind=\"accept\" name = \"pro_checkbox\" style=\"margin:20px 0 28px\" required>I accept the terms of use</md-checkbox>\n        <md-button raised color form disabled.bind=\"disabled\" name = \"pro_install\" click.delegate=\"join()\">Install</md-button>\n        <md-loading value.bind=\"progress.docs_read/progress.doc_count * 100\"></md-loading>\n        <span class=\"mdl-color-text--grey-600\" style=\"margin-top:10px; height:20px; font-size:9px; margin-bottom:-8px\">${ progress.percent } ${ loading }</span>\n      </div>\n    </form>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
 define('text!client/src/views/login.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/md-loading\"></require>\n  <require from=\"client/src/elems/form\"></require>\n  <section class=\"mdl-grid\" style=\"margin-top:30vh;\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle\" style=\"width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px\">\n      <md-input name = \"pro_phone\" value.bind=\"phone\" type=\"tel\" pattern=\"^\\d{3}[.-]?\\d{3}[.-]?\\d{4}$\" required>Phone</md-input>\n      <md-input name = \"pro_password\" value.bind=\"password\" type=\"password\" required minlength=\"4\">Password</md-input>\n      <md-button\n        name = \"pro_button\"\n        raised color form\n        click.delegate=\"login()\"\n        disabled.bind=\"disabled\"\n        style=\"padding-top:16px\">\n        Login\n      </md-button>\n      <md-loading value.bind=\"progress.docs_read/progress.doc_count * 100\"></md-loading>\n      <p class=\"mdl-color-text--grey-600\" style=\"margin-top:10px; height:20px; font-size:9px\">${ progress.percent } ${ loading }</p>\n    </form>\n  </section>\n  <md-snackbar ref=\"snackbar\"></md-snackbar>\n</template>\n"; });
-define('text!client/src/views/picking.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from='client/src/elems/md-table'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-switch\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-autocomplete\"></require>\n  <require from=\"client/src/elems/md-menu\"></require>\n  <require from=\"client/src/elems/form\"></require>\n\n  <style>\n    .mdl-button:hover { background-color:initial , overflow-y:hidden}\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n  </style>\n\n\n  <section class=\"mdl-grid au-animate\">\n\n    <div if.bind = \"!orderSelectedToShop\">\n\n      <div>\n        Picked Today: ${pickedCount ? pickedCount : 0}\n      </div>\n\n      <md-input\n        autoselect\n        value.bind=\"pendedFilter\"\n        style=\"padding-bottom:15; font-size:18px; width:90vw;\">\n        Select Group\n      </md-input>\n\n      <div style=\"height:100vh; overflow-y:scroll\">\n        <div\n          repeat.for=\"pend of groups | pendedFilter:pendedFilter\"\n          click.delegate=\"selectGroup(pend.locked, pend.name)\"\n          class=\"mdl-typography--title ${ term == 'Pended '+pend.name ? 'mdl-navigation__link--current' : ''}\"\n          style=\"font-size:30px; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding-bottom: 50px;\">\n          ${pend.name}\n          <md-button if.bind=\"pend.locked\" style=\"float:right; height:15px; line-height:10px\" color=\"accent\" raised click.delegate=\"unlockGroup(pend.name)\">${pend.locked == 'unlocking' ? '...unlocking...' : 'unlock'}</md-button>\n        </div>\n      </div>\n    </div>\n\n    <div if.bind = \"orderSelectedToShop\">\n\n      <div if.bind = \"!groupLoaded\" style=\"margin-top:40vh; margin-left:35vw; font-size:5vh\">\n        Loading...\n      </div>\n\n      <div if.bind = \"groupLoaded && !basketSaved\" style=\"width:100vw; height:100vh;\">\n        <div style = \"font-size:2.7vh; position:absolute; top:5px; left:20%; width:50%; line-height:5vh; text-align:center; overflow-x:hidden;\">${shopList[shoppingIndex].raw.next[0].pended.group}</div>\n\n        <div style=\"position:absolute; top:7vh; width:100%; font-size:4vh; display:inline-block\">\n          <div style=\"line-height:5vh\">${shopList[shoppingIndex].raw.drug.generic}</div>\n          <div style=\"font-size:3vh; line-height:4vh;\" if.bind = \"shopList[shoppingIndex].raw.drug.brand.length > 0\">${shopList[shoppingIndex].raw.drug.brand}</div>\n        </div>\n\n        <div style=\"position:absolute; top:24vh; width:100%\">\n          <form name=\"basket_adding_form\">\n            <div style=\"font-size:30px; line-height:10vh\">Enter new basket number:</div>\n            <div stlye=\"float:left\">\n              <md-input maxlength.bind=\"4\" pattern=\"[S|R|B][4-9][0-9]{2}|G[0-9]{2}\" required type=\"tel\" style=\"float:left; font-size:20px; width:70%;\" value.bind = \"shopList[shoppingIndex].extra.basketNumber\">Basket Number</md-input>\n            </div>\n            <div style=\"float:right; padding-right:7vw; margin-top:2vh\"><md-button color form = \"basket_adding_form\" raised click.delegate=\"saveBasketNumber()\">Save</md-button></div>\n          </form>\n        </div>\n\n        <md-button style=\"float:left; height:2vh; top:70vh; position:absolute; line-height:2vh;\" color click.delegate=\"pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)\">Pause</md-button>\n\n      </div>\n\n      <div style=\"width:100%; position:relative; overflow-y:hidden\" if.bind = \"groupLoaded && basketSaved\">\n\n        <div style=\"width:100%;display:inline-block;padding-bottom:0.5vh\">\n\n          <div style=\"float:left\">\n            <md-button style=\"float:left\" color raised show.bind=\"shoppingIndex>0\"click.delegate=\"moveShoppingBackward()\">Back</md-button>\n          </div>\n\n          <div style=\"font-size:2.7vh; position:absolute; top:5px; left:20%; width:50%; line-height:5vh; text-align:center; overflow-x:hidden;\">${shopList[shoppingIndex].raw.next[0].pended.group}</div>\n\n          <div style=\"float:right\" >\n            <md-button style=\"float:right\" disabled.bind=\"!formComplete\" color raised click.delegate=\"moveShoppingForward()\">${nextButtonText}</md-button>\n          </div>\n        </div>\n\n\n        <div style=\"width:100%; max-height:11vh; overflow-x:hidden\">\n          <div style=\"font-size:4.5vh; line-height:5vh;\">${shopList[shoppingIndex].raw.drug.generic}</div>\n          <div style=\"font-size:3vh; line-height:4vh;\" if.bind = \"shopList[shoppingIndex].raw.drug.brand.length > 0\">${shopList[shoppingIndex].raw.drug.brand}</div>\n        </div>\n\n        <div style=\"width:100%;display:inline-block; text-align:center;\">\n\n          <div style=\"float:left; text-align:left; width:47vw; height:100%;vertical-align:middle\">\n            <div style=\"font: 400 60px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;\"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>\n            <div style=\"font-size:30px;padding-bottom:3vh\"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>\n            <div style=\"font-size:20px; padding-bottom:2vh\"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>\n          </div>\n          <div style=\"float:right; height:30vh; width:43vw; position:relative\">\n            <img\n              style=\"max-height:100%;max-width:100%;height:auto;width:auto;position:absolute;top:0;bottom:0;left:0;right:0;margin:auto\"\n              if.bind=\"shopList[shoppingIndex].extra.image\"\n              src.bind=\"shopList[shoppingIndex].extra.image\"/>\n          </div>\n        </div>\n\n        <div style=\"width:100%; display:inline-block; padding-bottom:0vh\">\n          <div style=\"width:45%; float:left; margin-top:3vh;\">\n              <div style=\"font-size:3vh; line-height:3vh; padding-bottom:1vh;\"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>\n              <div if.bind = \"shoppingIndex < shopList.length - 1\" style=\"font-size:3vh; line-height:3vh; padding-bottom:.5vh\"><b>Next Bin: </b><span style=\"color:${shopList[shoppingIndex].raw.bin == shopList[shoppingIndex+1].raw.bin ? 'red' : ((shopList[shoppingIndex].raw.bin.length == 4) && (shopList[shoppingIndex].raw.bin.slice(0,-1) == shopList[shoppingIndex+1].raw.bin.slice(0,-1)) ? 'orange' : '')}\">${shopList[shoppingIndex+1].raw.bin}</span></div>\n              <div>\n                <div class = \"mdl-button mdl-js-button mdl-js-ripple-effect\" click.delegate=\"addBasket()\" style=\"font-size:3vh; color:#00587B; padding-left:0; margin-top:.25vh; padding-bottom:1vh; padding-right:0px; padding-top:0px;height:3vh; line-height:3vh;\" >Basket:</div>\n                <span style= \"font-size:2.5vh; \">${(shopList[shoppingIndex].extra.basketNumber + currentGenericBaskets.replace(\",\" + shopList[shoppingIndex].extra.basketNumber,\"\"))}</span>\n              </div>\n              <div style=\"font-size:2vh; line-height:2vh; padding-top:2vh; padding-bottom:0.5vh\">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>\n              <div style=\"font-size:2vh; line-height:2vh; padding-bottom:0,5vh\">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>\n              <div style=\"font-size:2vh; line-height:2vh; padding-bottom:3vh\">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>\n              <div style=\"display:inline-block;\">\n                 <md-button style=\"float:left; height:2vh; line-height:2vh;\" color click.delegate=\"pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)\">Pause</md-button>\n                 <md-button style=\"float:right; height:2vh; line-height:2vh\" color click.delegate=\"skipItem()\">Skip</md-button>\n              </div>\n          </div>\n          <div style=\"width:50%; float:right; margin-top:2vh\">\n            <div style=\"width:40vw; text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh; color: ${shopList[shoppingIndex].extra.outcome.exact_match ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.exact_match ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect\"\n            click.delegate=\"selectShoppingOption('exact_match')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.exact_match\">Exact Match</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('roughly_equal')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.roughly_equal\">+/- 3 Qty</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.slot_before ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_before ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('slot_before')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.slot_before\">Slot Before</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.slot_after ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_after ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('slot_after')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.slot_after\">Slot After</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh;padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.missing ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.missing ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('missing')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.missing\">Missing</div>\n          </div>\n        </div>\n\n        <div style=\"margin:auto; font-size:7px\">\n          ${shopList[shoppingIndex].raw._id}\n        </div>\n\n        <div>\n          <md-snackbar ref=\"snackbar\"></md-snackbar>\n        </div>\n\n      </div>\n    </div>\n\n  </section>\n</template>\n"; });
+define('text!client/src/views/picking.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from='client/src/elems/md-table'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-switch\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-autocomplete\"></require>\n  <require from=\"client/src/elems/md-menu\"></require>\n  <require from=\"client/src/elems/form\"></require>\n\n  <style>\n    .mdl-button:hover { background-color:initial , overflow-y:hidden}\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n  </style>\n\n\n  <section class=\"mdl-grid au-animate\">\n\n    <div if.bind = \"!orderSelectedToShop\">\n\n      <div>\n        Picked Today: ${pickedCount ? pickedCount : 0}\n      </div>\n\n      <md-input\n        autoselect\n        value.bind=\"pendedFilter\"\n        style=\"padding-bottom:15; font-size:18px; width:90vw;\">\n        Select Group\n      </md-input>\n\n      <div style=\"height:90vh; width:90vw; overflow-y:scroll\">\n        <div\n          repeat.for=\"pend of groups | pendedFilter:pendedFilter\"\n          click.delegate=\"selectGroup(pend.locked, pend.name)\"\n          class=\"mdl-typography--title ${ term == 'Pended '+pend.name ? 'mdl-navigation__link--current' : ''}\"\n          style=\"font-size:30px; overflow-x:scroll; width:90vw; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding-bottom: 50px;\">\n          ${pend.name}\n          <div if.bind = \"pend.baskets.length > 0\" style =\"font-size:15px;font-weight:200\">(${pend.baskets.join(\",\")})</div>\n          <md-button if.bind=\"pend.locked\" style=\"float:right; height:15px; line-height:10px\" color=\"accent\" raised click.delegate=\"unlockGroup(pend.name)\">${pend.locked == 'unlocking' ? '...unlocking...' : 'unlock'}</md-button>\n        </div>\n      </div>\n    </div>\n\n    <div if.bind = \"orderSelectedToShop\">\n\n      <div if.bind = \"!groupLoaded\" style=\"margin-top:40vh; margin-left:35vw; font-size:5vh\">\n        Loading...\n      </div>\n\n      <div if.bind = \"groupLoaded && !basketSaved\" style=\"width:100vw; height:100vh;\">\n        <div style = \"font-size:2.7vh; position:absolute; top:5px; left:20%; width:50%; line-height:5vh; text-align:center; overflow-x:hidden;\">${shopList[shoppingIndex].raw.next[0].pended.group}</div>\n\n        <div style=\"position:absolute; top:7vh; width:100%; font-size:4vh; display:inline-block\">\n          <div style=\"line-height:5vh\">${shopList[shoppingIndex].raw.drug.generic}</div>\n          <div style=\"font-size:3vh; line-height:4vh;\" if.bind = \"shopList[shoppingIndex].raw.drug.brand.length > 0\">${shopList[shoppingIndex].raw.drug.brand}</div>\n        </div>\n\n        <div style=\"position:absolute; top:24vh; width:100%\">\n          <form name=\"basket_adding_form\">\n\n            <div style=\"font-size:30px; line-height:10vh\">Enter new basket number:</div>\n            <div stlye=\"float:left; display:inline-block\">\n                <div style=\"float:left\">\n                  <md-select\n                    name = \"pro_basket_letter\"\n                    style=\"font-size: 20px; width:10vw; vertical-align:bottom; padding-top:23px\"\n                    value.bind=\"shopList[shoppingIndex].extra.basketLetter\"\n                    options.bind=\"basketOptions\"\n                  </md-select>\n                </div>\n                <md-input autofocus maxlength.bind=\"3\" pattern=\"${shopList[shoppingIndex].extra.basketLetter == 'G' ? '[0-9]{2}': '[4-9][0-9]{2}'}\" required type=\"tel\" style=\" font-size:20px; width:50vw;\" value.bind = \"shopList[shoppingIndex].extra.basketNumber\">Basket Number</md-input>\n                <div style=\"float:right; padding-right:7vw; margin-top:2vh\"><md-button color form = \"basket_adding_form\" raised click.delegate=\"saveBasketNumber()\">Save</md-button></div>\n            </div>\n\n          </form>\n        </div>\n\n        <md-button style=\"float:left; height:2vh; top:70vh; position:absolute; line-height:2vh;\" color click.delegate=\"pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)\">Pause</md-button>\n\n      </div>\n\n      <div style=\"width:100%; position:relative; overflow-y:hidden\" if.bind = \"groupLoaded && basketSaved\">\n\n        <div style=\"width:100%;display:inline-block;padding-bottom:0.5vh\">\n\n          <div style=\"float:left\">\n            <md-button style=\"float:left\" color raised show.bind=\"shoppingIndex>0\"click.delegate=\"moveShoppingBackward()\">Back</md-button>\n          </div>\n\n          <div style=\"font-size:2.7vh; position:absolute; top:5px; left:20%; width:50%; line-height:5vh; text-align:center; overflow-x:hidden;\">${shopList[shoppingIndex].raw.next[0].pended.group}</div>\n\n          <div style=\"float:right\" >\n            <md-button style=\"float:right\" disabled.bind=\"!formComplete\" color raised click.delegate=\"moveShoppingForward()\">${nextButtonText}</md-button>\n          </div>\n        </div>\n\n\n        <div style=\"width:100%; max-height:11vh; overflow-x:hidden\">\n          <div style=\"font-size:4.5vh; line-height:5vh;\">${shopList[shoppingIndex].raw.drug.generic}</div>\n          <div style=\"font-size:3vh; line-height:4vh;\" if.bind = \"shopList[shoppingIndex].raw.drug.brand.length > 0\">${shopList[shoppingIndex].raw.drug.brand}</div>\n        </div>\n\n        <div style=\"width:100%;display:inline-block; text-align:center;\">\n\n          <div style=\"float:left; text-align:left; width:47vw; height:100%;vertical-align:middle\">\n            <div style=\"font: 400 60px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;\"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>\n            <div style=\"font-size:30px;padding-bottom:3vh\"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>\n            <div style=\"font-size:20px; padding-bottom:2vh\"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>\n          </div>\n          <div style=\"float:right; height:30vh; width:43vw; position:relative\">\n            <img\n              style=\"max-height:100%;max-width:100%;height:auto;width:auto;position:absolute;top:0;bottom:0;left:0;right:0;margin:auto\"\n              if.bind=\"shopList[shoppingIndex].extra.image\"\n              src.bind=\"shopList[shoppingIndex].extra.image\"/>\n          </div>\n        </div>\n\n        <div style=\"width:100%; display:inline-block; padding-bottom:0vh\">\n          <div style=\"width:45%; float:left; margin-top:3vh;\">\n              <div if.bind = \"(shoppingIndex < shopList.length - 1) && (shopList[shoppingIndex].raw.drug.generic == shopList[shoppingIndex+1].raw.drug.generic)\" style=\"font-size:3vh; line-height:3vh; padding-bottom:.5vh\">\n                <b>Next Bin: </b>\n                <span style=\"color:${shopList[shoppingIndex].raw.bin == shopList[shoppingIndex+1].raw.bin ? 'red' : ((shopList[shoppingIndex].raw.bin.length == 4) && (shopList[shoppingIndex].raw.bin.slice(0,-1) == shopList[shoppingIndex+1].raw.bin.slice(0,-1)) ? 'orange' : '')}\">\n                  ${shopList[shoppingIndex+1].raw.bin.length == 3 ? shopList[shoppingIndex+1].raw.bin : (shopList[shoppingIndex+1].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex+1].raw.bin.slice(3,4))}\n                </span>\n              </div>\n              <div style=\"font-size:3vh; line-height:3vh; padding-bottom:1vh;\"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>\n              <div>\n                <div class = \"mdl-button mdl-js-button mdl-js-ripple-effect\" click.delegate=\"addBasket(shoppingIndex)\" style=\"font-size:3vh; color:#00587B; padding-left:0; margin-top:.25vh; padding-bottom:1vh; padding-right:0px; padding-top:0px;height:3vh; line-height:3vh;\" >Basket:</div>\n                <span style= \"font-size:2.5vh; \">${(shopList[shoppingIndex].extra.fullBasket + currentGenericBaskets.replace(\",\" + shopList[shoppingIndex].extra.fullBasket,\"\"))}</span>\n              </div>\n              <div style=\"font-size:2vh; line-height:2vh; padding-top:2vh; padding-bottom:0.5vh\">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>\n              <div style=\"font-size:2vh; line-height:2vh; padding-bottom:0,5vh\">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>\n              <div style=\"font-size:2vh; line-height:2vh; padding-bottom:3vh\">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>\n              <div style=\"display:inline-block;\">\n                 <md-button style=\"float:left; height:2vh; line-height:2vh;\" color click.delegate=\"pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)\">Pause</md-button>\n                 <md-button if.bind = \"(shoppingIndex < shopList.length - 1) && (shopList[shoppingIndex].raw.drug.generic == shopList[shoppingIndex+1].raw.drug.generic)\" style=\"float:right; height:2vh; line-height:2vh\" color click.delegate=\"skipItem()\">Skip</md-button>\n              </div>\n          </div>\n          <div style=\"width:50%; float:right; margin-top:2vh\">\n            <div style=\"width:40vw; text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh; color: ${shopList[shoppingIndex].extra.outcome.exact_match ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.exact_match ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect\"\n            click.delegate=\"selectShoppingOption('exact_match')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.exact_match\">Exact Match</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('roughly_equal')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.roughly_equal\">+/- 3 Qty</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.slot_before ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_before ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('slot_before')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.slot_before\">Slot Before</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.slot_after ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_after ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('slot_after')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.slot_after\">Slot After</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh;padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.missing ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.missing ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('missing')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.missing\">Missing</div>\n          </div>\n        </div>\n\n        <div style=\"margin:auto; font-size:7px\">\n          ${shopList[shoppingIndex].raw._id}\n        </div>\n\n        <div>\n          <md-snackbar ref=\"snackbar\"></md-snackbar>\n        </div>\n\n      </div>\n    </div>\n\n  </section>\n</template>\n"; });
 define('text!client/src/views/routes.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"mdl-layout mdl-js-layout mdl-layout--fixed-header\">\n    <header class=\"mdl-layout__header hide-when-printed\">\n      <div class=\"mdl-layout__header-row\">\n        <svg style=\"height:70%; margin-left:-60px\" id=\"Layer_1\" width=\"200\" version=\"1.1\" xmlns:x=\"&amp;ns_extend;\" xmlns:i=\"&amp;ns_ai;\" xmlns:graph=\"&amp;ns_graphs;\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 1920 737\" style=\"enable-background:new 0 0 1920 737;\" xml:space=\"preserve\">\n            <style type=\"text/css\">\n              .st0{fill:#3E4454;}\n              .st1{fill:#2291F8;}\n            </style>\n            <switch>\n              <foreignObject requiredExtensions=\"&amp;ns_ai;\" x=\"0\" y=\"0\" width=\"1\" height=\"1\">\n                <i:pgfref xlink:href=\"#adobe_illustrator_pgf\"></i:pgfref>\n              </foreignObject>\n              <g i:extraneous=\"self\">\n                <g>\n                  <g>\n                    <g>\n                      <path class=\"st0\" d=\"M936.21,505.42h-65.3c-15.02,0-29.12-6.14-37.71-16.43c-5.52-6.61-8.43-14.42-8.43-22.61V445.5            c0-7.72,6.26-13.99,13.99-13.99s13.99,6.26,13.99,13.99v20.88c0,1.57,0.65,3.15,1.93,4.68c2.58,3.09,8.2,6.39,16.24,6.39h65.3            c10.4,0,18.17-5.84,18.17-11.07v-3.65c0-50.36-26.7-62.73-60.5-78.39c-33.1-15.33-74.28-34.41-74.28-98.52v-3.65            c0-21.52,20.7-39.04,46.14-39.04h67.19c25.44,0,46.14,17.51,46.14,39.04v24.58c0,7.72-6.26,13.99-13.99,13.99            s-13.99-6.26-13.99-13.99v-24.58c0-5.22-7.77-11.07-18.17-11.07h-67.19c-10.4,0-18.17,5.84-18.17,11.07v3.65            c0,46.24,25.63,58.11,58.07,73.14c34.18,15.83,76.71,35.54,76.71,103.77v3.65C982.34,487.91,961.65,505.42,936.21,505.42z\"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1539.63,505.42h-31.75c-41.3,0-74.89-33.6-74.89-74.89V257.12c0-7.72,6.26-13.99,13.99-13.99            c7.72,0,13.99,6.26,13.99,13.99v173.41c0,25.87,21.05,46.92,46.92,46.92h31.75c25.87,0,46.92-21.05,46.92-46.92V257.12            c0-7.72,6.26-13.99,13.99-13.99c7.72,0,13.99,6.26,13.99,13.99v173.41C1614.52,471.83,1580.92,505.42,1539.63,505.42z\"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1083.31,507.71c-7.72,0-13.99-6.26-13.99-13.99v-237.5c0-7.72,6.26-13.99,13.99-13.99            c7.72,0,13.99,6.26,13.99,13.99v237.5C1097.3,501.45,1091.04,507.71,1083.31,507.71z\"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1200.89,507.71c-7.72,0-13.99-6.26-13.99-13.99v-236.6c0-7.72,6.26-13.99,13.99-13.99h90.93            c28.36,0,51.44,23.07,51.44,51.44v43.26c0,28.36-23.08,51.44-51.44,51.44h-76.95v104.45            C1214.88,501.45,1208.62,507.71,1200.89,507.71z M1214.88,361.3h76.95c12.94,0,23.47-10.53,23.47-23.47v-43.26            c0-12.94-10.53-23.47-23.47-23.47h-76.95V361.3z\"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1339.71,507.71c-4.83,0-9.53-2.51-12.12-6.99l-66.43-114.97c-3.86-6.69-1.57-15.24,5.11-19.11            c6.69-3.86,15.25-1.57,19.11,5.11l66.43,114.97c3.86,6.69,1.57,15.24-5.11,19.11C1344.49,507.1,1342.08,507.71,1339.71,507.71z            \"></path>\n                    </g>\n                    <g>\n                      <path class=\"st0\" d=\"M1906.01,507.15c-7.72,0-13.99-6.26-13.99-13.99V315.99l-68.38,138.91c-2.35,4.78-7.22,7.81-12.55,7.81            c-5.33,0-10.19-3.03-12.55-7.81l-68.38-138.91v177.17c0,7.72-6.26,13.99-13.99,13.99c-7.72,0-13.99-6.26-13.99-13.99V255.92            c0-6.5,4.48-12.15,10.82-13.62c6.32-1.48,12.85,1.61,15.72,7.44l82.37,167.32l82.37-167.32c2.87-5.83,9.39-8.92,15.72-7.44            c6.33,1.47,10.82,7.12,10.82,13.62v237.24C1920,500.88,1913.74,507.15,1906.01,507.15z\"></path>\n                    </g>\n                  </g>\n                    <path class=\"st1\" d=\"M604.45,130.92L411.49,19.52C366.42-6.5,310.88-6.5,265.8,19.52L72.85,130.92C27.77,156.95,0,205.05,0,257.1        v222.8c0,52.05,27.77,100.15,72.85,126.18l192.95,111.4c45.08,26.03,100.62,26.03,145.69,0l192.95-111.4        c45.08-26.03,72.85-74.12,72.85-126.18V257.1C677.29,205.05,649.52,156.95,604.45,130.92z M568.58,406.37        c0,13-5.07,25.22-14.27,34.4c-9.18,9.17-21.37,14.21-34.34,14.21c-0.03,0-0.06,0-0.08,0l-13-0.02        c-88.13,0-132.33-40.27-175.08-79.21c-41.58-37.88-80.86-73.66-160.54-73.66h-13.94c-15.7,0-28.47,12.77-28.47,28.47v73.98        c0,19.7,16.03,35.73,35.73,35.73l154.58,0.17c59.34,0.06,111.39,47.64,111.39,101.83c0,30.81-25.07,55.87-55.88,55.87H302.6        c-30.81,0-55.87-25.07-55.87-55.87c0-0.35,0.02-0.7,0.05-1.04v-29.99c0-5.56,4.51-10.07,10.07-10.07        c5.56,0,10.07,4.51,10.07,10.07v30.93c0,0.31-0.01,0.63-0.04,0.94c0.45,19.31,16.3,34.89,35.72,34.89h72.09        c19.7,0,35.73-16.03,35.73-35.73c0-38.51-39.03-81.63-91.27-81.68l-154.57-0.17c-30.8,0-55.87-25.07-55.87-55.87v-73.98        c0-26.8,21.81-48.61,48.61-48.61h13.94c87.48,0,131.51,40.11,174.1,78.91c41.75,38.03,81.19,73.96,161.53,73.96l13.01,0.02        c0.02,0,0.03,0,0.05,0c7.6,0,14.73-2.95,20.11-8.32c5.39-5.38,8.35-12.53,8.35-20.15v-73.92c0-19.7-16.03-35.73-35.73-35.73        l-148.42-0.16c-54.49-0.06-117.84-44.55-117.84-101.83c0-30.81,25.07-55.87,55.88-55.87h72.09c30.81,0,55.88,25.07,55.88,55.87        c0,0.35-0.02,0.7-0.05,1.04v29.99c0,5.56-4.51,10.07-10.07,10.07s-10.07-4.51-10.07-10.07v-30.93c0-0.31,0.01-0.63,0.04-0.94        c-0.45-19.31-16.3-34.89-35.72-34.89h-72.09c-19.7,0-35.73,16.03-35.73,35.73c0,45.2,53.46,81.64,97.72,81.69l148.41,0.16        c30.8,0,55.86,25.07,55.86,55.87V406.37z\"></path>\n                  </g>\n                </g>\n            </switch>\n        </svg>\n        <span class=\"mdl-layout-title\"></span>\n        <!-- Add spacer, to align navigation to the right -->\n        <div class=\"mdl-layout-spacer\"></div>\n        <nav class=\"mdl-navigation\">\n          <a repeat.for=\"route of routes\" show.bind=\"route.isVisible\" class=\"mdl-navigation__link ${route.isActive ? 'mdl-navigation__link--current' : ''}\" href.bind=\"route.href\" style=\"\">\n            ${route.title}\n          </a>\n        </nav>\n      </div>\n    </header>\n    <main class=\"mdl-layout__content\">\n      <!-- http://stackoverflow.com/questions/33636796/chrome-safari-not-filling-100-height-of-flex-parent -->\n      <router-view style=\"display:block;\"></router-view>\n    </main>\n  </div>\n</template>\n"; });
-define('text!client/src/views/shipments.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from='client/src/elems/md-table'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-switch\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-menu\"></require>\n  <require from=\"client/src/elems/md-autocomplete\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/form\"></require>\n  <md-drawer autofocus>\n    <md-input\n      name = \"pro_filter_input\"\n      value.bind=\"filter\"\n      autoselect\n      style=\"padding:0 8px; width:auto\">\n      Filter shipments ${ role.accounts } you\n    </md-input>\n    <!-- <md-switch\n      checked.one-way=\"role.account == 'to'\"\n      click.delegate=\"swapRole()\"\n      style=\"margin:-33px 0 0 185px;\">\n    </md-switch> -->\n    <a\n      name = \"new_shipment\"\n      if.bind=\" ! filter\"\n      class=\"mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(null, true)\">\n      <div class=\"mdl-typography--title\">New Shipment</div>\n      or add inventory\n    </a>\n    <a\n      name = \"pro_shipments\"\n      repeat.for=\"shipment of shipments[role.shipments] | shipmentFilter:filter\"\n      class=\"mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(shipment, true)\">\n      <div class=\"mdl-typography--title\" innerHtml.bind=\"shipment.account[role.accounts].name | bold:filter\"></div>\n      <div style=\"font-size:12px\" innerHtml.bind=\"shipment._id.slice(11, 21)+', '+(shipment.tracking.slice(-6) || shipment.tracking) | bold:filter\"></div>\n    </a>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--3-col full-height\">\n      <div class=\"mdl-card__title\" style=\"display:block;\">\n        <div class=\"mdl-card__title-text\" style=\"text-transform:capitalize\">\n          ${ shipment._rev ? 'Shipment '+(shipment.tracking.slice(-6) || shipment.tracking) : 'New Shipment '+role.accounts+' You' }\n        </div>\n        <div style=\"margin-top:3px; margin-bottom:-25px\">\n          <strong>${transactions.length}</strong> items worth\n          <strong>$${ transactions | value:0:transactions.length }</strong>\n        </div>\n      </div>\n      <div class=\"mdl-card__supporting-text\" style=\"font-size:16px;\">\n        <md-select\n          if.bind=\"role.shipments == 'from' || shipment._rev\"\n          change.delegate=\"setCheckboxes()\"\n          style=\"width:100%\"\n          value.bind=\"shipment\"\n          default.bind=\"{tracking:'New Tracking #', account:{from:account, to:account}}\"\n          options.bind=\"shipments[role.shipments]\"\n          property=\"tracking\">\n          Tracking #\n        </md-select>\n        <md-input\n          name = \"pro_tracking_input\"\n          if.bind=\"role.shipments == 'to' && ! shipment._rev\"\n          focusin.delegate=\"setCheckboxes()\"\n          autofocus\n          required\n          style=\"width:100%\"\n          pattern=\"[a-zA-Z\\d]{6,}\"\n          value.bind=\"shipment.tracking\">\n          Tracking #\n        </md-input>\n        <md-select\n          name = \"pro_from_option\"\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.from\"\n          options.bind=\"(role.accounts == 'to' || shipment._rev) ? [shipment.account.from] : accounts[role.accounts]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.accounts == 'to'\">\n          <!-- disabled is for highlighting the current role -->\n          From\n        </md-select>\n        <md-select\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.to\"\n          options.bind=\"(role.accounts == 'from' || shipment._rev) ? [shipment.account.to] : accounts[role.accounts]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.accounts == 'from'\">\n          <!-- disabled is for highlighting the current role -->\n          To\n        </md-select>\n        <md-select\n          style=\"width:32%;\"\n          value.bind=\"shipment.status\"\n          options.bind=\"stati\"\n          disabled.bind=\"! shipment._rev\">\n          Status\n        </md-select>\n        <md-input\n          type=\"date\"\n          style=\"width:64%; margin-top:20px\"\n          value.bind=\"shipment[shipment.status+'At']\"\n          disabled.bind=\"! shipment._rev\"\n          input.delegate=\"saveShipment() & debounce:1500\">\n        </md-input>\n        <!-- <md-select\n          style=\"width:100%\"\n          value.bind=\"attachment.name\"\n          change.delegate=\"getAttachment()\"\n          options.bind=\"['','Shipping Label', 'Manifest']\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Attachment\n        </md-select>\n        <md-button color\n          if.bind=\"attachment.name\"\n          click.delegate=\"upload.click()\"\n          style=\"position:absolute; right:18px; margin-top:-48px; height:24px; line-height:24px\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Upload\n        </md-button>\n        <input\n          type=\"file\"\n          ref=\"upload\"\n          change.delegate=\"setAttachment(upload.files[0])\"\n          style=\"display:none\">\n        <div if.bind=\"attachment.url\" style=\"width: 100%; padding-top:56px; padding-bottom:129%; position:relative;\">\n          <embed\n            src.bind=\"attachment.url\"\n            type.bind=\"attachment.type\"\n            style=\"position:absolute; height:100%; width:100%; top:0; bottom:0\">\n        </div> -->\n        <!-- The above padding / positioning keeps a constant aspect ratio for the embeded pdf  -->\n      </div>\n      <div class=\"mdl-card__actions\">\n        <md-button color raised form\n          name = \"pro_create_button\"\n          ref=\"newShipmentButton\"\n          style=\"width:100%\"\n          show.bind=\"shipment._id == shipmentId && ! shipment._rev\"\n          click.delegate=\"createShipment()\">\n          New Shipment Of ${ diffs.length || 'No' } Items\n        </md-button>\n        <md-button color raised\n          ref=\"moveItemsButton\"\n          style=\"width:100%\"\n          show.bind=\"shipment._id != shipmentId\"\n          disabled.bind=\"! diffs.length || ! shipment.account.to._id\"\n          click.delegate=\"shipment._rev ? moveTransactionsToShipment(shipment) : createShipment()\">\n          Move ${ diffs.length } Items\n        </md-button>\n      </div>\n    </form>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--9-col full-height\">\n      <!-- disabled.bind=\"! searchReady\" -->\n      <md-autocomplete\n        name = \"pro_searchbar\"\n        value.bind=\"term\"\n        input.delegate=\"search() & debounce:50\"\n        keydown.delegate=\"autocompleteShortcuts($event) & debounce:50\"\n        style=\"margin:0px 24px\">\n        <table md-table>\n          <tr\n            repeat.for=\"drug of drugs\"\n            click.delegate=\"addTransaction(drug)\"\n            class=\"${ drug._id == $parent.drug._id && 'is-selected'}\">\n            <td innerHTML.bind=\"drug.generic | bold:term\" style=\"white-space:normal;\" class=\"mdl-data-table__cell--non-numeric\" ></td>\n            <td innerHTML.bind=\"drug.labeler\" style=\"width:1%\" class=\"mdl-data-table__cell--non-numeric\" ></td>\n            <td innerHTML.bind=\"drug._id + (drug.pkg ? '-'+drug.pkg : '')\" style=\"width:1%\" class=\"mdl-data-table__cell--non-numeric\" ></td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <md-menu style=\"position:absolute; z-index:2; top:10px; right:5px;\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          show.bind=\"transactions.length\"\n          click.delegate=\"exportCSV()\">\n          Export CSV\n        </li>\n        <li\n          show.bind=\"!transactions.length\"\n          disabled>\n          Export CSV\n        </li>\n        <li\n          show.bind=\"role.accounts != 'to' || shipment._rev\"\n          click.delegate=\"$file.click()\">\n          Import CSV\n        </li>\n        <li\n          show.bind=\"role.accounts == 'to' && ! shipment._rev\"\n          disabled>\n          Import CSV\n        </li>\n      </md-menu>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div class=\"table-wrap\">\n        <table md-table>\n          <thead>\n            <tr>\n              <th style=\"width:56px\"></th>\n              <th class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0\">Drug</th>\n              <th style=\"width:100px;\" class=\"mdl-data-table__cell--non-numeric\">Ndc</th>\n              <th style=\"width:40px; padding-left:0; padding-right:0px\">Value</th>\n              <th style=\"text-align:left; width:60px;\">Exp</th>\n              <th style=\"text-align:left; width:60px\">Qty</th>\n              <!-- 84px account for the 24px of padding-right on index.html's css td:last-child -->\n              <th style=\"text-align:left; width:84px;\">Bin</th>\n            </tr>\n          </thead>\n          <tbody>\n            <tr style=\"padding-top:7px;\" name = \"pro_transaction\" repeat.for=\"transaction of transactions\" input.delegate=\"saveTransaction(transaction) & debounce:1500\">\n              <td style=\"padding:0 0 0 8px\">\n                <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->\n                <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->\n                <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use next[0].disposed directly rather than isChecked because autocheck coerces isChecked to be out of sync -->\n                <md-checkbox\n                  name = \"pro_checkbox\"\n                  click.delegate=\"manualCheck($index)\"\n                  disabled.bind=\" ! moveItemsButton.offsetParent && ! newShipmentButton.offsetParent && transaction.isChecked && transaction.next[0]\"\n                  checked.bind=\"transaction.isChecked\">\n                </md-checkbox>\n\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0; overflow:hidden\">\n                ${ transaction.drug.generic & oneTime }\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"padding:0\">\n                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') & oneTime }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction | value:2:transaction.qty[role.shipments] }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.exp[role.accounts] | date & oneTime }\n                <md-input\n                  name = \"pro_exp\"\n                  id.bind=\"'exp_'+$index\"\n                  required\n                  keydown.delegate=\"expShortcutsKeydown($event, $index)\"\n                  input.trigger=\"expShortcutsInput($index)\"\n                  disabled.bind=\"transaction.isChecked && transaction.next[0]\"\n                  pattern=\"(0?[1-9]|1[012])/(1\\d|2\\d)\"\n                  value.bind=\"transaction.exp[role.shipments] | date\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.qty[role.accounts] & oneTime }\n                  <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->\n                  <!-- keyup rather than keydown because we want the new quantity not the old one -->\n                  <md-input\n                    name = \"pro_qty\"\n                    id.bind=\"'qty_'+$index\"\n                    required\n                    keydown.delegate=\"qtyShortcutsKeydown($event, $index)\"\n                    input.trigger=\"qtyShortcutsInput($event, $index)\"\n                    disabled.bind=\"transaction.isChecked && transaction.next[0]\"\n                    type=\"number\"\n                    value.bind=\"transaction.qty[role.shipments] | number\"\n                    style=\"width:40px; margin-bottom:-8px\"\n                    max.bind=\"3000\"\n                    placeholder>\n                  </md-input>\n              </td>\n              <!-- disable if not checked because we don't want a red required field unless we are keeping the item -->\n              <td style=\"padding:0\">\n                <md-input\n                  name = \"pro_bin\"\n                  id.bind=\"'bin_'+$index\"\n                  required\n                  disabled.bind=\" ! transaction.isChecked || transaction.next[0] || shipment._id != shipmentId\"\n                  keyup.delegate=\"setBin(transaction) & debounce:1500\"\n                  keydown.delegate=\"binShortcuts($event, $index)\"\n                  pattern.bind=\"shipment._rev ? '[A-Za-z][0-6]\\\\d{2}' : '[A-Za-z][0-6]?\\\\d{2}'\"\n                  maxlength.bind=\"4\"\n                  value.bind=\"transaction.bin\"\n                  style=\"width:40px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px\"\n                  placeholder>\n                </md-input>\n              </td>\n            </tr>\n          </tbody>\n        </table>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n    <dialog ref=\"dialog\" class=\"mdl-dialog\">\n    <h4 class=\"mdl-dialog__title\">Drug Warning</h4>\n    <div class=\"mdl-dialog__content\">${drug.warning}</div>\n    <div class=\"mdl-dialog__actions\">\n      <md-button click.delegate=\"dialogClose()\">Close</md-button>\n    </div>\n  </dialog>\n  </section>\n</template>\n"; });
-define('text!client/src/views/shopping.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from='client/src/elems/md-table'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-switch\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-autocomplete\"></require>\n  <require from=\"client/src/elems/md-menu\"></require>\n  <require from=\"client/src/elems/form\"></require>\n\n  <style>\n    .mdl-button:hover { background-color:initial , overflow-y:hidden}\n    .mdl-badge[data-badge]:after { font-size:9px; height:14px; width:14px; top:1px}\n  </style>\n\n\n  <section class=\"mdl-grid au-animate\">\n\n    <div if.bind = \"!orderSelectedToShop\">\n      <md-input\n        autoselect\n        value.bind=\"pendedFilter\"\n        style=\"padding-bottom:15; font-size:18px; width:90vw;\">\n        Select Group\n      </md-input>\n\n      <div style=\"height:100vh; overflow-y:scroll\">\n        <div\n          repeat.for=\"pend of groups | pendedFilter:pendedFilter\"\n          click.delegate=\"selectGroup(pend.locked, pend.name)\"\n          class=\"mdl-typography--title ${ term == 'Pended '+pend.name ? 'mdl-navigation__link--current' : ''}\"\n          style=\"font-size:30px; font-weight:600; cursor:pointer; color: ${pend.locked ? '#919191' : (pend.priority ? '#14c44c' : 'black')}; padding-bottom: 50px;\">\n          ${pend.name}\n          <md-button if.bind=\"pend.locked\" style=\"float:right; height:15px; line-height:10px\" color=\"accent\" raised click.delegate=\"unlockGroup(pend.name)\">${pend.locked == 'unlocking' ? '...unlocking...' : 'unlock'}</md-button>\n        </div>\n      </div>\n    </div>\n\n    <div if.bind = \"orderSelectedToShop\">\n\n      <div if.bind = \"!groupLoaded\" style=\"margin-top:40vh; margin-left:35vw; font-size:5vh\">\n        Loading...\n      </div>\n\n      <div if.bind = \"groupLoaded && !basketSaved\" style=\"width:100vw; height:100vh;\">\n        <div style = \"font-size:2.7vh; position:absolute; top:5px; left:20%; width:50%; line-height:5vh; text-align:center; overflow-x:hidden;\">${shopList[shoppingIndex].raw.next[0].pended.group}</div>\n\n        <div style=\"position:absolute; top:7vh; width:100%; font-size:4vh; display:inline-block\">\n          <div style=\"line-height:5vh\">${shopList[shoppingIndex].raw.drug.generic}</div>\n          <div style=\"font-size:3vh; line-height:4vh;\" if.bind = \"shopList[shoppingIndex].raw.drug.brand.length > 0\">${shopList[shoppingIndex].raw.drug.brand}</div>\n        </div>\n\n        <div style=\"position:absolute; top:24vh; width:100%\">\n          <div style=\"font-size:30px; line-height:10vh\">Enter new basket number:</div>\n          <div stlye=\"float:left\"><md-input  type=\"tel\" style=\"float:left; font-size:20px; width:70%;\" value.bind = \"shopList[shoppingIndex].extra.basketNumber\">Basket Number</md-input></div>\n          <div style=\"float:right; padding-right:7vw; margin-top:2vh\"><md-button  disabled.bind = \"shopList[shoppingIndex].extra.basketNumber.length <= 1\" color raised click.delegate=\"saveBasketNumber()\">Save</md-button></div>\n        </div>\n\n        <md-button style=\"float:left; height:2vh; top:70vh; position:absolute; line-height:2vh;\" color click.delegate=\"pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)\">Pause</md-button>\n\n      </div>\n\n      <div style=\"width:100%; position:relative; overflow-y:hidden\" if.bind = \"groupLoaded && basketSaved\">\n\n        <div style=\"width:100%;display:inline-block;padding-bottom:0.5vh\">\n\n          <div style=\"float:left\">\n            <md-button style=\"float:left\" color raised show.bind=\"shoppingIndex>0\"click.delegate=\"moveShoppingBackward()\">Back</md-button>\n          </div>\n\n          <div style=\"font-size:2.7vh; position:absolute; top:5px; left:20%; width:50%; line-height:5vh; text-align:center; overflow-x:hidden;\">${shopList[shoppingIndex].raw.next[0].pended.group}</div>\n\n          <div style=\"float:right\" >\n            <md-button style=\"float:right\" disabled.bind=\"!formComplete\" color raised click.delegate=\"moveShoppingForward()\">${nextButtonText}</md-button>\n          </div>\n        </div>\n\n\n        <div style=\"width:100%; max-height:11vh; overflow-x:hidden\">\n          <div style=\"font-size:4.5vh; line-height:5vh;\">${shopList[shoppingIndex].raw.drug.generic}</div>\n          <div style=\"font-size:3vh; line-height:4vh;\" if.bind = \"shopList[shoppingIndex].raw.drug.brand.length > 0\">${shopList[shoppingIndex].raw.drug.brand}</div>\n        </div>\n\n        <div style=\"width:100%;display:inline-block; text-align:center;\">\n\n          <div style=\"float:left; text-align:left; width:47vw; height:100%;vertical-align:middle\">\n            <div style=\"font: 400 60px system-ui serif; line-height:60px; padding-bottom:15px; margin-top:20px;\"><b>${shopList[shoppingIndex].raw.bin.length == 3 ? shopList[shoppingIndex].raw.bin : (shopList[shoppingIndex].raw.bin.slice(0,3) + '-' + shopList[shoppingIndex].raw.bin.slice(3,4))}</b></div>\n            <div style=\"font-size:30px;padding-bottom:3vh\"><b>Qty:</b> ${shopList[shoppingIndex].raw.qty.to}</div>\n            <div style=\"font-size:20px; padding-bottom:2vh\"><b>Exp:</b> ${formatExp(shopList[shoppingIndex].raw.exp.to)}</div>\n          </div>\n          <div style=\"float:right; height:30vh; width:43vw; position:relative\">\n            <img\n              style=\"max-height:100%;max-width:100%;height:auto;width:auto;position:absolute;top:0;bottom:0;left:0;right:0;margin:auto\"\n              if.bind=\"shopList[shoppingIndex].extra.image\"\n              src.bind=\"shopList[shoppingIndex].extra.image\"/>\n          </div>\n        </div>\n\n        <div style=\"width:100%; display:inline-block; padding-bottom:0vh\">\n          <div style=\"width:45%; float:left; margin-top:3vh;\">\n              <div style=\"font-size:3vh; line-height:3vh; padding-bottom:1vh;\"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>\n              <div style=\"font-size:3vh; line-height:3vh; padding-bottom:1vh\"><b>Basket:</b> ${shopList[shoppingIndex].extra.basketNumber}</div>\n              <div style=\"font-size:3vh; line-height:3vh; padding-bottom:1vh\">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>\n              <div style=\"font-size:3vh; line-height:3vh; padding-bottom:1vh\">Total <b>${shoppingIndex+1}</b> of <b>${shopList.length}</b></div>\n              <div style=\"font-size:3vh; line-height:3vh; padding-bottom:5vh\">Drug <b>${shopList[shoppingIndex].extra.genericIndex.global_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.global_index[1]}</b></div>\n              <div style=\"display:inline-block;\">\n                 <md-button style=\"float:left; height:2vh; line-height:2vh;\" color click.delegate=\"pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)\">Pause</md-button>\n                 <md-button style=\"float:right; height:2vh; line-height:2vh\" color click.delegate=\"skipItem()\">Skip</md-button>\n              </div>\n          </div>\n          <div style=\"width:50%; float:right; margin-top:2vh\">\n            <div style=\"width:40vw; text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh; color: ${shopList[shoppingIndex].extra.outcome.exact_match ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.exact_match ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect\"\n            click.delegate=\"selectShoppingOption('exact_match')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.exact_match\">Exact Match</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.roughly_equal ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('roughly_equal')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.roughly_equal\">+/- 3 Qty</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.slot_before ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_before ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('slot_before')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.slot_before\">Slot Before</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh; padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.slot_after ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.slot_after ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('slot_after')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.slot_after\">Slot After</div>\n            <div style=\"width:40vw;  text-align:center; font-size:3vh; line-height:5vh; height:5vh;padding-top:0.75vh; padding-bottom:0.75vh;  color: ${shopList[shoppingIndex].extra.outcome.missing ? 'white':''}; background-color: ${shopList[shoppingIndex].extra.outcome.missing ? '#00587b':''}\"     class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n            click.delegate=\"selectShoppingOption('missing')\" checked.bind=\"shopList[shoppingIndex].extra.outcome.missing\">Missing</div>\n          </div>\n        </div>\n\n        <div style=\"margin:auto; font-size:7px\">\n          ${shopList[shoppingIndex].raw._id}\n        </div>\n\n        <div>\n          <md-snackbar ref=\"snackbar\"></md-snackbar>\n        </div>\n\n      </div>\n    </div>\n\n  </section>\n</template>\n"; });
+define('text!client/src/views/shipments.html', ['module'], function(module) { module.exports = "<template>\n  <require from='client/src/elems/md-shadow'></require>\n  <require from='client/src/elems/md-drawer'></require>\n  <require from='client/src/elems/md-table'></require>\n  <require from=\"client/src/elems/md-input\"></require>\n  <require from=\"client/src/elems/md-select\"></require>\n  <require from=\"client/src/elems/md-switch\"></require>\n  <require from=\"client/src/elems/md-checkbox\"></require>\n  <require from=\"client/src/elems/md-button\"></require>\n  <require from=\"client/src/elems/md-menu\"></require>\n  <require from=\"client/src/elems/md-autocomplete\"></require>\n  <require from=\"client/src/elems/md-snackbar\"></require>\n  <require from=\"client/src/elems/form\"></require>\n  <md-drawer autofocus>\n    <md-input\n      id=\"drawer_filter\"\n      name = \"pro_filter_input\"\n      value.bind=\"filter\"\n      autoselect\n      style=\"padding:0 8px; width:auto\">\n      ${instructionsText}\n    </md-input>\n    <!-- <md-switch\n      checked.one-way=\"role.account == 'to'\"\n      click.delegate=\"swapRole()\"\n      style=\"margin:-33px 0 0 185px;\">\n    </md-switch> -->\n    <a\n      name = \"new_shipment\"\n      if.bind=\" ! filter\"\n      class=\"mdl-navigation__link ${ ! shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(null, true)\">\n      <div class=\"mdl-typography--title\">New Shipment</div>\n      or add inventory\n    </a>\n    <a\n      name = \"pro_shipments\"\n      repeat.for=\"shipment of shipments[role.shipments] | shipmentFilter:filter\"\n      class=\"mdl-navigation__link ${ shipment._id == shipmentId ? 'mdl-navigation__link--current' : ''}\"\n      click.delegate=\"selectShipment(shipment, true)\">\n      <div class=\"mdl-typography--title\" innerHtml.bind=\"shipment.account[role.accounts].name | bold:filter\"></div>\n      <div style=\"font-size:12px\" innerHtml.bind=\"shipment._id.slice(11, 21)+', '+(shipment.tracking.slice(-6) || shipment.tracking) | bold:filter\"></div>\n    </a>\n    <md-select\n      name = \"pro_year_choice\"\n      change.delegate=\"refocusWithNewShipments()\"\n      input.delegate=\"gatherShipments()  & debounce:100\"\n      style=\"font-size: 20px; width:45px; margin:auto\"\n      value.bind=\"shipmentDrawerYear\"\n      options.bind=\"shipmentDrawerYearChoices\"\n    </md-select>\n  </md-drawer>\n  <section class=\"mdl-grid au-animate\">\n    <form md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--3-col full-height\">\n      <div class=\"mdl-card__title\" style=\"display:block;\">\n        <div class=\"mdl-card__title-text\" style=\"text-transform:capitalize\">\n          ${ shipment._rev ? 'Shipment '+(shipment.tracking.slice(-6) || shipment.tracking) : 'New Shipment '+role.accounts+' You' }\n        </div>\n        <div style=\"margin-top:3px; margin-bottom:-25px\">\n          <strong>${transactions.length}</strong> items worth\n          <strong>$${ transactions | value:0:transactions.length }</strong>\n        </div>\n      </div>\n      <div class=\"mdl-card__supporting-text\" style=\"font-size:16px;\">\n        <md-select\n          if.bind=\"role.shipments == 'from' || shipment._rev\"\n          change.delegate=\"setCheckboxes()\"\n          style=\"width:100%\"\n          value.bind=\"shipment\"\n          default.bind=\"{tracking:'New Tracking #', account:{from:account, to:account}}\"\n          options.bind=\"shipments[role.shipments]\"\n          property=\"tracking\">\n          Tracking #\n        </md-select>\n        <md-input\n          name = \"pro_tracking_input\"\n          if.bind=\"role.shipments == 'to' && ! shipment._rev\"\n          focusin.delegate=\"setCheckboxes()\"\n          autofocus\n          required\n          style=\"width:100%\"\n          pattern=\"[a-zA-Z\\d]{6,}\"\n          value.bind=\"shipment.tracking\">\n          Tracking #\n        </md-input>\n        <md-select\n          name = \"pro_from_option\"\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.from\"\n          options.bind=\"(role.accounts == 'to' || shipment._rev) ? [shipment.account.from] : accounts[role.accounts]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.accounts == 'to'\">\n          <!-- disabled is for highlighting the current role -->\n          From\n        </md-select>\n        <md-select\n          style=\"width:100%;\"\n          value.bind=\"shipment.account.to\"\n          options.bind=\"(role.accounts == 'from' || shipment._rev) ? [shipment.account.to] : accounts[role.accounts]\"\n          property=\"name\"\n          required\n          disabled.bind=\"role.accounts == 'from'\">\n          <!-- disabled is for highlighting the current role -->\n          To\n        </md-select>\n        <md-select\n          style=\"width:32%;\"\n          value.bind=\"shipment.status\"\n          options.bind=\"stati\"\n          disabled.bind=\"! shipment._rev\">\n          Status\n        </md-select>\n        <md-input\n          type=\"date\"\n          style=\"width:64%; margin-top:20px\"\n          value.bind=\"shipment[shipment.status+'At']\"\n          disabled.bind=\"! shipment._rev\"\n          input.delegate=\"saveShipment() & debounce:1500\">\n        </md-input>\n        <!-- <md-select\n          style=\"width:100%\"\n          value.bind=\"attachment.name\"\n          change.delegate=\"getAttachment()\"\n          options.bind=\"['','Shipping Label', 'Manifest']\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Attachment\n        </md-select>\n        <md-button color\n          if.bind=\"attachment.name\"\n          click.delegate=\"upload.click()\"\n          style=\"position:absolute; right:18px; margin-top:-48px; height:24px; line-height:24px\"\n          disabled.bind=\" ! shipment._id || shipment._id != tracking._id\">\n          Upload\n        </md-button>\n        <input\n          type=\"file\"\n          ref=\"upload\"\n          change.delegate=\"setAttachment(upload.files[0])\"\n          style=\"display:none\">\n        <div if.bind=\"attachment.url\" style=\"width: 100%; padding-top:56px; padding-bottom:129%; position:relative;\">\n          <embed\n            src.bind=\"attachment.url\"\n            type.bind=\"attachment.type\"\n            style=\"position:absolute; height:100%; width:100%; top:0; bottom:0\">\n        </div> -->\n        <!-- The above padding / positioning keeps a constant aspect ratio for the embeded pdf  -->\n      </div>\n      <div class=\"mdl-card__actions\">\n        <md-button color raised form\n          name = \"pro_create_button\"\n          ref=\"newShipmentButton\"\n          style=\"width:100%\"\n          show.bind=\"shipment._id == shipmentId && ! shipment._rev\"\n          click.delegate=\"createShipment()\">\n          New Shipment Of ${ diffs.length || 'No' } Items\n        </md-button>\n        <md-button color raised\n          ref=\"moveItemsButton\"\n          style=\"width:100%\"\n          show.bind=\"shipment._id != shipmentId\"\n          disabled.bind=\"! diffs.length || ! shipment.account.to._id\"\n          click.delegate=\"shipment._rev ? moveTransactionsToShipment(shipment) : createShipment()\">\n          Move ${ diffs.length } Items\n        </md-button>\n      </div>\n    </form>\n    <div md-shadow=\"2\" class=\"mdl-card mdl-cell mdl-cell--9-col full-height\">\n      <!-- disabled.bind=\"! searchReady\" -->\n      <md-autocomplete\n        name = \"pro_searchbar\"\n        value.bind=\"term\"\n        input.delegate=\"search() & debounce:50\"\n        keydown.delegate=\"autocompleteShortcuts($event) & debounce:50\"\n        style=\"margin:0px 24px\">\n        <table md-table>\n          <tr\n            repeat.for=\"drug of drugs\"\n            click.delegate=\"addTransaction(drug)\"\n            class=\"${ drug._id == $parent.drug._id && 'is-selected'}\">\n            <td innerHTML.bind=\"drug.generic | bold:term\" style=\"white-space:normal;\" class=\"mdl-data-table__cell--non-numeric\" ></td>\n            <td innerHTML.bind=\"drug.labeler\" style=\"width:1%\" class=\"mdl-data-table__cell--non-numeric\" ></td>\n            <td innerHTML.bind=\"drug._id + (drug.pkg ? '-'+drug.pkg : '')\" style=\"width:1%\" class=\"mdl-data-table__cell--non-numeric\" ></td>\n          </tr>\n        </table>\n      </md-autocomplete>\n      <md-menu style=\"position:absolute; z-index:2; top:10px; right:5px;\">\n        <!-- workaround for boolean attributes https://github.com/aurelia/templating/issues/76 -->\n        <li\n          show.bind=\"transactions.length\"\n          click.delegate=\"exportCSV()\">\n          Export CSV\n        </li>\n        <li\n          show.bind=\"!transactions.length\"\n          disabled>\n          Export CSV\n        </li>\n        <li\n          show.bind=\"role.accounts != 'to' || shipment._rev\"\n          click.delegate=\"$file.click()\">\n          Import CSV\n        </li>\n        <li\n          show.bind=\"role.accounts == 'to' && ! shipment._rev\"\n          disabled>\n          Import CSV\n        </li>\n      </md-menu>\n      <input ref=\"$file\" change.delegate=\"importCSV()\" style=\"display:none\" type=\"file\" />\n      <div class=\"table-wrap\">\n        <table md-table>\n          <thead>\n            <tr>\n              <th style=\"width:56px\"></th>\n              <th class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0\">Drug</th>\n              <th style=\"width:100px;\" class=\"mdl-data-table__cell--non-numeric\">Ndc</th>\n              <th style=\"width:40px; padding-left:0; padding-right:0px\">Value</th>\n              <th style=\"text-align:left; width:60px;\">Exp</th>\n              <th style=\"text-align:left; width:60px\">Qty</th>\n              <!-- 84px account for the 24px of padding-right on index.html's css td:last-child -->\n              <th style=\"text-align:left; width:84px;\">Bin</th>\n            </tr>\n          </thead>\n          <tbody>\n            <tr style=\"padding-top:7px;\" name = \"pro_transaction\" repeat.for=\"transaction of transactions\" input.delegate=\"saveTransaction(transaction) & debounce:1500\">\n              <td style=\"padding:0 0 0 8px\">\n                <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->\n                <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->\n                <!-- since undefined != false we must force both sides to be booleans just to show a simple inequality. use next[0].disposed directly rather than isChecked because autocheck coerces isChecked to be out of sync -->\n                <md-checkbox\n                  name = \"pro_checkbox\"\n                  click.delegate=\"manualCheck($index)\"\n                  disabled.bind=\" ! moveItemsButton.offsetParent && ! newShipmentButton.offsetParent && transaction.isChecked && transaction.next[0]\"\n                  checked.bind=\"transaction.isChecked\">\n                </md-checkbox>\n\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"padding-left:0; overflow:hidden\">\n                ${ transaction.drug.generic & oneTime }\n              </td>\n              <td click.delegate=\"focusInput('#exp_'+$index)\" class=\"mdl-data-table__cell--non-numeric\" style=\"padding:0\">\n                ${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') & oneTime }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction | value:2:transaction.qty[role.shipments] }\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.exp[role.accounts] | date & oneTime }\n                <md-input\n                  name = \"pro_exp\"\n                  id.bind=\"'exp_'+$index\"\n                  required\n                  keydown.delegate=\"expShortcutsKeydown($event, $index)\"\n                  input.trigger=\"expShortcutsInput($index)\"\n                  disabled.bind=\"transaction.isChecked && transaction.next[0]\"\n                  pattern=\"(0?[1-9]|1[012])/(1\\d|2\\d)\"\n                  value.bind=\"transaction.exp[role.shipments] | date\"\n                  style=\"width:40px; margin-bottom:-8px\"\n                  placeholder>\n                </md-input>\n              </td>\n              <td style=\"padding:0\">\n                ${ transaction.qty[role.accounts] & oneTime }\n                  <!-- input event is not triggered on enter, so use keyup for qtyShortcutes instead   -->\n                  <!-- keyup rather than keydown because we want the new quantity not the old one -->\n                  <md-input\n                    name = \"pro_qty\"\n                    id.bind=\"'qty_'+$index\"\n                    required\n                    keydown.delegate=\"qtyShortcutsKeydown($event, $index)\"\n                    input.trigger=\"qtyShortcutsInput($event, $index)\"\n                    disabled.bind=\"transaction.isChecked && transaction.next[0]\"\n                    type=\"number\"\n                    value.bind=\"transaction.qty[role.shipments] | number\"\n                    style=\"width:40px; margin-bottom:-8px\"\n                    max.bind=\"3000\"\n                    placeholder>\n                  </md-input>\n              </td>\n              <!-- disable if not checked because we don't want a red required field unless we are keeping the item -->\n              <td style=\"padding:0\">\n                <md-input\n                  name = \"pro_bin\"\n                  id.bind=\"'bin_'+$index\"\n                  required\n                  disabled.bind=\" ! transaction.isChecked || transaction.next[0] || shipment._id != shipmentId\"\n                  keyup.delegate=\"setBin(transaction) & debounce:1500\"\n                  keydown.delegate=\"binShortcuts($event, $index)\"\n                  pattern.bind=\"shipment._rev ? '[A-Za-z][0-6]\\\\d{2}' : '[A-Za-z][0-6]?\\\\d{2}'\"\n                  maxlength.bind=\"4\"\n                  value.bind=\"transaction.bin\"\n                  style=\"width:40px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px\"\n                  placeholder>\n                </md-input>\n              </td>\n            </tr>\n          </tbody>\n        </table>\n      </div>\n    </div>\n    <md-snackbar ref=\"snackbar\"></md-snackbar>\n    <dialog ref=\"dialog\" class=\"mdl-dialog\">\n    <h4 class=\"mdl-dialog__title\">Drug Warning</h4>\n    <div class=\"mdl-dialog__content\">${drug.warning}</div>\n    <div class=\"mdl-dialog__actions\">\n      <md-button click.delegate=\"dialogClose()\">Close</md-button>\n    </div>\n  </dialog>\n  </section>\n</template>\n"; });

@@ -27,7 +27,7 @@ export class login {
       return Promise.all(loading.syncing)
     })
     .then(resources => {
-      this.router.navigate('shipments')
+      this.router.navigate('picking')
     })
     .catch(err => {
       this.disabled = false

@@ -1,7 +1,7 @@
 import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
-import {canActivate, clearNextProperty, currentDate} from '../resources/helpers'
+import {canActivate, clearNextProperty, focusInput, currentDate} from '../resources/helpers'
 
 @inject(Pouch, Router)
 export class shopping {
@@ -17,6 +17,9 @@ export class shopping {
     this.orderSelectedToShop = false
     this.formComplete = false
     this.basketSaved = false
+    this.currentCart = ''
+    this.basketOptions = ['S','R','G','B']
+    this.focusInput      = focusInput
 
     this.canActivate     = canActivate
     this.currentDate     = currentDate
@@ -75,8 +78,6 @@ export class shopping {
     this.updatePickedCount()  //async call to the user-metrics tracking views
 
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
-      //console.log("result of refresh:", res)
-      console.log('refresh complete')
       this.groups = res
     })
     .catch(err => {
@@ -142,13 +143,14 @@ export class shopping {
     this.shoppingIndex = 0
     this.groupLoaded = true
 
-    this.basketSaved = false
-
     if(this.shopList.length == 1){
       this.setNextToSave()
     } else {
       this.setNextToNext()
     }
+
+    this.addBasket(this.shoppingIndex)
+
   }
 
 
@@ -231,7 +233,7 @@ export class shopping {
 
           next[0].picked = {
             _id:new Date().toJSON(),
-            basket:arr_enriched_transactions[i].extra.basketNumber,
+            basket:arr_enriched_transactions[i].extra.fullBasket,
             repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : (reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from),
             matchType:outcome,
             user:this.user,
@@ -260,25 +262,32 @@ export class shopping {
 //------------------Button controls-------------------------
 
   saveBasketNumber(){
+    console.log("saving basket")
     this.basketSaved = true
+    this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber
+    if((this.shopList[this.shoppingIndex].extra.basketLetter != 'G') &&
+      (this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0])) this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0]
     this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic)
+    console.log(this.currentCart)
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front
   gatherBaskets(generic){
     let list_of_baskets = ''
     for(var i = 0; i < this.shopList.length; i++){
-      if((this.shopList[i].extra.basketNumber.length > 1)
-        && (!(~ list_of_baskets.indexOf(this.shopList[i].extra.basketNumber)))
+      if(
+        (this.shopList[i].extra.fullBasket)
+        && (!(~ list_of_baskets.indexOf(this.shopList[i].extra.fullBasket)))
         && (this.shopList[i].raw.drug.generic == generic))
-            list_of_baskets += ',' + (this.shopList[i].extra.basketNumber)
+            list_of_baskets += ',' + (this.shopList[i].extra.fullBasket)
     }
     this.currentGenericBaskets = list_of_baskets
   }
 
-  addBasket(){
+  addBasket(index){
+    //this.focusInput('#basket_number_input') //This wasn't quite working, but autofocus works if you click basket, just not on the first screen which is frustrating
     this.basketSaved = false
-    this.shopList[this.shoppingIndex].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber[0] //only keep type of basket
+    if(this.shopList[index].extra.basketLetter != 'G') this.shopList[index].extra.basketNumber = this.currentCart
   }
 
   delay(ms) {
@@ -371,11 +380,12 @@ export class shopping {
 
     } else {
 
-      if(this.shopList[this.shoppingIndex + 1].extra.basketNumber.length <= 1){
+      if(!this.shopList[this.shoppingIndex + 1].extra.fullBasket){
         if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
-          this.shopList[this.shoppingIndex + 1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber
+          this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter //push that forward if they changed it at some point
+          this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket
         } else {
-          this.basketSaved = false;
+          this.addBasket(this.shoppingIndex + 1)
         }
       } else if(this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic)
@@ -392,7 +402,7 @@ export class shopping {
         this.setNextToNext()
       }
 
-      this.formComplete = (this.shopList[this.shoppingIndex].extra.basketNumber.length > 1) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
+      this.formComplete = (this.shopList[this.shoppingIndex].extra.fullBasket) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
 
     }
 
@@ -433,7 +443,7 @@ export class shopping {
       if((this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) || (i == this.shopList.length-1)){
         //console.log("moving ahead")
 
-        this.shopList[this.shoppingIndex+1].extra.basketNumber = this.shopList[this.shoppingIndex].extra.basketNumber //save basket number for item thats about to show up
+        this.shopList[this.shoppingIndex+1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket //save basket number for item thats about to show up
         this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, (i == this.shopList.length-1) ? i : i-1)
 
         return
@@ -457,6 +467,14 @@ export class shopping {
         this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = true
       }
     }
+
+    if(key == 'missing'){
+      this.setNextToNext()
+    } else if(this.shoppingIndex == this.shopList.length-1){
+      this.setNextToSave()
+    }
+
+
 
   }
 
@@ -520,10 +538,19 @@ export class pendedFilterValueConverter {
     if(term.trim().length == 0){
       matches = pended
     } else {
+
       for(var i = 0; i < pended.length; i++){
+
         if((~pended[i].name.toLowerCase().indexOf(term)) || (term.trim().length == 0)){
           matches.unshift(pended[i])
           continue
+        } else if(pended[i].baskets.length > 0){
+          for(var n = 0; n < pended[i].baskets.length; n++){
+            if(~pended[i].baskets[n].toLowerCase().indexOf(term)){  //If not a name match, check the baskets
+              matches.unshift(pended[i])
+              break //only want to unshift it once
+            }
+          }
         }
       }
     }

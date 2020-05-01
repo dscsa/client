@@ -69,7 +69,7 @@ export class join {
 
       if (err.message == "Document update conflict")
         err.message = "phone number must be unique"
-        
+
       this.snackbar.error('Join failed', err)
     })
   }

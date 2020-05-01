@@ -514,8 +514,8 @@ export class inventory {
       this.shoppingSyncPended[pendId][label].drawerCheck = typeof transaction.next[0].pended.priority == 'undefined' ? true: (transaction.next[0].pended.priority != null)
 
       this.shoppingSyncPended[pendId][label].locked = this.shoppingSyncPended[pendId].locked //transaction.next[0].picked ? true : false;
-
-      let basketFound = transaction.next[0].picked ? (transaction.next[0].picked.basket ? true : false)  : false
+      //TODO: condense all these basket fields
+      let basketFound = transaction.next[0].picked && transaction.next[0].picked.basket
       this.shoppingSyncPended[pendId][label].basketInfo = this.shoppingSyncPended[pendId][label].basketInfo || {}
       this.shoppingSyncPended[pendId][label].basketInfo.found = this.shoppingSyncPended[pendId][label].basketInfo.found ? this.shoppingSyncPended[pendId][label].basketInfo.found : basketFound
       this.shoppingSyncPended[pendId][label].basketInfo.notFound = this.shoppingSyncPended[pendId][label].basketInfo.notFound ? this.shoppingSyncPended[pendId][label].basketInfo.notFound : !basketFound
@@ -523,7 +523,7 @@ export class inventory {
       if(basketFound){
         let basket = transaction.next[0].picked.basket
         if(!this.shoppingSyncPended[pendId][label].basketInfo.allBaskets) this.shoppingSyncPended[pendId][label].basketInfo.allBaskets = []
-        if(!(~this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.indexOf(basket))) this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.unshift(basket)
+        if((!(~this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.indexOf(basket))) && (transaction.next[0].picked.matchType !== 'missing'))  this.shoppingSyncPended[pendId][label].basketInfo.allBaskets.unshift(basket)
       }
 
     }

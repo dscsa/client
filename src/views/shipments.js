@@ -30,6 +30,11 @@ export class shipments {
     this.toggleDrawer    = toggleDrawer
     this.drugSearch      = drugSearch
     this.canActivate     = canActivate
+    this.instructionsText = 'Filter shipments'
+
+    this.shipmentDrawerYearChoices = [new Date().getFullYear(), 2019]
+    this.shipmentDrawerYear = null
+
   }
 
   activate(params) {
@@ -40,99 +45,25 @@ export class shipments {
     })
     .then(account => {
 
+
       this.db.user.get(this.user).then(user => {this.router.routes[2].navModel.setTitle(user.name.first)}) //st 'Account to display their name
 
       this.account = {_id:account._id, name:account.name, default:account.default || {}}
       this.ordered = {[account._id]:account.ordered}
 
-      //let recipientAccounts    = this.db.account.query('authorized', {key:account._id, include_docs:true}) //Get all accounts that have authorized this account
-      let senderAccounts    = this.db.account.allDocs({keys:account.authorized, include_docs:true})
-      //TODO: can alldocs work here? I couldn't get startkey/endkey to work with it
-      let shipmentsReceived = this.db.shipment.query('account.to._id', {startkey:[account._id+'\uffff'], endkey:[account._id], descending:true, include_docs:true}) //Get all shipments to this account
+      this.initializeDrawer()
 
-      return Promise.all([senderAccounts, shipmentsReceived]).then(all => {
+      this.gatherShipments(params).then(_ => this.setInstructionsText("",true))
 
-        [{rows:senderAccounts}, {rows:shipmentsReceived}] = all
-
-        //This abbreviated denormalized account information will be assigned to account.to/from
-        let selected, map = {to:{},from:{}}
-
-        this.accounts  = {
-          from:[''].concat(senderAccounts
-          .map((account) => {
-            var doc = account.doc
-
-            if ( ! doc) {
-              console.error('doc property is not set', account, senderAccounts)
-              return {}
-            }
-
-            this.ordered[doc._id] = doc.ordered
-            return map.from[doc._id] = {_id:doc._id, name:doc.name}
-          })
-          .sort((a, b) => { //Sort by ascending name
-            if (a.name > b.name) return 1
-            if (a.name < b.name) return -1
-          }))
-        }
-
-        //for (let account of recipientAccounts) makeMap(recipientMap, account)
-        //to:['', ...Object.keys(toMap).map(key => toMap[key])]
-
-        //Selected account != shipment.account.to because they are not references
-        this.shipment = {}
-        //, sent:shipmentsSent}
-        //shipmentsSent.forEach(makeReference)
-        //console.log('this.accounts', this.accounts)
-        //Sneak this in since we are already making the loop
-        let accountRef = role => {
-         return ({doc}) => {
-           this.setStatus(doc)
-
-           if (map[role][doc.account[role]._id])
-             doc.account[role] = map[role][doc.account[role]._id]
-
-           // if (toMap[doc.account.from._id])
-           //   doc.account.from = toMap[doc.account.from._id]
-           if (params.id === doc._id)
-             selected = doc
-
-           return doc
-         }
-        }
-
-        //Sent shipments get references to toAccount (since fromAccount will always be us)
-        //this.shipments.from = shipmentsSent.map(accountRef('to'))
-
-
-        this.role = selected //switch default role depending on shipment selection
-        ? {accounts:'to', shipments:'from'}
-        : {accounts:'from', shipments:'to'}
-
-        //Received shipments get references to fromAccount (since toAccount will always be us)
-        this.shipments.to = shipmentsReceived.map(accountRef('from'))
-
-        this.selectShipment(selected)
-        //this.waitForDrugsToIndex()
-      })
-      .catch(err => console.log('promise all err', err))
-
-
-      //this.db.account.find({selector:{authorized:account._id}})
-      // return Promise.all([
-      //   //Start all of our async tasks
-      //   this.db.account.get({authorized:accounts[0]._id}),
-      //   this.db.account.get({_id:{$gt:null, $in:accounts[0].authorized}}),
-      //   this.db.shipment.get({'account.from._id':accounts[0]._id}), //TODO this should be duplicative with _security doc.  We should be able to do _all_docs or no selector
-      //   this.db.shipment.get({'account.to._id':accounts[0]._id})
-      // ])
     })
     .catch(err => {
       console.error('Could not get session for user.  Please verify user registration and login are functioning properly')
     })
-    // .then(([fromAccounts, toAccounts, fromShipments, toShipments]) => {
-    //
-    // })
+
+  }
+
+  setInstructionsText(str,reset = false){
+    this.instructionsText = reset ? "Filter shipments " + this.role.accounts + " you" : str
   }
 
   //Activated by activate() and each time a shipment is selected from drawer
@@ -145,6 +76,95 @@ export class shipments {
     this.setShipment(shipment)
     this.setTransactions(shipment._id)
   }
+
+  initializeDrawer(){
+    this.shipmentDrawerYear = this.shipmentDrawerYearChoices[0] //set it to current year so the page can load with at least that
+    //Run query w/o docs to get the list of years for options in the dropdown
+    this.db.shipment.query('account.to._id',{startkey:[this.account._id], endkey:[this.account._id+'\uffff'], group_level:2}).then(res =>{
+      this.shipmentDrawerYearChoices = res.rows.map(row => row.key[1]).sort((a,b) => b-a)
+    })
+  }
+
+  //called imediately when switching the year. refocuses ont he filter
+  refocusWithNewShipments(){
+    this.setInstructionsText("...Loading shipments...",false)
+    this.filter = ''
+    this.shipments = {}
+    this.focusInput('#drawer_filter')
+  }
+
+  gatherShipments(params = {}){
+
+    let senderAccounts    = this.db.account.allDocs({keys:this.account.authorized, include_docs:true})
+
+    let shipmentsReceived = this.db.shipment.query('account.to._id', {startkey:[this.account._id, this.shipmentDrawerYear.toString()+'\uffff'], endkey:[this.account._id, this.shipmentDrawerYear.toString()], descending:true, reduce:false, include_docs:true}) //Get all shipments to this account
+
+    return Promise.all([senderAccounts, shipmentsReceived]).then(all => {
+
+      [{rows:senderAccounts}, {rows:shipmentsReceived}] = all
+
+      //This abbreviated denormalized account information will be assigned to account.to/from
+      let selected, map = {to:{},from:{}}
+
+      this.accounts  = {
+        from:[''].concat(senderAccounts
+        .map((account) => {
+          var doc = account.doc
+
+          if ( ! doc) {
+            console.error('doc property is not set', account, senderAccounts)
+            return {}
+          }
+
+          this.ordered[doc._id] = doc.ordered
+          return map.from[doc._id] = {_id:doc._id, name:doc.name}
+        })
+        .sort((a, b) => { //Sort by ascending name
+          if (a.name > b.name) return 1
+          if (a.name < b.name) return -1
+        }))
+      }
+
+      //Selected account != shipment.account.to because they are not references
+      this.shipment = {}
+
+      //Sneak this in since we are already making the loop
+      let accountRef = role => {
+       return ({doc}) => {
+         this.setStatus(doc)
+
+         if (map[role][doc.account[role]._id])
+           doc.account[role] = map[role][doc.account[role]._id]
+
+         // if (toMap[doc.account.from._id])
+         //   doc.account.from = toMap[doc.account.from._id]
+         if (params.id === doc._id)
+           selected = doc
+
+         return doc
+       }
+      }
+
+      //Sent shipments get references to toAccount (since fromAccount will always be us)
+      //this.shipments.from = shipmentsSent.map(accountRef('to'))
+
+      this.role = selected //switch default role depending on shipment selection
+      ? {accounts:'to', shipments:'from'}
+      : {accounts:'from', shipments:'to'}
+
+      //Received shipments get references to fromAccount (since toAccount will always be us)
+      this.shipments.to = shipmentsReceived.map(accountRef('from'))
+
+      this.setInstructionsText("",true)
+
+      this.selectShipment(selected)
+      //this.waitForDrugsToIndex()
+    })
+    .catch(err => console.log('promise all err', err))
+
+  }
+
+
 
   emptyShipment() {
     this.setUrl('')
