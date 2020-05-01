@@ -73,7 +73,7 @@
                     options.bind="basketOptions"
                   </md-select>
                 </div>
-                <md-input id="basket_number_input" autofocus maxlength.bind="3" pattern="${shopList[shoppingIndex].extra.basketLetter == 'G' ? '[0-9]{2}': '[4-9][0-9]{2}'}" required type="tel" style=" font-size:20px; width:50vw;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input>
+                <md-input autofocus maxlength.bind="3" pattern="${shopList[shoppingIndex].extra.basketLetter == 'G' ? '[0-9]{2}': '[4-9][0-9]{2}'}" required type="tel" style=" font-size:20px; width:50vw;" value.bind = "shopList[shoppingIndex].extra.basketNumber">Basket Number</md-input>
                 <div style="float:right; padding-right:7vw; margin-top:2vh"><md-button color form = "basket_adding_form" raised click.delegate="saveBasketNumber()">Save</md-button></div>
             </div>
 
@@ -130,7 +130,7 @@
               </div>
               <div style="font-size:3vh; line-height:3vh; padding-bottom:1vh;"><b>NDC:</b> ${shopList[shoppingIndex].raw.drug._id}</div>
               <div>
-                <div class = "mdl-button mdl-js-button mdl-js-ripple-effect" click.delegate="addBasket()" style="font-size:3vh; color:#00587B; padding-left:0; margin-top:.25vh; padding-bottom:1vh; padding-right:0px; padding-top:0px;height:3vh; line-height:3vh;" >Basket:</div>
+                <div class = "mdl-button mdl-js-button mdl-js-ripple-effect" click.delegate="addBasket(shoppingIndex)" style="font-size:3vh; color:#00587B; padding-left:0; margin-top:.25vh; padding-bottom:1vh; padding-right:0px; padding-top:0px;height:3vh; line-height:3vh;" >Basket:</div>
                 <span style= "font-size:2.5vh; ">${(shopList[shoppingIndex].extra.fullBasket + currentGenericBaskets.replace("," + shopList[shoppingIndex].extra.fullBasket,""))}</span>
               </div>
               <div style="font-size:2vh; line-height:2vh; padding-top:2vh; padding-bottom:0.5vh">Item <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[0]}</b> of <b>${shopList[shoppingIndex].extra.genericIndex.relative_index[1]}</b></div>
