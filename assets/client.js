@@ -3461,7 +3461,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         this.setNextToNext();
       }
 
-      this.addBasket();
+      this.addBasket(this.shoppingIndex);
     };
 
     shopping.prototype.resetShopper = function resetShopper() {
@@ -3549,10 +3549,12 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.saveBasketNumber = function saveBasketNumber() {
+      console.log("saving basket");
       this.basketSaved = true;
       this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber;
       if (this.shopList[this.shoppingIndex].extra.basketLetter != 'G' && this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0]) this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0];
       this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
+      console.log(this.currentCart);
     };
 
     shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
@@ -3563,10 +3565,10 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       this.currentGenericBaskets = list_of_baskets;
     };
 
-    shopping.prototype.addBasket = function addBasket() {
+    shopping.prototype.addBasket = function addBasket(index) {
       this.focusInput('#basket_number_input');
       this.basketSaved = false;
-      if (this.shopList[this.shoppingIndex].extra.basketLetter != 'G') this.shopList[this.shoppingIndex].extra.basketNumber = this.currentCart;
+      if (this.shopList[index].extra.basketLetter != 'G') this.shopList[index].extra.basketNumber = this.currentCart;
     };
 
     shopping.prototype.delay = function delay(ms) {
@@ -3652,7 +3654,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
             this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter;
             this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket;
           } else {
-            this.addBasket();
+            this.addBasket(this.shoppingIndex + 1);
           }
         } else if (this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
           this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic);

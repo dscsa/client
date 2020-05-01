@@ -149,7 +149,7 @@ export class shopping {
       this.setNextToNext()
     }
 
-    this.addBasket()
+    this.addBasket(this.shoppingIndex)
 
   }
 
@@ -262,11 +262,13 @@ export class shopping {
 //------------------Button controls-------------------------
 
   saveBasketNumber(){
+    console.log("saving basket")
     this.basketSaved = true
     this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber
     if((this.shopList[this.shoppingIndex].extra.basketLetter != 'G') &&
       (this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0])) this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0]
     this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic)
+    console.log(this.currentCart)
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front
@@ -282,10 +284,10 @@ export class shopping {
     this.currentGenericBaskets = list_of_baskets
   }
 
-  addBasket(){
+  addBasket(index){
     this.focusInput('#basket_number_input') //TODO focus on the input line
     this.basketSaved = false
-    if(this.shopList[this.shoppingIndex].extra.basketLetter != 'G') this.shopList[this.shoppingIndex].extra.basketNumber = this.currentCart
+    if(this.shopList[index].extra.basketLetter != 'G') this.shopList[index].extra.basketNumber = this.currentCart
   }
 
   delay(ms) {
@@ -383,7 +385,7 @@ export class shopping {
           this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter //push that forward if they changed it at some point
           this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket
         } else {
-          this.addBasket()
+          this.addBasket(this.shoppingIndex + 1)
         }
       } else if(this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic){
         this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic)
