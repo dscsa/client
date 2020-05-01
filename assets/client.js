@@ -3880,7 +3880,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       this.canActivate = _helpers.canActivate;
       this.instructionsText = 'Filter shipments';
 
-      this.shipmentDrawerYearChoices = [new Date().getFullYear(), 2019];
+      this.shipmentDrawerYearChoices = [new Date().getFullYear()];
       this.shipmentDrawerYear = null;
     }
 

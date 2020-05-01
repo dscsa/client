@@ -32,7 +32,7 @@ export class shipments {
     this.canActivate     = canActivate
     this.instructionsText = 'Filter shipments'
 
-    this.shipmentDrawerYearChoices = [new Date().getFullYear(), 2019]
+    this.shipmentDrawerYearChoices = [new Date().getFullYear()]
     this.shipmentDrawerYear = null
 
   }
