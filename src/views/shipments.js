@@ -48,7 +48,8 @@ export class shipments {
 
       this.db.user.get(this.user).then(user => {this.router.routes[2].navModel.setTitle(user.name.first)}) //st 'Account to display their name
 
-      this.account = {_id:account._id, name:account.name, default:account.default || {}}
+      this.account = account
+
       this.ordered = {[account._id]:account.ordered}
 
       this.initializeDrawer()
