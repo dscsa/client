@@ -2100,6 +2100,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.transactions = [];
       this.pended = {};
       this.shoppingSyncPended = {};
+      this.intervalId = '';
 
       this.placeholder = "Search by generic name, ndc, exp, or bin";
       this.waitForDrugsToIndex = _helpers.waitForDrugsToIndex;
@@ -2126,43 +2127,50 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     }
 
     inventory.prototype.deactivate = function deactivate() {
+      var _this2 = this;
+
       window.removeEventListener("hashchange", this.reset);
+      window.removeEventListener("visibilitychange", function (_) {
+        return _this2.syncPended();
+      });
+      clearInterval(this.intervalId);
     };
 
     inventory.prototype.activate = function activate(params) {
-      var _this2 = this;
+      var _this3 = this;
 
       window.addEventListener("hashchange", this.reset);
       window.addEventListener("visibilitychange", function (_) {
-        return _this2.syncPended();
+        return _this3.syncPended();
       });
 
 
       this.db.user.session.get().then(function (session) {
 
-        _this2.user = { _id: session._id };
-        _this2.account = { _id: session.account._id };
+        _this3.user = { _id: session._id };
+        _this3.account = { _id: session.account._id };
 
-        _this2.db.user.get(_this2.user._id).then(function (user) {
-          _this2.router.routes[2].navModel.setTitle(user.name.first);
+        _this3.db.user.get(_this3.user._id).then(function (user) {
+          _this3.router.routes[2].navModel.setTitle(user.name.first);
         });
 
-        _this2.db.account.get(session.account._id).then(function (account) {
-          _this2.account = account;
+        _this3.db.account.get(session.account._id).then(function (account) {
+          _this3.account = account;
 
-          _this2.syncPended(1).then(function (_) {
+          _this3.syncPended(1).then(function (_) {
             var keys = Object.keys(params);
-            if (keys[0]) _this2.selectTerm(keys[0], params[keys[0]]);
+            if (keys[0]) _this3.selectTerm(keys[0], params[keys[0]]);
           });
-          setInterval(function (_) {
-            return _this2.syncPended();
+
+          _this3.intervalId = setInterval(function (_) {
+            return _this3.syncPended();
           }, 5 * 60 * 1000);
         });
       });
     };
 
     inventory.prototype.syncPended = function syncPended() {
-      var _this3 = this;
+      var _this4 = this;
 
       var inActivate = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
@@ -2171,12 +2179,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         console.log("syncing!");
 
         return this.db.transaction.query('currently-pended-by-group-priority-generic', { include_docs: true, reduce: false, startkey: [this.account._id], endkey: [this.account._id, {}] }).then(function (res) {
-          _this3.pended = {};
-          _this3.shoppingSyncPended = {};
-          _this3.setPended(res.rows.map(function (row) {
+          _this4.pended = {};
+          _this4.shoppingSyncPended = {};
+          _this4.setPended(res.rows.map(function (row) {
             return row.doc;
           }));
-          _this3.refreshPended();
+          _this4.refreshPended();
         });
       }
     };
@@ -2199,7 +2207,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.toggleDrawerCheck = function toggleDrawerCheck(pendId, label) {
-      var _this4 = this;
+      var _this5 = this;
 
       if (this.shoppingSyncPended[pendId][label].locked) return;
 
@@ -2212,12 +2220,12 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       }
 
       return this.db.transaction.bulkDocs(temp_transactions).catch(function (err) {
-        return _this4.snackbar.error('Error removing inventory. Please reload and try again', err);
+        return _this5.snackbar.error('Error removing inventory. Please reload and try again', err);
       });
     };
 
     inventory.prototype.togglePriority = function togglePriority(pendId) {
-      var _this5 = this;
+      var _this6 = this;
 
       this.shoppingSyncPended[pendId].priority = !this.shoppingSyncPended[pendId].priority;
       var transactions_to_update = this.extractTransactions(pendId, '');
@@ -2232,7 +2240,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         console.log('results:', res);
       }).catch(function (err) {
         console.log("error with toggling priority", JSON.stringify(err));
-        _this5.snackbar.error('Error toggling priority', err);
+        _this6.snackbar.error('Error toggling priority', err);
       });
     };
 
@@ -2300,7 +2308,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.search = function search() {
-      var _this6 = this;
+      var _this7 = this;
 
       console.log('search', this.term);
 
@@ -2309,9 +2317,9 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       if (this.isExp(this.term)) return this.selectTerm('exp<', this.term, true);
 
       this.drugSearch().then(function (drugs) {
-        console.log(drugs.length, _this6.account.ordered, _this6.account);
-        _this6.groups = _this6.groupDrugs(drugs, _this6.account.ordered);
-        console.log(drugs.length, _this6.groups.length, _this6.groups);
+        console.log(drugs.length, _this7.account.ordered, _this7.account);
+        _this7.groups = _this7.groupDrugs(drugs, _this7.account.ordered);
+        console.log(drugs.length, _this7.groups.length, _this7.groups);
       });
     };
 
@@ -2353,7 +2361,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.selectInventory = function selectInventory(type, key, limit) {
-      var _this7 = this;
+      var _this8 = this;
 
       this.term = key;
 
@@ -2396,10 +2404,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       var setTransactions = function setTransactions(res) {
         if (res.rows.length == limit) {
-          _this7.type = type;
-          _this7.snackbar.show('Displaying first 100 results');
+          _this8.type = type;
+          _this8.snackbar.show('Displaying first 100 results');
         } else {
-          _this7.type = null;
+          _this8.type = null;
         }
 
         var docs = [];
@@ -2420,7 +2428,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           if (!row.doc.next.length || type == 'bin' && row.doc.next[0].pended && !row.doc.next[0].picked) docs.push(row.doc);else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc);
         }
 
-        return _this7.setTransactions(docs, type);
+        return _this8.setTransactions(docs, type);
       };
       this.db.transaction.query(query, opts).then(setTransactions);
     };
@@ -2447,7 +2455,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.updateSelected = function updateSelected(updateFn) {
-      var _this8 = this;
+      var _this9 = this;
 
       var length = this.transactions.length;
       var checkedTransactions = [];
@@ -2471,20 +2479,20 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       this.filter.checked.visible = false;
 
       return this.db.transaction.bulkDocs(checkedTransactions).catch(function (err) {
-        return _this8.snackbar.error('Error removing inventory. Please reload and try again', err);
+        return _this9.snackbar.error('Error removing inventory. Please reload and try again', err);
       });
     };
 
     inventory.prototype.unpendInventory = function unpendInventory() {
-      var _this9 = this;
+      var _this10 = this;
 
       var term = this.repacks.drug.generic;
       this.updateSelected(function (transaction) {
-        var next = _this9.clearNextProperty(transaction.next, 'pended');
+        var next = _this10.clearNextProperty(transaction.next, 'pended');
         transaction.isChecked = false;
         transaction.next = next;
       }).then(function (_) {
-        return term ? _this9.selectTerm('generic', term) : _this9.term = '';
+        return term ? _this10.selectTerm('generic', term) : _this10.term = '';
       });
     };
 
@@ -2528,7 +2536,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.pickInventory = function pickInventory(basketNumber) {
-      var _this10 = this;
+      var _this11 = this;
 
       if (!basketNumber.length) return;
 
@@ -2542,8 +2550,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         transaction.next = next;
       }).then(function (_) {
-        _this10.syncPended().then(function (_) {
-          _this10.selectTerm('pended', _this10.term.split(":")[0].replace("Pended ", ""));
+        _this11.syncPended().then(function (_) {
+          _this11.selectTerm('pended', _this11.term.split(":")[0].replace("Pended ", ""));
         });
       });
     };
@@ -2655,7 +2663,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.repackInventory = function repackInventory() {
-      var _this11 = this;
+      var _this12 = this;
 
       if (!this.repacks.drug || !this.filter.checked.count) {
         console.error('repackInventory called incorrectly. Aurelia should have disabled (problem with custom "form" attribute)', 'this.repacks.drug', this.repacks.drug, this.filter.checked.count);
@@ -2723,17 +2731,17 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         for (var i = rows.length - 1; i >= 0; i--) {
           if (!rows[i].error) continue;
           if (!errors.includes(rows[i].message)) errors.push(rows[i].message);
-          _this11.transactions.splice(i, 1);
+          _this12.transactions.splice(i, 1);
         }
 
         if (errors.length) {
           console.error('Repacked vials could not be created', errors, rows);
-          return _this11.snackbar.show('Repack error ' + errors.join(', '));
+          return _this12.snackbar.show('Repack error ' + errors.join(', '));
         }
 
         console.log('Repacked vials have been created', rows);
 
-        var repacked_obj = { _id: new Date().toJSON(), user: _this11.user, transactions: [] };
+        var repacked_obj = { _id: new Date().toJSON(), user: _this12.user, transactions: [] };
 
         var transactions_arr = rows.map(function (row) {
           return { _id: row.id };
@@ -2741,17 +2749,17 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
         repacked_obj.transactions = transactions_arr;
 
-        _this11.updateSelected(function (transaction) {
+        _this12.updateSelected(function (transaction) {
           var temp_next = transaction.next;
           if (temp_next.length == 0) temp_next = [{}];
           temp_next[0].repacked = repacked_obj;
           transaction.next = temp_next;
         });
 
-        _this11.printLabels(newTransactions.slice(1));
+        _this12.printLabels(newTransactions.slice(1));
       }).catch(function (err) {
         console.error(err);
-        _this11.snackbar.show('Transactions could not repackaged: ' + err.reason);
+        _this12.snackbar.show('Transactions could not repackaged: ' + err.reason);
       });
     };
 
@@ -2796,7 +2804,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.saveAndReconcileTransaction = function saveAndReconcileTransaction(transaction) {
-      var _this12 = this;
+      var _this13 = this;
 
       console.log('saveAndReconcileTransaction');
 
@@ -2804,33 +2812,33 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var qtyChange = transaction.qty.to - repack.qty.to;
 
         if (!qtyChange) {
-          return _this12.saveTransaction(transaction);
+          return _this13.saveTransaction(transaction);
         }
 
-        _this12.transactions = _this12.transactions.slice();
+        _this13.transactions = _this13.transactions.slice();
 
-        if (transaction.isChecked) _this12.filter.checked.qty += qtyChange;
+        if (transaction.isChecked) _this13.filter.checked.qty += qtyChange;
 
         console.log('saveAndReconcileTransaction', qtyChange, transaction.qty.to, repack.qty.to);
 
-        return _this12.db.transaction.query('next.transaction._id', { key: [_this12.account._id, transaction._id], include_docs: true }).then(function (res) {
+        return _this13.db.transaction.query('next.transaction._id', { key: [_this13.account._id, transaction._id], include_docs: true }).then(function (res) {
 
           if (!res.rows.length) {
-            return _this12.saveTransaction(transaction);
+            return _this13.saveTransaction(transaction);
           }
 
           var excess = res.rows.pop().doc.next.pop().transaction._id;
 
-          return _this12.db.transaction.get(excess).then(function (excess) {
+          return _this13.db.transaction.get(excess).then(function (excess) {
             excess.qty.to -= qtyChange;
 
             if (excess.qty.to < 0) {
               transaction.qty.to = repack.qty.to;
-              return _this12.snackbar.show('Cannot set repack qty to be more than qty orginally repacked, ' + (repack.qty.to + excess.qty.to + qtyChange));
+              return _this13.snackbar.show('Cannot set repack qty to be more than qty orginally repacked, ' + (repack.qty.to + excess.qty.to + qtyChange));
             }
 
-            _this12.db.transaction.put(excess);
-            return _this12.saveTransaction(transaction);
+            _this13.db.transaction.put(excess);
+            return _this13.saveTransaction(transaction);
           });
         });
       });
@@ -2871,7 +2879,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.exportCSV = function exportCSV() {
-      var _this13 = this;
+      var _this14 = this;
 
       var _currentDate2 = this.currentDate(-1, true),
           year = _currentDate2[0],
@@ -2886,7 +2894,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       };
 
       this.db.transaction.query('inventory-by-generic', opts).then(function (transactions) {
-        _this13.csv.fromJSON(name, transactions.rows.map(function (row) {
+        _this14.csv.fromJSON(name, transactions.rows.map(function (row) {
           return {
             'drug.generic': row.key[4],
             'drug.gsns': row.key[5],
@@ -2995,14 +3003,14 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
     };
 
     inventory.prototype.showHistoryDialog = function showHistoryDialog(_id) {
-      var _this14 = this;
+      var _this15 = this;
 
       console.log('getHistory', _id);
       this.history = 'Loading...';
       this.dialog.showModal();
       this.getHistory(_id).then(function (history) {
         console.log(history);
-        _this14.history = history;
+        _this15.history = history;
       });
     };
 
@@ -3897,7 +3905,8 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
           _this.router.routes[2].navModel.setTitle(user.name.first);
         });
 
-        _this.account = { _id: account._id, name: account.name, default: account.default || {} };
+        _this.account = account;
+
         _this.ordered = (_this$ordered = {}, _this$ordered[account._id] = account.ordered, _this$ordered);
 
         _this.initializeDrawer();

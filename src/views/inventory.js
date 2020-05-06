@@ -14,6 +14,7 @@ export class inventory {
     this.transactions = []
     this.pended = {}
     this.shoppingSyncPended = {}
+    this.intervalId = ''
 
     this.placeholder     = "Search by generic name, ndc, exp, or bin" //Put in while database syncs
     this.waitForDrugsToIndex = waitForDrugsToIndex
@@ -41,6 +42,8 @@ export class inventory {
 
   deactivate() {
     window.removeEventListener("hashchange", this.reset)
+    window.removeEventListener("visibilitychange", _ => this.syncPended())
+    clearInterval(this.intervalId) //otherwise setinterval keeeps running and bringing the user back to the inventory page
   }
 
   activate(params) {
@@ -63,8 +66,8 @@ export class inventory {
           let keys = Object.keys(params)
           if (keys[0]) this.selectTerm(keys[0], params[keys[0]])
         })
-        setInterval(_ => this.syncPended(), 5 * 60 * 1000) //pull and update the pended every five minutes
 
+        this.intervalId = setInterval(_ => this.syncPended(), 5 * 60 * 1000) //pull and update the pended every five minutes.save result so you can stop when we leave page
       })
 
 
