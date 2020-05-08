@@ -8,786 +8,6 @@ define('client/src/environment',["exports"], function (exports) {
     debug: true,
     testing: false };
 });
-define('client/src/elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.FormCustomAttribute = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _class;
-
-  var FormCustomAttribute = exports.FormCustomAttribute = (_dec = (0, _aureliaFramework.bindable)('disabled'), _dec2 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = function () {
-    function FormCustomAttribute(element) {
-      _classCallCheck(this, FormCustomAttribute);
-
-      this.element = element;
-      this.change = this.change.bind(this);
-    }
-
-    FormCustomAttribute.prototype.change = function change() {
-
-      if (this.value == 'onchange' && this.serialize() == this.initialValue) return this.inputElement.disabled = true;
-
-      var valid = this.formElement && this.formElement.checkValidity();
-      this.inputElement.disabled = !valid;
-    };
-
-    FormCustomAttribute.prototype.attached = function attached() {
-      this.formElement = this.element.closest('form');
-      this.formElement.addEventListener('change', this.debounce(this.change, 150));
-      this.formElement.addEventListener('input', this.debounce(this.change, 150));
-
-      this.inputElement = this.element.querySelector('input,button,select') || this.element;
-
-      this.initialValue = this.serialize();
-
-      setTimeout(this.change);
-    };
-
-    FormCustomAttribute.prototype.serialize = function serialize() {
-      var s = [];
-      for (var _iterator = this.formElement.elements, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-        var _ref;
-
-        if (_isArray) {
-          if (_i >= _iterator.length) break;
-          _ref = _iterator[_i++];
-        } else {
-          _i = _iterator.next();
-          if (_i.done) break;
-          _ref = _i.value;
-        }
-
-        var field = _ref;
-
-        if (field.type != 'select-multiple') s.push(field.value);else {
-          for (var _iterator2 = field.options, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-            var _ref2;
-
-            if (_isArray2) {
-              if (_i2 >= _iterator2.length) break;
-              _ref2 = _iterator2[_i2++];
-            } else {
-              _i2 = _iterator2.next();
-              if (_i2.done) break;
-              _ref2 = _i2.value;
-            }
-
-            var _option = _ref2;
-
-            if (_option.selected) s.push(_option.value);
-          }
-        }
-      }
-      return s.join('&');
-    };
-
-    FormCustomAttribute.prototype.debounce = function debounce(func, wait) {
-      var timeout = void 0;
-      return function () {
-        var _this = this,
-            _arguments = arguments;
-
-        clearTimeout(timeout);
-        timeout = setTimeout(function (_) {
-          timeout = null;
-          func.apply(_this, _arguments);
-        }, wait);
-      };
-    };
-
-    return FormCustomAttribute;
-  }()) || _class) || _class);
-});
-define('client/src/elems/md-autocomplete',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdAutocompleteCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _class;
-
-  var MdAutocompleteCustomElement = exports.MdAutocompleteCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('placeholder'), _dec(_class = _dec2(_class = _dec3(_class = function () {
-    function MdAutocompleteCustomElement() {
-      _classCallCheck(this, MdAutocompleteCustomElement);
-    }
-
-    MdAutocompleteCustomElement.prototype.toggleResults = function toggleResults($event) {
-      var _this = this;
-
-      setTimeout(function () {
-        return _this.showResults = !_this.showResults;
-      }, 200);
-    };
-
-    return MdAutocompleteCustomElement;
-  }()) || _class) || _class) || _class);
-});
-define('client/src/elems/md-button',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdButtonCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
-
-  var MdButtonCustomElement = exports.MdButtonCustomElement = (_dec = (0, _aureliaFramework.bindable)('form'), _dec2 = (0, _aureliaFramework.bindable)('class'), _dec3 = (0, _aureliaFramework.bindable)('raised'), _dec4 = (0, _aureliaFramework.bindable)('fab'), _dec5 = (0, _aureliaFramework.bindable)('disabled'), _dec6 = (0, _aureliaFramework.bindable)('color'), _dec7 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
-    function MdButtonCustomElement(element) {
-      _classCallCheck(this, MdButtonCustomElement);
-
-      this.element = element;
-      this.change = this.change.bind(this);
-    }
-
-    MdButtonCustomElement.prototype.click = function click($event) {
-      this.disabled && $event.stopPropagation();
-    };
-
-    MdButtonCustomElement.prototype.disabledChanged = function disabledChanged() {
-      this.button && this.change();
-    };
-
-    MdButtonCustomElement.prototype.change = function change(input) {
-      this.disabled = this.disabled || this.disabled === '';
-    };
-
-    MdButtonCustomElement.prototype.attached = function attached() {
-      var _button$classList;
-
-      setTimeout(this.change);
-
-      this.class && (_button$classList = this.button.classList).add.apply(_button$classList, this.class.split(' '));
-
-      if (typeof this.color == 'string' && this.color.slice(0, 4) != 'mdl-') {
-        this.color = 'mdl-button--' + (this.color || 'colored');
-      }
-
-      if (this.fab > 0) {
-        this.button.classList.add('mdl-button--fab');
-        this.button.style.height = this.fab + 'px';
-        this.button.style.width = this.fab + 'px';
-        this.button.style['min-width'] = this.button.style.width;
-        this.button.style['font-size'] = this.fab * .75 + 'px';
-        this.button.style['line-height'] = this.fab + 'px';
-      }
-
-      if (this.element.parentElement.tagName == 'MD-DRAWER') {
-        this.button.style.width = "100%";
-        this.button.style.height = "auto";
-        this.button.style.padding = "16px 8px";
-        this.button.style['line-height'] = "18px";
-      }
-    };
-
-    return MdButtonCustomElement;
-  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
-});
-define('client/src/elems/md-checkbox',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdCheckboxCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _class;
-
-  var MdCheckboxCustomElement = exports.MdCheckboxCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element, _aureliaFramework.TaskQueue), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
-    function MdCheckboxCustomElement(element, taskQueue) {
-      var _this = this;
-
-      _classCallCheck(this, MdCheckboxCustomElement);
-
-      this.tabindex = element.tabIndex;
-      this.taskQueue = taskQueue;
-
-      element.addEventListener('click', function (e) {
-        return _this.disabled && e.stopPropagation();
-      });
-    }
-
-    MdCheckboxCustomElement.prototype.stopPropogation = function stopPropogation() {
-      return true;
-    };
-
-    MdCheckboxCustomElement.prototype.checkedChanged = function checkedChanged() {
-      var _this2 = this;
-
-      this.checked = !!this.checked;
-      this.taskQueue.queueTask(function (_) {
-        return _this2.label && _this2.label.MaterialCheckbox && _this2.label.MaterialCheckbox.checkToggleState();
-      });
-    };
-
-    MdCheckboxCustomElement.prototype.disabledChanged = function disabledChanged() {
-      var _this3 = this;
-
-      this.taskQueue.queueTask(function (_) {
-        return _this3.label && _this3.label.MaterialCheckbox && _this3.label.MaterialCheckbox.checkDisabled();
-      });
-    };
-
-    MdCheckboxCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.label);
-      this.checkedChanged();
-    };
-
-    return MdCheckboxCustomElement;
-  }()) || _class) || _class) || _class) || _class);
-});
-define('client/src/elems/md-drawer',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdDrawerCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var drawer = document.createElement('nav');
-  drawer.classList.add("mdl-layout__drawer");
-  var MdDrawerCustomElement = exports.MdDrawerCustomElement = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
-    function MdDrawerCustomElement(element) {
-      _classCallCheck(this, MdDrawerCustomElement);
-
-      element.classList.add("mdl-navigation");
-      element.style['padding-top'] = '6px';
-
-      this.autofocus = element.hasAttribute('autofocus');
-
-      drawer.appendChild(element);
-    }
-
-    MdDrawerCustomElement.prototype.attached = function attached() {
-      this.header = document.querySelector('.mdl-layout__header');
-      this.header.parentNode.insertBefore(drawer, this.header.nextSibling);
-
-      componentHandler.upgradeAllRegistered();
-
-      this.button = document.querySelector('.mdl-layout__drawer-button');
-
-      if (this.button) this.button.style.display = 'block';
-
-      if (this.autofocus && this.header.firstChild && this.header.firstChild.click) this.header.firstChild.click();
-    };
-
-    MdDrawerCustomElement.prototype.detached = function detached() {
-      if (drawer.children.length == 1 && this.button) this.button.style.display = 'none';
-
-      drawer.removeChild(drawer.firstChild);
-    };
-
-    return MdDrawerCustomElement;
-  }()) || _class);
-});
-define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdInputCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _class;
-
-  var MdInputCustomElement = exports.MdInputCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('pattern'), _dec4 = (0, _aureliaFramework.bindable)('step'), _dec5 = (0, _aureliaFramework.bindable)('type'), _dec6 = (0, _aureliaFramework.bindable)('placeholder'), _dec7 = (0, _aureliaFramework.bindable)('input'), _dec8 = (0, _aureliaFramework.bindable)('max'), _dec9 = (0, _aureliaFramework.bindable)('min'), _dec10 = (0, _aureliaFramework.bindable)('required'), _dec11 = (0, _aureliaFramework.bindable)('minlength'), _dec12 = (0, _aureliaFramework.bindable)('maxlength'), _dec13 = (0, _aureliaFramework.bindable)('autofocus'), _dec14 = (0, _aureliaFramework.inject)(_aureliaFramework.TaskQueue), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = _dec8(_class = _dec9(_class = _dec10(_class = _dec11(_class = _dec12(_class = _dec13(_class = _dec14(_class = function () {
-    function MdInputCustomElement(taskQueue) {
-      _classCallCheck(this, MdInputCustomElement);
-
-      this.taskQueue = taskQueue;
-    }
-
-    MdInputCustomElement.prototype.valueChanged = function valueChanged() {
-      this.changed('checkDirty');
-    };
-
-    MdInputCustomElement.prototype.disabledChanged = function disabledChanged() {
-      this.changed('checkDisabled');
-    };
-
-    MdInputCustomElement.prototype.maxChanged = function maxChanged() {
-      this.changed();
-    };
-
-    MdInputCustomElement.prototype.minChanged = function minChanged() {
-      this.changed();
-    };
-
-    MdInputCustomElement.prototype.maxlengthChanged = function maxlengthChanged() {
-      this.changed();
-    };
-
-    MdInputCustomElement.prototype.minlengthChanged = function minlengthChanged() {
-      this.changed();
-    };
-
-    MdInputCustomElement.prototype.requiredChanged = function requiredChanged() {
-      this.changed();
-    };
-
-    MdInputCustomElement.prototype.patternChanged = function patternChanged() {
-      this.changed();
-    };
-
-    MdInputCustomElement.prototype.changed = function changed(methodName) {
-      var _this = this;
-
-      this.taskQueue.queueTask(function (_) {
-        if (!_this.div || !_this.div.MaterialTextfield) return;
-
-        methodName && _this.div.MaterialTextfield[methodName]();
-
-        _this.div.MaterialTextfield.checkValidity();
-
-        if (!_this.input.validity.valid) console.log('invalid input:', _this.input.value, _this.input.pattern, _this.input.validity);
-
-        _this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-    };
-
-    MdInputCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.div);
-
-      if (!this.placeholder && this.type != 'date') this.div.classList.remove('has-placeholder');
-
-      if (this.autofocus || this.autofocus === '') this.div.MaterialTextfield.input_.focus();
-    };
-
-    return MdInputCustomElement;
-  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
-});
-define('client/src/elems/md-loading',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdLoadingCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var MdLoadingCustomElement = exports.MdLoadingCustomElement = (_dec = (0, _aureliaFramework.bindable)('value'), _dec(_class = function () {
-    function MdLoadingCustomElement() {
-      _classCallCheck(this, MdLoadingCustomElement);
-    }
-
-    MdLoadingCustomElement.prototype.valueChanged = function valueChanged(val) {
-      var _this = this;
-
-      setTimeout(function (_) {
-        return _this.div && _this.div.MaterialProgress.setProgress(Math.min(val, 100));
-      });
-    };
-
-    MdLoadingCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.div);
-    };
-
-    return MdLoadingCustomElement;
-  }()) || _class);
-});
-define('client/src/elems/md-menu',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdMenuCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var MdMenuCustomElement = exports.MdMenuCustomElement = (_dec = (0, _aureliaFramework.inject)(_aureliaFramework.ObserverLocator, Element), _dec(_class = function () {
-    function MdMenuCustomElement(observer, element) {
-      _classCallCheck(this, MdMenuCustomElement);
-
-      this.id = 'id' + Date.now();
-      this.element = element;
-      this.observer = observer;
-    }
-
-    MdMenuCustomElement.prototype.click = function click($event) {
-      if ($event.target.tagName != 'INPUT' && !$event.target.disabled) return true;
-
-      $event.stopImmediatePropagation();
-    };
-
-    MdMenuCustomElement.prototype.setDisabled = function setDisabled(li, disabled) {
-      disabled ? li.setAttribute('disabled', '') : li.removeAttribute('disabled');
-    };
-
-    MdMenuCustomElement.prototype.resize = function resize() {
-      var height = this.ul.getBoundingClientRect().height;
-      var width = this.ul.getBoundingClientRect().width;
-
-      console.log('resize', height, width);
-
-      this.ul.MaterialMenu.container_.style.width = width + 'px';
-      this.ul.MaterialMenu.container_.style.height = height + 'px';
-      this.ul.MaterialMenu.outline_.style.width = width + 'px';
-      this.ul.MaterialMenu.outline_.style.height = height + 'px';
-      this.ul.style.clip = 'rect(0 ' + width + 'px ' + height + 'px 0)';
-    };
-
-    MdMenuCustomElement.prototype.attached = function attached() {
-      var _this = this;
-
-      var _loop = function _loop() {
-        if (_isArray) {
-          if (_i >= _iterator.length) return 'break';
-          _ref = _iterator[_i++];
-        } else {
-          _i = _iterator.next();
-          if (_i.done) return 'break';
-          _ref = _i.value;
-        }
-
-        var li = _ref;
-
-        li.classList.add('mdl-menu__item');
-        _this.setDisabled(li, li.disabled);
-        _this.observer.getObserver(li, 'disabled').subscribe(function (disabled) {
-          _this.setDisabled(li, disabled);
-        });
-      };
-
-      for (var _iterator = this.element.querySelectorAll('li'), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-        var _ref;
-
-        var _ret = _loop();
-
-        if (_ret === 'break') break;
-      }
-
-      this.element.resize = function (opts) {
-        return setTimeout(function (_) {
-          return _this.resize(opts);
-        }, 100);
-      };
-    };
-
-    return MdMenuCustomElement;
-  }()) || _class);
-});
-define('client/src/elems/md-select',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdSelectCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
-
-  var MdSelectCustomElement = exports.MdSelectCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('style'), _dec3 = (0, _aureliaFramework.bindable)('options'), _dec4 = (0, _aureliaFramework.bindable)('disabled'), _dec5 = (0, _aureliaFramework.bindable)('default'), _dec6 = (0, _aureliaFramework.bindable)('required'), _dec7 = (0, _aureliaFramework.bindable)('property'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
-    function MdSelectCustomElement() {
-      _classCallCheck(this, MdSelectCustomElement);
-    }
-
-    MdSelectCustomElement.prototype.disabledChanged = function disabledChanged() {
-      var _this = this;
-
-      setTimeout(function (_) {
-        return _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDisabled();
-      });
-    };
-
-    MdSelectCustomElement.prototype.valueChanged = function valueChanged() {
-      var _this2 = this;
-
-      setTimeout(function (_) {
-        return _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDirty();
-      });
-    };
-
-    MdSelectCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.div);
-    };
-
-    return MdSelectCustomElement;
-  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
-});
-define('client/src/elems/md-shadow',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdShadowCustomAttribute = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var MdShadowCustomAttribute = exports.MdShadowCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function MdShadowCustomAttribute(element) {
-    _classCallCheck(this, MdShadowCustomAttribute);
-
-    element.classList.add("mdl-shadow--" + element.getAttribute('md-shadow') + "dp");
-  }) || _class);
-});
-define('client/src/elems/md-snackbar',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdSnackbarCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _class;
-
-  var MdSnackbarCustomElement = exports.MdSnackbarCustomElement = (_dec = (0, _aureliaFramework.bindable)('show'), _dec2 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = function () {
-    function MdSnackbarCustomElement(element) {
-      _classCallCheck(this, MdSnackbarCustomElement);
-
-      this.element = element;
-    }
-
-    MdSnackbarCustomElement.prototype.attached = function attached() {
-      var _this = this;
-
-      componentHandler.upgradeElement(this.element);
-      this.element.show = function (opts) {
-        if (typeof opts == 'string') opts = { message: opts, timeout: 5000 };
-
-        _this.element.MaterialSnackbar.showSnackbar(opts);
-      };
-      this.element.error = function (msg, err) {
-        if (!err) {
-          err = msg;
-          msg = '';
-        }
-        msg = msg + ' ' + err.message;
-        _this.element.show(msg);
-        console.error(msg, err);
-        return err;
-      };
-    };
-
-    return MdSnackbarCustomElement;
-  }()) || _class) || _class);
-});
-define('client/src/elems/md-switch',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdSwitchCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _class;
-
-  var MdSwitchCustomElement = exports.MdSwitchCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
-    function MdSwitchCustomElement(elem) {
-      var _this = this;
-
-      _classCallCheck(this, MdSwitchCustomElement);
-
-      elem.addEventListener('click', function (e) {
-        return _this.disabled && e.stopPropagation();
-      });
-    }
-
-    MdSwitchCustomElement.prototype.stopPropogation = function stopPropogation() {
-      return true;
-    };
-
-    MdSwitchCustomElement.prototype.checkedChanged = function checkedChanged() {
-      var _this2 = this;
-
-      this.checked = !!this.checked;
-      setTimeout(function (_) {
-        return _this2.label && _this2.label.MaterialSwitch.checkToggleState();
-      });
-    };
-
-    MdSwitchCustomElement.prototype.disabledChanged = function disabledChanged() {
-      var _this3 = this;
-
-      setTimeout(function (_) {
-        return _this3.label && _this3.label.MaterialSwitch.checkDisabled();
-      });
-    };
-
-    MdSwitchCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.label);
-      this.checkedChanged();
-      this.disabledChanged();
-    };
-
-    return MdSwitchCustomElement;
-  }()) || _class) || _class) || _class) || _class);
-});
-define('client/src/elems/md-table',["exports", "aurelia-framework"], function (exports, _aureliaFramework) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdTableCustomAttribute = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var MdTableCustomAttribute = exports.MdTableCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
-    function MdTableCustomAttribute(element) {
-      _classCallCheck(this, MdTableCustomAttribute);
-
-      element.classList.add("mdl-data-table");
-      element.classList.add("mdl-js-data-table");
-      element.style.border = "none";
-
-      if (element.getAttribute('md-table')) element.classList.add("mdl-data-table--selectable");
-
-      this.element = element;
-    }
-
-    MdTableCustomAttribute.prototype.valueChanged = function valueChanged(selectable) {
-
-      var checkboxes = this.element.querySelectorAll('input[type="checkbox"]');
-
-      for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].disabled = selectable == 'false';
-      }
-    };
-
-    MdTableCustomAttribute.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.element);
-    };
-
-    return MdTableCustomAttribute;
-  }()) || _class);
-});
-define('client/src/elems/md-text',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.MdTextCustomElement = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _dec2, _dec3, _dec4, _dec5, _class;
-
-  var MdTextCustomElement = exports.MdTextCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('placeholder'), _dec4 = (0, _aureliaFramework.bindable)('required'), _dec5 = (0, _aureliaFramework.bindable)('autofocus'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = function () {
-    function MdTextCustomElement() {
-      _classCallCheck(this, MdTextCustomElement);
-    }
-
-    MdTextCustomElement.prototype.valueChanged = function valueChanged() {
-      var _this = this;
-
-      setTimeout(function (_) {
-        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDirty();
-        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkValidity();
-      });
-    };
-
-    MdTextCustomElement.prototype.disabledChanged = function disabledChanged() {
-      var _this2 = this;
-
-      setTimeout(function (_) {
-        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDisabled();
-        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkValidity();
-      });
-    };
-
-    MdTextCustomElement.prototype.attached = function attached() {
-      componentHandler.upgradeElement(this.div);
-
-      if (!this.placeholder) this.div.classList.remove('has-placeholder');
-
-      if (this.autofocus || this.autofocus === '') this.div.MaterialTextfield.input_.focus();
-    };
-
-    return MdTextCustomElement;
-  }()) || _class) || _class) || _class) || _class) || _class);
-});
 define('client/src/libs/csv',["exports"], function (exports) {
   "use strict";
 
@@ -3046,7 +2266,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
       transactions = transactions.filter(function (transaction, i) {
         var qty = transaction.qty.to || transaction.qty.from;
-        var exp = (transaction.exp.to || transaction.exp.from).slice(0, 7);
+        var exp = (transaction.exp.to || transaction.exp.from || oneMonthFromNow).slice(0, 7);
         var ndc = transaction.drug._id;
         var form = transaction.drug.form;
         var repack = inventory.prototype.isRepack(transaction) ? 'Repacked' : 'Inventory';
@@ -4392,6 +3612,786 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
 
     return shipments;
   }()) || _class);
+});
+define('client/src/elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.FormCustomAttribute = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _class;
+
+  var FormCustomAttribute = exports.FormCustomAttribute = (_dec = (0, _aureliaFramework.bindable)('disabled'), _dec2 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = function () {
+    function FormCustomAttribute(element) {
+      _classCallCheck(this, FormCustomAttribute);
+
+      this.element = element;
+      this.change = this.change.bind(this);
+    }
+
+    FormCustomAttribute.prototype.change = function change() {
+
+      if (this.value == 'onchange' && this.serialize() == this.initialValue) return this.inputElement.disabled = true;
+
+      var valid = this.formElement && this.formElement.checkValidity();
+      this.inputElement.disabled = !valid;
+    };
+
+    FormCustomAttribute.prototype.attached = function attached() {
+      this.formElement = this.element.closest('form');
+      this.formElement.addEventListener('change', this.debounce(this.change, 150));
+      this.formElement.addEventListener('input', this.debounce(this.change, 150));
+
+      this.inputElement = this.element.querySelector('input,button,select') || this.element;
+
+      this.initialValue = this.serialize();
+
+      setTimeout(this.change);
+    };
+
+    FormCustomAttribute.prototype.serialize = function serialize() {
+      var s = [];
+      for (var _iterator = this.formElement.elements, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref = _i.value;
+        }
+
+        var field = _ref;
+
+        if (field.type != 'select-multiple') s.push(field.value);else {
+          for (var _iterator2 = field.options, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+            var _ref2;
+
+            if (_isArray2) {
+              if (_i2 >= _iterator2.length) break;
+              _ref2 = _iterator2[_i2++];
+            } else {
+              _i2 = _iterator2.next();
+              if (_i2.done) break;
+              _ref2 = _i2.value;
+            }
+
+            var _option = _ref2;
+
+            if (_option.selected) s.push(_option.value);
+          }
+        }
+      }
+      return s.join('&');
+    };
+
+    FormCustomAttribute.prototype.debounce = function debounce(func, wait) {
+      var timeout = void 0;
+      return function () {
+        var _this = this,
+            _arguments = arguments;
+
+        clearTimeout(timeout);
+        timeout = setTimeout(function (_) {
+          timeout = null;
+          func.apply(_this, _arguments);
+        }, wait);
+      };
+    };
+
+    return FormCustomAttribute;
+  }()) || _class) || _class);
+});
+define('client/src/elems/md-autocomplete',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdAutocompleteCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _class;
+
+  var MdAutocompleteCustomElement = exports.MdAutocompleteCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('placeholder'), _dec(_class = _dec2(_class = _dec3(_class = function () {
+    function MdAutocompleteCustomElement() {
+      _classCallCheck(this, MdAutocompleteCustomElement);
+    }
+
+    MdAutocompleteCustomElement.prototype.toggleResults = function toggleResults($event) {
+      var _this = this;
+
+      setTimeout(function () {
+        return _this.showResults = !_this.showResults;
+      }, 200);
+    };
+
+    return MdAutocompleteCustomElement;
+  }()) || _class) || _class) || _class);
+});
+define('client/src/elems/md-button',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdButtonCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
+
+  var MdButtonCustomElement = exports.MdButtonCustomElement = (_dec = (0, _aureliaFramework.bindable)('form'), _dec2 = (0, _aureliaFramework.bindable)('class'), _dec3 = (0, _aureliaFramework.bindable)('raised'), _dec4 = (0, _aureliaFramework.bindable)('fab'), _dec5 = (0, _aureliaFramework.bindable)('disabled'), _dec6 = (0, _aureliaFramework.bindable)('color'), _dec7 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
+    function MdButtonCustomElement(element) {
+      _classCallCheck(this, MdButtonCustomElement);
+
+      this.element = element;
+      this.change = this.change.bind(this);
+    }
+
+    MdButtonCustomElement.prototype.click = function click($event) {
+      this.disabled && $event.stopPropagation();
+    };
+
+    MdButtonCustomElement.prototype.disabledChanged = function disabledChanged() {
+      this.button && this.change();
+    };
+
+    MdButtonCustomElement.prototype.change = function change(input) {
+      this.disabled = this.disabled || this.disabled === '';
+    };
+
+    MdButtonCustomElement.prototype.attached = function attached() {
+      var _button$classList;
+
+      setTimeout(this.change);
+
+      this.class && (_button$classList = this.button.classList).add.apply(_button$classList, this.class.split(' '));
+
+      if (typeof this.color == 'string' && this.color.slice(0, 4) != 'mdl-') {
+        this.color = 'mdl-button--' + (this.color || 'colored');
+      }
+
+      if (this.fab > 0) {
+        this.button.classList.add('mdl-button--fab');
+        this.button.style.height = this.fab + 'px';
+        this.button.style.width = this.fab + 'px';
+        this.button.style['min-width'] = this.button.style.width;
+        this.button.style['font-size'] = this.fab * .75 + 'px';
+        this.button.style['line-height'] = this.fab + 'px';
+      }
+
+      if (this.element.parentElement.tagName == 'MD-DRAWER') {
+        this.button.style.width = "100%";
+        this.button.style.height = "auto";
+        this.button.style.padding = "16px 8px";
+        this.button.style['line-height'] = "18px";
+      }
+    };
+
+    return MdButtonCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-checkbox',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdCheckboxCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _class;
+
+  var MdCheckboxCustomElement = exports.MdCheckboxCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element, _aureliaFramework.TaskQueue), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
+    function MdCheckboxCustomElement(element, taskQueue) {
+      var _this = this;
+
+      _classCallCheck(this, MdCheckboxCustomElement);
+
+      this.tabindex = element.tabIndex;
+      this.taskQueue = taskQueue;
+
+      element.addEventListener('click', function (e) {
+        return _this.disabled && e.stopPropagation();
+      });
+    }
+
+    MdCheckboxCustomElement.prototype.stopPropogation = function stopPropogation() {
+      return true;
+    };
+
+    MdCheckboxCustomElement.prototype.checkedChanged = function checkedChanged() {
+      var _this2 = this;
+
+      this.checked = !!this.checked;
+      this.taskQueue.queueTask(function (_) {
+        return _this2.label && _this2.label.MaterialCheckbox && _this2.label.MaterialCheckbox.checkToggleState();
+      });
+    };
+
+    MdCheckboxCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this3 = this;
+
+      this.taskQueue.queueTask(function (_) {
+        return _this3.label && _this3.label.MaterialCheckbox && _this3.label.MaterialCheckbox.checkDisabled();
+      });
+    };
+
+    MdCheckboxCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.label);
+      this.checkedChanged();
+    };
+
+    return MdCheckboxCustomElement;
+  }()) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-drawer',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdDrawerCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var drawer = document.createElement('nav');
+  drawer.classList.add("mdl-layout__drawer");
+  var MdDrawerCustomElement = exports.MdDrawerCustomElement = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
+    function MdDrawerCustomElement(element) {
+      _classCallCheck(this, MdDrawerCustomElement);
+
+      element.classList.add("mdl-navigation");
+      element.style['padding-top'] = '6px';
+
+      this.autofocus = element.hasAttribute('autofocus');
+
+      drawer.appendChild(element);
+    }
+
+    MdDrawerCustomElement.prototype.attached = function attached() {
+      this.header = document.querySelector('.mdl-layout__header');
+      this.header.parentNode.insertBefore(drawer, this.header.nextSibling);
+
+      componentHandler.upgradeAllRegistered();
+
+      this.button = document.querySelector('.mdl-layout__drawer-button');
+
+      if (this.button) this.button.style.display = 'block';
+
+      if (this.autofocus && this.header.firstChild && this.header.firstChild.click) this.header.firstChild.click();
+    };
+
+    MdDrawerCustomElement.prototype.detached = function detached() {
+      if (drawer.children.length == 1 && this.button) this.button.style.display = 'none';
+
+      drawer.removeChild(drawer.firstChild);
+    };
+
+    return MdDrawerCustomElement;
+  }()) || _class);
+});
+define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdInputCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _class;
+
+  var MdInputCustomElement = exports.MdInputCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('pattern'), _dec4 = (0, _aureliaFramework.bindable)('step'), _dec5 = (0, _aureliaFramework.bindable)('type'), _dec6 = (0, _aureliaFramework.bindable)('placeholder'), _dec7 = (0, _aureliaFramework.bindable)('input'), _dec8 = (0, _aureliaFramework.bindable)('max'), _dec9 = (0, _aureliaFramework.bindable)('min'), _dec10 = (0, _aureliaFramework.bindable)('required'), _dec11 = (0, _aureliaFramework.bindable)('minlength'), _dec12 = (0, _aureliaFramework.bindable)('maxlength'), _dec13 = (0, _aureliaFramework.bindable)('autofocus'), _dec14 = (0, _aureliaFramework.inject)(_aureliaFramework.TaskQueue), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = _dec8(_class = _dec9(_class = _dec10(_class = _dec11(_class = _dec12(_class = _dec13(_class = _dec14(_class = function () {
+    function MdInputCustomElement(taskQueue) {
+      _classCallCheck(this, MdInputCustomElement);
+
+      this.taskQueue = taskQueue;
+    }
+
+    MdInputCustomElement.prototype.valueChanged = function valueChanged() {
+      this.changed('checkDirty');
+    };
+
+    MdInputCustomElement.prototype.disabledChanged = function disabledChanged() {
+      this.changed('checkDisabled');
+    };
+
+    MdInputCustomElement.prototype.maxChanged = function maxChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.minChanged = function minChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.maxlengthChanged = function maxlengthChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.minlengthChanged = function minlengthChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.requiredChanged = function requiredChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.patternChanged = function patternChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.changed = function changed(methodName) {
+      var _this = this;
+
+      this.taskQueue.queueTask(function (_) {
+        if (!_this.div || !_this.div.MaterialTextfield) return;
+
+        methodName && _this.div.MaterialTextfield[methodName]();
+
+        _this.div.MaterialTextfield.checkValidity();
+
+        if (!_this.input.validity.valid) console.log('invalid input:', _this.input.value, _this.input.pattern, _this.input.validity);
+
+        _this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    };
+
+    MdInputCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+
+      if (!this.placeholder && this.type != 'date') this.div.classList.remove('has-placeholder');
+
+      if (this.autofocus || this.autofocus === '') this.div.MaterialTextfield.input_.focus();
+    };
+
+    return MdInputCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-loading',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdLoadingCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdLoadingCustomElement = exports.MdLoadingCustomElement = (_dec = (0, _aureliaFramework.bindable)('value'), _dec(_class = function () {
+    function MdLoadingCustomElement() {
+      _classCallCheck(this, MdLoadingCustomElement);
+    }
+
+    MdLoadingCustomElement.prototype.valueChanged = function valueChanged(val) {
+      var _this = this;
+
+      setTimeout(function (_) {
+        return _this.div && _this.div.MaterialProgress.setProgress(Math.min(val, 100));
+      });
+    };
+
+    MdLoadingCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+    };
+
+    return MdLoadingCustomElement;
+  }()) || _class);
+});
+define('client/src/elems/md-menu',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdMenuCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdMenuCustomElement = exports.MdMenuCustomElement = (_dec = (0, _aureliaFramework.inject)(_aureliaFramework.ObserverLocator, Element), _dec(_class = function () {
+    function MdMenuCustomElement(observer, element) {
+      _classCallCheck(this, MdMenuCustomElement);
+
+      this.id = 'id' + Date.now();
+      this.element = element;
+      this.observer = observer;
+    }
+
+    MdMenuCustomElement.prototype.click = function click($event) {
+      if ($event.target.tagName != 'INPUT' && !$event.target.disabled) return true;
+
+      $event.stopImmediatePropagation();
+    };
+
+    MdMenuCustomElement.prototype.setDisabled = function setDisabled(li, disabled) {
+      disabled ? li.setAttribute('disabled', '') : li.removeAttribute('disabled');
+    };
+
+    MdMenuCustomElement.prototype.resize = function resize() {
+      var height = this.ul.getBoundingClientRect().height;
+      var width = this.ul.getBoundingClientRect().width;
+
+      console.log('resize', height, width);
+
+      this.ul.MaterialMenu.container_.style.width = width + 'px';
+      this.ul.MaterialMenu.container_.style.height = height + 'px';
+      this.ul.MaterialMenu.outline_.style.width = width + 'px';
+      this.ul.MaterialMenu.outline_.style.height = height + 'px';
+      this.ul.style.clip = 'rect(0 ' + width + 'px ' + height + 'px 0)';
+    };
+
+    MdMenuCustomElement.prototype.attached = function attached() {
+      var _this = this;
+
+      var _loop = function _loop() {
+        if (_isArray) {
+          if (_i >= _iterator.length) return 'break';
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) return 'break';
+          _ref = _i.value;
+        }
+
+        var li = _ref;
+
+        li.classList.add('mdl-menu__item');
+        _this.setDisabled(li, li.disabled);
+        _this.observer.getObserver(li, 'disabled').subscribe(function (disabled) {
+          _this.setDisabled(li, disabled);
+        });
+      };
+
+      for (var _iterator = this.element.querySelectorAll('li'), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        var _ret = _loop();
+
+        if (_ret === 'break') break;
+      }
+
+      this.element.resize = function (opts) {
+        return setTimeout(function (_) {
+          return _this.resize(opts);
+        }, 100);
+      };
+    };
+
+    return MdMenuCustomElement;
+  }()) || _class);
+});
+define('client/src/elems/md-select',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdSelectCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
+
+  var MdSelectCustomElement = exports.MdSelectCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('style'), _dec3 = (0, _aureliaFramework.bindable)('options'), _dec4 = (0, _aureliaFramework.bindable)('disabled'), _dec5 = (0, _aureliaFramework.bindable)('default'), _dec6 = (0, _aureliaFramework.bindable)('required'), _dec7 = (0, _aureliaFramework.bindable)('property'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
+    function MdSelectCustomElement() {
+      _classCallCheck(this, MdSelectCustomElement);
+    }
+
+    MdSelectCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this = this;
+
+      setTimeout(function (_) {
+        return _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDisabled();
+      });
+    };
+
+    MdSelectCustomElement.prototype.valueChanged = function valueChanged() {
+      var _this2 = this;
+
+      setTimeout(function (_) {
+        return _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDirty();
+      });
+    };
+
+    MdSelectCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+    };
+
+    return MdSelectCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-shadow',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdShadowCustomAttribute = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdShadowCustomAttribute = exports.MdShadowCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function MdShadowCustomAttribute(element) {
+    _classCallCheck(this, MdShadowCustomAttribute);
+
+    element.classList.add("mdl-shadow--" + element.getAttribute('md-shadow') + "dp");
+  }) || _class);
+});
+define('client/src/elems/md-snackbar',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdSnackbarCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _class;
+
+  var MdSnackbarCustomElement = exports.MdSnackbarCustomElement = (_dec = (0, _aureliaFramework.bindable)('show'), _dec2 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = function () {
+    function MdSnackbarCustomElement(element) {
+      _classCallCheck(this, MdSnackbarCustomElement);
+
+      this.element = element;
+    }
+
+    MdSnackbarCustomElement.prototype.attached = function attached() {
+      var _this = this;
+
+      componentHandler.upgradeElement(this.element);
+      this.element.show = function (opts) {
+        if (typeof opts == 'string') opts = { message: opts, timeout: 5000 };
+
+        _this.element.MaterialSnackbar.showSnackbar(opts);
+      };
+      this.element.error = function (msg, err) {
+        if (!err) {
+          err = msg;
+          msg = '';
+        }
+        msg = msg + ' ' + err.message;
+        _this.element.show(msg);
+        console.error(msg, err);
+        return err;
+      };
+    };
+
+    return MdSnackbarCustomElement;
+  }()) || _class) || _class);
+});
+define('client/src/elems/md-switch',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdSwitchCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _class;
+
+  var MdSwitchCustomElement = exports.MdSwitchCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
+    function MdSwitchCustomElement(elem) {
+      var _this = this;
+
+      _classCallCheck(this, MdSwitchCustomElement);
+
+      elem.addEventListener('click', function (e) {
+        return _this.disabled && e.stopPropagation();
+      });
+    }
+
+    MdSwitchCustomElement.prototype.stopPropogation = function stopPropogation() {
+      return true;
+    };
+
+    MdSwitchCustomElement.prototype.checkedChanged = function checkedChanged() {
+      var _this2 = this;
+
+      this.checked = !!this.checked;
+      setTimeout(function (_) {
+        return _this2.label && _this2.label.MaterialSwitch.checkToggleState();
+      });
+    };
+
+    MdSwitchCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this3 = this;
+
+      setTimeout(function (_) {
+        return _this3.label && _this3.label.MaterialSwitch.checkDisabled();
+      });
+    };
+
+    MdSwitchCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.label);
+      this.checkedChanged();
+      this.disabledChanged();
+    };
+
+    return MdSwitchCustomElement;
+  }()) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-table',["exports", "aurelia-framework"], function (exports, _aureliaFramework) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdTableCustomAttribute = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdTableCustomAttribute = exports.MdTableCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
+    function MdTableCustomAttribute(element) {
+      _classCallCheck(this, MdTableCustomAttribute);
+
+      element.classList.add("mdl-data-table");
+      element.classList.add("mdl-js-data-table");
+      element.style.border = "none";
+
+      if (element.getAttribute('md-table')) element.classList.add("mdl-data-table--selectable");
+
+      this.element = element;
+    }
+
+    MdTableCustomAttribute.prototype.valueChanged = function valueChanged(selectable) {
+
+      var checkboxes = this.element.querySelectorAll('input[type="checkbox"]');
+
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].disabled = selectable == 'false';
+      }
+    };
+
+    MdTableCustomAttribute.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.element);
+    };
+
+    return MdTableCustomAttribute;
+  }()) || _class);
+});
+define('client/src/elems/md-text',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdTextCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _class;
+
+  var MdTextCustomElement = exports.MdTextCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('placeholder'), _dec4 = (0, _aureliaFramework.bindable)('required'), _dec5 = (0, _aureliaFramework.bindable)('autofocus'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = function () {
+    function MdTextCustomElement() {
+      _classCallCheck(this, MdTextCustomElement);
+    }
+
+    MdTextCustomElement.prototype.valueChanged = function valueChanged() {
+      var _this = this;
+
+      setTimeout(function (_) {
+        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDirty();
+        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkValidity();
+      });
+    };
+
+    MdTextCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this2 = this;
+
+      setTimeout(function (_) {
+        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDisabled();
+        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkValidity();
+      });
+    };
+
+    MdTextCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+
+      if (!this.placeholder) this.div.classList.remove('has-placeholder');
+
+      if (this.autofocus || this.autofocus === '') this.div.MaterialTextfield.input_.focus();
+    };
+
+    return MdTextCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class);
 });
 define('text!client/src/elems/md-autocomplete.html', ['module'], function(module) { module.exports = "<template style=\"box-shadow:none\">\n  <!-- z-index of 2 is > than checkboxes which have z-index of 1 -->\n  <md-autocomplete-wrap\n    ref=\"form\"\n    class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\"\n    style=\"z-index:2; width:100%; padding-top:10px\">\n    <input class=\"md-input mdl-textfield__input\"\n      name = \"pro_input_field\"\n      value.bind=\"value\"\n      disabled.bind=\"disabled\"\n      placeholder.bind=\"placeholder || ''\"\n      focus.trigger=\"toggleResults()\"\n      focusout.delegate=\"toggleResults($event)\"\n      style=\"font-size:20px;\">\n    <div show.bind=\"showResults\"\n      tabindex=\"-1\"\n      style=\"width:100%; overflow-y:scroll; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); max-height: 400px !important;\"\n      class=\"md-autocomplete-suggestions\">\n      <slot></slot>\n    </div>\n  </md-autocomplete-wrap>\n  <style>\n  @-webkit-keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @-webkit-keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  @keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  md-autocomplete {\n    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);\n    border-radius: 2px;\n    display: block;\n    height: 40px;\n    position: relative;\n    overflow: visible;\n    min-width: 190px; }\n    md-autocomplete[md-floating-label] {\n      padding-bottom: 26px;\n      box-shadow: none;\n      border-radius: 0;\n      background: transparent;\n      height: auto; }\n      md-autocomplete[md-floating-label] md-input-container {\n        padding-bottom: 0; }\n      md-autocomplete[md-floating-label] md-autocomplete-wrap {\n        height: auto; }\n      md-autocomplete[md-floating-label] button {\n        top: auto;\n        bottom: 5px; }\n    md-autocomplete md-autocomplete-wrap {\n      display: block;\n      position: relative;\n      overflow: visible;\n      height: 40px; }\n      md-autocomplete md-autocomplete-wrap md-progress-linear {\n        position: absolute;\n        bottom: 0;\n        left: 0;\n        width: 100%;\n        height: 3px;\n        transition: none; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear .md-container {\n          transition: none;\n          top: auto;\n          height: 3px; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter.ng-enter-active {\n            opacity: 1; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave.ng-leave-active {\n            opacity: 0; }\n    md-autocomplete input:not(.md-input) {\n      position: absolute;\n      left: 0;\n      top: 0;\n      width: 100%;\n      box-sizing: border-box;\n      border: none;\n      box-shadow: none;\n      padding: 0 15px;\n      font-size: 14px;\n      line-height: 40px;\n      height: 40px;\n      outline: none;\n      background: transparent; }\n      md-autocomplete input:not(.md-input)::-ms-clear {\n        display: none; }\n    md-autocomplete button {\n      position: absolute;\n      top: 10px;\n      right: 10px;\n      line-height: 20px;\n      text-align: center;\n      width: 20px;\n      height: 20px;\n      cursor: pointer;\n      border: none;\n      border-radius: 50%;\n      padding: 0;\n      font-size: 12px;\n      background: transparent; }\n      md-autocomplete button:after {\n        content: '';\n        position: absolute;\n        top: -6px;\n        right: -6px;\n        bottom: -6px;\n        left: -6px;\n        border-radius: 50%;\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        opacity: 0;\n        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }\n      md-autocomplete button:focus {\n        outline: none; }\n        md-autocomplete button:focus:after {\n          -webkit-transform: scale(1);\n                  transform: scale(1);\n          opacity: 1; }\n      md-autocomplete button md-icon {\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        -webkit-transform: translate3d(-50%, -50%, 0) scale(0.9);\n                transform: translate3d(-50%, -50%, 0) scale(0.9); }\n        md-autocomplete button md-icon path {\n          stroke-width: 0; }\n      md-autocomplete button.ng-enter {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-enter.ng-enter-active {\n          -webkit-transform: scale(1);\n                  transform: scale(1); }\n      md-autocomplete button.ng-leave {\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-leave.ng-leave-active {\n          -webkit-transform: scale(0);\n                  transform: scale(0); }\n    @media screen and (-ms-high-contrast: active) {\n      md-autocomplete input {\n        border: 1px solid #fff; }\n      md-autocomplete li:focus {\n        color: #fff; } }\n\n  .md-autocomplete-suggestions table, .md-autocomplete-suggestions ul {\n    table-layout:auto;  //added by adam\n    width:100%;         //added by adam\n    background:white;   //added by adam\n    position: relative;\n    margin: 0;\n    list-style: none;\n    padding: 0;\n    z-index: 100; }\n    .md-autocomplete-suggestions li {\n      line-height: 48px; //separated by adam\n    }\n    .md-autocomplete-suggestions li, .md-autocomplete-suggestions tr {\n      /*added by adam */\n      width:100%;\n      text-align: left;\n      position: static !important;\n      text-transform: none;\n      /* end addition */\n      cursor: pointer;\n      font-size: 14px;\n      overflow: hidden;\n\n      transition: background 0.15s linear;\n      text-overflow: ellipsis; }\n      .md-autocomplete-suggestions li.ng-enter, .md-autocomplete-suggestions li.ng-hide-remove {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-in 0.2s;\n                animation: md-autocomplete-list-in 0.2s; }\n      .md-autocomplete-suggestions li.ng-leave, .md-autocomplete-suggestions li.ng-hide-add {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-out 0.2s;\n                animation: md-autocomplete-list-out 0.2s; }\n      .md-autocomplete-suggestions li:focus {\n        outline: none; }\n  </style>\n</template>\n"; });
 define('text!client/src/elems/md-button.html', ['module'], function(module) { module.exports = "<template style=\"display:inline-block; height:36px; line-height:36px\">\n  <button\n    ref=\"button\"\n    type=\"button\"\n    disabled.two-way=\"disabled\"\n    click.delegate=\"click($event)\"\n    class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n    style=\"width:100%; height:inherit; line-height:inherit\">\n    <slot style=\"padding:auto\"></slot>\n  </button>\n</template>\n<!-- type=\"button\" because a button inside a form has its type implicitly set to submit. And the spec says that the first button or input with type=\"submit\" is triggered on enter -->\n<!-- two-way because FormCustomAttribute can set button's disabled property directly -->\n"; });
