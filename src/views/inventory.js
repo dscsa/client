@@ -999,7 +999,7 @@ export class inventoryFilterValueConverter {
 
       //TODO we could reduce code by making this a loop of keys.  Lot's of redundancy here
       let qty    = transaction.qty.to || transaction.qty.from
-      let exp    = (transaction.exp.to || transaction.exp.from).slice(0, 7)
+      let exp    = (transaction.exp.to || transaction.exp.from || oneMonthFromNow).slice(0, 7) //using onemonthfromnow is here for the transactions that are showing up double-null in expiration date. this ay the field will be empty, but the order/group/generic will still display
       let ndc    = transaction.drug._id
       let form   = transaction.drug.form
       let repack = inventory.prototype.isRepack(transaction) ? 'Repacked' : 'Inventory'
