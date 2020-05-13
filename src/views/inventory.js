@@ -398,11 +398,21 @@ export class inventory {
    .then(_ => term ? this.selectTerm('generic', term) : this.term = '') //We must let these transactions save without next for them to appear back in inventory
   }
 
+  //TODO: when removing the hacky functionality with concatenated strings, expand this to add further validation
+  validateGroupName(group){
+    return !(~ group.indexOf(": "))
+  }
+
   //Three OPTIONS
   //1) They pick an existing pendId and _id is passed as parameter
   //2) They type in their own pendId and pendToId is passed as parameter
   //3) They do Pend New without a pendId in which case the createdAt date will be used later
   pendInventory(group, pendQty) {
+
+    if(!this.validateGroupName(group)){
+        console.error('invalid group name:', group)
+        return this.snackbar.show(`Cannot pend to invalid group name "` + group + '"')
+    }
 
     let toPend = []
     let repackQty = pendQty
