@@ -383,7 +383,7 @@ export function getHistory(id) {
           let fromStreet  = v.shipment.account.from.street
           let fromAddress = v.shipment.account.from.city+', '+v.shipment.account.from.state+' '+v.shipment.account.from.zip
           let date        = pad(v._id.slice(0, 10), 20)
-          let qty         = `<a href='https://${window.location.hostname}:5984/_utils/#database/transaction/${v._id}' target='_blank'>${pad('Quantity '+(v.qty.to || v.qty.from), 20)}</a>`
+          let qty         = `<a href='https://${window.location.hostname}:8443/_utils/#database/transaction/${v._id}' target='_blank'>${pad('Quantity '+(v.qty.to || v.qty.from), 20)}</a>`
           let tracking    = pad(v.type, 20)
           let toName      = ''
           let toStreet    = ''
