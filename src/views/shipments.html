@@ -44,10 +44,10 @@
     <md-select
       name = "pro_year_choice"
       change.delegate="refocusWithNewShipments()"
-      input.delegate="gatherShipments()  & debounce:100"
+      input.delegate="gatherShipments() & debounce:100"
       style="font-size: 20px; width:45px; margin:auto"
       value.bind="shipmentDrawerYear"
-      options.bind="shipmentDrawerYearChoices"
+      options.bind="shipmentDrawerYearChoices">
     </md-select>
   </md-drawer>
   <section class="mdl-grid au-animate">
