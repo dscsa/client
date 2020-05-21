@@ -178,6 +178,21 @@ And it will clone the replication document for the new database rather than ente
 
 Add EC2 Console, Register New Instance with Load Balancer's "Target Group"
 
+2 Target Groups
+- v2-live-internal/external HTTP on port 80
+- v2-fauxton-internal/external HTTP on port 5984
+
+Load Balancer with 3 rules
+- HTTP 80; HTTPS 443; HTTPS 8443 #8443 is Cloudflare Compatible Port that will goto CouchDB's Fauxton
+- Select PEM/SSL Certificate from Correct Domain
+  * if none exists create one in CloudFlare SSL > Origin Server and "Upload to ACM".  You will need to google search CloudFlare's Public Certificate Chain
+- Routing
+  * HTTP 80 Forward To v2-live-internal/external; (Redirect to 443 seems to create a redirect loop, so need to force HTTPS is Cloudflare)
+  * HTTPS 443 Forward To v2-live-internal/external;
+  * HTTPS 5984 Forward To v2-fauxton-internal/external
+
+DNS
+- In CloudFlare add CNAME of v2.<domain>.org, URL of the AWS Load Balancer, DNS Only
 
 ####
 
