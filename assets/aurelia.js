@@ -23,7 +23,7 @@
  * 
  */
 /**
- * bluebird build version 3.7.1
+ * bluebird build version 3.7.2
  * Features enabled: core
  * Features disabled: race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, using, timers, filter, any, each
 */
@@ -525,37 +525,10 @@ var deferUnhandledRejectionCheck;
         promises.length = 0;
     }
 
-    if (typeof document === "object" && document.createElement) {
-        deferUnhandledRejectionCheck = (function() {
-            var iframeSetTimeout;
-
-            function checkIframe() {
-                if (document.body) {
-                    var iframe = document.createElement("iframe");
-                    document.body.appendChild(iframe);
-                    if (iframe.contentWindow &&
-                        iframe.contentWindow.setTimeout) {
-                        iframeSetTimeout = iframe.contentWindow.setTimeout;
-                    }
-                    document.body.removeChild(iframe);
-                }
-            }
-            checkIframe();
-            return function(promise) {
-                promises.push(promise);
-                if (iframeSetTimeout) {
-                    iframeSetTimeout(unhandledRejectionCheck, 1);
-                } else {
-                    checkIframe();
-                }
-            };
-        })();
-    } else {
-        deferUnhandledRejectionCheck = function(promise) {
-            promises.push(promise);
-            setTimeout(unhandledRejectionCheck, 1);
-        };
-    }
+    deferUnhandledRejectionCheck = function(promise) {
+        promises.push(promise);
+        setTimeout(unhandledRejectionCheck, 1);
+    };
 
     es5.defineProperty(Promise, "_unhandledRejectionCheck", {
         value: unhandledRejectionCheck
@@ -2968,7 +2941,7 @@ _dereq_("./synchronous_inspection")(Promise);
 _dereq_("./join")(
     Promise, PromiseArray, tryConvertToPromise, INTERNAL, async);
 Promise.Promise = Promise;
-Promise.version = "3.7.1";
+Promise.version = "3.7.2";
                                                          
     util.toFastProperties(Promise);                                          
     util.toFastProperties(Promise.prototype);                                
@@ -3976,7 +3949,7 @@ K(require)||(w=require,require=void 0);g=requirejs=function(b,c,d,m){var r,q="_"
 0),importScripts(d),b.completeLoad(c)}catch(q){b.onError(F("importscripts","importScripts failed for "+c+" at "+d,q,[c]))}};E&&!w.skipDataMain&&X(document.getElementsByTagName("script"),function(b){C||(C=b.parentNode);if(O=b.getAttribute("data-main"))return u=O,w.baseUrl||-1!==u.indexOf("!")||(I=u.split("/"),u=I.pop(),T=I.length?I.join("/")+"/":"./",w.baseUrl=T),u=u.replace(U,""),g.jsExtRegExp.test(u)&&(u=O),w.deps=w.deps?w.deps.concat(u):[u],!0});define=function(b,c,d){var e,g;"string"!==typeof b&&
 (d=c,c=b,b=null);L(c)||(d=c,c=null);!c&&K(d)&&(c=[],d.length&&(d.toString().replace(qa,ka).replace(ra,function(b,d){c.push(d)}),c=(1===d.length?["require"]:["require","exports","module"]).concat(c)));S&&(e=P||pa())&&(b||(b=e.getAttribute("data-requiremodule")),g=J[e.getAttribute("data-requirecontext")]);g?(g.defQueue.push([b,c,d]),g.defQueueMap[b]=!0):V.push([b,c,d])};define.amd={jQuery:!0};g.exec=function(b){return eval(b)};g(w)}})(this);
 
-requirejs.config({"baseUrl":"../","paths":{"text":"development/aurelia_project/text","assets/client":"../../client/assets/client"},"packages":[{"name":"aurelia-http-client","location":"aurelia-http-client/dist/amd","main":"aurelia-http-client"},{"name":"aurelia-animator-css","location":"aurelia-animator-css/dist/amd","main":"aurelia-animator-css"},{"name":"aurelia-binding","location":"aurelia-binding/dist/amd","main":"aurelia-binding"},{"name":"aurelia-bootstrapper","location":"aurelia-bootstrapper/dist/amd","main":"aurelia-bootstrapper"},{"name":"aurelia-dependency-injection","location":"aurelia-dependency-injection/dist/amd","main":"aurelia-dependency-injection"},{"name":"aurelia-event-aggregator","location":"aurelia-event-aggregator/dist/amd","main":"aurelia-event-aggregator"},{"name":"aurelia-framework","location":"aurelia-framework/dist/amd","main":"aurelia-framework"},{"name":"aurelia-history","location":"aurelia-history/dist/amd","main":"aurelia-history"},{"name":"aurelia-history-browser","location":"aurelia-history-browser/dist/amd","main":"aurelia-history-browser"},{"name":"aurelia-loader","location":"aurelia-loader/dist/amd","main":"aurelia-loader"},{"name":"aurelia-loader-default","location":"aurelia-loader-default/dist/amd","main":"aurelia-loader-default"},{"name":"aurelia-logging","location":"aurelia-logging/dist/amd","main":"aurelia-logging"},{"name":"aurelia-logging-console","location":"aurelia-logging-console/dist/amd","main":"aurelia-logging-console"},{"name":"aurelia-metadata","location":"aurelia-metadata/dist/amd","main":"aurelia-metadata"},{"name":"aurelia-pal","location":"aurelia-pal/dist/amd","main":"aurelia-pal"},{"name":"aurelia-pal-browser","location":"aurelia-pal-browser/dist/amd","main":"aurelia-pal-browser"},{"name":"aurelia-path","location":"aurelia-path/dist/amd","main":"aurelia-path"},{"name":"aurelia-polyfills","location":"aurelia-polyfills/dist/amd","main":"aurelia-polyfills"},{"name":"aurelia-route-recognizer","location":"aurelia-route-recognizer/dist/amd","main":"aurelia-route-recognizer"},{"name":"aurelia-router","location":"aurelia-router/dist/amd","main":"aurelia-router"},{"name":"aurelia-task-queue","location":"aurelia-task-queue/dist/amd","main":"aurelia-task-queue"},{"name":"aurelia-templating","location":"aurelia-templating/dist/amd","main":"aurelia-templating"},{"name":"aurelia-templating-binding","location":"aurelia-templating-binding/dist/amd","main":"aurelia-templating-binding"},{"name":"aurelia-templating-resources","location":"aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"aurelia-templating-router/dist/amd","main":"aurelia-templating-router"}],"stubModules":["text"],"shim":{},"bundles":{"assets/client":["client/src/environment","client/src/elems/form","client/src/elems/md-autocomplete","client/src/elems/md-button","client/src/elems/md-checkbox","client/src/elems/md-drawer","client/src/elems/md-input","client/src/elems/md-loading","client/src/elems/md-menu","client/src/elems/md-select","client/src/elems/md-shadow","client/src/elems/md-snackbar","client/src/elems/md-switch","client/src/elems/md-table","client/src/elems/md-text","client/src/libs/csv","client/src/libs/pouch","client/src/resources/helpers","client/src/resources/value-converters","client/src/views/account","client/src/views/drugs","client/src/views/index","client/src/views/inventory","client/src/views/join","client/src/views/login","client/src/views/picking","client/src/views/routes","client/src/views/shipments"]}});
+requirejs.config({"baseUrl":"../","paths":{"text":"development/aurelia_project/text","assets/client":"../../client/assets/client"},"packages":[{"name":"aurelia-http-client","location":"aurelia-http-client/dist/amd","main":"aurelia-http-client"},{"name":"aurelia-animator-css","location":"aurelia-animator-css/dist/amd","main":"aurelia-animator-css"},{"name":"aurelia-binding","location":"aurelia-binding/dist/amd","main":"aurelia-binding"},{"name":"aurelia-bootstrapper","location":"aurelia-bootstrapper/dist/amd","main":"aurelia-bootstrapper"},{"name":"aurelia-dependency-injection","location":"aurelia-dependency-injection/dist/amd","main":"aurelia-dependency-injection"},{"name":"aurelia-event-aggregator","location":"aurelia-event-aggregator/dist/amd","main":"aurelia-event-aggregator"},{"name":"aurelia-framework","location":"aurelia-framework/dist/amd","main":"aurelia-framework"},{"name":"aurelia-history","location":"aurelia-history/dist/amd","main":"aurelia-history"},{"name":"aurelia-history-browser","location":"aurelia-history-browser/dist/amd","main":"aurelia-history-browser"},{"name":"aurelia-loader","location":"aurelia-loader/dist/amd","main":"aurelia-loader"},{"name":"aurelia-loader-default","location":"aurelia-loader-default/dist/amd","main":"aurelia-loader-default"},{"name":"aurelia-logging","location":"aurelia-logging/dist/amd","main":"aurelia-logging"},{"name":"aurelia-logging-console","location":"aurelia-logging-console/dist/amd","main":"aurelia-logging-console"},{"name":"aurelia-metadata","location":"aurelia-metadata/dist/amd","main":"aurelia-metadata"},{"name":"aurelia-pal","location":"aurelia-pal/dist/amd","main":"aurelia-pal"},{"name":"aurelia-pal-browser","location":"aurelia-pal-browser/dist/amd","main":"aurelia-pal-browser"},{"name":"aurelia-path","location":"aurelia-path/dist/amd","main":"aurelia-path"},{"name":"aurelia-polyfills","location":"aurelia-polyfills/dist/amd","main":"aurelia-polyfills"},{"name":"aurelia-route-recognizer","location":"aurelia-route-recognizer/dist/amd","main":"aurelia-route-recognizer"},{"name":"aurelia-router","location":"aurelia-router/dist/amd","main":"aurelia-router"},{"name":"aurelia-task-queue","location":"aurelia-task-queue/dist/amd","main":"aurelia-task-queue"},{"name":"aurelia-templating","location":"aurelia-templating/dist/amd","main":"aurelia-templating"},{"name":"aurelia-templating-binding","location":"aurelia-templating-binding/dist/amd","main":"aurelia-templating-binding"},{"name":"aurelia-templating-resources","location":"aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"aurelia-templating-router/dist/amd","main":"aurelia-templating-router"}],"stubModules":["text"],"shim":{},"bundles":{"assets/client":["client/src/environment","client/src/libs/csv","client/src/libs/pouch","client/src/resources/helpers","client/src/resources/value-converters","client/src/elems/form","client/src/elems/md-autocomplete","client/src/elems/md-button","client/src/elems/md-checkbox","client/src/elems/md-drawer","client/src/elems/md-input","client/src/elems/md-loading","client/src/elems/md-menu","client/src/elems/md-select","client/src/elems/md-shadow","client/src/elems/md-snackbar","client/src/elems/md-switch","client/src/elems/md-table","client/src/elems/md-text","client/src/views/account","client/src/views/drugs","client/src/views/index","client/src/views/inventory","client/src/views/join","client/src/views/login","client/src/views/picking","client/src/views/routes","client/src/views/shipments"]}});
 define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'aurelia-pal'], function (exports, _aureliaPath, _aureliaPal) {
   'use strict';
 
@@ -8633,7 +8606,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
   var emLogger = LogManager.getLogger('event-manager');
 
   function findOriginalEventTarget(event) {
-    return event.path && event.path[0] || event.deepPath && event.deepPath[0] || event.target;
+    return event.composedPath && event.composedPath()[0] || event.deepPath && event.deepPath()[0] || event.path && event.path[0] || event.target;
   }
 
   function stopPropagation() {
@@ -11257,6 +11230,14 @@ define('aurelia-dependency-injection', ['exports', 'aurelia-metadata', 'aurelia-
       }
       return true;
   });
+  (function (Strategy) {
+      Strategy[Strategy["instance"] = 0] = "instance";
+      Strategy[Strategy["singleton"] = 1] = "singleton";
+      Strategy[Strategy["transient"] = 2] = "transient";
+      Strategy[Strategy["function"] = 3] = "function";
+      Strategy[Strategy["array"] = 4] = "array";
+      Strategy[Strategy["alias"] = 5] = "alias";
+  })(exports.Strategy || (exports.Strategy = {}));
   function isStrategy(actual, expected, state) {
       return actual === expected;
   }
@@ -11266,25 +11247,25 @@ define('aurelia-dependency-injection', ['exports', 'aurelia-metadata', 'aurelia-
           this.state = state;
       }
       StrategyResolver.prototype.get = function (container, key) {
-          if (isStrategy(this.strategy, 0, this.state)) {
+          if (isStrategy(this.strategy, exports.Strategy.instance, this.state)) {
               return this.state;
           }
-          if (isStrategy(this.strategy, 1, this.state)) {
+          if (isStrategy(this.strategy, exports.Strategy.singleton, this.state)) {
               var singleton = container.invoke(this.state);
               this.state = singleton;
               this.strategy = 0;
               return singleton;
           }
-          if (isStrategy(this.strategy, 2, this.state)) {
+          if (isStrategy(this.strategy, exports.Strategy.transient, this.state)) {
               return container.invoke(this.state);
           }
-          if (isStrategy(this.strategy, 3, this.state)) {
+          if (isStrategy(this.strategy, exports.Strategy.function, this.state)) {
               return this.state(container, key, this);
           }
-          if (isStrategy(this.strategy, 4, this.state)) {
+          if (isStrategy(this.strategy, exports.Strategy.array, this.state)) {
               return this.state[0].get(container, key);
           }
-          if (isStrategy(this.strategy, 5, this.state)) {
+          if (isStrategy(this.strategy, exports.Strategy.alias, this.state)) {
               return container.get(this.state);
           }
           throw new Error('Invalid strategy: ' + this.strategy);
@@ -11382,7 +11363,7 @@ define('aurelia-dependency-injection', ['exports', 'aurelia-metadata', 'aurelia-
       Factory.prototype.get = function (container) {
           var fn = this._key;
           var resolver = container.getResolver(fn);
-          if (resolver && resolver.strategy === 3) {
+          if (resolver && resolver.strategy === exports.Strategy.function) {
               fn = resolver.state;
           }
           return function () {
@@ -18892,7 +18873,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
-  var _class, _temp, _class2, _temp2, _dec, _class3, _dec2, _class4, _dec3, _class5, _dec4, _class6, _dec5, _class7, _dec6, _class8, _class9, _temp3, _class10, _temp4, _class12, _dec7, _class14, _dec8, _class15, _class16, _temp5, _dec9, _class17, _dec10, _class18, _dec11, _class19;
+  var _class, _temp, _class2, _temp2, _dec, _class3, _dec2, _class4, _dec3, _class5, _dec4, _class6, _dec5, _class7, _dec6, _class8, _class9, _temp3, _class10, _temp4, _class12, _class14, _temp5, _dec7, _class15, _dec8, _class16, _dec9, _class17;
 
   
 
@@ -19764,7 +19745,9 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
       this.destinationName = destinationName;
       this.fallbackFactory = fallbackFactory;
       this.destinationSlot = null;
+
       this.projections = 0;
+
       this.contentView = null;
 
       var attr = new SlotCustomAttribute(this.anchor);
@@ -19875,6 +19858,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
       this.fallbackFactory = fallbackFactory;
       this.contentView = null;
       this.projections = 0;
+
       this.children = [];
       this.projectFromAnchors = null;
       this.destinationSlots = null;
@@ -19920,6 +19904,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
         });
         if (found) {
           var _children = found.auProjectionChildren;
+          var ownChildren = this.children;
 
           for (var i = 0, ii = _children.length; i < ii; ++i) {
             var _child = _children[i];
@@ -19928,7 +19913,12 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
               _children.splice(i, 1);
               view.fragment.appendChild(_child);
               i--;ii--;
+
               this.projections--;
+              var idx = ownChildren.indexOf(_child);
+              if (idx > -1) {
+                ownChildren.splice(idx, 1);
+              }
             }
           }
 
@@ -19951,10 +19941,17 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
         if (found) {
           var _children2 = found.auProjectionChildren;
+          var ownChildren = this.children;
+
           for (var i = 0, ii = _children2.length; i < ii; ++i) {
             var _child2 = _children2[i];
             _child2.auOwnerView.fragment.appendChild(_child2);
+
             this.projections--;
+            var idx = ownChildren.indexOf(_child2);
+            if (idx > -1) {
+              ownChildren.splice(idx, 1);
+            }
           }
 
           found.auProjectionChildren = [];
@@ -21591,7 +21588,11 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var defaultLetHandler = BindingLanguage.prototype.createLetExpressions;
 
-  var ViewCompiler = exports.ViewCompiler = (_dec7 = (0, _aureliaDependencyInjection.inject)(BindingLanguage, ViewResources), _dec7(_class14 = function () {
+  var ViewCompiler = exports.ViewCompiler = function () {
+    ViewCompiler.inject = function inject() {
+      return [BindingLanguage, ViewResources];
+    };
+
     function ViewCompiler(bindingLanguage, resources) {
       
 
@@ -22008,7 +22009,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
 
     return ViewCompiler;
-  }()) || _class14);
+  }();
 
   var ResourceModule = exports.ResourceModule = function () {
     function ResourceModule(moduleId) {
@@ -22297,7 +22298,11 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
   var auSlotBehavior = null;
 
-  var ViewEngine = exports.ViewEngine = (_dec8 = (0, _aureliaDependencyInjection.inject)(_aureliaLoader.Loader, _aureliaDependencyInjection.Container, ViewCompiler, ModuleAnalyzer, ViewResources), _dec8(_class15 = (_temp5 = _class16 = function () {
+  var ViewEngine = exports.ViewEngine = (_temp5 = _class14 = function () {
+    ViewEngine.inject = function inject() {
+      return [_aureliaLoader.Loader, _aureliaDependencyInjection.Container, ViewCompiler, ModuleAnalyzer, ViewResources];
+    };
+
     function ViewEngine(loader, container, viewCompiler, moduleAnalyzer, appResources) {
       
 
@@ -22486,7 +22491,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
 
     return ViewEngine;
-  }(), _class16.viewModelRequireMetadataKey = 'aurelia:view-model-require', _temp5)) || _class15);
+  }(), _class14.viewModelRequireMetadataKey = 'aurelia:view-model-require', _temp5);
 
   var Controller = exports.Controller = function () {
     function Controller(behavior, instruction, viewModel, container) {
@@ -22659,7 +22664,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     return Controller;
   }();
 
-  var BehaviorPropertyObserver = exports.BehaviorPropertyObserver = (_dec9 = (0, _aureliaBinding.subscriberCollection)(), _dec9(_class17 = function () {
+  var BehaviorPropertyObserver = exports.BehaviorPropertyObserver = (_dec7 = (0, _aureliaBinding.subscriberCollection)(), _dec7(_class15 = function () {
     function BehaviorPropertyObserver(taskQueue, obj, propertyName, selfSubscriber, initialValue) {
       
 
@@ -22721,7 +22726,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
 
     return BehaviorPropertyObserver;
-  }()) || _class17);
+  }()) || _class15);
 
 
   function getObserver(instance, name) {
@@ -23652,7 +23657,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     return context.viewModel.activate(context.model) || Promise.resolve();
   }
 
-  var CompositionEngine = exports.CompositionEngine = (_dec10 = (0, _aureliaDependencyInjection.inject)(ViewEngine, ViewLocator), _dec10(_class18 = function () {
+  var CompositionEngine = exports.CompositionEngine = (_dec8 = (0, _aureliaDependencyInjection.inject)(ViewEngine, ViewLocator), _dec8(_class16 = function () {
     function CompositionEngine(viewEngine, viewLocator) {
       
 
@@ -23818,7 +23823,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
 
     return CompositionEngine;
-  }()) || _class18);
+  }()) || _class16);
 
   var ElementConfigResource = exports.ElementConfigResource = function () {
     function ElementConfigResource() {
@@ -24030,7 +24035,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
   }
 
-  var TemplatingEngine = exports.TemplatingEngine = (_dec11 = (0, _aureliaDependencyInjection.inject)(_aureliaDependencyInjection.Container, ModuleAnalyzer, ViewCompiler, CompositionEngine), _dec11(_class19 = function () {
+  var TemplatingEngine = exports.TemplatingEngine = (_dec9 = (0, _aureliaDependencyInjection.inject)(_aureliaDependencyInjection.Container, ModuleAnalyzer, ViewCompiler, CompositionEngine), _dec9(_class17 = function () {
     function TemplatingEngine(container, moduleAnalyzer, viewCompiler, compositionEngine) {
       
 
@@ -24074,7 +24079,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
 
     return TemplatingEngine;
-  }()) || _class19);
+  }()) || _class17);
 });;define('aurelia-templating', ['aurelia-templating/aurelia-templating'], function (main) { return main; });
 
 define('aurelia-templating-binding/aurelia-templating-binding',['exports', 'aurelia-logging', 'aurelia-binding', 'aurelia-templating'], function (exports, _aureliaLogging, _aureliaBinding, _aureliaTemplating) {
@@ -26127,10 +26132,10 @@ define('aurelia-templating-resources/aurelia-templating-resources',['exports', '
                 if (Repeat_1.useInnerMatcher) {
                     return extractMatcherBindingExpression(instructions);
                 }
-                if (template.children.length > 1) {
+                if (getChildrenCount(template) > 1) {
                     return undefined;
                 }
-                var repeatedElement = template.firstElementChild;
+                var repeatedElement = getFirstElementChild(template);
                 if (!repeatedElement.hasAttribute('au-target-id')) {
                     return undefined;
                 }
@@ -26224,6 +26229,26 @@ define('aurelia-templating-resources/aurelia-templating-resources',['exports', '
                 }
             }
         }
+    };
+    var getChildrenCount = function (el) {
+        var childNodes = el.childNodes;
+        var count = 0;
+        for (var i = 0, ii = childNodes.length; ii > i; ++i) {
+            if (childNodes[i].nodeType === 1) {
+                ++count;
+            }
+        }
+        return count;
+    };
+    var getFirstElementChild = function (el) {
+        var firstChild = el.firstChild;
+        while (firstChild !== null) {
+            if (firstChild.nodeType === 1) {
+                return firstChild;
+            }
+            firstChild = firstChild.nextSibling;
+        }
+        return null;
     };
 
     var aureliaHideClassName = 'aurelia-hide';
