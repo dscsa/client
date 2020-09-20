@@ -736,7 +736,6 @@ export class inventory {
 
     transactions = transactions || this.transactions.filter(t => t.isChecked)
     let pendId   = this.getPendId()
-    let numDrugs = Object.keys(this.pended[pendId]).length //CK wants label to show how many drugs in the order
 
     let labels = transactions.map(transaction => {
       return [
@@ -747,7 +746,7 @@ export class inventory {
         `Exp ${transaction.exp.to.slice(0, 7)}`,
         `Bin ${transaction.bin}`,
         `Qty ${transaction.qty.to}`,
-        pendId+', #'+numDrugs, //needs to work for X00 bins that are technically no longer pended, default to this? -> transaction.next[0] && transaction.next[0].pended && transaction.next[0].pended._id,
+        pendId, //needs to work for X00 bins that are technically no longer pended, default to this? -> transaction.next[0] && transaction.next[0].pended && transaction.next[0].pended._id,
         `Pharmacist ________________`,
         `</p>`
       ].join('<br>')
