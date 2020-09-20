@@ -505,14 +505,22 @@ export class shipments {
   }
 
   exportCSV() {
+
+    let shipment = JSON.parse(JSON.stringify(this.shipment))
     let name = 'Shipment '+this.shipment._id+'.csv'
+
+    delete shipment.account.to.authorized
+    delete shipment.account.to.ordered
+    delete shipment.account.from.authorized
+    delete shipment.account.from.ordered
+
     this.csv.fromJSON(name, this.transactions.map(transaction => {
       return {
         '':transaction,
         'next':JSON.stringify(transaction.next || []),
         'drug._id':" "+transaction.drug._id,
         'drug.generics':transaction.drug.generics.map(generic => generic.name+" "+generic.strength).join(';'),
-        shipment:this.shipment
+        shipment:shipment
       }
     }))
   }

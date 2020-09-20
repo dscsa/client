@@ -4355,9 +4355,15 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     };
 
     shipments.prototype.exportCSV = function exportCSV() {
-      var _this12 = this;
 
+      var shipment = JSON.parse(JSON.stringify(this.shipment));
       var name = 'Shipment ' + this.shipment._id + '.csv';
+
+      delete shipment.account.to.authorized;
+      delete shipment.account.to.ordered;
+      delete shipment.account.from.authorized;
+      delete shipment.account.from.ordered;
+
       this.csv.fromJSON(name, this.transactions.map(function (transaction) {
         return {
           '': transaction,
@@ -4366,25 +4372,25 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
           'drug.generics': transaction.drug.generics.map(function (generic) {
             return generic.name + " " + generic.strength;
           }).join(';'),
-          shipment: _this12.shipment
+          shipment: shipment
         };
       }));
     };
 
     shipments.prototype.importCSV = function importCSV() {
-      var _this13 = this;
+      var _this12 = this;
 
       this.csv.toJSON(this.$file.files[0], function (parsed) {
-        _this13.$file.value = '';
+        _this12.$file.value = '';
         return Promise.all(parsed.map(function (transaction) {
           transaction._err = undefined;
           transaction._id = undefined;
           transaction._rev = undefined;
-          transaction.shipment._id = _this13.shipment._id;
+          transaction.shipment._id = _this12.shipment._id;
           transaction.next = JSON.parse(transaction.next);
 
-          return _this13.db.drug.get(transaction.drug._id).then(function (drug) {
-            return _this13.addTransaction(drug, transaction);
+          return _this12.db.drug.get(transaction.drug._id).then(function (drug) {
+            return _this12.addTransaction(drug, transaction);
           }).then(function (_) {
             return undefined;
           }).catch(function (err) {
@@ -4393,9 +4399,9 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
           });
         }));
       }).then(function (rows) {
-        return _this13.snackbar.show('Import Succesful');
+        return _this12.snackbar.show('Import Succesful');
       }).catch(function (err) {
-        return _this13.snackbar.error('Import Error', err);
+        return _this12.snackbar.error('Import Error', err);
       });
     };
 
