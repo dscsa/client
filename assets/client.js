@@ -2799,9 +2799,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         return t.isChecked;
       });
       var pendId = this.getPendId();
+      var numDrugs = Object.keys(this.pended[pendId]).length;
 
       var labels = transactions.map(function (transaction) {
-        return ['<p style="page-break-after:always; white-space:nowrap">', '<strong>' + transaction.drug.generic + '</strong>', transaction._id.slice(2, -1), 'Ndc ' + transaction.drug._id, 'Exp ' + transaction.exp.to.slice(0, 7), 'Bin ' + transaction.bin, 'Qty ' + transaction.qty.to, pendId, 'Pharmacist ________________', '</p>'].join('<br>');
+        return ['<p style="page-break-after:always; white-space:nowrap">', '<strong>' + transaction.drug.generic + '</strong>', transaction._id.slice(2, -1), 'Ndc ' + transaction.drug._id, 'Exp ' + transaction.exp.to.slice(0, 7), 'Bin ' + transaction.bin, 'Qty ' + transaction.qty.to, pendId + ', #' + numDrugs, 'Pharmacist ________________', '</p>'].join('<br>');
       });
 
       var win = window.open();
