@@ -2801,7 +2801,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var pendId = this.getPendId();
       var numDrugs = '?';
 
-      if (this.pended[pendId]) numDrugs = Object.keys(this.pended[pendId]).length;else console.log(pendId, this.pended);
+      if (this.shoppingSyncPended[pendId]) numDrugs = Object.keys(this.shoppingSyncPended[pendId]).length;else console.log(pendId, this.pended, this.shoppingSyncPended);
 
       var labels = transactions.map(function (transaction) {
         return ['<p style="page-break-after:always; white-space:nowrap">', '<strong>' + transaction.drug.generic + '</strong>', transaction._id.slice(2, -1), 'Ndc ' + transaction.drug._id, 'Exp ' + transaction.exp.to.slice(0, 7), 'Bin ' + transaction.bin, 'Qty ' + transaction.qty.to, pendId + ', #' + numDrugs, 'Pharmacist ________________', '</p>'].join('<br>');

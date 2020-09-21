@@ -738,11 +738,11 @@ export class inventory {
     let pendId   = this.getPendId()
     let numDrugs = '?'
 
-    if (this.pended[pendId])
-      numDrugs = Object.keys(this.pended[pendId]).length   //CK wants label to show how many drugs in the order
+    if (this.shoppingSyncPended[pendId]) //this.pended gets updated as drugs are repacked, where as this one should give a consistent count
+      numDrugs = Object.keys(this.shoppingSyncPended[pendId]).length   //CK wants label to show how many drugs in the order
     else
-      console.log(pendId, this.pended)
-  
+      console.log(pendId, this.pended, this.shoppingSyncPended)
+
     let labels = transactions.map(transaction => {
       return [
         `<p style="page-break-after:always; white-space:nowrap">`,
