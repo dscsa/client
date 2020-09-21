@@ -736,14 +736,13 @@ export class inventory {
 
     transactions = transactions || this.transactions.filter(t => t.isChecked)
     let pendId   = this.getPendId()
+    let numDrugs = '?'
 
     if (this.pended[pendId])
-      let numDrugs = Object.keys(this.pended[pendId]).length //CK wants label to show how many drugs in the order
-    else {
-      let numDrugs = '?'
+      numDrugs = Object.keys(this.pended[pendId]).length   //CK wants label to show how many drugs in the order
+    else
       console.log(pendId, this.pended)
-    }
-
+  
     let labels = transactions.map(transaction => {
       return [
         `<p style="page-break-after:always; white-space:nowrap">`,
