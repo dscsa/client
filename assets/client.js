@@ -8,6 +8,33 @@ define('client/src/environment',["exports"], function (exports) {
     debug: true,
     testing: false };
 });
+define('client/src/libs/csv',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
+});
+define('client/src/libs/pouch',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Pouch = exports.Pouch = function Pouch() {
+    _classCallCheck(this, Pouch);
+
+    return pouchdbClient;
+  };
+});
 define('client/src/elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
   'use strict';
 
@@ -787,33 +814,6 @@ define('client/src/elems/md-text',['exports', 'aurelia-framework'], function (ex
 
     return MdTextCustomElement;
   }()) || _class) || _class) || _class) || _class) || _class);
-});
-define('client/src/libs/csv',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  var csv = exports.csv = { toJSON: toJSON, fromJSON: fromJSON };
-});
-define('client/src/libs/pouch',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Pouch = exports.Pouch = function Pouch() {
-    _classCallCheck(this, Pouch);
-
-    return pouchdbClient;
-  };
 });
 define('client/src/resources/helpers',['exports', 'aurelia-router'], function (exports, _aureliaRouter) {
   'use strict';
@@ -2801,7 +2801,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       var pendId = this.getPendId();
       var numDrugs = '?';
 
-      if (this.shoppingSyncPended[pendId]) numDrugs = Object.keys(this.shoppingSyncPended[pendId]).length;else console.log(pendId, this.pended, this.shoppingSyncPended);
+      if (this.shoppingSyncPended[pendId]) numDrugs = Object.keys(this.shoppingSyncPended[pendId]).length - 2;else console.log(pendId, this.pended, this.shoppingSyncPended);
 
       var labels = transactions.map(function (transaction) {
         return ['<p style="page-break-after:always; white-space:nowrap">', '<strong>' + transaction.drug.generic + '</strong>', transaction._id.slice(2, -1), 'Ndc ' + transaction.drug._id, 'Exp ' + transaction.exp.to.slice(0, 7), 'Bin ' + transaction.bin, 'Qty ' + transaction.qty.to, pendId + ', #' + numDrugs, 'Pharmacist ________________', '</p>'].join('<br>');

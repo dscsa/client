@@ -739,7 +739,7 @@ export class inventory {
     let numDrugs = '?'
 
     if (this.shoppingSyncPended[pendId]) //this.pended gets updated as drugs are repacked, where as this one should give a consistent count
-      numDrugs = Object.keys(this.shoppingSyncPended[pendId]).length   //CK wants label to show how many drugs in the order
+      numDrugs = Object.keys(this.shoppingSyncPended[pendId]).length - 2   //CK wants label to show how many drugs in the order. -2 for "priority" and "locked" priorities
     else
       console.log(pendId, this.pended, this.shoppingSyncPended)
 
