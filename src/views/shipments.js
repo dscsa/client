@@ -171,10 +171,10 @@ export class shipments {
     this.setUrl('')
 
     if (this.role.shipments == 'to') {  //shipments received
-      this.setShipment({account:{to:this.account, from:{}}})
+      this.setShipment({account:{to:{_id:this.account._id, name:this.account.name}, from:{}}})
       this.setTransactions()
     } else { //shipments sent
-      this.setShipment({account:{from:this.account, to:{}}})
+      this.setShipment({account:{from:{_id:this.account._id, name:this.account.name}, to:{}}})
       this.setTransactions(this.account._id)
     }
   }
