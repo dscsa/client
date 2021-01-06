@@ -3951,9 +3951,12 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
 
       this.shipmentDrawerYear = this.shipmentDrawerYearChoices[0];
       this.db.shipment.query('account.to._id', { startkey: [this.account._id], endkey: [this.account._id + '\uFFFF'], group_level: 2 }).then(function (res) {
-        _this2.shipmentDrawerYearChoices = res.rows.map(function (row) {
+        var years = res.rows.map(function (row) {
           return row.key[1];
-        }).sort(function (a, b) {
+        });
+        var currentYear = new Date().getFullYear();
+        if (!years.includes(currentYear)) years.push(currentYear);
+        _this2.shipmentDrawerYearChoices = years.sort(function (a, b) {
           return b - a;
         });
       });
