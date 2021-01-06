@@ -3954,7 +3954,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         var years = res.rows.map(function (row) {
           return row.key[1];
         });
-        var currentYear = new Date().getFullYear();
+        var currentYear = new Date().getFullYear().toString();
         if (!years.includes(currentYear)) years.push(currentYear);
         _this2.shipmentDrawerYearChoices = years.sort(function (a, b) {
           return b - a;
