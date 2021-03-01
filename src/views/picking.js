@@ -222,7 +222,7 @@ export class shopping {
     this.shoppingIndex = 0
     this.groupLoaded = true
 
-    if(this.shopList.length == 1){
+    if(this.shopList && this.shopList.length == 1){
       this.setNextToSave()
     } else {
       this.setNextToNext()
