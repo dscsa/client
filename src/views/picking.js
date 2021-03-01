@@ -100,15 +100,10 @@ export class shopping {
   }
 
   manageShoppingIndex(){
-
-    console.log(this.requestedPickingStep);
-    console.log(this.numShopItems());
-
     if(this.requestedPickingStep <= this.numShopItems()){
-      console.log('pants');
+
       if(this.requestedPickingStep === 0){
         this.basketSaved = false;
-        console.log('hiii');
       }
       else{
         this.setShoppingIndex(this.requestedPickingStep);
@@ -170,7 +165,7 @@ export class shopping {
   }
 
    selectGroup(groupName, isLocked, isLockedByCurrentUser) {
-    console.log(groupName, isLocked, isLockedByCurrentUser);
+    console.log('locking status on select', groupName, isLocked, isLockedByCurrentUser);
 
     if((isLocked && !isLockedByCurrentUser) || groupName.length === 0)
       return null; //TODO uncommed this when we're passed initial testing
@@ -543,7 +538,7 @@ console.log('basket save ', this.basketSaved);
       } else {
         this.setNextToNext()
       }
-      console.log(this.shopList[this.shoppingIndex], this.shopList, this.shoppingIndex)
+
       this.formComplete = (this.shopList[this.shoppingIndex].extra.fullBasket) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
       history.pushState(null, null, `#/picking/${this.groupName}/step/${this.shoppingIndex + 1}`);
 
@@ -551,7 +546,7 @@ console.log('basket save ', this.basketSaved);
 
 //when the group loads, go to the first incomplete step, don't go to the basket page (unless no steps are complete)
     if(!this.shopList.length){
-      console.log(this.groupName);
+
       this.db.account.picking.post({groupName:this.groupName, action:'load'}).then(res =>{
         this.groupData = res.groupData;
         this.shopList = res.shopList;
@@ -570,7 +565,6 @@ console.log('basket save ', this.basketSaved);
   }
 
   numShopItems(){
-    console.log(this.shopList);
     return this.shopList.length;
   }
 
