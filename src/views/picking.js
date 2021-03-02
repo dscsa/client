@@ -68,8 +68,10 @@ export class shopping {
             this.groupData = result.groupData;
             this.groupLoaded = true;
             this.manageShoppingIndex();
-
-
+          }
+          else {
+            console.log(result);
+            throw 'Invalid shop list ' . JSON.stringify(result || []);
           }
         });
       }
@@ -94,8 +96,8 @@ export class shopping {
     this.db.transaction.query('picked-by-user-from-shipment', {startkey: [this.account._id, this.user._id, year, month, day], endkey: [this.account._id, this.user._id, year, month, day, {}]})
     .then(res => {
       //console.log("updating picked count with res: ", res.rows[0].value[0].sum)
-      console.log(res)
-      this.pickedCount = res.rows[0].value[0].count
+      console.log(res);
+      this.pickedCount = res.rows[0] ? res.rows[0].value[0].count : 0;
     })
   }
 
@@ -197,6 +199,7 @@ export class shopping {
       this.initializeShopper();
       //this has to come after  initialize shopper
       this.basketSaved = hasBasket;
+
       if(hasBasket){
         this.addBasketToShoppingList(res.groupData.basket.fullBasket);
       }
@@ -381,9 +384,14 @@ export class shopping {
   }
 
   addBasket(index){
+    if(!this.shopList[index])
+      return;
+
     //this.focusInput('#basket_number_input') //This wasn't quite working, but autofocus works if you click basket, just not on the first screen which is frustrating
-    this.basketSaved = false
-    if(this.shopList[index].extra.basketLetter != 'G') this.shopList[index].extra.basketNumber = this.currentCart
+    this.basketSaved = false;
+    if(this.shopList[index].extra.basketLetter != 'G') {
+      this.shopList[index].extra.basketNumber = this.currentCart
+    }
   }
 
   delay(ms) {
