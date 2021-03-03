@@ -389,6 +389,7 @@ export class shopping {
 
     //this.focusInput('#basket_number_input') //This wasn't quite working, but autofocus works if you click basket, just not on the first screen which is frustrating
     this.basketSaved = false;
+
     if(this.shopList[index].extra.basketLetter != 'G') {
       this.shopList[index].extra.basketNumber = this.currentCart
     }

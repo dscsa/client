@@ -3949,7 +3949,7 @@ K(require)||(w=require,require=void 0);g=requirejs=function(b,c,d,m){var r,q="_"
 0),importScripts(d),b.completeLoad(c)}catch(q){b.onError(F("importscripts","importScripts failed for "+c+" at "+d,q,[c]))}};E&&!w.skipDataMain&&X(document.getElementsByTagName("script"),function(b){C||(C=b.parentNode);if(O=b.getAttribute("data-main"))return u=O,w.baseUrl||-1!==u.indexOf("!")||(I=u.split("/"),u=I.pop(),T=I.length?I.join("/")+"/":"./",w.baseUrl=T),u=u.replace(U,""),g.jsExtRegExp.test(u)&&(u=O),w.deps=w.deps?w.deps.concat(u):[u],!0});define=function(b,c,d){var e,g;"string"!==typeof b&&
 (d=c,c=b,b=null);L(c)||(d=c,c=null);!c&&K(d)&&(c=[],d.length&&(d.toString().replace(qa,ka).replace(ra,function(b,d){c.push(d)}),c=(1===d.length?["require"]:["require","exports","module"]).concat(c)));S&&(e=P||pa())&&(b||(b=e.getAttribute("data-requiremodule")),g=J[e.getAttribute("data-requirecontext")]);g?(g.defQueue.push([b,c,d]),g.defQueueMap[b]=!0):V.push([b,c,d])};define.amd={jQuery:!0};g.exec=function(b){return eval(b)};g(w)}})(this);
 
-requirejs.config({"baseUrl":"../","paths":{"text":"development/aurelia_project/text","assets/client":"../../client/assets/client"},"packages":[{"name":"aurelia-http-client","location":"aurelia-http-client/dist/amd","main":"aurelia-http-client"},{"name":"aurelia-animator-css","location":"aurelia-animator-css/dist/amd","main":"aurelia-animator-css"},{"name":"aurelia-binding","location":"aurelia-binding/dist/amd","main":"aurelia-binding"},{"name":"aurelia-bootstrapper","location":"aurelia-bootstrapper/dist/amd","main":"aurelia-bootstrapper"},{"name":"aurelia-dependency-injection","location":"aurelia-dependency-injection/dist/amd","main":"aurelia-dependency-injection"},{"name":"aurelia-event-aggregator","location":"aurelia-event-aggregator/dist/amd","main":"aurelia-event-aggregator"},{"name":"aurelia-framework","location":"aurelia-framework/dist/amd","main":"aurelia-framework"},{"name":"aurelia-history","location":"aurelia-history/dist/amd","main":"aurelia-history"},{"name":"aurelia-history-browser","location":"aurelia-history-browser/dist/amd","main":"aurelia-history-browser"},{"name":"aurelia-loader","location":"aurelia-loader/dist/amd","main":"aurelia-loader"},{"name":"aurelia-loader-default","location":"aurelia-loader-default/dist/amd","main":"aurelia-loader-default"},{"name":"aurelia-logging","location":"aurelia-logging/dist/amd","main":"aurelia-logging"},{"name":"aurelia-logging-console","location":"aurelia-logging-console/dist/amd","main":"aurelia-logging-console"},{"name":"aurelia-metadata","location":"aurelia-metadata/dist/amd","main":"aurelia-metadata"},{"name":"aurelia-pal","location":"aurelia-pal/dist/amd","main":"aurelia-pal"},{"name":"aurelia-pal-browser","location":"aurelia-pal-browser/dist/amd","main":"aurelia-pal-browser"},{"name":"aurelia-path","location":"aurelia-path/dist/amd","main":"aurelia-path"},{"name":"aurelia-polyfills","location":"aurelia-polyfills/dist/amd","main":"aurelia-polyfills"},{"name":"aurelia-route-recognizer","location":"aurelia-route-recognizer/dist/amd","main":"aurelia-route-recognizer"},{"name":"aurelia-router","location":"aurelia-router/dist/amd","main":"aurelia-router"},{"name":"aurelia-task-queue","location":"aurelia-task-queue/dist/amd","main":"aurelia-task-queue"},{"name":"aurelia-templating","location":"aurelia-templating/dist/amd","main":"aurelia-templating"},{"name":"aurelia-templating-binding","location":"aurelia-templating-binding/dist/amd","main":"aurelia-templating-binding"},{"name":"aurelia-templating-resources","location":"aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"aurelia-templating-router/dist/amd","main":"aurelia-templating-router"}],"stubModules":["text"],"shim":{},"bundles":{"assets/client":["client/src/environment","client/src/libs/csv","client/src/libs/pouch","client/src/resources/helpers","client/src/resources/value-converters","client/src/elems/form","client/src/elems/md-autocomplete","client/src/elems/md-button","client/src/elems/md-checkbox","client/src/elems/md-drawer","client/src/elems/md-input","client/src/elems/md-loading","client/src/elems/md-menu","client/src/elems/md-select","client/src/elems/md-shadow","client/src/elems/md-snackbar","client/src/elems/md-switch","client/src/elems/md-table","client/src/elems/md-text","client/src/views/account","client/src/views/drugs","client/src/views/index","client/src/views/inventory","client/src/views/join","client/src/views/login","client/src/views/picking","client/src/views/routes","client/src/views/shipments"]}});
+requirejs.config({"baseUrl":"../","paths":{"text":"development/aurelia_project/text","assets/client":"../../client/assets/client"},"packages":[{"name":"aurelia-http-client","location":"aurelia-http-client/dist/amd","main":"aurelia-http-client"},{"name":"aurelia-animator-css","location":"aurelia-animator-css/dist/amd","main":"aurelia-animator-css"},{"name":"aurelia-binding","location":"aurelia-binding/dist/amd","main":"aurelia-binding"},{"name":"aurelia-bootstrapper","location":"aurelia-bootstrapper/dist/amd","main":"aurelia-bootstrapper"},{"name":"aurelia-dependency-injection","location":"aurelia-dependency-injection/dist/amd","main":"aurelia-dependency-injection"},{"name":"aurelia-event-aggregator","location":"aurelia-event-aggregator/dist/amd","main":"aurelia-event-aggregator"},{"name":"aurelia-framework","location":"aurelia-framework/dist/amd","main":"aurelia-framework"},{"name":"aurelia-history","location":"aurelia-history/dist/amd","main":"aurelia-history"},{"name":"aurelia-history-browser","location":"aurelia-history-browser/dist/amd","main":"aurelia-history-browser"},{"name":"aurelia-loader","location":"aurelia-loader/dist/amd","main":"aurelia-loader"},{"name":"aurelia-loader-default","location":"aurelia-loader-default/dist/amd","main":"aurelia-loader-default"},{"name":"aurelia-logging","location":"aurelia-logging/dist/amd","main":"aurelia-logging"},{"name":"aurelia-logging-console","location":"aurelia-logging-console/dist/amd","main":"aurelia-logging-console"},{"name":"aurelia-metadata","location":"aurelia-metadata/dist/amd","main":"aurelia-metadata"},{"name":"aurelia-pal","location":"aurelia-pal/dist/amd","main":"aurelia-pal"},{"name":"aurelia-pal-browser","location":"aurelia-pal-browser/dist/amd","main":"aurelia-pal-browser"},{"name":"aurelia-path","location":"aurelia-path/dist/amd","main":"aurelia-path"},{"name":"aurelia-polyfills","location":"aurelia-polyfills/dist/amd","main":"aurelia-polyfills"},{"name":"aurelia-route-recognizer","location":"aurelia-route-recognizer/dist/amd","main":"aurelia-route-recognizer"},{"name":"aurelia-router","location":"aurelia-router/dist/amd","main":"aurelia-router"},{"name":"aurelia-task-queue","location":"aurelia-task-queue/dist/amd","main":"aurelia-task-queue"},{"name":"aurelia-templating","location":"aurelia-templating/dist/amd","main":"aurelia-templating"},{"name":"aurelia-templating-binding","location":"aurelia-templating-binding/dist/amd","main":"aurelia-templating-binding"},{"name":"aurelia-templating-resources","location":"aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"aurelia-templating-router/dist/amd","main":"aurelia-templating-router"}],"stubModules":["text"],"shim":{},"bundles":{"assets/client":["client/src/environment","client/src/elems/form","client/src/elems/md-autocomplete","client/src/elems/md-button","client/src/elems/md-checkbox","client/src/elems/md-drawer","client/src/elems/md-input","client/src/elems/md-loading","client/src/elems/md-menu","client/src/elems/md-select","client/src/elems/md-shadow","client/src/elems/md-snackbar","client/src/elems/md-switch","client/src/elems/md-table","client/src/elems/md-text","client/src/libs/csv","client/src/libs/pouch","client/src/resources/helpers","client/src/resources/value-converters","client/src/views/account","client/src/views/drugs","client/src/views/index","client/src/views/inventory","client/src/views/join","client/src/views/login","client/src/views/picking","client/src/views/routes","client/src/views/shipments"]}});
 define('aurelia-http-client/aurelia-http-client',['exports', 'aurelia-path', 'aurelia-pal'], function (exports, _aureliaPath, _aureliaPal) {
   'use strict';
 
@@ -9147,7 +9147,7 @@ define('aurelia-binding/aurelia-binding',['exports', 'aurelia-logging', 'aurelia
 
     SetterObserver.prototype.call = function call() {
       var oldValue = this.oldValue;
-      var newValue = this.currentValue;
+      var newValue = this.oldValue = this.currentValue;
 
       this.queued = false;
 
@@ -23416,6 +23416,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
   function onChildChange(mutations, observer) {
     var binders = observer.binders;
     var bindersLength = binders.length;
+
     var groupedMutations = new Map();
 
     for (var _i10 = 0, _ii9 = mutations.length; _i10 < _ii9; ++_i10) {
@@ -23428,6 +23429,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
         if (_node.nodeType === 1) {
           for (var k = 0; k < bindersLength; ++k) {
             var binder = binders[k];
+
             if (binder.onRemove(_node)) {
               trackMutation(groupedMutations, binder, record);
             }
@@ -23440,6 +23442,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
         if (_node2.nodeType === 1) {
           for (var _k = 0; _k < bindersLength; ++_k) {
             var _binder = binders[_k];
+
             if (_binder.onAdd(_node2)) {
               trackMutation(groupedMutations, _binder, record);
             }
@@ -23448,9 +23451,9 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
       }
     }
 
-    groupedMutations.forEach(function (value, key) {
-      if (key.changeHandler !== null) {
-        key.viewModel[key.changeHandler](value);
+    groupedMutations.forEach(function (mutationRecords, binder) {
+      if (binder.isBound && binder.changeHandler !== null) {
+        binder.viewModel[binder.changeHandler](mutationRecords);
       }
     });
   }
@@ -23460,6 +23463,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
       
 
       this.selector = selector;
+
       this.viewHost = viewHost;
       this.property = property;
       this.viewModel = viewModel;
@@ -23473,6 +23477,8 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
       } else {
         this.contentView = null;
       }
+      this.source = null;
+      this.isBound = false;
     }
 
     ChildObserverBinder.prototype.matches = function matches(element) {
@@ -23503,6 +23509,14 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
 
     ChildObserverBinder.prototype.bind = function bind(source) {
+      if (this.isBound) {
+        if (this.source === source) {
+          return;
+        }
+        this.source = source;
+      }
+      this.isBound = true;
+
       var viewHost = this.viewHost;
       var viewModel = this.viewModel;
       var observer = viewHost.__childObserver__;
@@ -23577,7 +23591,14 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
           return true;
         }
 
-        return false;
+        var currentValue = this.viewModel[this.property];
+        if (currentValue === _value2) {
+          this.viewModel[this.property] = null;
+
+          if (this.isBound && this.changeHandler !== null) {
+            this.viewModel[this.changeHandler](_value2);
+          }
+        }
       }
 
       return false;
@@ -23612,7 +23633,7 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
 
         this.viewModel[this.property] = _value3;
 
-        if (this.changeHandler !== null) {
+        if (this.isBound && this.changeHandler !== null) {
           this.viewModel[this.changeHandler](_value3);
         }
       }
@@ -23621,10 +23642,28 @@ define('aurelia-templating/aurelia-templating',['exports', 'aurelia-logging', 'a
     };
 
     ChildObserverBinder.prototype.unbind = function unbind() {
-      if (this.viewHost.__childObserver__) {
-        this.viewHost.__childObserver__.disconnect();
-        this.viewHost.__childObserver__ = null;
-        this.viewModel[this.property] = null;
+      if (!this.isBound) {
+        return;
+      }
+      this.isBound = false;
+      this.source = null;
+      var childObserver = this.viewHost.__childObserver__;
+      if (childObserver) {
+        var binders = childObserver.binders;
+        if (binders && binders.length) {
+          var idx = binders.indexOf(this);
+          if (idx !== -1) {
+            binders.splice(idx, 1);
+          }
+          if (binders.length === 0) {
+            childObserver.disconnect();
+            this.viewHost.__childObserver__ = null;
+          }
+        }
+
+        if (this.usesShadowDOM) {
+          this.viewModel[this.property] = null;
+        }
       }
     };
 
@@ -26004,6 +26043,7 @@ define('aurelia-templating-resources/aurelia-templating-resources',['exports', '
         return AbstractRepeater;
     }());
 
+    var matcherExtractionMarker = '__marker_extracted__';
     var Repeat = (function (_super) {
         __extends(Repeat, _super);
         function Repeat(viewFactory, instruction, viewSlot, viewResources, observerLocator, strategyLocator) {
@@ -26031,7 +26071,11 @@ define('aurelia-templating-resources/aurelia-templating-resources',['exports', '
         };
         Repeat.prototype.bind = function (bindingContext, overrideContext) {
             this.scope = { bindingContext: bindingContext, overrideContext: overrideContext };
-            this.matcherBinding = this._captureAndRemoveMatcherBinding();
+            var instruction = this.instruction;
+            if (!(matcherExtractionMarker in instruction)) {
+                instruction[matcherExtractionMarker] = this._captureAndRemoveMatcherBinding();
+            }
+            this.matcherBinding = instruction[matcherExtractionMarker];
             this.itemsChanged();
         };
         Repeat.prototype.unbind = function () {
