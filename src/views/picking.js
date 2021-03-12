@@ -1,12 +1,24 @@
 import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
-import {canActivate, clearNextProperty, focusInput, currentDate} from '../resources/helpers'
+import {canActivate, clearNextProperty, focusInput, currentDate} from '../resources/helpers';
+//import { BindingEngine } from 'aurelia-framework';
 
 @inject(Pouch, Router)
 export class shopping {
 
   constructor(db, router){
+
+    window.addEventListener('popstate', (event) => {
+      console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
+
+      let groupAndStep = document.location.href.split('picking/')[1];
+      if(groupAndStep){
+        const [group, step] = groupAndStep.split('step/');
+        console.log(group, step);
+      }
+    });
+
     this.db      = db
     this.router  = router
 
@@ -25,6 +37,8 @@ export class shopping {
     this.currentDate     = currentDate
     this.clearNextProperty = clearNextProperty
 
+
+
   }
 
   deactivate() { //TODO: not sure if we need this here?
@@ -35,9 +49,8 @@ export class shopping {
     return confirm('Confirm you want to leave page');
   }
 
-
   activate(params) {
-    this.requestedPickingStep = params.stepNumber ? parseInt(params.stepNumber) :  0;
+    this.requestedPickingStep = params.stepNumber ? parseInt(params.stepNumber) :  1;
     this.groupName = params.groupName;
 
     if(this.groupName){
@@ -48,26 +61,29 @@ export class shopping {
     // });
 
     //window.scrollTo(0,1)
-    this.db.user.session.get().then( session => {
+    return this.db.user.session.get().then( session => {
       console.log('user acquired')
       this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
       this.db.user.get(this.user._id).then(user => {this.router.routes[2].navModel.setTitle(user.name.first)}) //st 'Account to display their name
 
-
       if(!this.account.hazards) this.account.hazards = {} //shouldn't happen, but just in case
       console.log('about to call refresh first time')
       this.refreshPendedGroups();
 
-
-      if(params.groupName){
-        this.db.account.picking.post({groupName:params.groupName, action:'group_info'}).then((result) => {
+      if(this.isValidGroupName()){
+        return this.db.account.picking.post({groupName:params.groupName, action:'group_info'}).then((result) => {
+          console.log('GROUP LOADED:' + params.groupName, result);
           if(result.shopList){
             this.shopList = result.shopList;
             this.groupData = result.groupData;
             this.groupLoaded = true;
+
             this.manageShoppingIndex();
+
+
+
           }
           else {
             console.log(result);
@@ -75,17 +91,34 @@ export class shopping {
           }
         });
       }
-      else this.manageShoppingIndex();
-
-
-
-
+      else{
+        this.groupLoaded = false;
+        console.log('group loaded is false');
+        //this.loadGroupSelectionPage();
+      }
     })
     .catch(err => {
-      console.log("error getting user session:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+      console.log("error getting user session:", err);
       return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
     })
 
+  }
+
+  addPreviousPickInfoIfExists(shopList){
+    for(let i of Object.keys(shopList)){
+      let transaction = shopList[i].raw;
+
+      if(transaction.next && transaction.next[0]){
+        let next = transaction.next;
+
+        if(next[0].pickedArchive && next[0].pickedArchive.user._id === this.user._id){
+          next[0].picked = next[0].pickedArchive;
+          transaction.next = next;
+        }
+      }
+    }
+
+    return shopList;
   }
 
   updatePickedCount(){
@@ -101,25 +134,53 @@ export class shopping {
     })
   }
 
-  manageShoppingIndex(){
-    if(this.requestedPickingStep <= this.numShopItems()){
+  maxAllowedShoppingIndex(){
+    let max = 0;
 
-      if(this.requestedPickingStep === 0){
-        this.basketSaved = false;
+    for(const [index, transaction] of Object.entries(this.shopList)){
+      if(!!transaction.extra && this.getOutcomeName(transaction.extra.outcome) === null){
+        break;
       }
-      else{
-        this.setShoppingIndex(this.requestedPickingStep);
-      }
+
+      max++;
     }
-    else if(this.requestedPickingStep){
-      this.setShoppingIndex(1);
+
+    return max;
+  }
+
+  manageShoppingIndex(){
+    const maxIndex = this.maxAllowedShoppingIndex(),
+      maxStep = maxIndex + 1;
+
+    let isRedirect = false;
+
+    if(this.requestedPickingStep > maxStep){
+      this.requestedPickingStep = maxStep;
+      isRedirect = true;
+    }
+
+    if(this.requestedPickingStep <= this.numShopItems() && this.requestedPickingStep > 0){
+      this.setShoppingIndex(this.requestedPickingStep - 1);
+      console.log('m1');
+    }
+    else if(this.requestedPickingStep === 'basket'){
+      this.basketSaved = false;
+      this.initializeShopper();
+      console.log('m2');
+    }
+    else if(this.groupLoaded === true){
+      this.setShoppingIndex(0);
+    }
+
+    if(isRedirect === true){
+      alert('Please complete step ' + this.requestedPickingStep + ' first');
     }
   }
 
   refreshPendedGroups(){
-    console.log('refreshing')
+    console.log('refreshing');
 
-    this.updatePickedCount()  //async call to the user-metrics tracking views
+    this.updatePickedCount();  //async call to the user-metrics tracking views
 
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
       this.groups = res;
@@ -127,9 +188,8 @@ export class shopping {
     .catch(err => {
       console.log("error refreshing pended groups:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
       return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
-    })
+    });
   }
-
 
   unlockGroup(groupName, el){
 
@@ -140,7 +200,6 @@ export class shopping {
     }
 
     var start = Date.now();
-    console.log(groupName);
 
     this.db.account.picking.post({groupName:groupName, action:'unlock'}).then(res =>{
       this.groups = res
@@ -155,10 +214,10 @@ export class shopping {
 
       let previousStepNumber = stepNumber - 1;
       this.groupName = groupName;
-      console.log(groupName);
+
 
       if(previousStepNumber === 0){
-        this.saveBasketNumber();
+        //this.saveBasketNumber();
       }
 
       this.router.navigate(`picking/${groupName}/step/${stepNumber}`);
@@ -166,7 +225,15 @@ export class shopping {
       return true;
   }
 
-   selectGroup(groupName, isLocked, isLockedByCurrentUser) {
+  getOutcomeName(outcomeObject){
+    let match = Object.entries(outcomeObject).filter((entry) => {
+        return entry[1] == true ? entry[1] : null
+    });
+
+    return match.length ? match[0][0] : null;
+  }
+
+  selectGroup(groupName, isLocked, isLockedByCurrentUser) {
     console.log('locking status on select', groupName, isLocked, isLockedByCurrentUser);
 
     if((isLocked && !isLockedByCurrentUser) || groupName.length === 0)
@@ -182,15 +249,7 @@ export class shopping {
       console.log("result of loading: "+res.length, (Date.now() - start)/1000, 'seconds')
       console.log(res);
 
-      let step = 0, hasBasket = false;
-
-      if(res.groupData && res.groupData.basket && res.groupData.basket.number) {
-        step = 1;
-        this.basketSaved = true;
-        hasBasket = true;
-      }
-
-      history.pushState(null, null, `#/picking/${groupName}/step/${step}`);
+      this.setPickingStepUrl(1);
 
       this.shopList = res.shopList;
       this.groupData = res.groupData;
@@ -198,13 +257,10 @@ export class shopping {
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
       this.initializeShopper();
       //this has to come after  initialize shopper
-      this.basketSaved = hasBasket;
-
-      if(hasBasket){
-        this.addBasketToShoppingList(res.groupData.basket.fullBasket);
-      }
-
-
+       if(res.groupData && res.groupData.baskets && res.groupData.baskets.length) {
+         this.basketSaved = true;
+         this.addBasketToShoppingList(res.groupData.baskets.slice(-1));
+       }
     })
     .catch(err => {
       if(( ~ err.message.indexOf('Unexpected end of JSON input')) || ( ~ err.message.indexOf('Unexpected EOF'))){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
@@ -218,7 +274,6 @@ export class shopping {
     })
 
   }
-
 
   //Display and set relavant variables to display a group
   initializeShopper(){
@@ -235,7 +290,6 @@ export class shopping {
 
   }
 
-
   //Reset variables that we don't want to perserve from one order to the next
   resetShopper(){
     //this.uniqueDrugsInOrder = []
@@ -245,6 +299,21 @@ export class shopping {
   }
 
 
+  updateRevs(res){
+    let results = {};
+    res.forEach(function(transaction){
+      results[transaction._id || transaction.id] = transaction;
+    });
+
+    this.shopList.forEach((shopListItem, index) => {
+      if(results[shopListItem.raw._id]){
+        this.shopList[index].raw._rev = results[shopListItem.raw._id].rev;
+        console.log(shopListItem.raw._id + ' => ' + shopListItem.raw._rev);
+      }
+    });
+
+    return results;
+  }
 
   //Given shopping list, and whether it was completed or cancelled,
   //handle appropriate saving
@@ -252,13 +321,19 @@ export class shopping {
 
     let transactions_to_save = this.prepResultsToSave(arr_enriched_transactions, key) //massage data into our couchdb format
 
-    console.log("attempting to save these transactions", JSON.stringify(transactions_to_save))
+    console.log("attempting to save these transactions", transactions_to_save);
     let startTime = new Date().getTime()
+
+    if(!transactions_to_save || !transactions_to_save.length){
+      console.log('nothing to save');
+      return Promise.resolve();
+    }
 
     return this.db.transaction.bulkDocs(transactions_to_save).then(res => {
       //success!
-      let completeTime = new Date().getTime()
-      console.log("results of saving in " + (completeTime - startTime) + " ms", JSON.stringify(res))
+      let completeTime = new Date().getTime();
+      let results = this.updateRevs(res);
+      console.log("save (" + key + ") results of saving in " + (completeTime - startTime) + " ms", results);
 
     })
     .catch(err => {
@@ -295,23 +370,75 @@ export class shopping {
     })
   }
 
+  static ifExists(obj, path){
+    let currentNode = obj;
+    path = path.split('.');
+
+    for(let part of path){
+      currentNode = currentNode[part];
+
+      if(!currentNode)
+        break;
+    }
+
+    return currentNode;
+  }
+
+  static outcomeChanged(transaction, outcome){
+    let data = transaction.next[0];
+
+    console.log('comparing outcomes', outcome, shopping.ifExists(data, 'pickedArchive.matchType'));
+
+    if(!data.picked || !data.pickedArchive){
+      return true;
+    }
+
+    if(data && data.picked && data.pickedArchive){
+      return outcome !== data.pickedArchive.matchType;
+    }
+
+    return false;
+  }
+
+  static canChangeOutcome(transaction){
+    let data = transaction.next[0];
+
+    if(data.pickedArchive){
+      return data.pickedArchive.matchType !== 'missing';
+    }
+
+    return true;
+  }
 
   prepResultsToSave(arr_enriched_transactions, key){
 
-    if(arr_enriched_transactions.length == 0) return Promise.resolve()
+    if(arr_enriched_transactions.length == 0) {
+      console.log('no transactions to save');
+      return;
+    }
 
     //go through enriched trasnactions, edit the raw transactions to store the data,
     //then save them
-    var transactions_to_save = []
+    var transactions_to_save = [];
 
     for(var i = 0; i < arr_enriched_transactions.length; i++){
 
-      var reformated_transaction = arr_enriched_transactions[i].raw
-      let next = reformated_transaction.next
+      var reformated_transaction = arr_enriched_transactions[i].raw;
+      let next = reformated_transaction.next;
 
       if(next[0]){
         if(key == 'shopped'){
-          var outcome = this.getOutcome(arr_enriched_transactions[i].extra)
+          let outcome = this.getOutcome(arr_enriched_transactions[i].extra);
+
+          if(!shopping.canChangeOutcome(reformated_transaction)){
+            console.log(reformated_transaction._id, 'Outcome === missing. Updates not allowed.');
+            continue;
+          }
+
+          if(!shopping.outcomeChanged(reformated_transaction, outcome)){
+            console.log(reformated_transaction._id, 'Same outcome. Not saving.');
+            continue;
+          }
 
           next[0].picked = {
             _id:new Date().toJSON(),
@@ -319,7 +446,9 @@ export class shopping {
             repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : (reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from),
             matchType:outcome,
             user:this.user,
-          }
+          };
+
+          next[0].pickedArchive = next[0].picked;
 
         } else if(key == 'unlock'){
 
@@ -337,37 +466,64 @@ export class shopping {
 
     }
 
+    if(!transactions_to_save.length){
+      console.log('no transactions to save');
+      return;
+    }
+
     return transactions_to_save
   }
 
 
 //------------------Button controls-------------------------
 
-  saveBasketNumber(){
-    console.log("saving basket")
-    this.basketSaved = true
+  saveBasketNumber() {
+  console.log('saveBasketNumber called');
+
+    //this.basketSaved = true
     this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber
-    if((this.shopList[this.shoppingIndex].extra.basketLetter != 'G') &&
-      (this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0])) this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0]
-    this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
 
-    let extra = this.shopList[this.shoppingIndex].extra;
-    const basket = {
-      letter:extra.basketLetter,
-      number:extra.basketNumber,
-      fullBasket:extra.fullBasket
-    };
-
-    this.db.account.picking.post({groupName:this.groupName, basket:basket, action:'save_basket_number'}).then(res => {
-      if(res && res[0] === 'success')
-      {
-        this.basketSaved = true;
-        //this.addBasketToShoppingList(basket);
+      if ((this.shopList[this.shoppingIndex].extra.basketLetter != 'G') && (this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0])) {
+        this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0]
       }
-    });
 
+      this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
 
-    history.pushState(null, null, `#/picking/${this.groupName}/step/1`);
+      let extra = this.shopList[this.shoppingIndex].extra;
+
+      const basket = {
+        letter: extra.basketLetter,
+        number: extra.basketNumber,
+        fullBasket: extra.fullBasket
+      };
+
+      let idData = {
+        _id: this.shopList[this.shoppingIndex].raw._id,
+        _rev: this.shopList[this.shoppingIndex].raw._rev
+      };
+
+      this.db.account.picking.post({
+        id: idData,
+        groupName: this.groupName,
+        basket: basket,
+        action: 'save_basket_number'
+      }).then(res => {
+          let results = this.updateRevs([res]);
+
+        if (Object.keys(results).length > 0) {
+          this.basketSaved = true;
+          this.addBasketToShoppingList(basket);
+        }
+      });
+
+    this.setShoppingIndex(this.currentShoppingIndex());
+  }
+
+  currentShoppingIndex(){
+    if(typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()){
+      return this.shoppingIndex;
+    }
+    else return 0;
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front
@@ -408,12 +564,18 @@ export class shopping {
 
       console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
 
-      this.db.account.picking['post']({groupName:this.shopList[this.shoppingIndex].raw.next[0].pended.group, action:'missing_transaction',ndc:this.shopList[this.shoppingIndex].raw.drug._id, generic:this.shopList[this.shoppingIndex].raw.drug.generic, qty:this.shopList[this.shoppingIndex].raw.qty.to, repackQty:this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty})
-      .then(res =>{
+      this.db.account.picking['post']({
+            groupName:this.shopList[this.shoppingIndex].raw.next[0].pended.group,
+            action:'missing_transaction',
+            ndc:this.shopList[this.shoppingIndex].raw.drug._id,
+            generic:this.shopList[this.shoppingIndex].raw.drug.generic,
+            qty:this.shopList[this.shoppingIndex].raw.qty.to,
+            repackQty:this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty
+          }).then(res =>{
 
         if(res.length > 0){
 
-          this.shopList[this.shoppingIndex].extra.saved = 'missing' //if someone goes back through items, dont want to retry this constantly
+          this.shopList[this.shoppingIndex].extra.saved = 'missing'; //if someone goes back through items, dont want to retry this constantly
 
           for(var j = 0; j < res.length; j++){
 
@@ -453,25 +615,23 @@ export class shopping {
         return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
       })
 
-    } else {
+    }
+    else {
       this.advanceShopping()
     }
-
   }
 
-
-
-
   advanceShopping(){
-
     if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
 
       //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
 
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(_=>{
         //remove this group
-        this.refreshPendedGroups() //put in here to avoid race condition of reloading before the saving completes
-      })
+        this.refreshPendedGroups();
+        this.loadGroupSelectionPage();
+        this.resetShopper();//put in here to avoid race condition of reloading before the saving completes
+      });
 
       //cut it out of the list, just until it refreshes anymay
       for(var i = this.groups.length -1 ; i >= 0; i--){
@@ -481,26 +641,32 @@ export class shopping {
         }
       }
 
-      history.pushState(null, null, `#/picking`);
-      this.resetShopper() //and send them back to the list, which'll update while they're there
+ //and send them back to the list, which'll update while they're there
 
-    } else {
+    }
+    else {
 
       if(!this.shopList[this.shoppingIndex + 1].extra.fullBasket){
-        if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic){
+        if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic)
+        {
           this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter //push that forward if they changed it at some point
           this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket
-        } else {
+        }
+        else
+          {
           this.addBasket(this.shoppingIndex + 1)
         }
-      } else if(this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic){
+      }
+      else if(this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic)
+      {
         this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic)
       }
 
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
-
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped')
-      this.setShoppingIndex(this.shoppingIndex + 1);
+console.log('saving transaction', this.shopList[this.shoppingIndex]);
+      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(() => {
+        this.setShoppingIndex(this.shoppingIndex + 1);
+      });
     }
 
   }
@@ -523,23 +689,87 @@ export class shopping {
     this.basketSaved = true;
   }
 
+  setPickingStepUrl(stepNumber){
+    if(!this.isValidGroupName()){
+       console.log('not setting step ' + stepNumber);
+       return false;
+    }
+
+    const url = `#/picking/${this.groupName}/step/${stepNumber}`;
+
+    if(this.pickingOnloadFired === true){
+      history.pushState(null, null, url);
+    }
+    else {
+      console.log('replacing state');
+      history.replaceState(null, null, url);
+      this.pickingOnloadFired = true;
+    }
+  }
+
+  isValidGroupName(){
+    const isValid =  !!this.groupName && this.groupName.length && this.groupName !== 'undefined';
+
+    // if(!isValid){
+    //   console.log(this.groupName);
+    //   console.log('Invalid group name');
+    //   console.log(window.location.href);
+    //   console.trace();
+    // }
+
+    return isValid;
+  }
+
+  loadGroupSelectionPage(){
+
+    const reload = window.location.hash !== '#/picking';
+
+    history.replaceState(null, null, `#/picking`);
+
+    if(reload === true){
+      window.location.reload();
+    }
+  }
+
   setShoppingIndex(index){
 
-    if(!index){
+    if(index !== 0 && !index){
       alert('no index');
       console.trace();
+      return false;
     }
-    let goToStep = () => {
-      this.shoppingIndex = index - 1;
-      this.basketSaved = this.groupData.basket && this.groupData.basket.number;
-console.log('basket save ', this.basketSaved);
+
+    if(!this.isValidGroupName()){
+      this.loadGroupSelectionPage();
+      return false;
+    }
+
+    console.log(`requesting : ${this.groupName}/${index + 1}/${index} (group/step/shoppingIndex)`);
+
+    let goToIndex = () => {
+      console.log(index);
+      this.shoppingIndex = index;
+      console.log(this.groupData);
+
+      console.log(this.shopList[index]);
+      console.log(this.shopList[index].raw.drug.generic);
+
+      let genericName = this.shopList[index].raw.drug.generic.replace(/\s/g, '');
+
+      if(this.basketSaved !== true){
+        this.basketSaved = this.groupData.baskets && this.groupData.baskets.length
+            && this.groupData.basketsByGeneric[genericName] && this.groupData.basketsByGeneric[genericName].length;
+      }
+
+      console.log('picking.basketSaved ', this.basketSaved);
+
       //if they have already chosen as basket take them to the first incomplete step
       if(index < 0 && this.basketSaved){
         this.shoppingIndex = 1;
       }
 
-      if(this.basketSaved){
-        let basket = this.groupData.basket;
+      if(this.basketSaved && this.groupData.basketsByGeneric && this.groupData.basketsByGeneric[genericName]){
+        let basket = this.groupData.basketsByGeneric[genericName].slice(-1);
         this.addBasketToShoppingList(basket);
       }
       if(this.shoppingIndex === this.shopList.length-1){
@@ -548,8 +778,9 @@ console.log('basket save ', this.basketSaved);
         this.setNextToNext()
       }
 
-      this.formComplete = (this.shopList[this.shoppingIndex].extra.fullBasket) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
-      history.pushState(null, null, `#/picking/${this.groupName}/step/${this.shoppingIndex + 1}`);
+      this.formComplete = !!(this.shopList[this.shoppingIndex].extra.fullBasket) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
+console.log(this.formComplete);
+      this.setPickingStepUrl(this.shoppingIndex+1);
 
     };
 
@@ -560,11 +791,11 @@ console.log('basket save ', this.basketSaved);
         this.groupData = res.groupData;
         this.shopList = res.shopList;
         this.initializeShopper();
-        goToStep();
+        goToIndex();
       });
     }
     else {
-      goToStep();
+      goToIndex();
     }
 
   }
@@ -580,8 +811,7 @@ console.log('basket save ', this.basketSaved);
   moveShoppingBackward(){
     if(this.shoppingIndex == 0) return //shouldn't appear, but extra protection :)
     if(this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic)
-    this.setNextToNext()
-    this.shoppingIndex -= 1
+    this.setShoppingIndex(this.shoppingIndex -= 1);
     this.formComplete = true //you can't have left a screen if it wasn't complete
   }
 
@@ -646,7 +876,6 @@ console.log('basket save ', this.basketSaved);
 
   }
 
-
 //-------------Helpers--------------------------------
 
   arrayMove(arr, fromIndex, toIndex) {
@@ -658,6 +887,9 @@ console.log('basket save ', this.basketSaved);
   }
 
   formatExp(rawStr){
+    if(!rawStr)
+      return null;
+
     let substr_arr = rawStr.slice(2,7).split("-")
     return substr_arr[1]+"/"+substr_arr[0]
   }
@@ -691,8 +923,6 @@ console.log('basket save ', this.basketSaved);
     }
     return res
   }
-
-
 }
 
 //Allow user to search by pendId among all pended groups
