@@ -3628,7 +3628,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
         _this5.setPickingStepUrl(1);
 
-        _this5.shopList = res.shopList;
+        _this5.shopList = res.shopList || [];
         _this5.groupData = res.groupData;
         _this5.pendedFilter = '';
         _this5.filter = {};
@@ -3901,7 +3901,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.addBasket = function addBasket(index) {
-      if (!this.shopList[index]) return;
+      if (!this.shopList || !this.shopList[index]) return;
 
       this.basketSaved = false;
 
@@ -4120,7 +4120,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
         this.db.account.picking.post({ groupName: this.groupName, action: 'load' }).then(function (res) {
           _this11.groupData = res.groupData;
-          _this11.shopList = res.shopList;
+          _this11.shopList = res.shopList || [];
           _this11.initializeShopper();
           goToIndex();
         });

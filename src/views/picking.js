@@ -251,7 +251,7 @@ export class shopping {
 
       this.setPickingStepUrl(1);
 
-      this.shopList = res.shopList;
+      this.shopList = res.shopList || [];
       this.groupData = res.groupData;
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
@@ -540,7 +540,7 @@ export class shopping {
   }
 
   addBasket(index){
-    if(!this.shopList[index])
+    if(!this.shopList || !this.shopList[index])
       return;
 
     //this.focusInput('#basket_number_input') //This wasn't quite working, but autofocus works if you click basket, just not on the first screen which is frustrating
@@ -789,7 +789,7 @@ console.log(this.formComplete);
 
       this.db.account.picking.post({groupName:this.groupName, action:'load'}).then(res =>{
         this.groupData = res.groupData;
-        this.shopList = res.shopList;
+        this.shopList = res.shopList || [];
         this.initializeShopper();
         goToIndex();
       });
