@@ -3854,7 +3854,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0];
       }
 
-      this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
+      if (this.shopList[this.shoppingIndex].raw) this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
 
       var extra = this.shopList[this.shoppingIndex].extra;
 
@@ -3895,7 +3895,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
       var list_of_baskets = '';
       for (var i = 0; i < this.shopList.length; i++) {
-        if (this.shopList[i].extra.fullBasket && !~list_of_baskets.indexOf(this.shopList[i].extra.fullBasket) && this.shopList[i].raw.drug.generic == generic) list_of_baskets += ',' + this.shopList[i].extra.fullBasket;
+        if (this.shopList[i].extra.fullBasket && !~list_of_baskets.indexOf(this.shopList[i].extra.fullBasket) && (!this.shopList[i].raw || this.shopList[i].raw.drug.generic == generic)) list_of_baskets += ',' + this.shopList[i].extra.fullBasket;
       }
       this.currentGenericBaskets = list_of_baskets;
     };
@@ -4002,7 +4002,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
           } else {
             this.addBasket(this.shoppingIndex + 1);
           }
-        } else if (this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
+        } else if (this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex + 1].raw && this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
           this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic);
         }
 
@@ -4139,7 +4139,9 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
     shopping.prototype.moveShoppingBackward = function moveShoppingBackward() {
       if (this.shoppingIndex == 0) return;
-      if (this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic);
+
+      if (this.shopList[this.shoppingIndex - 1].raw && this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic);
+
       this.setShoppingIndex(this.shoppingIndex -= 1);
       this.formComplete = true;
     };

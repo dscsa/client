@@ -487,7 +487,8 @@ export class shopping {
         this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0]
       }
 
-      this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
+      if (this.shopList[this.shoppingIndex].raw)
+        this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
 
       let extra = this.shopList[this.shoppingIndex].extra;
 
@@ -533,7 +534,7 @@ export class shopping {
       if(
         (this.shopList[i].extra.fullBasket)
         && (!(~ list_of_baskets.indexOf(this.shopList[i].extra.fullBasket)))
-        && (this.shopList[i].raw.drug.generic == generic))
+        && ( ! this.shopList[i].raw || this.shopList[i].raw.drug.generic == generic))
             list_of_baskets += ',' + (this.shopList[i].extra.fullBasket)
     }
     this.currentGenericBaskets = list_of_baskets
@@ -657,13 +658,13 @@ export class shopping {
           this.addBasket(this.shoppingIndex + 1)
         }
       }
-      else if(this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic)
+      else if( this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex + 1].raw && this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic)
       {
         this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic)
       }
 
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
-console.log('saving transaction', this.shopList[this.shoppingIndex]);
+      console.log('saving transaction', this.shopList[this.shoppingIndex]);
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(() => {
         this.setShoppingIndex(this.shoppingIndex + 1);
       });
@@ -810,7 +811,10 @@ console.log(this.formComplete);
 
   moveShoppingBackward(){
     if(this.shoppingIndex == 0) return //shouldn't appear, but extra protection :)
-    if(this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic)
+
+    if(this.shopList[this.shoppingIndex - 1].raw && this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic)
+        this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic)
+
     this.setShoppingIndex(this.shoppingIndex -= 1);
     this.formComplete = true //you can't have left a screen if it wasn't complete
   }
