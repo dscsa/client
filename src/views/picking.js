@@ -478,7 +478,7 @@ export class shopping {
 //------------------Button controls-------------------------
 
   saveBasketNumber() {
-  console.log('saveBasketNumber called');
+  console.log('saveBasketNumber called', this.shoppingIndex, this.shopList[this.shoppingIndex], this.shopList);
 
     //this.basketSaved = true
     this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber

@@ -3846,7 +3846,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     shopping.prototype.saveBasketNumber = function saveBasketNumber() {
       var _this8 = this;
 
-      console.log('saveBasketNumber called');
+      console.log('saveBasketNumber called', this.shoppingIndex, this.shopList[this.shoppingIndex], this.shopList);
 
       this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber;
 
