@@ -499,8 +499,8 @@ export class shopping {
       };
 
       let idData = {
-        _id: this.shopList[this.shoppingIndex].raw._id,
-        _rev: this.shopList[this.shoppingIndex].raw._rev
+        _id: this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._id,
+        _rev:this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._rev
       };
 
       this.db.account.picking.post({
