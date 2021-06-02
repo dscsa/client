@@ -86,7 +86,7 @@ export class account {
   }
 
   showUserSwitchPage(){
-    this.dialog.showModal()
+    this.dialog.showModal();
   }
 
   phoneInAccount(phone){
@@ -103,8 +103,7 @@ export class account {
 
     console.log("switching to user",this.phone, this.password)
 
-    this.switchUserText = "Switching..."
-
+    this.switchUserText = "Switching...";
 
     this.db.user.session.post({phone:this.phone, password:this.password, switchUsers:true})
     .then(_ => {

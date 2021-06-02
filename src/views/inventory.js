@@ -52,26 +52,46 @@ export class inventory {
     window.addEventListener("visibilitychange", _ => this.syncPended())
     //TODO replace this with page state library
 
+
+    //SE: Code to add extra click area to dropdown menu
+    setTimeout(() => {
+      let extraSpace = document.createElement('div');
+      extraSpace.className = 'menu-extra-click-area';
+      extraSpace.style = 'position:absolute; top: -5rem; left:-10rem; height:calc(100% + 10rem); width:calc(100% + 16rem); display:block;';
+
+      try{
+        document.querySelectorAll('.mdl-menu__container')[0].appendChild(extraSpace)//.insertBefore(extraSpace, extraSpace.nextSibling);
+        extraSpace.addEventListener('click',(e) => {
+          e.stopPropagation();
+        });
+      }
+      catch(e){
+        console.log(e);
+      }
+
+    }, 2000);
+
     this.db.user.session.get().then(session => {
 
       this.user    = { _id:session._id}
       this.account = { _id:session.account._id} //temporary will get overwritten with full account
 
-      this.db.user.get(this.user._id).then(user => {this.router.routes[2].navModel.setTitle(user.name.first)}) //st 'Account to display their name
+      this.db.user.get(this.user._id).then(user => {
+        this.router.routes[2].navModel.setTitle(user.name.first);
+        this.userInfo = user;
 
-      this.db.account.get(session.account._id).then(account => {
-        this.account = account
+        this.db.account.get(session.account._id).then(account => {
+          this.account = account
 
-        this.syncPended(1).then(_ => {
-          let keys = Object.keys(params)
-          if (keys[0]) this.selectTerm(keys[0], params[keys[0]])
-        })
+          this.syncPended(1).then(_ => {
+            let keys = Object.keys(params)
+            if (keys[0]) this.selectTerm(keys[0], params[keys[0]])
+          })
 
-        this.intervalId = setInterval(_ => this.syncPended(), 5 * 60 * 1000) //pull and update the pended every five minutes.save result so you can stop when we leave page
-      })
-
-
-    })
+          this.intervalId = setInterval(_ => this.syncPended(), 5 * 60 * 1000) //pull and update the pended every five minutes.save result so you can stop when we leave page
+        });
+      }); //st 'Account to display their name
+    });
   }
 
   //Refreshes the pended drawer. With a setinterval and eventlistener, this should
@@ -735,7 +755,8 @@ export class inventory {
   printLabels(transactions) {
 
     transactions = transactions || this.transactions.filter(t => t.isChecked)
-    let pendId   = this.getPendId()
+    let pendId   = this.getPendId();
+    let userInfo = this.userInfo;
     let numDrugs = '?'
 
     if (this.shoppingSyncPended[pendId]) //this.pended gets updated as drugs are repacked, where as this one should give a consistent count
@@ -752,6 +773,7 @@ export class inventory {
         `Exp ${transaction.exp.to.slice(0, 7)}`,
         `Bin ${transaction.bin}`,
         `Qty ${transaction.qty.to}`,
+        `User ${userInfo.name.first} ${userInfo.name.last}, ${userInfo.phone}`,
         pendId+', #'+numDrugs, //needs to work for X00 bins that are technically no longer pended, default to this? -> transaction.next[0] && transaction.next[0].pended && transaction.next[0].pended._id,
         `Pharmacist ________________`,
         `</p>`
@@ -882,11 +904,18 @@ export class inventory {
     })
   }
 
-  openMenu($event) {
+  openMenu($event, menu) {
     console.log('openMenu called', $event.target.tagName, this.transactions.length, ! this.transactions.length, this.repacks, $event)
 
+    menu.addEventListener('click', (e) => {
+      console.log('menu', e);
+     // e.stopPropagation();
+      console.log(document.querySelectorAll('.mdl-menu')[0].MaterialMenu);
+    });
+
+
     //This repack.length because Pradaxa (2019-01-28T20:23:27.174900Z & 2019-01-28T16:47:12.754500Z) got the next.transaction of Esomeprazole (2019-01-29T17:15:56.773700Z)
-    if (this.repacks.length && $event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'UL' && $event.target.tagName != 'MD-MENU')
+    if (this.repacks && this.repacks.length && $event.target.tagName != 'I' && $event.target.tagName != 'BUTTON' && $event.target.tagName != 'UL' && $event.target.tagName != 'MD-MENU')
       return true //only calculate for the parent element, <i vertical menu icon>, and not children //true needed so public inventory link works
 
     if ( ! this.transactions.length) {
