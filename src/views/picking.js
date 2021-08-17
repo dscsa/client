@@ -73,27 +73,25 @@ export class shopping {
       this.refreshPendedGroups();
 
       if(this.isValidGroupName()){
-        return this.db.account.picking.post({groupName:params.groupName, action:'group_info'}).then((result) => {
-          console.log('GROUP LOADED:' + params.groupName, result);
-          if(result.shopList){
-            this.shopList = result.shopList;
-            this.groupData = result.groupData;
-            this.groupLoaded = true;
+        return this.db.account.picking.post({groupName:params.groupName, action:'group_info'}).then(res => {
+          console.log('GROUP LOADED:' + params.groupName, res);
 
-            this.manageShoppingIndex();
-
-
-
+          if ( ! res.groupData || ! res.shopList) {
+              console.error(res)
+              throw res
           }
-          else {
-            console.log(result);
-            throw 'Invalid shop list ' . JSON.stringify(result || []);
-          }
+
+          this.shopList = res.shopList;
+          this.groupData = res.groupData;
+          this.groupLoaded = true;
+
+          this.manageShoppingIndex();
+
         });
       }
       else{
         this.groupLoaded = false;
-        console.log('group loaded is false');
+        console.error('group loaded is false', params);
         //this.loadGroupSelectionPage();
       }
     })
@@ -249,9 +247,14 @@ export class shopping {
       console.log("result of loading: "+res.length, (Date.now() - start)/1000, 'seconds')
       console.log(res);
 
+      if ( ! res.shopList || ! res.groupData) {
+        console.error(res)
+        throw res
+      }
+
       this.setPickingStepUrl(1);
 
-      this.shopList = res.shopList || [];
+      this.shopList = res.shopList;
       this.groupData = res.groupData;
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
@@ -478,7 +481,7 @@ export class shopping {
 //------------------Button controls-------------------------
 
   saveBasketNumber() {
-  console.log('saveBasketNumber called', this.shoppingIndex, this.shopList[this.shoppingIndex], this.shopList);
+    console.log('saveBasketNumber called', this.shoppingIndex, this.shopList[this.shoppingIndex], this.shopList);
 
     //this.basketSaved = true
     this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber
@@ -509,7 +512,7 @@ export class shopping {
         basket: basket,
         action: 'save_basket_number'
       }).then(res => {
-          let results = this.updateRevs([res]);
+        let results = this.updateRevs([res]);
 
         if (Object.keys(results).length > 0) {
           this.basketSaved = true;
@@ -541,8 +544,10 @@ export class shopping {
   }
 
   addBasket(index){
-    if(!this.shopList || !this.shopList[index])
+    if(!this.shopList || !this.shopList[index]) {
+      console.error('addBasket() but this.shopList is not set', this.shopList, index)
       return;
+    }
 
     //this.focusInput('#basket_number_input') //This wasn't quite working, but autofocus works if you click basket, just not on the first screen which is frustrating
     this.basketSaved = false;
@@ -628,6 +633,8 @@ export class shopping {
       //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
 
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(_=>{
+
+        console.log('advanceShopping', _)
         //remove this group
         this.refreshPendedGroups();
         this.loadGroupSelectionPage();
@@ -665,7 +672,8 @@ export class shopping {
 
        //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
       console.log('saving transaction', this.shopList[this.shoppingIndex]);
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(() => {
+      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(_ => {
+        console.log('saved transaction', this.shopList[this.shoppingIndex], _);
         this.setShoppingIndex(this.shoppingIndex + 1);
       });
     }
@@ -789,8 +797,14 @@ console.log(this.formComplete);
     if(!this.shopList.length){
 
       this.db.account.picking.post({groupName:this.groupName, action:'load'}).then(res =>{
+
+        if ( ! res.groupData || ! res.shopList) {
+            console.error(res)
+            throw res
+        }
+
         this.groupData = res.groupData;
-        this.shopList = res.shopList || [];
+        this.shopList = res.shopList;
         this.initializeShopper();
         goToIndex();
       });
