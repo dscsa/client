@@ -82,7 +82,10 @@ export class shipments {
     this.shipmentDrawerYear = this.shipmentDrawerYearChoices[0] //set it to current year so the page can load with at least that
     //Run query w/o docs to get the list of years for options in the dropdown
     this.db.shipment.query('account.to._id',{startkey:[this.account._id], endkey:[this.account._id+'\uffff'], group_level:2}).then(res =>{
-      this.shipmentDrawerYearChoices = res.rows.map(row => row.key[1]).sort((a,b) => b-a)
+      let years = res.rows.map(row => row.key[1])
+      let currentYear = new Date().getFullYear().toString()
+      if ( ! years.includes(currentYear)) years.push(currentYear)
+      this.shipmentDrawerYearChoices = years.sort((a,b) => b-a)
     })
   }
 

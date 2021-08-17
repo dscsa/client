@@ -140,7 +140,8 @@
           </tr>
         </table>
       </md-autocomplete>
-      <md-menu ref="menu" name="pro_menu" mousedown.delegate="openMenu($event)" style="position:absolute; z-index:2; top:10px; right:5px;">
+
+      <md-menu ref="menu" name="pro_menu" mousedown.delegate="openMenu($event, menu)" style="position:absolute; z-index:2; top:10px; right:5px;">
         <li
           class="mdl-menu__item--full-bleed-divider"
           style ="width:150px"
@@ -257,7 +258,7 @@
             </md-input>
           </li>
         </form>
-      </md-menu>
+        </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div class="table-wrap">
         <div show.bind="noResults" style="margin:24px">No Results</div>

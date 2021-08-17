@@ -1,14 +1,37 @@
 {
-  "name": "client",
+  "_from": "github:dscsa/client",
+  "_id": "client@0.0.0",
+  "_inBundle": false,
+  "_integrity": "",
+  "_location": "/client",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "git",
+    "raw": "dscsa/client",
+    "rawSpec": "dscsa/client",
+    "saveSpec": "github:dscsa/client",
+    "fetchSpec": null,
+    "gitCommittish": null
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "github:dscsa/client#ffc9ab76585d6711536c0146d0f0750befb4446a",
+  "_spec": "dscsa/client",
+  "_where": "/dscsa",
+  "bundleDependencies": false,
+  "dependencies": {
+    "csv": "git+https://github.com/dscsa/csv.git",
+    "pouch": "git+https://github.com/dscsa/pouch.git"
+  },
+  "deprecated": false,
   "description": "DSCSA's client application.",
-  "version": "0.0.0",
+  "license": "MIT",
+  "name": "client",
   "repository": {
     "type": "???",
     "url": "???"
   },
-  "license": "MIT",
-  "dependencies": {
-    "pouch":"https://github.com/dscsa/pouch",
-    "csv":"https://github.com/dscsa/csv"
-  }
+  "version": "0.0.0"
 }

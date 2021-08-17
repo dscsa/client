@@ -8,6 +8,7 @@
     <link rel="icon" type="image/x-icon" href="client/assets/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <base href="/">
     <style>
     body { background:#eee }
     a { color:rgb(0,88,123); text-decoration:none }
@@ -16,7 +17,7 @@
     input[type=date]::-webkit-clear-button { display: none; } /* clear "x" button" */
 
     /*table-wrap needed because overflow:scroll doesn't work directly on table.  Also it is a conveneint place to do display:flex */
-    .table-wrap { overflow-y:scroll; height:100%; display:flex}
+    .table-wrap { overflow-y:scroll; max-height:100%; display:flex}
     /*use flex instead of height:100% because latter was causing the parent md-card to have a scroll bar */
     [md-table]  { width:100%; flex:1; table-layout:fixed; }
     /* want hover shadow to be 100% of width, so need to do padding within the tr (which needs this hack) rather than in table-wrap */
