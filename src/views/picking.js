@@ -50,7 +50,7 @@ export class shopping {
   }
 
   activate(params) {
-    this.requestedPickingStep = params.stepNumber ? parseInt(params.stepNumber) :  1;
+
     this.groupName = params.groupName;
 
     if(this.groupName){
@@ -84,6 +84,10 @@ export class shopping {
           this.shopList = res.shopList;
           this.groupData = res.groupData;
           this.groupLoaded = true;
+
+          this.requestedPickingStep = params.stepNumber
+              ? parseInt(params.stepNumber)
+              : this.currentShoppingIndex();
 
           this.manageShoppingIndex();
 
@@ -527,7 +531,12 @@ export class shopping {
     if(typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()){
       return this.shoppingIndex;
     }
-    else return 0;
+
+    for(var i = 0; i < this.shopList.length; i++){
+      if( ! this.shopList[i].raw.next[0].picked){
+        return i
+      }
+    }
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front
