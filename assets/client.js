@@ -3358,6 +3358,12 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
   });
   exports.pendedFilterValueConverter = exports.shopping = undefined;
 
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -3899,6 +3905,8 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.currentShoppingIndex = function currentShoppingIndex() {
+
+      console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, _typeof(this.shoppingIndex), 'shopListMaxIndex', this.shopListMaxIndex(), 'groupData', this.groupData, 'shopList', this.shopList);
 
       if (typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()) {
         console.log('currentShoppingIndex fixed', this.shoppingIndex, this.shopList);

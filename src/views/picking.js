@@ -534,6 +534,8 @@ export class shopping {
 
   currentShoppingIndex(){
 
+    console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, typeof this.shoppingIndex, 'shopListMaxIndex', this.shopListMaxIndex(),  'groupData', this.groupData, 'shopList', this.shopList)
+
     if(typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()){
       console.log('currentShoppingIndex fixed', this.shoppingIndex, this.shopList)
       return this.shoppingIndex;
