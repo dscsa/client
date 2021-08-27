@@ -3645,7 +3645,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         _this5.pendedFilter = '';
         _this5.filter = {};
 
-        _this5.setPickingStepUrl(_this5.currentShoppingIndex());
+        _this5.setPickingStepUrl(_this5.currentShoppingIndex() + 1);
         _this5.initializeShopper();
 
         if (res.groupData && res.groupData.baskets && res.groupData.baskets.length) {

@@ -262,7 +262,7 @@ export class shopping {
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
 
-      this.setPickingStepUrl(this.currentShoppingIndex());
+      this.setPickingStepUrl(this.currentShoppingIndex()+1); //URL is indexed to 1 instead of 0 like our internal shoppingIndex.
       this.initializeShopper();
       //this has to come after  initialize shopper
        if(res.groupData && res.groupData.baskets && res.groupData.baskets.length) {
