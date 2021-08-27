@@ -261,9 +261,7 @@ export class shopping {
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
 
-      console.log('setPickingStepUrl', 'before')
       this.setPickingStepUrl(this.currentShoppingIndex());
-       console.log('setPickingStepUrl', 'after')
       this.initializeShopper();
       //this has to come after  initialize shopper
        if(res.groupData && res.groupData.baskets && res.groupData.baskets.length) {
@@ -308,7 +306,7 @@ export class shopping {
     this.orderSelectedToShop = false
     this.formComplete = false
     this.shippingIndex = -1
-    history.pushState(null, null, window.location.pathname + window.location.search)
+    history.pushState(null, null, '#/picking')
     this.updatePickedCount()
   }
 
@@ -544,7 +542,7 @@ export class shopping {
     }
 
     console.log('currentShoppingIndex dynamic', 'groupData', this.groupData, 'shopList', this.shopList)
-    return this.groupData ? this.groupData.pickedTransactions : 0;
+    return this.groupData ? this.groupData.pickedTransactions+1 : 0; //indexed to 1 (since 0 is basketInput form)
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front
