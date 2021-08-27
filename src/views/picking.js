@@ -162,16 +162,17 @@ export class shopping {
     }
 
     if(this.requestedPickingStep <= this.numShopItems() && this.requestedPickingStep > 0){
-      this.setShoppingIndex(this.requestedPickingStep - 1);
-      console.log('m1');
+      this.setShoppingIndex(this.requestedPickingStep);
+      console.log('manageShoppingIndex m1');
     }
     else if(this.requestedPickingStep === 'basket'){
       this.basketSaved = false;
       this.initializeShopper();
-      console.log('m2');
+      console.log('manageShoppingIndex m2');
     }
     else if(this.groupLoaded === true){
       this.setShoppingIndex(0);
+       console.log('manageShoppingIndex m3');
     }
 
     if(isRedirect === true){
@@ -540,7 +541,7 @@ export class shopping {
     }
 
     console.log('currentShoppingIndex dynamic', 'groupData', this.groupData, 'shopList', this.shopList)
-    return this.groupData ? this.groupData.pickedTransactions+1 : 0; //indexed to 1 (since 0 is basketInput form)
+    return this.groupData ? this.groupData.pickedTransactions : 0; //indexed to 1 (since 0 is basketInput form)
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front
@@ -650,7 +651,7 @@ export class shopping {
         console.log('advanceShopping completed', _)
 
         this.resetShopper();//put in here to avoid race condition of reloading before the saving completes
-        this.unlockGroup(this.shopList[this.shoppingIndex].raw.next[0].pended.group) 
+        this.unlockGroup(this.shopList[this.shoppingIndex].raw.next[0].pended.group)
         this.refreshPendedGroups();
         this.loadGroupSelectionPage();
       });

@@ -3550,14 +3550,15 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       }
 
       if (this.requestedPickingStep <= this.numShopItems() && this.requestedPickingStep > 0) {
-        this.setShoppingIndex(this.requestedPickingStep - 1);
-        console.log('m1');
+        this.setShoppingIndex(this.requestedPickingStep);
+        console.log('manageShoppingIndex m1');
       } else if (this.requestedPickingStep === 'basket') {
         this.basketSaved = false;
         this.initializeShopper();
-        console.log('m2');
+        console.log('manageShoppingIndex m2');
       } else if (this.groupLoaded === true) {
         this.setShoppingIndex(0);
+        console.log('manageShoppingIndex m3');
       }
 
       if (isRedirect === true) {
@@ -3912,7 +3913,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       }
 
       console.log('currentShoppingIndex dynamic', 'groupData', this.groupData, 'shopList', this.shopList);
-      return this.groupData ? this.groupData.pickedTransactions + 1 : 0;
+      return this.groupData ? this.groupData.pickedTransactions : 0;
     };
 
     shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
