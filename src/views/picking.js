@@ -805,7 +805,7 @@ export class shopping {
 
       this.formComplete = !!(this.shopList[this.shoppingIndex].extra.fullBasket) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
       console.log('setShoppingIndex formComplete', this.formComplete);
-      this.setPickingStepUrl(this.shoppingIndex+1);
+      this.setPickingStepUrl(this.shoppingIndex);
 
     };
 
