@@ -248,15 +248,15 @@ export class shopping {
     var start = Date.now();
 
      this.db.account.picking.post({groupName:groupName, action:'load'}).then(res =>{
-      console.log("result of loading: "+res.length, (Date.now() - start)/1000, 'seconds')
-      console.log(res);
+      console.log("selectGroup: result of loading: "+res.length, (Date.now() - start)/1000, 'seconds')
+      console.log('selectGroup:', res, 'shippingIndex', this.shippingIndex);
 
       if ( ! res.shopList || ! res.groupData) {
         console.error(res)
         throw res
       }
 
-      this.setPickingStepUrl(1);
+      this.setPickingStepUrl(this.currentShoppingIndex());
 
       this.shopList = res.shopList;
       this.groupData = res.groupData;
@@ -284,6 +284,9 @@ export class shopping {
 
   //Display and set relavant variables to display a group
   initializeShopper(){
+
+    console.log('initializeShopper before:', 'shoppingIndex', this.shoppingIndex, 'groupLoaded', this.groupLoaded, 'shopList', this.shopList)
+
     this.shoppingIndex = this.currentShoppingIndex()
     this.groupLoaded = true
 
@@ -530,7 +533,7 @@ export class shopping {
   currentShoppingIndex(){
 
     if(typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()){
-      console.log('currentShoppingIndex dynamic', this.shoppingIndex, this.shopList)
+      console.log('currentShoppingIndex fixed', this.shoppingIndex, this.shopList)
       return this.shoppingIndex;
     }
 

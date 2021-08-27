@@ -3625,15 +3625,15 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       var start = Date.now();
 
       this.db.account.picking.post({ groupName: groupName, action: 'load' }).then(function (res) {
-        console.log("result of loading: " + res.length, (Date.now() - start) / 1000, 'seconds');
-        console.log(res);
+        console.log("selectGroup: result of loading: " + res.length, (Date.now() - start) / 1000, 'seconds');
+        console.log('selectGroup:', res, 'shippingIndex', _this5.shippingIndex);
 
         if (!res.shopList || !res.groupData) {
           console.error(res);
           throw res;
         }
 
-        _this5.setPickingStepUrl(1);
+        _this5.setPickingStepUrl(_this5.currentShoppingIndex());
 
         _this5.shopList = res.shopList;
         _this5.groupData = res.groupData;
@@ -3658,6 +3658,9 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.initializeShopper = function initializeShopper() {
+
+      console.log('initializeShopper before:', 'shoppingIndex', this.shoppingIndex, 'groupLoaded', this.groupLoaded, 'shopList', this.shopList);
+
       this.shoppingIndex = this.currentShoppingIndex();
       this.groupLoaded = true;
 
@@ -3896,7 +3899,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     shopping.prototype.currentShoppingIndex = function currentShoppingIndex() {
 
       if (typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()) {
-        console.log('currentShoppingIndex dynamic', this.shoppingIndex, this.shopList);
+        console.log('currentShoppingIndex fixed', this.shoppingIndex, this.shopList);
         return this.shoppingIndex;
       }
 
