@@ -3658,7 +3658,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.initializeShopper = function initializeShopper() {
-      this.shoppingIndex = 0;
+      this.shoppingIndex = this.currentShoppingIndex();
       this.groupLoaded = true;
 
       if (this.shopList && this.shopList.length == 1) {
@@ -3900,12 +3900,8 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         return this.shoppingIndex;
       }
 
-      for (var i = 0; i < this.shopList.length; i++) {
-        if (!this.shopList[i].raw.next[0].picked) {
-          console.log('currentShoppingIndex dynamic', i, this.shopList);
-          return i;
-        }
-      }
+      console.log('currentShoppingIndex dynamic', 'groupData', this.groupData, 'shopList', this.shopList);
+      return this.groupData ? this.groupData.pickedTransactions : 0;
     };
 
     shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
@@ -4122,7 +4118,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         console.log('setShoppingIndex picking.basketSaved ', _this11.basketSaved);
 
         if (index < 0 && _this11.basketSaved) {
-          _this11.shoppingIndex = 1;
+          _this11.shoppingIndex = _this11.currentShoppingIndex();
         }
 
         if (_this11.basketSaved && _this11.groupData.basketsByGeneric && _this11.groupData.basketsByGeneric[genericName]) {

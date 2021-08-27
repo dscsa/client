@@ -284,7 +284,7 @@ export class shopping {
 
   //Display and set relavant variables to display a group
   initializeShopper(){
-    this.shoppingIndex = 0
+    this.shoppingIndex = this.currentShoppingIndex()
     this.groupLoaded = true
 
     if(this.shopList && this.shopList.length == 1){
@@ -530,16 +530,12 @@ export class shopping {
   currentShoppingIndex(){
 
     if(typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()){
-    console.log('currentShoppingIndex dynamic', this.shoppingIndex, this.shopList)
+      console.log('currentShoppingIndex dynamic', this.shoppingIndex, this.shopList)
       return this.shoppingIndex;
     }
 
-    for(var i = 0; i < this.shopList.length; i++){
-      if( ! this.shopList[i].raw.next[0].picked){
-        console.log('currentShoppingIndex dynamic', i, this.shopList)
-        return i
-      }
-    }
+    console.log('currentShoppingIndex dynamic', 'groupData', this.groupData, 'shopList', this.shopList)
+    return this.groupData ? this.groupData.pickedTransactions : 0;
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front
@@ -769,10 +765,10 @@ export class shopping {
 
     let goToIndex = () => {
 
-    console.log('goToIndex', 'new', index, 'old', this.shoppingIndex);
-    console.log('goToIndex', this.groupData);
-    console.log('goToIndex', this.shopList[index]);
-    console.log('goToIndex', this.shopList[index].raw.drug.generic);
+      console.log('goToIndex', 'new', index, 'old', this.shoppingIndex);
+      console.log('goToIndex', this.groupData);
+      console.log('goToIndex', this.shopList[index]);
+      console.log('goToIndex', this.shopList[index].raw.drug.generic);
 
       this.shoppingIndex = index;
 
@@ -787,7 +783,7 @@ export class shopping {
 
       //if they have already chosen as basket take them to the first incomplete step
       if(index < 0 && this.basketSaved){
-        this.shoppingIndex = 1;
+        this.shoppingIndex = this.currentShoppingIndex();
       }
 
       if(this.basketSaved && this.groupData.basketsByGeneric && this.groupData.basketsByGeneric[genericName]){
