@@ -256,12 +256,14 @@ export class shopping {
         throw res
       }
 
-      this.setPickingStepUrl(this.currentShoppingIndex());
-
       this.shopList = res.shopList;
       this.groupData = res.groupData;
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
+
+      console.log('setPickingStepUrl', 'before')
+      this.setPickingStepUrl(this.currentShoppingIndex());
+       console.log('setPickingStepUrl', 'after')
       this.initializeShopper();
       //this has to come after  initialize shopper
        if(res.groupData && res.groupData.baskets && res.groupData.baskets.length) {
