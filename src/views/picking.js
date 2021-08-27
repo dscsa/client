@@ -74,7 +74,7 @@ export class shopping {
 
       if(this.isValidGroupName()){
         return this.db.account.picking.post({groupName:params.groupName, action:'group_info'}).then(res => {
-          console.log('GROUP LOADED:' + params.groupName, res);
+          console.log('GROUP LOADED:' + params.groupName, 'stepNumber', params.stepNumber, res);
 
           if ( ! res.groupData || ! res.shopList) {
               console.error(res)
@@ -528,12 +528,15 @@ export class shopping {
   }
 
   currentShoppingIndex(){
+
     if(typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()){
+    console.log('currentShoppingIndex dynamic', this.shoppingIndex, this.shopList)
       return this.shoppingIndex;
     }
 
     for(var i = 0; i < this.shopList.length; i++){
       if( ! this.shopList[i].raw.next[0].picked){
+        console.log('currentShoppingIndex dynamic', i, this.shopList)
         return i
       }
     }
@@ -762,15 +765,16 @@ export class shopping {
       return false;
     }
 
-    console.log(`requesting : ${this.groupName}/${index + 1}/${index} (group/step/shoppingIndex)`);
+    console.log(`setShoppingIndex requesting : ${this.groupName}/${index + 1}/${index} (group/step/shoppingIndex)`);
 
     let goToIndex = () => {
-      console.log(index);
-      this.shoppingIndex = index;
-      console.log(this.groupData);
 
-      console.log(this.shopList[index]);
-      console.log(this.shopList[index].raw.drug.generic);
+    console.log('goToIndex', 'new', index, 'old', this.shoppingIndex);
+    console.log('goToIndex', this.groupData);
+    console.log('goToIndex', this.shopList[index]);
+    console.log('goToIndex', this.shopList[index].raw.drug.generic);
+
+      this.shoppingIndex = index;
 
       let genericName = this.shopList[index].raw.drug.generic.replace(/\s/g, '');
 
@@ -779,7 +783,7 @@ export class shopping {
             && this.groupData.basketsByGeneric[genericName] && this.groupData.basketsByGeneric[genericName].length;
       }
 
-      console.log('picking.basketSaved ', this.basketSaved);
+      console.log('setShoppingIndex picking.basketSaved ', this.basketSaved);
 
       //if they have already chosen as basket take them to the first incomplete step
       if(index < 0 && this.basketSaved){
@@ -797,7 +801,7 @@ export class shopping {
       }
 
       this.formComplete = !!(this.shopList[this.shoppingIndex].extra.fullBasket) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
-console.log(this.formComplete);
+      console.log('setShoppingIndex formComplete', this.formComplete);
       this.setPickingStepUrl(this.shoppingIndex+1);
 
     };

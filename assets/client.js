@@ -3432,7 +3432,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
         if (_this.isValidGroupName()) {
           return _this.db.account.picking.post({ groupName: params.groupName, action: 'group_info' }).then(function (res) {
-            console.log('GROUP LOADED:' + params.groupName, res);
+            console.log('GROUP LOADED:' + params.groupName, 'stepNumber', params.stepNumber, res);
 
             if (!res.groupData || !res.shopList) {
               console.error(res);
@@ -3894,12 +3894,15 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.currentShoppingIndex = function currentShoppingIndex() {
+
       if (typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()) {
+        console.log('currentShoppingIndex dynamic', this.shoppingIndex, this.shopList);
         return this.shoppingIndex;
       }
 
       for (var i = 0; i < this.shopList.length; i++) {
         if (!this.shopList[i].raw.next[0].picked) {
+          console.log('currentShoppingIndex dynamic', i, this.shopList);
           return i;
         }
       }
@@ -4099,15 +4102,16 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         return false;
       }
 
-      console.log('requesting : ' + this.groupName + '/' + (index + 1) + '/' + index + ' (group/step/shoppingIndex)');
+      console.log('setShoppingIndex requesting : ' + this.groupName + '/' + (index + 1) + '/' + index + ' (group/step/shoppingIndex)');
 
       var goToIndex = function goToIndex() {
-        console.log(index);
-        _this11.shoppingIndex = index;
-        console.log(_this11.groupData);
 
-        console.log(_this11.shopList[index]);
-        console.log(_this11.shopList[index].raw.drug.generic);
+        console.log('goToIndex', 'new', index, 'old', _this11.shoppingIndex);
+        console.log('goToIndex', _this11.groupData);
+        console.log('goToIndex', _this11.shopList[index]);
+        console.log('goToIndex', _this11.shopList[index].raw.drug.generic);
+
+        _this11.shoppingIndex = index;
 
         var genericName = _this11.shopList[index].raw.drug.generic.replace(/\s/g, '');
 
@@ -4115,7 +4119,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
           _this11.basketSaved = _this11.groupData.baskets && _this11.groupData.baskets.length && _this11.groupData.basketsByGeneric[genericName] && _this11.groupData.basketsByGeneric[genericName].length;
         }
 
-        console.log('picking.basketSaved ', _this11.basketSaved);
+        console.log('setShoppingIndex picking.basketSaved ', _this11.basketSaved);
 
         if (index < 0 && _this11.basketSaved) {
           _this11.shoppingIndex = 1;
@@ -4132,7 +4136,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         }
 
         _this11.formComplete = !!_this11.shopList[_this11.shoppingIndex].extra.fullBasket && _this11.someOutcomeSelected(_this11.shopList[_this11.shoppingIndex].extra.outcome);
-        console.log(_this11.formComplete);
+        console.log('setShoppingIndex formComplete', _this11.formComplete);
         _this11.setPickingStepUrl(_this11.shoppingIndex + 1);
       };
 
