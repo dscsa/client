@@ -227,11 +227,6 @@
                                        click.delegate="pauseShopping(shopList[shoppingIndex].raw.next[0].pended.group)">
                                 Pause
                             </md-button>
-                            <md-button
-                                    if.bind="(shoppingIndex < shopList.length - 1) && (shopList[shoppingIndex].raw.drug.generic == shopList[shoppingIndex+1].raw.drug.generic)"
-                                    style="float:right; height:2vh; line-height:2vh" color click.delegate="skipItem()">
-                                Skip
-                            </md-button>
                         </div>
                     </div>
                     <!-- End Progress Details -->

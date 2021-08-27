@@ -862,31 +862,6 @@ export class shopping {
     this.loadGroupSelectionPage()
   }
 
-  skipItem(){
-
-    if((this.shoppingIndex == this.shopList.length - 1) || (this.shopList[this.shoppingIndex+1].raw.drug.generic !== this.shopList[this.shoppingIndex].raw.drug.generic)) return this.snackbar.show('Cannot skip last item of generic')
-
-    this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[0] = this.shopList[this.shoppingIndex].extra.genericIndex.relative_index[1] //set it to the last index
-
-    for(var i = this.shoppingIndex+1; i < this.shopList.length; i++){
-      if(this.shopList[i].raw.drug.generic == this.shopList[this.shoppingIndex].raw.drug.generic){
-        //console.log("decrementing")
-        this.shopList[i].extra.genericIndex.relative_index[0] -= 1 //decrement relative index count on all ones we pass
-      }
-
-      if((this.shopList[i].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) || (i == this.shopList.length-1)){
-        //console.log("moving ahead")
-
-        this.shopList[this.shoppingIndex+1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket //save basket number for item thats about to show up
-        this.shopList = this.arrayMove(this.shopList, this.shoppingIndex, (i == this.shopList.length-1) ? i : i-1)
-
-        return
-
-      }
-    }
-
-  }
-
   //Toggles the radio options on each shopping item, stored as an extra property
   //of the transaction, to be processed after the order is complete and saves all results
   selectShoppingOption(key){
