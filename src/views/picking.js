@@ -307,6 +307,8 @@ export class shopping {
     //this.uniqueDrugsInOrder = []
     this.orderSelectedToShop = false
     this.formComplete = false
+    this.shippingIndex = -1
+    history.pushState(null, null, window.location.pathname + window.location.search)
     this.updatePickedCount()
   }
 
