@@ -3449,7 +3449,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
             _this.groupData = res.groupData;
             _this.groupLoaded = true;
 
-            _this.requestedPickingStep = params.stepNumber ? parseInt(params.stepNumber) : _this.currentShoppingIndex();
+            _this.requestedPickingStep = params.stepNumber ? params.stepNumber - 1 : _this.currentShoppingIndex();
 
             _this.manageShoppingIndex();
           });
@@ -4146,7 +4146,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
         _this11.formComplete = !!_this11.shopList[_this11.shoppingIndex].extra.fullBasket && _this11.someOutcomeSelected(_this11.shopList[_this11.shoppingIndex].extra.outcome);
         console.log('setShoppingIndex formComplete', _this11.formComplete);
-        _this11.setPickingStepUrl(_this11.shoppingIndex);
+        _this11.setPickingStepUrl(_this11.shoppingIndex + 1);
       };
 
       if (!this.shopList.length) {

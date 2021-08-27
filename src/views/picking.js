@@ -86,7 +86,7 @@ export class shopping {
           this.groupLoaded = true;
 
           this.requestedPickingStep = params.stepNumber
-              ? parseInt(params.stepNumber)
+              ? params.stepNumber - 1 //URL is indexed to 1 instead of 0 like our internal shoppingIndex.
               : this.currentShoppingIndex();
 
           this.manageShoppingIndex();
@@ -805,7 +805,7 @@ export class shopping {
 
       this.formComplete = !!(this.shopList[this.shoppingIndex].extra.fullBasket) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
       console.log('setShoppingIndex formComplete', this.formComplete);
-      this.setPickingStepUrl(this.shoppingIndex);
+      this.setPickingStepUrl(this.shoppingIndex+1); //URL is indexed to 1 instead of 0 like our internal shoppingIndex.
 
     };
 
