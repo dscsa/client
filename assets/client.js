@@ -3682,8 +3682,6 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     shopping.prototype.resetShopper = function resetShopper() {
       this.orderSelectedToShop = false;
       this.formComplete = false;
-      this.shippingIndex = -1;
-      history.pushState(null, null, '#/picking');
       this.updatePickedCount();
     };
 
@@ -4011,11 +4009,12 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
 
-          console.log('advanceShopping', _);
+          console.log('advanceShopping completed', _);
 
+          _this10.resetShopper();
+          _this10.unlockGroup(_this10.shopList[_this10.shoppingIndex].raw.next[0].pended.group);
           _this10.refreshPendedGroups();
           _this10.loadGroupSelectionPage();
-          _this10.resetShopper();
         });
 
         for (var i = this.groups.length - 1; i >= 0; i--) {
@@ -4191,6 +4190,8 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       this.unlockGroup(groupName);
 
       this.refreshPendedGroups();
+
+      this.loadGroupSelectionPage();
     };
 
     shopping.prototype.skipItem = function skipItem() {

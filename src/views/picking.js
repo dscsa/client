@@ -305,8 +305,6 @@ export class shopping {
     //this.uniqueDrugsInOrder = []
     this.orderSelectedToShop = false
     this.formComplete = false
-    this.shippingIndex = -1
-    history.pushState(null, null, '#/picking')
     this.updatePickedCount()
   }
 
@@ -649,11 +647,12 @@ export class shopping {
 
       this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(_=>{
 
-        console.log('advanceShopping', _)
-        //remove this group
+        console.log('advanceShopping completed', _)
+
+        this.resetShopper();//put in here to avoid race condition of reloading before the saving completes
+        this.unlockGroup(this.shopList[this.shoppingIndex].raw.next[0].pended.group) 
         this.refreshPendedGroups();
         this.loadGroupSelectionPage();
-        this.resetShopper();//put in here to avoid race condition of reloading before the saving completes
       });
 
       //cut it out of the list, just until it refreshes anymay
@@ -858,6 +857,8 @@ export class shopping {
     this.unlockGroup(groupName)
 
     this.refreshPendedGroups();
+
+    this.loadGroupSelectionPage()
   }
 
   skipItem(){
