@@ -619,6 +619,7 @@ export class shopping {
             if(!inserted){ //then we are last/only generic, and add at end of shoplist
               res[j].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
               this.shopList.push(res[j])
+              this.groupData.numTransactions++
             }
 
           }
