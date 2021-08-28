@@ -607,9 +607,11 @@ export class shopping {
 
               if(this.shopList[n].raw.drug.generic == res[j].raw.drug.generic){
                 this.shopList[n].extra.genericIndex.relative_index[1]++ //increment total for this generic
+                this.groupData.numTransactions++
               } else {
                 res[j].extra.genericIndex = {global_index : this.shopList[n-1].extra.genericIndex.global_index, relative_index:[this.shopList[n-1].extra.genericIndex.relative_index[0]+1,this.shopList[n-1].extra.genericIndex.relative_index[1]]}
                 this.shopList.splice(n, 0, res[j]) //insert at the end of the current generic
+                this.groupData.numTransactions++
                 inserted = true
                 n = this.shopList.length
                 //this.advanceShopping()
