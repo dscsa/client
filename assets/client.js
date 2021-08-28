@@ -3965,6 +3965,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
           if (res.length > 0) {
 
             _this9.shopList[_this9.shoppingIndex].extra.saved = 'missing';
+            _this9.groupData.numTransactions += res.length;
 
             for (var j = 0; j < res.length; j++) {
 
@@ -3976,11 +3977,9 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
                 if (_this9.shopList[n].raw.drug.generic == res[j].raw.drug.generic) {
                   _this9.shopList[n].extra.genericIndex.relative_index[1]++;
-                  _this9.groupData.numTransactions++;
                 } else {
                   res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
                   _this9.shopList.splice(n, 0, res[j]);
-                  _this9.groupData.numTransactions++;
                   inserted = true;
                   n = _this9.shopList.length;
                 }
@@ -3989,7 +3988,6 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
               if (!inserted) {
                 res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
                 _this9.shopList.push(res[j]);
-                _this9.groupData.numTransactions++;
               }
             }
           } else {
