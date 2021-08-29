@@ -152,12 +152,11 @@ export class shopping {
 
   manageShoppingIndex(){
     const maxIndex = this.maxAllowedShoppingIndex(),
-      maxStep = maxIndex + 1;
 
     let isRedirect = false;
 
-    if(this.requestedPickingStep > maxStep){
-      this.requestedPickingStep = maxStep;
+    if(this.requestedPickingStep > maxIndex){
+      this.requestedPickingStep = maxIndex;
       isRedirect = true;
     }
 
