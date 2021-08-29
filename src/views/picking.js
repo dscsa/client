@@ -146,12 +146,14 @@ export class shopping {
 
       max++;
     }
-
+    console.log('maxAllowedShoppingIndex', max, 'of', this.shopList.length, this.shopList)
     return max;
   }
 
+  //TODO seems lile this should be part of setShoppingIndex
   manageShoppingIndex(){
-    const maxIndex = this.maxAllowedShoppingIndex(),
+    const maxIndex = this.maxAllowedShoppingIndex()
+    const numItems = this.numShopItems()
 
     let isRedirect = false;
 
@@ -160,18 +162,18 @@ export class shopping {
       isRedirect = true;
     }
 
-    if(this.requestedPickingStep <= this.numShopItems() && this.requestedPickingStep > 0){
+    if(this.requestedPickingStep <= numItems && this.requestedPickingStep > 0){
+      console.log('manageShoppingIndex m1', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
       this.setShoppingIndex(this.requestedPickingStep - 1); //0 indexed vs 1 indexed
-      console.log('manageShoppingIndex m1');
     }
     else if(this.requestedPickingStep === 'basket'){
       this.basketSaved = false;
       this.initializeShopper();
-      console.log('manageShoppingIndex m2');
+      console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
     }
     else if(this.groupLoaded === true){
+      console.log('manageShoppingIndex m3', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
       this.setShoppingIndex(0);
-       console.log('manageShoppingIndex m3');
     }
 
     if(isRedirect === true){

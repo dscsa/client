@@ -3534,31 +3534,31 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
         max++;
       }
-
+      console.log('maxAllowedShoppingIndex', max, 'of', this.shopList.length, this.shopList);
       return max;
     };
 
     shopping.prototype.manageShoppingIndex = function manageShoppingIndex() {
-      var maxIndex = this.maxAllowedShoppingIndex(),
-          maxStep = maxIndex + 1;
+      var maxIndex = this.maxAllowedShoppingIndex();
+      var numItems = this.numShopItems();
 
       var isRedirect = false;
 
-      if (this.requestedPickingStep > maxStep) {
-        this.requestedPickingStep = maxStep;
+      if (this.requestedPickingStep > maxIndex) {
+        this.requestedPickingStep = maxIndex;
         isRedirect = true;
       }
 
-      if (this.requestedPickingStep <= this.numShopItems() && this.requestedPickingStep > 0) {
-        this.setShoppingIndex(this.requestedPickingStep);
-        console.log('manageShoppingIndex m1');
+      if (this.requestedPickingStep <= numItems && this.requestedPickingStep > 0) {
+        console.log('manageShoppingIndex m1', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
+        this.setShoppingIndex(this.requestedPickingStep - 1);
       } else if (this.requestedPickingStep === 'basket') {
         this.basketSaved = false;
         this.initializeShopper();
-        console.log('manageShoppingIndex m2');
+        console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
       } else if (this.groupLoaded === true) {
+        console.log('manageShoppingIndex m3', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
         this.setShoppingIndex(0);
-        console.log('manageShoppingIndex m3');
       }
 
       if (isRedirect === true) {
