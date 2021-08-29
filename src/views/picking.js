@@ -539,7 +539,7 @@ export class shopping {
     }
 
     console.log('currentShoppingIndex dynamic', 'groupData', this.groupData, 'shopList', this.shopList)
-    return this.groupData ? this.groupData.pickedTransactions : 0; //indexed to 1 (since 0 is basketInput form)
+    return this.maxAllowedShoppingIndex() //usually same as groupData picked transactions, if everything was saved properly, but this will goto first unsaved transaction
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front

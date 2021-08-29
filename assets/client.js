@@ -3909,7 +3909,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       }
 
       console.log('currentShoppingIndex dynamic', 'groupData', this.groupData, 'shopList', this.shopList);
-      return this.groupData ? this.groupData.pickedTransactions : 0;
+      return this.maxAllowedShoppingIndex();
     };
 
     shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
