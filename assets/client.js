@@ -3539,30 +3539,26 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.manageShoppingIndex = function manageShoppingIndex() {
-      var maxIndex = this.maxAllowedShoppingIndex();
+      var maxStep = this.maxAllowedShoppingIndex() + 1;
       var numItems = this.numShopItems();
 
       var isRedirect = false;
 
-      if (this.requestedPickingStep > maxIndex) {
-        this.requestedPickingStep = maxIndex;
-        isRedirect = true;
-      }
-
-      if (this.requestedPickingStep <= numItems && this.requestedPickingStep > 0) {
-        console.log('manageShoppingIndex m1', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
+      if (this.requestedPickingStep > maxStep) {
+        console.log('manageShoppingIndex m0', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+        this.requestedPickingStep = maxStep;
+        this.setShoppingIndex(maxStep - 1);
+        alert('Please complete step ' + this.requestedPickingStep + ' first');
+      } else if (this.requestedPickingStep <= numItems && this.requestedPickingStep > 0) {
+        console.log('manageShoppingIndex m1', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
         this.setShoppingIndex(this.requestedPickingStep - 1);
       } else if (this.requestedPickingStep === 'basket') {
         this.basketSaved = false;
         this.initializeShopper();
-        console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
+        console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       } else if (this.groupLoaded === true) {
-        console.log('manageShoppingIndex m3', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
+        console.log('manageShoppingIndex m3', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
         this.setShoppingIndex(0);
-      }
-
-      if (isRedirect === true) {
-        alert('Please complete step ' + this.requestedPickingStep + ' first');
       }
     };
 

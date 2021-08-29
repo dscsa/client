@@ -152,32 +152,29 @@ export class shopping {
 
   //TODO seems lile this should be part of setShoppingIndex
   manageShoppingIndex(){
-    const maxIndex = this.maxAllowedShoppingIndex()
+    const maxStep  = this.maxAllowedShoppingIndex()+1 //0 indexed vs 1 indexed
     const numItems = this.numShopItems()
 
     let isRedirect = false;
 
-    if(this.requestedPickingStep > maxIndex){
-      this.requestedPickingStep = maxIndex;
-      isRedirect = true;
+    if(this.requestedPickingStep > maxStep){
+      console.log('manageShoppingIndex m0', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+      this.requestedPickingStep = maxStep;
+      this.setShoppingIndex(maxStep - 1); //0 indexed vs 1 indexed
+      alert('Please complete step ' + this.requestedPickingStep + ' first');
     }
-
-    if(this.requestedPickingStep <= numItems && this.requestedPickingStep > 0){
-      console.log('manageShoppingIndex m1', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
+    else if(this.requestedPickingStep <= numItems && this.requestedPickingStep > 0){
+      console.log('manageShoppingIndex m1', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       this.setShoppingIndex(this.requestedPickingStep - 1); //0 indexed vs 1 indexed
     }
     else if(this.requestedPickingStep === 'basket'){
       this.basketSaved = false;
       this.initializeShopper();
-      console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
+      console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
     }
     else if(this.groupLoaded === true){
-      console.log('manageShoppingIndex m3', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxIndex', maxIndex);
+      console.log('manageShoppingIndex m3', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       this.setShoppingIndex(0);
-    }
-
-    if(isRedirect === true){
-      alert('Please complete step ' + this.requestedPickingStep + ' first');
     }
   }
 
