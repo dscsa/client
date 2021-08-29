@@ -575,21 +575,25 @@ export class shopping {
 
   moveShoppingForward(){
 
-    if((this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing') && (this.shopList[this.shoppingIndex].extra.saved != 'missing')){
+    //Append a new inventory item if the current inventory items is NEWLY marked as missing (if already marked missing then ignore)
+    if((this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') || (this.shopList[this.shoppingIndex].extra.saved == 'missing')) {
+      return this.advanceShopping()
+    }
 
-      this.formComplete = false; //to disable the button
-      this.setNextToLoading()
+    this.formComplete = false; //to disable the button
+    this.setNextToLoading()
 
-      console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
+    console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
 
-      this.db.account.picking['post']({
-            groupName:this.shopList[this.shoppingIndex].raw.next[0].pended.group,
-            action:'missing_transaction',
-            ndc:this.shopList[this.shoppingIndex].raw.drug._id,
-            generic:this.shopList[this.shoppingIndex].raw.drug.generic,
-            qty:this.shopList[this.shoppingIndex].raw.qty.to,
-            repackQty:this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty
-          }).then(res =>{
+    this.db.account.picking['post']({
+        groupName:this.shopList[this.shoppingIndex].raw.next[0].pended.group,
+        action:'missing_transaction',
+        ndc:this.shopList[this.shoppingIndex].raw.drug._id,
+        generic:this.shopList[this.shoppingIndex].raw.drug.generic,
+        qty:this.shopList[this.shoppingIndex].raw.qty.to,
+        repackQty:this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty
+    })
+    .then(res =>{
 
         if(res.length > 0){
 
@@ -628,16 +632,11 @@ export class shopping {
 
         //then move forward/handle
         this.advanceShopping()
-      })
-      .catch(err => {
+    })
+    .catch(err => {
         console.log("error compensating for missing:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
         return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
-      })
-
-    }
-    else {
-      this.advanceShopping()
-    }
+    })
   }
 
   advanceShopping(){
