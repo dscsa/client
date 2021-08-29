@@ -86,8 +86,8 @@ export class shopping {
           this.groupLoaded = true;
 
           this.requestedPickingStep = params.stepNumber
-              ? params.stepNumber - 1 //URL is indexed to 1 instead of 0 like our internal shoppingIndex.
-              : this.currentShoppingIndex();
+              ? params.stepNumber
+              : this.currentShoppingIndex() + 1; //URL is indexed to 1 instead of 0 like our internal shoppingIndex.
 
           this.manageShoppingIndex();
 
@@ -168,9 +168,9 @@ export class shopping {
       this.setShoppingIndex(this.requestedPickingStep - 1); //0 indexed vs 1 indexed
     }
     else if(this.requestedPickingStep === 'basket'){
+      console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       this.basketSaved = false;
       this.initializeShopper();
-      console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
     }
     else if(this.groupLoaded === true){
       console.log('manageShoppingIndex m3', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);

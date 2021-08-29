@@ -3449,7 +3449,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
             _this.groupData = res.groupData;
             _this.groupLoaded = true;
 
-            _this.requestedPickingStep = params.stepNumber ? params.stepNumber - 1 : _this.currentShoppingIndex();
+            _this.requestedPickingStep = params.stepNumber ? params.stepNumber : _this.currentShoppingIndex() + 1;
 
             _this.manageShoppingIndex();
           });
@@ -3553,9 +3553,9 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         console.log('manageShoppingIndex m1', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
         this.setShoppingIndex(this.requestedPickingStep - 1);
       } else if (this.requestedPickingStep === 'basket') {
+        console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
         this.basketSaved = false;
         this.initializeShopper();
-        console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       } else if (this.groupLoaded === true) {
         console.log('manageShoppingIndex m3', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
         this.setShoppingIndex(0);
