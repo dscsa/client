@@ -161,7 +161,7 @@ export class shopping {
     }
 
     if(this.requestedPickingStep <= this.numShopItems() && this.requestedPickingStep > 0){
-      this.setShoppingIndex(this.requestedPickingStep);
+      this.setShoppingIndex(this.requestedPickingStep - 1); //0 indexed vs 1 indexed
       console.log('manageShoppingIndex m1');
     }
     else if(this.requestedPickingStep === 'basket'){
