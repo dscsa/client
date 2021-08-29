@@ -3942,57 +3942,62 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     shopping.prototype.moveShoppingForward = function moveShoppingForward() {
       var _this9 = this;
 
-      this.formComplete = false;
-      this.setNextToLoading();
+      if (this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing' && this.shopList[this.shoppingIndex].extra.saved != 'missing') {
 
-      console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
+        this.formComplete = false;
+        this.setNextToLoading();
 
-      this.db.account.picking['post']({
-        groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group,
-        action: 'missing_transaction',
-        ndc: this.shopList[this.shoppingIndex].raw.drug._id,
-        generic: this.shopList[this.shoppingIndex].raw.drug.generic,
-        qty: this.shopList[this.shoppingIndex].raw.qty.to,
-        repackQty: this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty
-      }).then(function (res) {
+        console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
 
-        if (res.length > 0) {
+        this.db.account.picking['post']({
+          groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group,
+          action: 'missing_transaction',
+          ndc: this.shopList[this.shoppingIndex].raw.drug._id,
+          generic: this.shopList[this.shoppingIndex].raw.drug.generic,
+          qty: this.shopList[this.shoppingIndex].raw.qty.to,
+          repackQty: this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty
+        }).then(function (res) {
 
-          _this9.shopList[_this9.shoppingIndex].extra.saved = 'missing';
-          _this9.groupData.numTransactions += res.length;
+          if (res.length > 0) {
 
-          for (var j = 0; j < res.length; j++) {
+            _this9.shopList[_this9.shoppingIndex].extra.saved = 'missing';
+            _this9.groupData.numTransactions += res.length;
 
-            var n = _this9.shoppingIndex - (_this9.shopList[_this9.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
-            if (n < 0) n = 0;
-            var inserted = false;
+            for (var j = 0; j < res.length; j++) {
 
-            for (n; n < _this9.shopList.length; n++) {
+              var n = _this9.shoppingIndex - (_this9.shopList[_this9.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
+              if (n < 0) n = 0;
+              var inserted = false;
 
-              if (_this9.shopList[n].raw.drug.generic == res[j].raw.drug.generic) {
-                _this9.shopList[n].extra.genericIndex.relative_index[1]++;
-              } else {
+              for (n; n < _this9.shopList.length; n++) {
+
+                if (_this9.shopList[n].raw.drug.generic == res[j].raw.drug.generic) {
+                  _this9.shopList[n].extra.genericIndex.relative_index[1]++;
+                } else {
+                  res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
+                  _this9.shopList.splice(n, 0, res[j]);
+                  inserted = true;
+                  n = _this9.shopList.length;
+                }
+              }
+
+              if (!inserted) {
                 res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
-                _this9.shopList.splice(n, 0, res[j]);
-                inserted = true;
-                n = _this9.shopList.length;
+                _this9.shopList.push(res[j]);
               }
             }
-
-            if (!inserted) {
-              res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
-              _this9.shopList.push(res[j]);
-            }
+          } else {
+            console.log("couldn't find item with same or greater qty to replace this");
           }
-        } else {
-          console.log("couldn't find item with same or greater qty to replace this");
-        }
 
-        _this9.advanceShopping();
-      }).catch(function (err) {
-        console.log("error compensating for missing:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
+          _this9.advanceShopping();
+        }).catch(function (err) {
+          console.log("error compensating for missing:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+          return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        });
+      } else {
+        this.advanceShopping();
+      }
     };
 
     shopping.prototype.advanceShopping = function advanceShopping() {

@@ -575,6 +575,8 @@ export class shopping {
 
   moveShoppingForward(){
 
+    if((this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing') && (this.shopList[this.shoppingIndex].extra.saved != 'missing')){
+
       this.formComplete = false; //to disable the button
       this.setNextToLoading()
 
@@ -631,6 +633,11 @@ export class shopping {
         console.log("error compensating for missing:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
         return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
       })
+
+    }
+    else {
+      this.advanceShopping()
+    }
   }
 
   advanceShopping(){
