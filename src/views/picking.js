@@ -140,7 +140,7 @@ export class shopping {
     let max = 0;
 
     for(const [index, transaction] of Object.entries(this.shopList)){
-      if(transaction.extra && transaction.extra.saved){
+      if( ! transaction.extra || ! transaction.extra.saved){
         break;
       }
 

@@ -3528,7 +3528,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
             index = _ref3[0],
             transaction = _ref3[1];
 
-        if (transaction.extra && transaction.extra.saved) {
+        if (!transaction.extra || !transaction.extra.saved) {
           break;
         }
 
