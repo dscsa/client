@@ -291,7 +291,7 @@ export class shopping {
     this.shoppingIndex = this.currentShoppingIndex()
     this.groupLoaded = true
 
-    if(this.shopList && this.shopList.length == 1){
+    if(this.shoppingIndex + 1 === this.groupData.numTransactions){
       this.setNextToSave()
     } else {
       this.setNextToNext()
@@ -643,7 +643,7 @@ export class shopping {
   }
 
   advanceShopping(){
-    if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
+    if(this.shoppingIndex + 1 === this.groupData.numTransactions){ //then we're finished
 
       //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
 
@@ -798,7 +798,7 @@ export class shopping {
         let basket = this.groupData.basketsByGeneric[genericName].slice(-1);
         this.addBasketToShoppingList(basket);
       }
-      if(this.shoppingIndex === this.shopList.length-1){
+      if(this.shoppingIndex + 1 === this.groupData.numTransactions){
         this.setNextToSave()
       } else {
         this.setNextToNext()
@@ -833,11 +833,11 @@ export class shopping {
   }
 
   shopListMaxIndex(){
-    return this.shopList.length - 1;
+    return this.groupData.numTransactions - 1;
   }
 
   numShopItems(){
-    return this.shopList.length;
+    return this.groupData.numTransactions;
   }
 
   moveShoppingBackward(){
@@ -880,7 +880,7 @@ export class shopping {
 
     if(key == 'missing'){
       this.setNextToNext()
-    } else if(this.shoppingIndex == this.shopList.length-1){
+    } else if(this.shoppingIndex + 1 === this.groupData.numTransactions){
       this.setNextToSave()
     }
 

@@ -3671,7 +3671,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       this.shoppingIndex = this.currentShoppingIndex();
       this.groupLoaded = true;
 
-      if (this.shopList && this.shopList.length == 1) {
+      if (this.shoppingIndex + 1 === this.groupData.numTransactions) {
         this.setNextToSave();
       } else {
         this.setNextToNext();
@@ -4007,7 +4007,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     shopping.prototype.advanceShopping = function advanceShopping() {
       var _this10 = this;
 
-      if (this.shoppingIndex == this.shopList.length - 1) {
+      if (this.shoppingIndex + 1 === this.groupData.numTransactions) {
 
         this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
 
@@ -4139,7 +4139,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
           var basket = _this11.groupData.basketsByGeneric[genericName].slice(-1);
           _this11.addBasketToShoppingList(basket);
         }
-        if (_this11.shoppingIndex === _this11.shopList.length - 1) {
+        if (_this11.shoppingIndex + 1 === _this11.groupData.numTransactions) {
           _this11.setNextToSave();
         } else {
           _this11.setNextToNext();
@@ -4170,11 +4170,11 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.shopListMaxIndex = function shopListMaxIndex() {
-      return this.shopList.length - 1;
+      return this.groupData.numTransactions - 1;
     };
 
     shopping.prototype.numShopItems = function numShopItems() {
-      return this.shopList.length;
+      return this.groupData.numTransactions;
     };
 
     shopping.prototype.moveShoppingBackward = function moveShoppingBackward() {
@@ -4210,7 +4210,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
       if (key == 'missing') {
         this.setNextToNext();
-      } else if (this.shoppingIndex == this.shopList.length - 1) {
+      } else if (this.shoppingIndex + 1 === this.groupData.numTransactions) {
         this.setNextToSave();
       }
     };
