@@ -773,7 +773,7 @@ export class inventory {
         `Exp ${transaction.exp.to.slice(0, 7)}`,
         `Bin ${transaction.bin}`,
         `Qty ${transaction.qty.to}`,
-        `User ${userInfo.name.first} ${userInfo.name.last}, ${userInfo.phone}`,
+        //Too many lines.  Folks didn't like phone being public `User ${userInfo.name.first} ${userInfo.name.last}, ${userInfo.phone}`,
         pendId+', #'+numDrugs, //needs to work for X00 bins that are technically no longer pended, default to this? -> transaction.next[0] && transaction.next[0].pended && transaction.next[0].pended._id,
         `Pharmacist ________________`,
         `</p>`
