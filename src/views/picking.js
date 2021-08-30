@@ -136,7 +136,7 @@ export class shopping {
     })
   }
 
-  maxAllowedShoppingIndex(){
+  firstUnsavedIndex(){
     let max = 0;
 
     for(const [index, transaction] of Object.entries(this.shopList)){
@@ -146,13 +146,13 @@ export class shopping {
 
       max++;
     }
-    console.log('maxAllowedShoppingIndex', max, 'of', this.shopList.length, this.shopList)
+    console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList)
     return max;
   }
 
   //TODO seems lile this should be part of setShoppingIndex
   manageShoppingIndex(){
-    const maxStep  = this.maxAllowedShoppingIndex()+1 //0 indexed vs 1 indexed
+    const maxStep  = this.firstUnsavedIndex()+1 //0 indexed vs 1 indexed
     const numItems = this.numShopItems()
 
     let isRedirect = false;
@@ -534,12 +534,13 @@ export class shopping {
     console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, typeof this.shoppingIndex, 'shopListMaxIndex', this.shopListMaxIndex(),  'groupData', this.groupData, 'shopList', this.shopList)
 
     if(typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()){
-      console.log('currentShoppingIndex fixed', this.shoppingIndex, this.shopList)
+      console.log('currentShoppingIndex provided', this.shoppingIndex, this.shopList)
       return this.shoppingIndex;
     }
 
-    console.log('currentShoppingIndex dynamic', 'groupData', this.groupData, 'shopList', this.shopList)
-    return this.maxAllowedShoppingIndex() //usually same as groupData picked transactions, if everything was saved properly, but this will goto first unsaved transaction
+    const firstUnsavedIndex = this.firstUnsavedIndex()
+    console.log('currentShoppingIndex firstUnsavedIndex', 'groupData', this.groupData, 'shopList', this.shopList, 'firstUnsavedIndex', firstUnsavedIndex)
+    return firstUnsavedIndex //usually same as groupData picked transactions, if everything was saved properly, but this will goto first unsaved transaction
   }
 
   //returns a strng that looks like ,BASKET,BASKET,.... so that the html can easily push the current item's basket to the front

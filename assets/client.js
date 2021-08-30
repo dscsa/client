@@ -3509,7 +3509,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       });
     };
 
-    shopping.prototype.maxAllowedShoppingIndex = function maxAllowedShoppingIndex() {
+    shopping.prototype.firstUnsavedIndex = function firstUnsavedIndex() {
       var max = 0;
 
       for (var _iterator2 = Object.entries(this.shopList), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
@@ -3534,12 +3534,12 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
         max++;
       }
-      console.log('maxAllowedShoppingIndex', max, 'of', this.shopList.length, this.shopList);
+      console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList);
       return max;
     };
 
     shopping.prototype.manageShoppingIndex = function manageShoppingIndex() {
-      var maxStep = this.maxAllowedShoppingIndex() + 1;
+      var maxStep = this.firstUnsavedIndex() + 1;
       var numItems = this.numShopItems();
 
       var isRedirect = false;
@@ -3904,12 +3904,13 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
       console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, _typeof(this.shoppingIndex), 'shopListMaxIndex', this.shopListMaxIndex(), 'groupData', this.groupData, 'shopList', this.shopList);
 
       if (typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()) {
-        console.log('currentShoppingIndex fixed', this.shoppingIndex, this.shopList);
+        console.log('currentShoppingIndex provided', this.shoppingIndex, this.shopList);
         return this.shoppingIndex;
       }
 
-      console.log('currentShoppingIndex dynamic', 'groupData', this.groupData, 'shopList', this.shopList);
-      return this.maxAllowedShoppingIndex();
+      var firstUnsavedIndex = this.firstUnsavedIndex();
+      console.log('currentShoppingIndex firstUnsavedIndex', 'groupData', this.groupData, 'shopList', this.shopList, 'firstUnsavedIndex', firstUnsavedIndex);
+      return firstUnsavedIndex;
     };
 
     shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
