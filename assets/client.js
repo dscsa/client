@@ -3641,12 +3641,20 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         _this5.pendedFilter = '';
         _this5.filter = {};
 
-        _this5.setPickingStepUrl(_this5.currentShoppingIndex() + 1);
-        _this5.initializeShopper();
+        var currentShoppingIndex = _this5.currentShoppingIndex();
 
-        if (res.groupData && res.groupData.baskets && res.groupData.baskets.length) {
+        _this5.setPickingStepUrl(currentShoppingIndex + 1);
+
+        if (currentShoppingIndex == 0) {
+          _this5.initializeShopper();
+        }
+
+        var genericName = _this5.shopList[currentShoppingIndex].raw.drug.generic.replace(/\s/g, '');
+
+        if (_this5.basketSaved && _this5.groupData.basketsByGeneric && _this5.groupData.basketsByGeneric[genericName]) {
+          var basket = _this5.groupData.basketsByGeneric[genericName].slice(-1);
+          _this5.addBasketToShoppingList(basket);
           _this5.basketSaved = true;
-          _this5.addBasketToShoppingList(res.groupData.baskets.slice(-1));
         }
       }).catch(function (err) {
         if (~err.message.indexOf('Unexpected end of JSON input') || ~err.message.indexOf('Unexpected EOF')) {

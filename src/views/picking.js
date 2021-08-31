@@ -260,13 +260,21 @@ export class shopping {
       this.pendedFilter = ''
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
 
-      this.setPickingStepUrl(this.currentShoppingIndex()+1); //URL is indexed to 1 instead of 0 like our internal shoppingIndex.
-      this.initializeShopper();
+      let currentShoppingIndex = this.currentShoppingIndex()
+
+      this.setPickingStepUrl(currentShoppingIndex+1); //URL is indexed to 1 instead of 0 like our internal shoppingIndex.
+
+      if (currentShoppingIndex == 0) {
+        this.initializeShopper()
+      }
       //this has to come after  initialize shopper
-       if(res.groupData && res.groupData.baskets && res.groupData.baskets.length) {
-         this.basketSaved = true;
-         this.addBasketToShoppingList(res.groupData.baskets.slice(-1));
-       }
+      let genericName = this.shopList[currentShoppingIndex].raw.drug.generic.replace(/\s/g, '');
+
+      if(this.basketSaved && this.groupData.basketsByGeneric && this.groupData.basketsByGeneric[genericName]){
+        let basket = this.groupData.basketsByGeneric[genericName].slice(-1);
+        this.addBasketToShoppingList(basket);
+        this.basketSaved = true;
+      }
     })
     .catch(err => {
       if(( ~ err.message.indexOf('Unexpected end of JSON input')) || ( ~ err.message.indexOf('Unexpected EOF'))){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
