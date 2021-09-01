@@ -3441,7 +3441,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
             console.log('GROUP LOADED:' + params.groupName, 'stepNumber', params.stepNumber, res);
 
             if (!res.groupData || !res.shopList) {
-              console.error(res);
+              console.error('activate()  ! res.shopList || ! res.groupData', res);
               throw res;
             }
 
@@ -3455,7 +3455,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
           });
         } else {
           _this.groupLoaded = false;
-          console.error('group loaded is false', params);
+          console.error('activate() group loaded is false', params);
         }
       }).catch(function (err) {
         console.log("error getting user session:", err);
@@ -3634,7 +3634,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         console.log('selectGroup:', res, 'shippingIndex', _this5.shippingIndex);
 
         if (!res.shopList || !res.groupData) {
-          console.error(res);
+          console.error('selectGroup() ! res.shopList || ! res.groupData', res);
           throw res;
         }
 
@@ -3933,7 +3933,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
 
     shopping.prototype.addBasket = function addBasket(index) {
       if (!this.shopList || !this.shopList[index]) {
-        console.error('addBasket() but this.shopList is not set', this.shopList, index);
+        console.error('addBasket() ! res.shopList || ! res.groupData', this.shopList, index);
         return;
       }
 
@@ -4161,7 +4161,7 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
         this.db.account.picking.post({ groupName: this.groupName, action: 'load' }).then(function (res) {
 
           if (!res.groupData || !res.shopList) {
-            console.error(res);
+            console.error('setShoppingIndex() ! res.shopList || ! res.groupData', res);
             throw res;
           }
 

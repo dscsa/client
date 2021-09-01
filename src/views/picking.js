@@ -77,7 +77,7 @@ export class shopping {
           console.log('GROUP LOADED:' + params.groupName, 'stepNumber', params.stepNumber, res);
 
           if ( ! res.groupData || ! res.shopList) {
-              console.error(res)
+              console.error('activate()  ! res.shopList || ! res.groupData', res)
               throw res
           }
 
@@ -95,7 +95,7 @@ export class shopping {
       }
       else{
         this.groupLoaded = false;
-        console.error('group loaded is false', params);
+        console.error('activate() group loaded is false', params);
         //this.loadGroupSelectionPage();
       }
     })
@@ -254,7 +254,7 @@ export class shopping {
       console.log('selectGroup:', res, 'shippingIndex', this.shippingIndex);
 
       if ( ! res.shopList || ! res.groupData) {
-        console.error(res)
+        console.error('selectGroup() ! res.shopList || ! res.groupData', res)
         throw res
       }
 
@@ -569,7 +569,7 @@ export class shopping {
 
   addBasket(index){
     if(!this.shopList || !this.shopList[index]) {
-      console.error('addBasket() but this.shopList is not set', this.shopList, index)
+      console.error('addBasket() ! res.shopList || ! res.groupData', this.shopList, index)
       return;
     }
 
@@ -825,7 +825,7 @@ export class shopping {
       this.db.account.picking.post({groupName:this.groupName, action:'load'}).then(res =>{
 
         if ( ! res.groupData || ! res.shopList) {
-            console.error(res)
+            console.error('setShoppingIndex() ! res.shopList || ! res.groupData', res)
             throw res
         }
 
