@@ -3528,22 +3528,25 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
             index = _ref3[0],
             transaction = _ref3[1];
 
+
         if (!transaction.extra || !transaction.extra.saved) {
-          break;
+          console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList);
+          return max;
         }
 
         max++;
       }
-      console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList);
-      return max;
+
+      console.log('firstUnsavedIndex ALL SAVED', max, 'of', this.shopList.length, this.shopList);
+      return null;
     };
 
     shopping.prototype.manageShoppingIndex = function manageShoppingIndex() {
       var maxStep = this.firstUnsavedIndex() + 1;
 
-      var isRedirect = false;
-
-      if (this.requestedPickingStep > maxStep) {
+      if (maxStep == null) {
+        this.loadGroupSelectionPage();
+      } else if (this.requestedPickingStep > maxStep) {
         console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
         this.requestedPickingStep = maxStep;
         this.setShoppingIndex(maxStep - 1);

@@ -140,23 +140,27 @@ export class shopping {
     let max = 0;
 
     for(const [index, transaction] of Object.entries(this.shopList)){
+
       if( ! transaction.extra || ! transaction.extra.saved){
-        break;
+        console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList)
+        return max
       }
 
       max++;
     }
-    console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList)
-    return max;
+
+    console.log('firstUnsavedIndex ALL SAVED', max, 'of', this.shopList.length, this.shopList)
+    return null
   }
 
   //TODO seems lile this should be part of setShoppingIndex
   manageShoppingIndex(){
     const maxStep  = this.firstUnsavedIndex()+1 //0 indexed vs 1 indexed
 
-    let isRedirect = false;
-
-    if(this.requestedPickingStep > maxStep){
+    if (maxStep == null) { //everything is saved, person should be allowed into the picking of this order
+      this.loadGroupSelectionPage();
+    }
+    else if(this.requestedPickingStep > maxStep){
       console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       this.requestedPickingStep = maxStep;
       this.setShoppingIndex(maxStep - 1); //0 indexed vs 1 indexed
