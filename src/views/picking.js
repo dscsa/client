@@ -606,7 +606,7 @@ export class shopping {
         if(res.length > 0){
 
           this.shopList[this.shoppingIndex].extra.saved = 'missing'; //if someone goes back through items, dont want to retry this constantly
-          this.groupData.numTransactions += res.length
+          this.groupData.numTransactions += res.length //not sure we need to keep this up-to-date anymore since we aren't using numTransactions for anything
 
           for(var j = 0; j < res.length; j++){
 
