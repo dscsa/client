@@ -155,28 +155,28 @@ export class shopping {
 
   //TODO seems lile this should be part of setShoppingIndex
   manageShoppingIndex(){
-    const maxStep  = this.firstUnsavedIndex()+1 //0 indexed vs 1 indexed
+    const firstUnsavedIndex = this.firstUnsavedIndex()
 
-    if (maxStep == null) { //everything is saved, person should be allowed into the picking of this order
+    if (firstUnsavedIndex == null) { //everything is saved, person should be allowed into the picking of this order
       this.loadGroupSelectionPage();
     }
-    else if(this.requestedPickingStep > maxStep){
-      console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
-      this.requestedPickingStep = maxStep;
-      this.setShoppingIndex(maxStep - 1); //0 indexed vs 1 indexed
+    else if(this.requestedPickingStep > firstUnsavedIndex + 1){ //0 indexed vs 1 indexed
+      console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+      this.requestedPickingStep = firstUnsavedIndex + 1; //0 indexed vs 1 indexed
+      this.setShoppingIndex(firstUnsavedIndex);
       alert('Please complete step ' + this.requestedPickingStep + ' first');
     }
     else if(this.requestedPickingStep <= this.shopList.length && this.requestedPickingStep > 0){
-      console.log('manageShoppingIndex m1', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+      console.log('manageShoppingIndex m1', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
       this.setShoppingIndex(this.requestedPickingStep - 1); //0 indexed vs 1 indexed
     }
     else if(this.requestedPickingStep === 'basket'){
-      console.log('manageShoppingIndex m2', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+      console.log('manageShoppingIndex m2', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
       this.basketSaved = false;
       this.initializeShopper();
     }
     else if(this.groupLoaded === true){
-      console.log('manageShoppingIndex m3', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+      console.log('manageShoppingIndex m3', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
       this.setShoppingIndex(0);
     }
   }

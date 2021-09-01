@@ -3542,24 +3542,24 @@ define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouc
     };
 
     shopping.prototype.manageShoppingIndex = function manageShoppingIndex() {
-      var maxStep = this.firstUnsavedIndex() + 1;
+      var firstUnsavedIndex = this.firstUnsavedIndex();
 
-      if (maxStep == null) {
+      if (firstUnsavedIndex == null) {
         this.loadGroupSelectionPage();
-      } else if (this.requestedPickingStep > maxStep) {
-        console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
-        this.requestedPickingStep = maxStep;
-        this.setShoppingIndex(maxStep - 1);
+      } else if (this.requestedPickingStep > firstUnsavedIndex + 1) {
+        console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+        this.requestedPickingStep = firstUnsavedIndex + 1;
+        this.setShoppingIndex(firstUnsavedIndex);
         alert('Please complete step ' + this.requestedPickingStep + ' first');
       } else if (this.requestedPickingStep <= this.shopList.length && this.requestedPickingStep > 0) {
-        console.log('manageShoppingIndex m1', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+        console.log('manageShoppingIndex m1', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
         this.setShoppingIndex(this.requestedPickingStep - 1);
       } else if (this.requestedPickingStep === 'basket') {
-        console.log('manageShoppingIndex m2', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+        console.log('manageShoppingIndex m2', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
         this.basketSaved = false;
         this.initializeShopper();
       } else if (this.groupLoaded === true) {
-        console.log('manageShoppingIndex m3', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+        console.log('manageShoppingIndex m3', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
         this.setShoppingIndex(0);
       }
     };
