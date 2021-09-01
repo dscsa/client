@@ -153,27 +153,26 @@ export class shopping {
   //TODO seems lile this should be part of setShoppingIndex
   manageShoppingIndex(){
     const maxStep  = this.firstUnsavedIndex()+1 //0 indexed vs 1 indexed
-    const numItems = this.numShopItems()
 
     let isRedirect = false;
 
     if(this.requestedPickingStep > maxStep){
-      console.log('manageShoppingIndex m0', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+      console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       this.requestedPickingStep = maxStep;
       this.setShoppingIndex(maxStep - 1); //0 indexed vs 1 indexed
       alert('Please complete step ' + this.requestedPickingStep + ' first');
     }
-    else if(this.requestedPickingStep <= numItems && this.requestedPickingStep > 0){
-      console.log('manageShoppingIndex m1', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+    else if(this.requestedPickingStep <= this.shopList.length && this.requestedPickingStep > 0){
+      console.log('manageShoppingIndex m1', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       this.setShoppingIndex(this.requestedPickingStep - 1); //0 indexed vs 1 indexed
     }
     else if(this.requestedPickingStep === 'basket'){
-      console.log('manageShoppingIndex m2', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+      console.log('manageShoppingIndex m2', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       this.basketSaved = false;
       this.initializeShopper();
     }
     else if(this.groupLoaded === true){
-      console.log('manageShoppingIndex m3', 'numItems', numItems, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
+      console.log('manageShoppingIndex m3', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'maxStep', maxStep);
       this.setShoppingIndex(0);
     }
   }
@@ -297,7 +296,7 @@ export class shopping {
     this.shoppingIndex = this.currentShoppingIndex()
     this.groupLoaded = true
 
-    if(this.shoppingIndex + 1 === this.groupData.numTransactions){
+    if(this.shoppingIndex + 1 === this.shopList.length){
       this.setNextToSave()
     } else {
       this.setNextToNext()
@@ -539,9 +538,9 @@ export class shopping {
 
   currentShoppingIndex(){
 
-    console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, typeof this.shoppingIndex, 'shopListMaxIndex', this.shopListMaxIndex(),  'groupData', this.groupData, 'shopList', this.shopList)
+    console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, typeof this.shoppingIndex, 'shopListMaxIndex', this.shopList.length,  'groupData', this.groupData, 'shopList', this.shopList)
 
-    if(typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopListMaxIndex()){
+    if(typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopList.length - 1){
       console.log('currentShoppingIndex provided', this.shoppingIndex, this.shopList)
       return this.shoppingIndex;
     }
@@ -649,7 +648,7 @@ export class shopping {
   }
 
   advanceShopping(){
-    if(this.shoppingIndex + 1 === this.groupData.numTransactions){ //then we're finished
+    if(this.shoppingIndex + 1 === this.shopList.length){ //then we're finished
 
       //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
 
@@ -804,7 +803,7 @@ export class shopping {
         let basket = this.groupData.basketsByGeneric[genericName].slice(-1);
         this.addBasketToShoppingList(basket);
       }
-      if(this.shoppingIndex + 1 === this.groupData.numTransactions){
+      if(this.shoppingIndex + 1 === this.shopList.length){
         this.setNextToSave()
       } else {
         this.setNextToNext()
@@ -836,14 +835,6 @@ export class shopping {
       goToIndex();
     }
 
-  }
-
-  shopListMaxIndex(){
-    return this.groupData.numTransactions - 1;
-  }
-
-  numShopItems(){
-    return this.groupData.numTransactions;
   }
 
   moveShoppingBackward(){
@@ -886,7 +877,7 @@ export class shopping {
 
     if(key == 'missing'){
       this.setNextToNext()
-    } else if(this.shoppingIndex + 1 === this.groupData.numTransactions){
+    } else if(this.shoppingIndex + 1 === this.shopList.length){
       this.setNextToSave()
     }
 
