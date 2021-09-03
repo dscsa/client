@@ -170,6 +170,7 @@
       <md-autocomplete
         name = "pro_searchbar"
         value.bind="term"
+        disabled.bind="(shipment.tracking || shipment.account.to || shipment.account.from) && ! shipment._rev"
         input.delegate="search() & debounce:50"
         keydown.delegate="autocompleteShortcuts($event) & debounce:50"
         style="margin:0px 24px">
