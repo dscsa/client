@@ -20,20 +20,21 @@ export class MdSwitchCustomElement {
     return true
   }
 
-  //If we are relying on parent returning true then this isn't needed, but
-  //if we are binding to check to change it programmatically we need this
-  checkedChanged() {
-    this.checked = !! this.checked
-    setTimeout(_ => this.label && this.label.MaterialSwitch.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
-  }
-
-  disabledChanged() {
-    setTimeout(_ => this.label && this.label.MaterialSwitch.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
-  }
-
-  attached() {
-    componentHandler.upgradeElement(this.label)
-    this.checkedChanged()
-    this.disabledChanged()
-  }
+  //todo: source of gnarly infinite loops?
+  // //If we are relying on parent returning true then this isn't needed, but
+  // //if we are binding to check to change it programmatically we need this
+  // checkedChanged() {
+  //   this.checked = !! this.checked
+  //   setTimeout(_ => this.label && this.label.MaterialSwitch.checkToggleState()) //checked hasn't actually been changed yet so wait for the change and then check
+  // }
+  //
+  // disabledChanged() {
+  //   setTimeout(_ => this.label && this.label.MaterialSwitch.checkDisabled()) //disabled hasn't actually been changed yet so wait for the change and then check
+  // }
+  //
+  // attached() {
+  //   componentHandler.upgradeElement(this.label)
+  //   this.checkedChanged()
+  //   this.disabledChanged()
+  // }
 }

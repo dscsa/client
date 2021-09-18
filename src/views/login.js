@@ -13,9 +13,15 @@ export class login {
     this.phone       = ''
     this.password    = ''
     this.canActivate = canActivate
+
+
+    //todo:delete
+    this.phone = '0000000000';
+    this.password = '!Stanf0rd';
   }
 
   login() {
+
     this.db.user.session.post({phone:this.phone, password:this.password})
     .then(loading => {
       this.disabled = true

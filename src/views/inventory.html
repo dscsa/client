@@ -17,53 +17,7 @@
     .mdl-layout__drawer { width:280px; transform:translateX(-290px); overflow-x:hidden; }
   </style>
   <md-drawer>
-    <md-input
-      autoselect
-      value.bind="pendedFilter"
-      style="padding:0 8px; width:auto">
-      Filter pended inventory
-    </md-input>
-    <div repeat.for="pend of pended | pendedFilter:pendedFilter">
 
-      <div style="display:inline-block; width:100%">
-        <div
-          click.delegate="clickOnGroupInDrawer($event,pend.key)"
-          class="mdl-typography--title ${ term == 'Pended '+pend.key ? 'mdl-navigation__link--current' : ''}"
-          style="font-size:14px; float:left;font-weight:600; cursor:pointer; color:#757575; padding:8px;">
-          ${pend.key}
-        </div>
-        <md-switch
-          name = "groupPrioritySwitch"
-          style="float:right; margin-right:12px"
-          checked.one-way="shoppingSyncPended[pend.key].priority"
-          disabled.bind = "shoppingSyncPended[pend.key].locked"
-          click.trigger="clickOnGroupInDrawer($event,pend.key)">
-        </md-switch>
-      </div>
-
-      <div style="display:inline-block; width:100%"
-        repeat.for="pendedDrug of pend.val | toArray">
-        <div
-          name="pro_pended_items"
-          class="mdl-navigation__link ${ term == 'Pended '+pend.key+': '+pendedDrug.val.label ? 'mdl-navigation__link--current' : ''}"
-          click.delegate="clickOnTransactionInDrawer(false,$event,pend.key,pendedDrug.val.label)"
-          style="font-size:12px; display:inline-block; width:100%; cursor:pointer; padding:1px 0 1px 8px; line-height:18px">
-          <md-checkbox
-            if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.notFound"
-            name = "transactionDrawerCheckbox"
-            style="display:inline-block"
-            disabled.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].locked"
-            click.trigger = "clickOnTransactionInDrawer(true,$event,pend.key,pendedDrug.val.label)"
-            checked.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].drawerCheck" >
-          </md-checkbox>
-          <div
-          style="display:inline-block; padding-right:10px" if.bind = "shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.found"><b>${shoppingSyncPended[pend.key][pendedDrug.val.label].basketInfo.allBaskets}</b></div>
-          ${ ('0'+pendedDrug.val.transactions.length).slice(-2) } ${ pendedDrug.val.label }
-        </div>
-      </div>
-
-
-    </div>
   </md-drawer>
   <section class="mdl-grid au-animate">
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--3-col full-height hide-when-printed"> <!-- ${ !repack || 'background:rgba(0,88,123,.3)' } -->
@@ -141,7 +95,8 @@
         </table>
       </md-autocomplete>
 
-      <md-menu ref="menu" name="pro_menu" mousedown.delegate="openMenu($event, menu)" style="position:absolute; z-index:2; top:10px; right:5px;">
+
+      <md-menu open.trigger="openMenu($event)" id="3333demo-menu-lower-right" ref="menu" name="pro_menu" style="position:absolute; z-index:2; top:10px; right:5px;">
         <li
           class="mdl-menu__item--full-bleed-divider"
           style ="width:150px"
@@ -152,13 +107,13 @@
         <li
           style ="width:150px"
           name = "pro_dispense"
-          disabled.bind=" ! filter.checked.count"
+          disabled.bind="!inventoryItemsList.hasSelectedItems"
           click.delegate="dispenseInventory()">
           Dispense Selected
         </li>
         <li
           class="mdl-menu__item--full-bleed-divider"
-          disabled.bind=" ! filter.checked.count"
+          disabled.bind=" !inventoryItemsList.hasSelectedItems"
           click.delegate="disposeInventory()">
           Dispose Selected
         </li>
@@ -166,7 +121,7 @@
         <li
           name="pro_pend"
           show.bind="term.slice(0,6) == 'Pended'"
-          disabled.bind=" ! filter.checked.count"
+          disabled.bind="!inventoryItemsList.hasSelectedItems"
           click.delegate="unpendInventory()">
           Unpend Selected
         </li>
@@ -177,16 +132,21 @@
           click.delegate="pendInventory(match.pendId, match.pendQty)">
           Pend to ${match.pendId}
         </li>
-        <li
-          name="pro_pend"
-          disabled.bind=" ! filter.checked.count"
-          click.delegate="pendInventory(pendToId, pendToQty)"
-          class="mdl-menu__item--full-bleed-divider">
-          Pend
+        <li>
+          <div style="display:inline-block"
+            name="pro_pend"
+            disabled.bind=" !inventoryItemsList.hasSelectedItems"
+            click.delegate="pendInventory()"
+            class="mdl-menu__item--full-bleed-divider"
+          >
+            Pend
+          </div>
+
+
           <md-input
             value.bind="pendToId"
             placeholder="Name"
-            disabled.bind=" ! filter.checked.count"
+            disabled.bind=" !inventoryItemsList.hasSelectedItems"
             style="width:40px; font-size:14px">
           </md-input>
           <md-input
@@ -194,13 +154,13 @@
             min.bind="1"
             value.bind="pendToQty"
             placeholder="Qty"
-            disabled.bind=" ! filter.checked.count"
+            disabled.bind=" !inventoryItemsList.hasSelectedItems"
             style="width:40px; font-size:14px">
           </md-input>
         </li>
         <li
           name="pro_pick"
-          disabled.bind=" ! filter.checked.count"
+          disabled.bind=" !inventoryItemsList.hasSelectedItems"
           click.delegate="pickInventory(basketNumber)"
           class="mdl-menu__item--full-bleed-divider">
           Pick
@@ -208,20 +168,20 @@
             pattern="[s|S|r|R|b|B|g|G][0-9]{2,3}"
             value.bind="basketNumber"
             placeholder="Basket"
-            disabled.bind=" ! filter.checked.count"
+            disabled.bind=" !inventoryItemsList.hasSelectedItems"
             style="width:60px; font-size:14px">
           </md-input>
         </li>
         <li
           name="pro_print_selected"
-          disabled.bind=" ! filter.checked.count"
+          disabled.bind=" !inventoryItemsList.hasSelectedItems"
           click.delegate="printLabels()">
           Print Selected
         </li>
         <form>
           <li form
             name="pro_repack_selected"
-            disabled.bind=" ! repacks.drug || ! filter.checked.count"
+            disabled.bind=" ! repacks.drug || !inventoryItemsList.hasSelectedItems"
             click.delegate="repackInventory()">
             Repack Selected
           </li>
@@ -234,7 +194,7 @@
               min.bind="1"
               max.bind="repack.qty + repacks.excessQty"
               input.delegate="setRepackRows(repack, $last, $index) & debounce:500"
-              disabled.bind=" ! filter.checked.count"
+              disabled.bind=" !inventoryItemsList.hasSelectedItems"
               style="width:40px;">
               Qty
             </md-input>
@@ -243,7 +203,7 @@
               name = "pro_repack_exp"
               value.bind="repack.exp | date"
               pattern="(0?[1-9]|1[012])/(1\d|2\d)"
-              disabled.bind=" ! filter.checked.count"
+              disabled.bind=" !inventoryItemsList.hasSelectedItems"
               style="width:40px;">
               Exp
             </md-input>
@@ -252,7 +212,7 @@
               name = "pro_repack_bin"
               value.bind="repack.bin"
               pattern="[A-Z]\d{2}"
-              disabled.bind=" ! filter.checked.count"
+              disabled.bind=" !inventoryItemsList.hasSelectedItems"
               style="width:40px;">
               Bin
             </md-input>
@@ -261,8 +221,8 @@
         </md-menu>
       <input ref="$file" change.delegate="importCSV()" style="display:none" type="file" />
       <div class="table-wrap">
-        <div show.bind="noResults" style="margin:24px">No Results</div>
-        <table show.bind=" ! noResults && transactions.length" md-table>
+        <div show.bind="inventoryItemsList.isEmpty" style="margin:24px">No Results</div>
+        <table show.bind="!inventoryItemsList.isEmpty" md-table>
           <thead>
             <tr>
               <th style="width:50px; padding:0"></th>
@@ -275,38 +235,40 @@
               <th style="width:48px"></th>
             </tr>
           </thead>
-          <tr name = "pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter:term" input.delegate="saveAndReconcileTransaction(transaction) & debounce:1000">
+          <tr name = "pro_transaction" repeat.for="item of inventoryItemsList.inventoryItems" input.delegate="wtf_saveAndReconcileTransaction(transaction) & debounce:1000">
             <td style="padding:0">
-              <md-checkbox name = "pro_transaction_checkbox" click.delegate="toggleCheck(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
+              <md-checkbox name = "pro_transaction_checkbox" click.delegate="inventoryItemsList.toggleSelectedById(item.id)" checked.to-view="inventoryItemsList.selectedStatusById[item.id]"></md-checkbox>
             </td>
-            <td class="mdl-data-table__cell--non-numeric" style="padding-left:0; overflow:hidden">${ transaction.drug.generic  & oneTime }</td>
-            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug.form  & oneTime }</td>
-            <td class="mdl-data-table__cell--non-numeric">${ transaction.drug._id + (transaction.drug.pkg ? '-'+transaction.drug.pkg : '') & oneTime }</td>
+            <td class="mdl-data-table__cell--non-numeric" style="padding-left:0; overflow:hidden">${ item.productName  & oneTime }</td>
+            <td class="mdl-data-table__cell--non-numeric">${ item.productForm  & oneTime }</td>
+            <td class="mdl-data-table__cell--non-numeric">${ item.drugId & oneTime }</td>
             <td style="padding:0">
               <md-input
-                name = "pro_transaction_exp"
-                id.bind="'exp_'+$index"
-                required
-                keydown.delegate="expShortcuts($event, $index)"
-                pattern="(0?[1-9]|1[012])/(1\d|2\d)"
-                value.bind="transaction.exp.to | date"
-                style="width:40px; margin-bottom:-8px"
-                placeholder>
+                      name = "pro_transaction_exp"
+                      id.bind="'exp_'+$index"
+                      required
+                      keydown.delegate="expShortcuts($event, $index)"
+                      pattern="(0?[1-9]|1[012])/(1\d|2\d)"
+                      value.bind="item.expirationDate | date"
+                      style="width:40px; margin-bottom:-8px"
+                      placeholder>
               </md-input>
             </td>
             <td style="padding:0">
+              <!-- todo: why are we showing pended inventory here? re: disabled prob below removed from input-->
+              <!-- disabled.bind="item.next[0] && ! transaction.next[0].pended"-->
               <md-input
-                name = "pro_transaction_qty"
-                id.bind="'qty_'+$index"
-                required
-                keydown.delegate="qtyShortcutsKeydown($event, $index)"
-                input.trigger="qtyShortcutsInput($event, $index) & debounce:300"
-                disabled.bind="transaction.next[0] && ! transaction.next[0].pended"
-                type="number"
-                value.bind="transaction.qty.to | number"
-                style="width:40px; margin-bottom:-8px"
-                max.bind="3000"
-                placeholder>
+                      name = "pro_transaction_qty"
+                      id.bind="'qty_'+$index"
+                      required
+                      keydown.delegate="qtyShortcutsKeydown($event, $index)"
+                      input.trigger="qtyShortcutsInput($event, $index) & debounce:300"
+
+                      type="number"
+                      value.bind="item.quantity | number"
+                      style="width:40px; margin-bottom:-8px"
+                      max.bind="3000"
+                      placeholder>
               </md-input>
             </td>
             <!-- <td style="padding:0">
@@ -318,22 +280,21 @@
             </td> -->
             <td style="padding:0">
               <md-input
-                name = "pro_transaction_bin"
-                id.bind="'bin_'+$index"
-                required
-                keydown.delegate="binShortcuts($event, $index)"
-                pattern="[A-Z]\d{2}|[A-Za-z]\d{3}"
-                value.bind="transaction.bin"
-                style="width:40px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px"
-                maxlength.bind="4"
-                placeholder>
+                      name = "pro_transaction_bin"
+                      id.bind="'bin_'+$index"
+                      required
+                      keydown.delegate="binShortcuts($event, $index)"
+                      pattern="[A-Z]\d{2}|[A-Za-z]\d{3}"
+                      value.bind="item.bin"
+                      style="width:40px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px"
+                      maxlength.bind="4"
+                      placeholder>
               </md-input>
             </td>
             <td name="pro_repack_icon" style="padding:0 0 0 16px">
-              <i name="pro_icon" click.delegate="showHistoryDialog(transaction._id)" show.bind="isRepack(transaction)" class="material-icons" style="font-size:20px; cursor:pointer">delete_sweep</i>
-              <i name="pro_icon" click.delegate="showHistoryDialog(transaction._id)" show.bind="! isRepack(transaction)" class="material-icons show-on-hover" style="font-size:20px; margin-left:-2px; margin-right:2px; cursor:pointer">history</i>
-            </td>
+               </td>
           </tr>
+
         </table>
       </div>
     </div>

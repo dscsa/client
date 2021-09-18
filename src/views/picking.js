@@ -1,8 +1,12 @@
+//let app = require('../../../../client/src/v3/app.js');
 import {inject} from 'aurelia-framework';
 import {Pouch}     from '../libs/pouch'
 import {Router} from 'aurelia-router';
 import {canActivate, clearNextProperty, focusInput, currentDate} from '../resources/helpers';
 //import { BindingEngine } from 'aurelia-framework';
+
+import {PendGroup} from 'client/src/resources/v3/PendGroup';
+
 
 @inject(Pouch, Router)
 export class shopping {
@@ -36,9 +40,6 @@ export class shopping {
     this.canActivate     = canActivate
     this.currentDate     = currentDate
     this.clearNextProperty = clearNextProperty
-
-
-
   }
 
   deactivate() { //TODO: not sure if we need this here?
@@ -49,7 +50,12 @@ export class shopping {
     return confirm('Confirm you want to leave page');
   }
 
+
   activate(params) {
+
+
+    this.currentBasket = {};
+
     this.requestedPickingStep = params.stepNumber ? parseInt(params.stepNumber) :  1;
     this.groupName = params.groupName;
 
@@ -73,23 +79,7 @@ export class shopping {
       this.refreshPendedGroups();
 
       if(this.isValidGroupName()){
-        return this.db.account.picking.post({groupName:params.groupName, action:'group_info'}).then((result) => {
-          console.log('GROUP LOADED:' + params.groupName, result);
-          if(result.shopList){
-            this.shopList = result.shopList;
-            this.groupData = result.groupData;
-            this.groupLoaded = true;
-
-            this.manageShoppingIndex();
-
-
-
-          }
-          else {
-            console.log(result);
-            throw 'Invalid shop list ' . JSON.stringify(result || []);
-          }
-        });
+        this.loadGroupAndStartShopping(params.groupName);
       }
       else{
         this.groupLoaded = false;
@@ -104,6 +94,33 @@ export class shopping {
 
   }
 
+  loadGroupAndStartShopping(groupName){
+    this.currentPendGroup = new PendGroup();
+    this.currentPendGroup.loadFromName(groupName, () => {
+
+      if(!this.currentPendGroup.isShoppable()){
+        //todo: add real notification and explanation - returning to picking page
+        alert('There are no items in this group');
+        this.currentPendGroup =  null;
+        this.loadGroupSelectionPage();
+        return;
+      }
+
+      this.currentPendGroup.onShopListLoad(() => {
+        this.shopList = this.currentPendGroup.shopList;
+        this.groupData = this.currentPendGroup;
+        this.groupLoaded = true;
+        this.shoppingIndex = this.shoppingIndex > 0 ? this.shoppingIndex : 0;
+        this.initShoppingIndexParameters();
+
+        //todo: se. what are these? copied from legacy functions. test whether their existence has an impact.
+        this.pendedFilter = '';
+        this.filter = {}
+      });
+
+      this.currentPendGroup.loadShopList();
+    });
+  }
   addPreviousPickInfoIfExists(shopList){
     for(let i of Object.keys(shopList)){
       let transaction = shopList[i].raw;
@@ -182,6 +199,25 @@ export class shopping {
 
     this.updatePickedCount();  //async call to the user-metrics tracking views
 
+    v3.getCurrentUser()
+        .then(() => {
+          let request = v3.getRequest('picking/current_unpicked');
+
+          request.onSuccess((response) => {
+
+            let groups = [];
+
+            for (let groupData of response) {
+              const group = new PendGroup(groupData);
+              groups.push(group);
+            }
+
+            this.groups = groups;
+          });
+
+        });
+
+    return;
     this.db.account.picking['post']({action:'refresh'}).then(res =>{
       this.groups = res;
     })
@@ -243,9 +279,13 @@ export class shopping {
     this.orderSelectedToShop = true;
     this.groupName = groupName;
 
-    var start = Date.now();
+    this.loadGroupAndStartShopping(groupName);
 
-     this.db.account.picking.post({groupName:groupName, action:'load'}).then(res =>{
+
+  }
+
+  legacySelectGroup(){
+    this.db.account.picking.post({groupName:groupName, action:'load'}).then(res =>{
       console.log("result of loading: "+res.length, (Date.now() - start)/1000, 'seconds')
       console.log(res);
 
@@ -257,22 +297,21 @@ export class shopping {
       this.filter = {} //after new transactions set, we need to set filter so checkboxes don't carry over
       this.initializeShopper();
       //this has to come after  initialize shopper
-       if(res.groupData && res.groupData.baskets && res.groupData.baskets.length) {
-         this.basketSaved = true;
-         this.addBasketToShoppingList(res.groupData.baskets.slice(-1));
-       }
-    })
-    .catch(err => {
-      if(( ~ err.message.indexOf('Unexpected end of JSON input')) || ( ~ err.message.indexOf('Unexpected EOF'))){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
-        var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
-        this.refreshPendedGroups();
-        this.resetShopper();
-      } else {
-        console.log("error loading order:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
-        return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+      if(res.groupData && res.groupData.baskets && res.groupData.baskets.length) {
+        this.basketSaved = true;
+        this.addBasketToShoppingList(res.groupData.baskets.slice(-1));
       }
     })
-
+        .catch(err => {
+          if(( ~ err.message.indexOf('Unexpected end of JSON input')) || ( ~ err.message.indexOf('Unexpected EOF'))){ //happens if you click a group that doesnt have any more items available to pick (maybe you havent refreshed recently)
+            var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
+            this.refreshPendedGroups();
+            this.resetShopper();
+          } else {
+            console.log("error loading order:", JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}))
+            return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({status: err.status, message:err.message, reason: err.reason, stack:err.stack}));
+          }
+        });
   }
 
   //Display and set relavant variables to display a group
@@ -285,9 +324,6 @@ export class shopping {
     } else {
       this.setNextToNext()
     }
-
-    this.addBasket(this.shoppingIndex)
-
   }
 
   //Reset variables that we don't want to perserve from one order to the next
@@ -478,45 +514,27 @@ export class shopping {
 //------------------Button controls-------------------------
 
   saveBasketNumber() {
-  console.log('saveBasketNumber called');
+    console.log('saveBasketNumber called');
+    console.trace();
 
     //this.basketSaved = true
-    this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber
 
-      if ((this.shopList[this.shoppingIndex].extra.basketLetter != 'G') && (this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0])) {
-        this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0]
-      }
+    const basket = {
+      letter: this.currentBasket.letter,
+      number: this.currentBasket.number,
+      fullBasket: this.currentBasket.letter + this.currentBasket.number
+    };
 
-      this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
 
-      let extra = this.shopList[this.shoppingIndex].extra;
+    //this.currentPendGroup.saveBasket(basket.fullBasket);
 
-      const basket = {
-        letter: extra.basketLetter,
-        number: extra.basketNumber,
-        fullBasket: extra.fullBasket
-      };
+    if (basket.letter !== 'G' && basket.number[0]) {
+      this.currentCart = basket.number[0]
+    }
 
-      let idData = {
-        _id: this.shopList[this.shoppingIndex].raw._id,
-        _rev: this.shopList[this.shoppingIndex].raw._rev
-      };
+    this.currentBasket = basket;
+    this.basketSelected = true;
 
-      this.db.account.picking.post({
-        id: idData,
-        groupName: this.groupName,
-        basket: basket,
-        action: 'save_basket_number'
-      }).then(res => {
-          let results = this.updateRevs([res]);
-
-        if (Object.keys(results).length > 0) {
-          this.basketSaved = true;
-          this.addBasketToShoppingList(basket);
-        }
-      });
-
-    this.setShoppingIndex(this.currentShoppingIndex());
   }
 
   currentShoppingIndex(){
@@ -530,6 +548,8 @@ export class shopping {
   gatherBaskets(generic){
     let list_of_baskets = ''
     for(var i = 0; i < this.shopList.length; i++){
+      console.log('need to fix this');
+      continue;
       if(
         (this.shopList[i].extra.fullBasket)
         && (!(~ list_of_baskets.indexOf(this.shopList[i].extra.fullBasket)))
@@ -539,17 +559,7 @@ export class shopping {
     this.currentGenericBaskets = list_of_baskets
   }
 
-  addBasket(index){
-    if(!this.shopList[index])
-      return;
 
-    //this.focusInput('#basket_number_input') //This wasn't quite working, but autofocus works if you click basket, just not on the first screen which is frustrating
-    this.basketSaved = false;
-
-    if(this.shopList[index].extra.basketLetter != 'G') {
-      this.shopList[index].extra.basketNumber = this.currentCart
-    }
-  }
 
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -557,9 +567,10 @@ export class shopping {
 
   moveShoppingForward(){
 
-    if((this.getOutcome(this.shopList[this.shoppingIndex].extra) == 'missing') && (this.shopList[this.shoppingIndex].extra.saved != 'missing')){
+    const currentOutcome = this.currentPendGroup.getOutcome(this.shoppingIndex);
+    this.formComplete = false; //to disable the button
+    if(currentOutcome === 'missing' && this.shopList[this.shoppingIndex].saved !== 'missing'){
 
-      this.formComplete = false; //to disable the button
       this.setNextToLoading()
 
       console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic)
@@ -622,53 +633,19 @@ export class shopping {
   }
 
   advanceShopping(){
-    if(this.shoppingIndex == this.shopList.length-1){ //then we're finished
+    this.formComplete = false; //to disable the button
 
-      //if(this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing') this.resetShopper()
+    console.log('saving transaction', this.shopList[this.shoppingIndex]);
+    console.log(this.currentPendGroup);
+    this.currentPendGroup.saveShoppingResults(this.shoppingIndex, this.currentBasket,() => {
 
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(_=>{
-        //remove this group
+      if(this.shoppingIndex >= this.shopList.length-1){
         this.refreshPendedGroups();
         this.loadGroupSelectionPage();
-        this.resetShopper();//put in here to avoid race condition of reloading before the saving completes
-      });
-
-      //cut it out of the list, just until it refreshes anymay
-      for(var i = this.groups.length -1 ; i >= 0; i--){
-        if(this.groups[i].name == this.shopList[this.shoppingIndex].raw.next[0].pended.group){
-          this.groups.splice(i,1)
-          break;
-        }
+        this.resetShopper();
       }
-
- //and send them back to the list, which'll update while they're there
-
-    }
-    else {
-
-      if(!this.shopList[this.shoppingIndex + 1].extra.fullBasket){
-        if(this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic)
-        {
-          this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter //push that forward if they changed it at some point
-          this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket
-        }
-        else
-          {
-          this.addBasket(this.shoppingIndex + 1)
-        }
-      }
-      else if(this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic)
-      {
-        this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic)
-      }
-
-       //save at each screen. still keeping shoping list updated, so if we move back and then front again, it updates
-console.log('saving transaction', this.shopList[this.shoppingIndex]);
-      this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(() => {
-        this.setShoppingIndex(this.shoppingIndex + 1);
-      });
-    }
-
+      else this.setShoppingIndex(this.shoppingIndex + 1);
+    });
   }
 
   addBasketToShoppingList(basket){
@@ -696,7 +673,7 @@ console.log('saving transaction', this.shopList[this.shoppingIndex]);
     }
 
     const url = `#/picking/${this.groupName}/step/${stepNumber}`;
-
+console.log(url);
     if(this.pickingOnloadFired === true){
       history.pushState(null, null, url);
     }
@@ -731,7 +708,24 @@ console.log('saving transaction', this.shopList[this.shoppingIndex]);
     }
   }
 
+  initShoppingIndexParameters(){
+    this.currentBasket = this.currentPendGroup.prepShoppingIndex(this.shoppingIndex);
+    this.basketSelected = this.currentBasket !== null;
+
+    if(this.shoppingIndex === this.shopList.length-1){
+      this.setNextToSave()
+    } else {
+      this.setNextToNext()
+    }
+
+    this.formComplete = this.currentBasket !== null
+        && this.shopList[this.shoppingIndex].outcomeText !== null
+        && typeof this.shopList[this.shoppingIndex].outcomeText !== 'undefined';
+  }
+
   setShoppingIndex(index){
+    console.log(index);
+    console.trace();
 
     if(index !== 0 && !index){
       alert('no index');
@@ -749,39 +743,14 @@ console.log('saving transaction', this.shopList[this.shoppingIndex]);
     let goToIndex = () => {
       console.log(index);
       this.shoppingIndex = index;
-      console.log(this.groupData);
-
-      console.log(this.shopList[index]);
-      console.log(this.shopList[index].raw.drug.generic);
-
-      let genericName = this.shopList[index].raw.drug.generic.replace(/\s/g, '');
-
-      if(this.basketSaved !== true){
-        this.basketSaved = this.groupData.baskets && this.groupData.baskets.length
-            && this.groupData.basketsByGeneric[genericName] && this.groupData.basketsByGeneric[genericName].length;
-      }
-
-      console.log('picking.basketSaved ', this.basketSaved);
 
       //if they have already chosen as basket take them to the first incomplete step
       if(index < 0 && this.basketSaved){
         this.shoppingIndex = 1;
       }
 
-      if(this.basketSaved && this.groupData.basketsByGeneric && this.groupData.basketsByGeneric[genericName]){
-        let basket = this.groupData.basketsByGeneric[genericName].slice(-1);
-        this.addBasketToShoppingList(basket);
-      }
-      if(this.shoppingIndex === this.shopList.length-1){
-        this.setNextToSave()
-      } else {
-        this.setNextToNext()
-      }
-
-      this.formComplete = !!(this.shopList[this.shoppingIndex].extra.fullBasket) && this.someOutcomeSelected(this.shopList[this.shoppingIndex].extra.outcome) //if returning to a complete page, don't grey out the next/save button
-console.log(this.formComplete);
+      this.initShoppingIndexParameters();
       this.setPickingStepUrl(this.shoppingIndex+1);
-
     };
 
 //when the group loads, go to the first incomplete step, don't go to the basket page (unless no steps are complete)
@@ -810,7 +779,6 @@ console.log(this.formComplete);
 
   moveShoppingBackward(){
     if(this.shoppingIndex == 0) return //shouldn't appear, but extra protection :)
-    if(this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic)
     this.setShoppingIndex(this.shoppingIndex -= 1);
     this.formComplete = true //you can't have left a screen if it wasn't complete
   }
@@ -855,16 +823,9 @@ console.log(this.formComplete);
   //of the transaction, to be processed after the order is complete and saves all results
   selectShoppingOption(key){
     //console.log(key)
-    if(this.shopList[this.shoppingIndex].extra.outcome[key]) return //don't let thme uncheck, because radio buttons
+    this.currentPendGroup.setOutcome(this.shoppingIndex, key);
+console.log(this.shoppingIndex, this.shopList[this.shoppingIndex].outcome);
     this.formComplete = true;
-
-    for(let outcome_option in this.shopList[this.shoppingIndex].extra.outcome){
-      if(outcome_option !== key){
-         this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = false
-      } else {
-        this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = true
-      }
-    }
 
     if(key == 'missing'){
       this.setNextToNext()
@@ -896,6 +857,10 @@ console.log(this.formComplete);
 
   //shortcut to look at the outcome object and check if any values are set to true
   someOutcomeSelected(outcomeObj){
+    if(!outcomeObj){
+      return false;
+    }
+
     return ~Object.values(outcomeObj).indexOf(true)
   }
 

@@ -6,7 +6,17 @@ export function configure(aurelia) {
   aurelia.use
     .standardConfiguration()
     .plugin('aurelia-animator-css')
-    .globalResources('client/src/resources/value-converters')
+      .plugin('aurelia-http-client')
+    .globalResources([
+        'client/src/resources/value-converters',
+    ])
 
-  aurelia.start().then(a => a.setRoot('client/src/views/routes'));
+  aurelia.start().then(a => {
+      require('../../../../client/src/resources/v3/app.js');
+      window.v3 = new v3();
+
+
+
+      a.setRoot('client/src/views/routes');
+    });
 }

@@ -15,10 +15,23 @@ export class MdMenuCustomElement {
 
   //.trigger is needed in html rather than .delegate to make sure it is called before parent delegates that may have been attached first
   click($event) {
+      console.log($event);
     if ($event.target.tagName != 'INPUT' && ! $event.target.disabled)
       return true //needed to continue a propogation of an <a> link
 
-    $event.stopImmediatePropagation()
+    $event.stopImmediatePropagation();
+  }
+
+  openCloseButtonClick(){
+      //the click is an open event if the element doesn't have the 'is-visible' class
+      //if the element is already visible, then we're closing
+      const isOpenClick = !this.element.querySelector('.mdl-menu__container').classList.contains('is-visible');
+
+      const eventName = isOpenClick ? 'open' : 'close';
+
+      const event = new Event(eventName);
+
+      this.element.dispatchEvent(event);
   }
 
   setDisabled(li, disabled) {

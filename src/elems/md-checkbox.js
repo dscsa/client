@@ -10,12 +10,12 @@ export class MdCheckboxCustomElement {
     this.tabindex  = element.tabIndex
     this.taskQueue = taskQueue
     //Can't do this with <template click.delegate> since that overwrites authors delegate fn
-    element.addEventListener('click', e => this.disabled && e.stopPropagation())
+   // element.addEventListener('click', e => this.disabled && e.stopPropagation())
   }
 
-  //A click on input causes a UI change and then if aurelia is also listening for a
-  //click that causes a state change, then the two state changes cancel and it looks
-  //like the switch is locked.  Prevent this from happening.
+  // //A click on input causes a UI change and then if aurelia is also listening for a
+  // //click that causes a state change, then the two state changes cancel and it looks
+  // //like the switch is locked.  Prevent this from happening.
   stopPropogation() {
     return true
   }
@@ -34,7 +34,7 @@ export class MdCheckboxCustomElement {
 
   attached() {
     componentHandler.upgradeElement(this.label)
-    this.checkedChanged()
+    //this.checkedChanged()
     //this.disabledChanged() this appears to double the number of calls needed on load (34 items in shipment -> 68 calls)
   }
 }

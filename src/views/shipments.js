@@ -99,6 +99,8 @@ export class shipments {
 
   gatherShipments(params = {}){
 
+    v3.getRequest('shipments/senders');
+    v3.getRequest('shipments');
     let senderAccounts    = this.db.account.allDocs({keys:this.account.authorized, include_docs:true})
 
     let shipmentsReceived = this.db.shipment.query('account.to._id', {startkey:[this.account._id, this.shipmentDrawerYear.toString()+'\uffff'], endkey:[this.account._id, this.shipmentDrawerYear.toString()], descending:true, reduce:false, include_docs:true}) //Get all shipments to this account

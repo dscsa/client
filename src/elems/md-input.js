@@ -61,7 +61,10 @@ export class MdInputCustomElement {
       this.div.MaterialTextfield.checkValidity()
 
       if ( ! this.input.validity.valid)
-        console.log('invalid input:', this.input.value, this.input.pattern, this.input.validity)
+      {
+        //todo: fix after bin numbers are correct
+        //console.log('invalid input:', this.input.value, this.input.pattern, this.input.validity)
+      }
 
       this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', {bubbles:true})) //this is to trigger formCustomAttribute and others to reevaluate
     })

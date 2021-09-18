@@ -31,6 +31,7 @@ export class drugs {
 
   activate(params) {
 
+    v3.getRequest('account/formulary');
     addEventListener('keyup', this.scrollDrugs)
     return this.db.user.session.get()
     .then(session => {
