@@ -1,6 +1,43 @@
 # client
 Application that uses the RESTful API written with the Aurelia framework
 
+- Secuirty Group with port 5984 enabled
+- A OS/AMI that is supported by CouchDB (Ubuntu for consistency)
+- Install couchb
+- Test CouchDb
+- Install node
+- sudo mkdir /dscsa and cd /dscsa
+- Install dscsa/server
+- npm install pm2 -g && sudo pm2 start node_modules/server
+- Setup couchdb replication. databases->_replication->create document
+
+{
+  "user_ctx": {
+    "name": "admin",
+    "roles": [
+      "_admin",
+      "_reader",
+      "_writer"
+    ]
+  },
+  "source": {
+    "url": "http://<old_PRIVATE_ip>:5984/transaction",
+    "headers": {
+      "Authorization": "Basic YWRtaW46IVN0YW5mMHJk"
+    }
+  },
+  "target": {
+    "url": "http://<new_PRIVATE_ip>:5984/transaction",
+    "headers": {
+      "Authorization": "Basic YWRtaW46IVN0YW5mMHJk"
+    }
+  },
+  "create_target": false,
+  "continuous": true,
+  "owner": "admin"
+}
+
+
 Dependency structure
 ```
 Development > Server > Client > CSV, Pouch
