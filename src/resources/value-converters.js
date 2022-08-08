@@ -62,7 +62,7 @@ export class valueValueConverter {
 
     return transactions.reduce((total, transaction) => {
       if ( ! transaction.drug.price || ! transaction.qty) return 0
-      let price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0
+      let price = transaction.drug.price.goodrx || transaction.drug.price.nadac || transaction.drug.price.retail || 0
       let   qty = transaction.qty.to || transaction.qty.from || 0
       return total + qty * price
     }, 0).toFixed(decimals)
