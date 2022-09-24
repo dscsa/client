@@ -255,8 +255,9 @@ export class inventory {
     return transaction.bin && transaction.bin.length == 3
   }
 
+  //Prepack, New Aisle, Old Shelves
   isBin(term) { //unlike shipment page allow for B00* to search all sections within large B00 bin but don't include repacks
-    return /^[A-Za-z][0-6]?\d[\d*]$/.test(term)
+    return /[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d[\d*]|[A-Za-z][0-6]\d[\d*]/.test(term)
   }
 
   isExp(term) {
