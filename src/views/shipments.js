@@ -340,7 +340,6 @@ export class shipments {
         delete this.destroyedMessage
         this.snackbar.show(order.destroyedMessage)
       }, 500)
-      return true
     }
   }
 
@@ -357,29 +356,24 @@ export class shipments {
 
     //isChecked may have never alternated for a destroyed drug so need to check
     if(this.isWanted(order, transaction) == isChecked) {
-
         if( ! isChecked && transaction.qty.to > 0) {
-            transaction.highlighted = this.setDestroyedMessage(order)
+            this.setDestroyedMessage(order)
         }
-
         console.log('autoCheck unchanged', this.isWanted(order, transaction), isChecked, transaction)
 
-        return
-    }
-
-    if (isChecked) {
-      transaction.highlighted = this.setDestroyedMessage(order)
+    } else if (isChecked) {
+      this.setDestroyedMessage(order)
       console.log('autoCheck isChecked', transaction)
-    }
+      this.manualCheck($index)
 
-    if ( ! isChecked) {//manual check has not switched the boolean yet
+    } else if ( ! isChecked) {//manual check has not switched the boolean yet
       this.snackbar.show((order && order.verifiedMessage) || 'Drug is ordered')
       this.clearDestroyedMessage()
       console.log('autoCheck unChecked', transaction)
-      transaction.highlighted = false
+      this.manualCheck($index)
     }
 
-    this.manualCheck($index)
+    transaction.highlighted = this.destroyedMessage ? 'mdl-color-text--accent' : ''
   }
 
   manualCheck($index) {
