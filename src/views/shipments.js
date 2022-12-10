@@ -357,18 +357,25 @@ export class shipments {
 
     //isChecked may have never alternated for a destroyed drug so need to check
     if(this.isWanted(order, transaction) == isChecked) {
+
         if( ! isChecked && transaction.qty.to > 0) {
             transaction.highlighted = this.setDestroyedMessage(order)
         }
+
+        console.log('autoCheck unchanged', this.isWanted(order, transaction), isChecked, transaction)
+
         return
     }
 
-    if (isChecked)
+    if (isChecked) {
       transaction.highlighted = this.setDestroyedMessage(order)
+      console.log('autoCheck isChecked', transaction)
+    }
 
     if ( ! isChecked) {//manual check has not switched the boolean yet
       this.snackbar.show((order && order.verifiedMessage) || 'Drug is ordered')
       this.clearDestroyedMessage()
+      console.log('autoCheck unChecked', transaction)
       transaction.highlighted = false
     }
 

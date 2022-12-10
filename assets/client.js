@@ -4751,17 +4751,25 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       var order = this.getOrder(transaction);
 
       if (this.isWanted(order, transaction) == isChecked) {
+
         if (!isChecked && transaction.qty.to > 0) {
           transaction.highlighted = this.setDestroyedMessage(order);
         }
+
+        console.log('autoCheck unchanged', this.isWanted(order, transaction), isChecked, transaction);
+
         return;
       }
 
-      if (isChecked) transaction.highlighted = this.setDestroyedMessage(order);
+      if (isChecked) {
+        transaction.highlighted = this.setDestroyedMessage(order);
+        console.log('autoCheck isChecked', transaction);
+      }
 
       if (!isChecked) {
         this.snackbar.show(order && order.verifiedMessage || 'Drug is ordered');
         this.clearDestroyedMessage();
+        console.log('autoCheck unChecked', transaction);
         transaction.highlighted = false;
       }
 
