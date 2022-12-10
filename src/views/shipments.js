@@ -335,11 +335,13 @@ export class shipments {
   //this code puts a delay on the destroyed message and then clears it out if the user does type a "0"
   //an alternative would be wait to trigger autocheck until enter is pressed but this would delay all messages
   setDestroyedMessage(order) {
-    if (order && order.destroyedMessage && ! this.destroyedMessage)
+    if (order && order.destroyedMessage && ! this.destroyedMessage) {
       this.destroyedMessage = setTimeout(_ => {
         delete this.destroyedMessage
         this.snackbar.show(order.destroyedMessage)
       }, 500)
+      return true
+    }
   }
 
   clearDestroyedMessage() {
@@ -353,15 +355,21 @@ export class shipments {
     let isChecked   = transaction.isChecked
     let order       = this.getOrder(transaction)
 
-    if(this.isWanted(order, transaction) == isChecked)
-      return ! isChecked && transaction.qty.to > 0 && this.setDestroyedMessage(order) //isChecked may have never alternated for a destroyed drug so need to check
+    //isChecked may have never alternated for a destroyed drug so need to check
+    if(this.isWanted(order, transaction) == isChecked) {
+        if( ! isChecked && transaction.qty.to > 0) {
+            transaction.highlighted = this.setDestroyedMessage(order)
+        }
+        return
+    }
 
     if (isChecked)
-      this.setDestroyedMessage(order)
+      transaction.highlighted = this.setDestroyedMessage(order)
 
     if ( ! isChecked) {//manual check has not switched the boolean yet
       this.snackbar.show((order && order.verifiedMessage) || 'Drug is ordered')
       this.clearDestroyedMessage()
+      transaction.highlighted = false
     }
 
     this.manualCheck($index)
@@ -416,11 +424,18 @@ export class shipments {
   //TODO support up/down arrow keys to pick different transaction?
   autocompleteShortcuts($event) {
 
-    this.scrollSelect($event, this.drug, this.drugs, drug => this.drug = drug)
+    this.scrollSelect($event, this.drug, this.drugs, drug => {
+        this.scrolled = true
+        this.drug     = drug
+    })
 
     //Enter with a selected drug.  Force term to be falsey so a barcode scan which is entering digits does not trigger
     if ($event.which == 13) {//Barcode scan means search might not be done yet
-      Promise.resolve(this._search).then(_ => this.addTransaction(this.drug))
+      Promise.resolve(this._search).then(_ => {
+          //If more than 1 result, don't let folks accidentally add the wrong drug
+          if (this.scrolled || this.drugs.length == 1)
+            this.addTransaction(this.drug)
+      })
       return false //Enter was also triggering exp to qty focus
     }
 
@@ -465,11 +480,12 @@ export class shipments {
     transaction.shipment   = {_id:this.shipment._rev ? this.shipment._id : this.account._id}
 
     this.term = '' //Reset search's auto-complete
+    this.scrolled = false
 
     //Assume db query works.
     this.transactions.unshift(transaction) //Add the drug to the view
 
-    let order        = this.getOrder(transaction)
+    let order = this.getOrder(transaction)
 
     //We set current inventory when adding a new transaction.  This is a tradeoff of frequency vs accurracy.  This will be inaccurate
     //if user goes back and adjusts previous quantities to be higher since "updating" transaction would not trigger this code.  However,
