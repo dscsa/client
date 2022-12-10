@@ -112,7 +112,7 @@
         </div>
       </div>
       <div class="mdl-card__actions" style="text-align:center">
-        <md-button show.bind="type" click.delegate="selectInventory(type, term)">Show All Results</md-button>
+        <md-button show.bind="showMore" click.delegate="selectInventory(type, term)">Show All Results</md-button>
       </div>
     </div>
     <div md-shadow="2" class="mdl-card mdl-cell mdl-cell--9-col full-height">
@@ -275,7 +275,7 @@
               <th style="width:48px"></th>
             </tr>
           </thead>
-          <tr name = "pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter:term" input.delegate="saveAndReconcileTransaction(transaction) & debounce:1000">
+          <tr class="${transaction.highlighted}" name="pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter:term" input.delegate="saveAndReconcileTransaction(transaction) & debounce:1000">
             <td style="padding:0">
               <md-checkbox name = "pro_transaction_checkbox" click.delegate="toggleCheck(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
             </td>
