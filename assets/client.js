@@ -2072,1085 +2072,6 @@ define('client/src/views/index',['exports'], function (exports) {
     });
   }
 });
-define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.join = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var join = exports.join = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router, _aureliaHttpClient.HttpClient), _dec(_class = function () {
-    function join(db, router, http) {
-      _classCallCheck(this, join);
-
-      this.db = db;
-      this.router = router;
-      this.http = http;
-
-      this.account = {
-        name: '',
-        license: '',
-        street: '',
-        city: '',
-        state: '',
-        zip: '',
-        ordered: {}
-      };
-
-      this.user = {
-        name: { first: '', last: '' },
-        phone: ''
-      };
-      this.canActivate = _helpers.canActivate;
-    }
-
-    join.prototype.join = function join() {
-      var _this = this;
-
-      this.disabled = true;
-      this.user.account = { _id: this.account.phone };
-
-      this.db.user.post(this.user).then(function (res) {
-        console.log('this.db.user.post success', res, _this.user);
-        return _this.db.account.post(_this.account);
-      }).then(function (res) {
-        console.log('this.db.account.post success', res, _this.account);
-        return new Promise(function (resolve) {
-          return setTimeout(resolve, 5000);
-        });
-      }).then(function (_) {
-        return _this.db.user.session.post(_this.user);
-      }).then(function (loading) {
-        console.log('this.db.user.session.post success', loading);
-
-        _this.loading = loading.resources;
-        _this.progress = loading.progress;
-
-        return Promise.all(loading.syncing);
-      }).then(function (_) {
-        console.log('join success', _);
-        return _this.router.navigate('shipments');
-      }).catch(function (err) {
-        _this.disabled = false;
-
-        err.account = _this.account;
-        err.user = _this.user;
-
-        if (err.message == "Document update conflict") err.message = "phone number must be unique";
-
-        _this.snackbar.error('Join failed', err);
-      });
-    };
-
-    return join;
-  }()) || _class);
-});
-define('client/src/views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.login = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var login = exports.login = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router), _dec(_class = function () {
-    function login(db, router) {
-      _classCallCheck(this, login);
-
-      this.db = db;
-      this.router = router;
-      this.phone = '';
-      this.password = '';
-      this.canActivate = _helpers.canActivate;
-    }
-
-    login.prototype.login = function login() {
-      var _this = this;
-
-      this.db.user.session.post({ phone: this.phone, password: this.password }).then(function (loading) {
-        _this.disabled = true;
-
-        _this.loading = loading.resources;
-        _this.progress = loading.progress;
-
-        return Promise.all(loading.syncing);
-      }).then(function (resources) {
-        _this.router.navigate('picking');
-      }).catch(function (err) {
-        _this.disabled = false;
-        _this.snackbar.error('Login failed', err);
-      });
-    };
-
-    return login;
-  }()) || _class);
-});
-define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.pendedFilterValueConverter = exports.shopping = undefined;
-
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-    return typeof obj;
-  } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-  };
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var shopping = exports.shopping = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router), _dec(_class = function () {
-    function shopping(db, router) {
-      _classCallCheck(this, shopping);
-
-      window.addEventListener('popstate', function (event) {
-        console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
-
-        var groupAndStep = document.location.href.split('picking/')[1];
-        if (groupAndStep) {
-          var _groupAndStep$split = groupAndStep.split('step/'),
-              group = _groupAndStep$split[0],
-              step = _groupAndStep$split[1];
-
-          console.log(group, step);
-        }
-      });
-
-      this.db = db;
-      this.router = router;
-
-      this.groups = [];
-      this.shopList = [];
-      this.shoppingIndex = -1;
-      this.nextButtonText = '';
-      this.orderSelectedToShop = false;
-      this.formComplete = false;
-      this.basketSaved = false;
-      this.currentCart = '';
-      this.basketOptions = ['S', 'R', 'G', 'B'];
-      this.focusInput = _helpers.focusInput;
-
-      this.canActivate = _helpers.canActivate;
-      this.currentDate = _helpers.currentDate;
-      this.clearNextProperty = _helpers.clearNextProperty;
-    }
-
-    shopping.prototype.deactivate = function deactivate() {};
-
-    shopping.prototype.canDeactivate = function canDeactivate() {
-      return confirm('Confirm you want to leave page');
-    };
-
-    shopping.prototype.activate = function activate(params) {
-      var _this = this;
-
-      this.groupName = params.groupName;
-
-      if (this.groupName) {
-        this.orderSelectedToShop = true;
-      }
-
-      return this.db.user.session.get().then(function (session) {
-        console.log('user acquired');
-        _this.user = { _id: session._id };
-        _this.account = { _id: session.account._id };
-
-        _this.db.user.get(_this.user._id).then(function (user) {
-          _this.router.routes[2].navModel.setTitle(user.name.first);
-        });
-
-        if (!_this.account.hazards) _this.account.hazards = {};
-        console.log('about to call refresh first time');
-        _this.refreshPendedGroups();
-
-        if (_this.isValidGroupName()) {
-          return _this.db.account.picking.post({ groupName: params.groupName, action: 'group_info' }).then(function (res) {
-            console.log('GROUP LOADED:' + params.groupName, 'stepNumber', params.stepNumber, res);
-
-            if (!res.groupData || !res.shopList) {
-              console.error('activate()  ! res.shopList || ! res.groupData', res);
-              throw res;
-            }
-
-            _this.shopList = res.shopList;
-            _this.groupData = res.groupData;
-            _this.groupLoaded = true;
-
-            _this.requestedPickingStep = params.stepNumber ? params.stepNumber : _this.currentShoppingIndex() + 1;
-
-            _this.manageShoppingIndex();
-          });
-        } else {
-          _this.groupLoaded = false;
-          console.error('activate() group loaded is false', params);
-        }
-      }).catch(function (err) {
-        console.log("error getting user session:", err);
-        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.addPreviousPickInfoIfExists = function addPreviousPickInfoIfExists(shopList) {
-      for (var _iterator = Object.keys(shopList), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-        var _ref;
-
-        if (_isArray) {
-          if (_i >= _iterator.length) break;
-          _ref = _iterator[_i++];
-        } else {
-          _i = _iterator.next();
-          if (_i.done) break;
-          _ref = _i.value;
-        }
-
-        var i = _ref;
-
-        var transaction = shopList[i].raw;
-
-        if (transaction.next && transaction.next[0]) {
-          var next = transaction.next;
-
-          if (next[0].pickedArchive && next[0].pickedArchive.user._id === this.user._id) {
-            next[0].picked = next[0].pickedArchive;
-            transaction.next = next;
-          }
-        }
-      }
-
-      return shopList;
-    };
-
-    shopping.prototype.updatePickedCount = function updatePickedCount() {
-      var _this2 = this;
-
-      var date = new Date();
-
-      var _date$toJSON$split$0$ = date.toJSON().split('T')[0].split('-'),
-          year = _date$toJSON$split$0$[0],
-          month = _date$toJSON$split$0$[1],
-          day = _date$toJSON$split$0$[2];
-
-      this.db.transaction.query('picked-by-user-from-shipment', { startkey: [this.account._id, this.user._id, year, month, day], endkey: [this.account._id, this.user._id, year, month, day, {}] }).then(function (res) {
-        console.log(res);
-        _this2.pickedCount = res.rows[0] ? res.rows[0].value[0].count : 0;
-      });
-    };
-
-    shopping.prototype.firstUnsavedIndex = function firstUnsavedIndex() {
-      var max = 0;
-
-      for (var _iterator2 = Object.entries(this.shopList), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-        var _ref2;
-
-        if (_isArray2) {
-          if (_i2 >= _iterator2.length) break;
-          _ref2 = _iterator2[_i2++];
-        } else {
-          _i2 = _iterator2.next();
-          if (_i2.done) break;
-          _ref2 = _i2.value;
-        }
-
-        var _ref3 = _ref2,
-            index = _ref3[0],
-            transaction = _ref3[1];
-
-
-        if (!transaction.extra || !transaction.extra.saved) {
-          console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList);
-          return max;
-        }
-
-        max++;
-      }
-
-      console.log('firstUnsavedIndex ALL SAVED', max, 'of', this.shopList.length, this.shopList);
-      return null;
-    };
-
-    shopping.prototype.manageShoppingIndex = function manageShoppingIndex() {
-      var firstUnsavedIndex = this.firstUnsavedIndex();
-
-      if (firstUnsavedIndex == null) {
-        this.loadGroupSelectionPage();
-      } else if (this.requestedPickingStep > firstUnsavedIndex + 1) {
-        console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
-        this.requestedPickingStep = firstUnsavedIndex + 1;
-        this.setShoppingIndex(firstUnsavedIndex);
-        alert('Please complete step ' + this.requestedPickingStep + ' first');
-      } else if (this.requestedPickingStep <= this.shopList.length && this.requestedPickingStep > 0) {
-        console.log('manageShoppingIndex m1', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
-        this.setShoppingIndex(this.requestedPickingStep - 1);
-      } else if (this.requestedPickingStep === 'basket') {
-        console.log('manageShoppingIndex m2', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
-        this.basketSaved = false;
-        this.initializeShopper();
-      } else if (this.groupLoaded === true) {
-        console.log('manageShoppingIndex m3', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
-        this.setShoppingIndex(0);
-      }
-    };
-
-    shopping.prototype.refreshPendedGroups = function refreshPendedGroups() {
-      var _this3 = this;
-
-      console.log('refreshing');
-
-      this.updatePickedCount();
-
-      this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
-        _this3.groups = res;
-      }).catch(function (err) {
-        console.log("error refreshing pended groups:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.unlockGroup = function unlockGroup(groupName, el) {
-      var _this4 = this;
-
-      for (var i = 0; i < this.groups.length; i++) {
-        if (this.groups[i].name == groupName) this.groups[i].locked = 'unlocking';
-      }
-
-      var start = Date.now();
-
-      this.db.account.picking.post({ groupName: groupName, action: 'unlock' }).then(function (res) {
-        _this4.groups = res;
-      }).catch(function (err) {
-        console.log("error unlocking order:", (Date.now() - start) / 1000, 'seconds', JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.navigate = function navigate(groupName, stepNumber) {
-
-      var previousStepNumber = stepNumber - 1;
-      this.groupName = groupName;
-
-      if (previousStepNumber === 0) {}
-
-      this.router.navigate('picking/' + groupName + '/step/' + stepNumber);
-
-      return true;
-    };
-
-    shopping.prototype.getOutcomeName = function getOutcomeName(outcomeObject) {
-      var match = Object.entries(outcomeObject).filter(function (entry) {
-        return entry[1] == true ? entry[1] : null;
-      });
-
-      return match.length ? match[0][0] : null;
-    };
-
-    shopping.prototype.selectGroup = function selectGroup(groupName, isLocked, isLockedByCurrentUser) {
-      var _this5 = this;
-
-      console.log('locking status on select', groupName, isLocked, isLockedByCurrentUser);
-
-      if (isLocked && !isLockedByCurrentUser || groupName.length === 0) return null;
-
-      this.groupLoaded = false;
-      this.orderSelectedToShop = true;
-      this.groupName = groupName;
-
-      var start = Date.now();
-
-      this.db.account.picking.post({ groupName: groupName, action: 'load' }).then(function (res) {
-        console.log("selectGroup: result of loading: " + res.length, (Date.now() - start) / 1000, 'seconds');
-        console.log('selectGroup:', res, 'shippingIndex', _this5.shippingIndex);
-
-        if (!res.shopList || !res.groupData) {
-          console.error('selectGroup() ! res.shopList || ! res.groupData', res);
-          throw res;
-        }
-
-        _this5.shopList = res.shopList;
-        _this5.groupData = res.groupData;
-        _this5.pendedFilter = '';
-        _this5.filter = {};
-
-        var currentShoppingIndex = _this5.currentShoppingIndex();
-
-        _this5.setPickingStepUrl(currentShoppingIndex + 1);
-
-        if (currentShoppingIndex == 0) {
-          _this5.initializeShopper();
-        }
-
-        var genericName = _this5.shopList[currentShoppingIndex].raw.drug.generic.replace(/\s/g, '');
-
-        if (_this5.basketSaved && _this5.groupData.basketsByGeneric && _this5.groupData.basketsByGeneric[genericName]) {
-          var basket = _this5.groupData.basketsByGeneric[genericName].slice(-1);
-          _this5.addBasketToShoppingList(basket);
-          _this5.basketSaved = true;
-        }
-      }).catch(function (err) {
-        if (~err.message.indexOf('Unexpected end of JSON input') || ~err.message.indexOf('Unexpected EOF')) {
-          var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
-          _this5.refreshPendedGroups();
-          _this5.resetShopper();
-        } else {
-          console.log("error loading order:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-          return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        }
-      });
-    };
-
-    shopping.prototype.initializeShopper = function initializeShopper() {
-
-      console.log('initializeShopper before:', 'shoppingIndex', this.shoppingIndex, 'groupLoaded', this.groupLoaded, 'shopList', this.shopList);
-
-      this.shoppingIndex = this.currentShoppingIndex();
-      this.groupLoaded = true;
-
-      if (this.shoppingIndex + 1 === this.shopList.length) {
-        this.setNextToSave();
-      } else {
-        this.setNextToNext();
-      }
-
-      this.addBasket(this.shoppingIndex);
-    };
-
-    shopping.prototype.resetShopper = function resetShopper() {
-      this.orderSelectedToShop = false;
-      this.formComplete = false;
-      this.updatePickedCount();
-    };
-
-    shopping.prototype.updateRevs = function updateRevs(res) {
-      var _this6 = this;
-
-      var results = {};
-      res.forEach(function (transaction) {
-        results[transaction._id || transaction.id] = transaction;
-      });
-
-      this.shopList.forEach(function (shopListItem, index) {
-        if (results[shopListItem.raw._id]) {
-          _this6.shopList[index].raw._rev = results[shopListItem.raw._id].rev;
-          console.log(shopListItem.raw._id + ' => ' + shopListItem.raw._rev);
-        }
-      });
-
-      return results;
-    };
-
-    shopping.prototype.saveShoppingResults = function saveShoppingResults(arr_enriched_transactions, key) {
-      var _this7 = this;
-
-      var transactions_to_save = this.prepResultsToSave(arr_enriched_transactions, key);
-
-      console.log("attempting to save these transactions", transactions_to_save);
-      var startTime = new Date().getTime();
-
-      if (!transactions_to_save || !transactions_to_save.length) {
-        console.log('nothing to save');
-        return Promise.resolve();
-      }
-
-      return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-        var completeTime = new Date().getTime();
-        var results = _this7.updateRevs(res);
-        console.log("save (" + key + ") results of saving in " + (completeTime - startTime) + " ms", results);
-      }).catch(function (err) {
-
-        var completeTime = new Date().getTime();
-        console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-
-        if (err.status == 0) {
-
-          console.log("going to try and save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save));
-
-          return _this7.delay(3000).then(function (_) {
-
-            console.log("waiting finished, sending again");
-
-            return _this7.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-              var finalTime = new Date().getTime();
-              console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
-            }).catch(function (err) {
-              console.log("saving: empty object error the second time");
-              return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-            });
-          });
-        } else {
-
-          _this7.snackbar.error('Error loading/saving. Contact Adam', err);
-          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        }
-      });
-    };
-
-    shopping.ifExists = function ifExists(obj, path) {
-      var currentNode = obj;
-      path = path.split('.');
-
-      for (var _iterator3 = path, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-        var _ref4;
-
-        if (_isArray3) {
-          if (_i3 >= _iterator3.length) break;
-          _ref4 = _iterator3[_i3++];
-        } else {
-          _i3 = _iterator3.next();
-          if (_i3.done) break;
-          _ref4 = _i3.value;
-        }
-
-        var part = _ref4;
-
-        currentNode = currentNode[part];
-
-        if (!currentNode) break;
-      }
-
-      return currentNode;
-    };
-
-    shopping.outcomeChanged = function outcomeChanged(transaction, outcome) {
-      var data = transaction.next[0];
-
-      console.log('comparing outcomes', outcome, shopping.ifExists(data, 'pickedArchive.matchType'));
-
-      if (!data.picked || !data.pickedArchive) {
-        return true;
-      }
-
-      if (data && data.picked && data.pickedArchive) {
-        return outcome !== data.pickedArchive.matchType;
-      }
-
-      return false;
-    };
-
-    shopping.canChangeOutcome = function canChangeOutcome(transaction) {
-      var data = transaction.next[0];
-
-      if (data.pickedArchive) {
-        return data.pickedArchive.matchType !== 'missing';
-      }
-
-      return true;
-    };
-
-    shopping.prototype.prepResultsToSave = function prepResultsToSave(arr_enriched_transactions, key) {
-
-      if (arr_enriched_transactions.length == 0) {
-        console.log('no transactions to save');
-        return;
-      }
-
-      var transactions_to_save = [];
-
-      for (var i = 0; i < arr_enriched_transactions.length; i++) {
-
-        var reformated_transaction = arr_enriched_transactions[i].raw;
-        var next = reformated_transaction.next;
-
-        if (next[0]) {
-          if (key == 'shopped') {
-            var outcome = this.getOutcome(arr_enriched_transactions[i].extra);
-
-            if (!shopping.canChangeOutcome(reformated_transaction)) {
-              console.log(reformated_transaction._id, 'Outcome === missing. Updates not allowed.');
-              continue;
-            }
-
-            if (!shopping.outcomeChanged(reformated_transaction, outcome)) {
-              console.log(reformated_transaction._id, 'Same outcome. Not saving.');
-              continue;
-            }
-
-            next[0].picked = {
-              _id: new Date().toJSON(),
-              basket: arr_enriched_transactions[i].extra.fullBasket,
-              repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from,
-              matchType: outcome,
-              user: this.user
-            };
-
-            next[0].pickedArchive = next[0].picked;
-          } else if (key == 'unlock') {
-
-            delete next[0].picked;
-          } else if (key == 'lockdown') {
-
-            next[0].picked = {};
-          }
-        }
-
-        reformated_transaction.next = next;
-        transactions_to_save.push(reformated_transaction);
-      }
-
-      if (!transactions_to_save.length) {
-        console.log('no transactions to save');
-        return;
-      }
-
-      return transactions_to_save;
-    };
-
-    shopping.prototype.saveBasketNumber = function saveBasketNumber() {
-      var _this8 = this;
-
-      console.log('saveBasketNumber called', this.shoppingIndex, this.shopList[this.shoppingIndex], this.shopList);
-
-      this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber;
-
-      if (this.shopList[this.shoppingIndex].extra.basketLetter != 'G' && this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0]) {
-        this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0];
-      }
-
-      if (this.shopList[this.shoppingIndex].raw) this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
-
-      var extra = this.shopList[this.shoppingIndex].extra;
-
-      var basket = {
-        letter: extra.basketLetter,
-        number: extra.basketNumber,
-        fullBasket: extra.fullBasket
-      };
-
-      var idData = {
-        _id: this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._id,
-        _rev: this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._rev
-      };
-
-      this.db.account.picking.post({
-        id: idData,
-        groupName: this.groupName,
-        basket: basket,
-        action: 'save_basket_number'
-      }).then(function (res) {
-        var results = _this8.updateRevs([res]);
-
-        if (Object.keys(results).length > 0) {
-          _this8.basketSaved = true;
-          _this8.addBasketToShoppingList(basket);
-        }
-      });
-
-      this.setShoppingIndex(this.currentShoppingIndex());
-    };
-
-    shopping.prototype.currentShoppingIndex = function currentShoppingIndex() {
-
-      console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, _typeof(this.shoppingIndex), 'shopListMaxIndex', this.shopList.length, 'groupData', this.groupData, 'shopList', this.shopList);
-
-      if (typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopList.length - 1) {
-        console.log('currentShoppingIndex provided', this.shoppingIndex, this.shopList);
-        return this.shoppingIndex;
-      }
-
-      var firstUnsavedIndex = this.firstUnsavedIndex();
-      console.log('currentShoppingIndex firstUnsavedIndex', 'groupData', this.groupData, 'shopList', this.shopList, 'firstUnsavedIndex', firstUnsavedIndex);
-      return firstUnsavedIndex;
-    };
-
-    shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
-      var list_of_baskets = '';
-      for (var i = 0; i < this.shopList.length; i++) {
-        if (this.shopList[i].extra.fullBasket && !~list_of_baskets.indexOf(this.shopList[i].extra.fullBasket) && (!this.shopList[i].raw || this.shopList[i].raw.drug.generic == generic)) list_of_baskets += ',' + this.shopList[i].extra.fullBasket;
-      }
-      this.currentGenericBaskets = list_of_baskets;
-    };
-
-    shopping.prototype.addBasket = function addBasket(index) {
-      if (!this.shopList || !this.shopList[index]) {
-        console.error('addBasket() ! res.shopList || ! res.groupData', this.shopList, index);
-        return;
-      }
-
-      this.basketSaved = false;
-
-      if (this.shopList[index].extra.basketLetter != 'G') {
-        this.shopList[index].extra.basketNumber = this.currentCart;
-      }
-    };
-
-    shopping.prototype.delay = function delay(ms) {
-      return new Promise(function (resolve) {
-        return setTimeout(resolve, ms);
-      });
-    };
-
-    shopping.prototype.moveShoppingForward = function moveShoppingForward() {
-      var _this9 = this;
-
-      if (this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing' || this.shopList[this.shoppingIndex].extra.saved == 'missing') {
-        return this.advanceShopping();
-      }
-
-      this.formComplete = false;
-      this.setNextToLoading();
-
-      console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
-
-      this.db.account.picking['post']({
-        groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group,
-        action: 'missing_transaction',
-        ndc: this.shopList[this.shoppingIndex].raw.drug._id,
-        generic: this.shopList[this.shoppingIndex].raw.drug.generic,
-        qty: this.shopList[this.shoppingIndex].raw.qty.to,
-        repackQty: this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty
-      }).then(function (res) {
-
-        if (res.length > 0) {
-
-          _this9.shopList[_this9.shoppingIndex].extra.saved = 'missing';
-          _this9.groupData.numTransactions += res.length;
-
-          for (var j = 0; j < res.length; j++) {
-
-            var n = _this9.shoppingIndex - (_this9.shopList[_this9.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
-            if (n < 0) n = 0;
-            var inserted = false;
-
-            for (n; n < _this9.shopList.length; n++) {
-
-              if (_this9.shopList[n].raw.drug.generic == res[j].raw.drug.generic) {
-                _this9.shopList[n].extra.genericIndex.relative_index[1]++;
-              } else {
-                res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
-                _this9.shopList.splice(n, 0, res[j]);
-                inserted = true;
-                n = _this9.shopList.length;
-              }
-            }
-
-            if (!inserted) {
-              res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
-              _this9.shopList.push(res[j]);
-            }
-          }
-        } else {
-          console.log("couldn't find item with same or greater qty to replace this");
-        }
-
-        _this9.advanceShopping();
-      }).catch(function (err) {
-        console.log("error compensating for missing:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.advanceShopping = function advanceShopping() {
-      var _this10 = this;
-
-      if (this.shoppingIndex + 1 === this.shopList.length) {
-
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
-
-          console.log('advanceShopping completed', _);
-
-          _this10.resetShopper();
-          _this10.unlockGroup(_this10.shopList[_this10.shoppingIndex].raw.next[0].pended.group);
-          _this10.refreshPendedGroups();
-          _this10.loadGroupSelectionPage();
-        });
-
-        for (var i = this.groups.length - 1; i >= 0; i--) {
-          if (this.groups[i].name == this.shopList[this.shoppingIndex].raw.next[0].pended.group) {
-            this.groups.splice(i, 1);
-            break;
-          }
-        }
-      } else {
-
-        if (!this.shopList[this.shoppingIndex + 1].extra.fullBasket) {
-          if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
-            this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter;
-            this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket;
-          } else {
-            this.addBasket(this.shoppingIndex + 1);
-          }
-        } else if (this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex + 1].raw && this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
-          this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic);
-        }
-
-        console.log('saving transaction', this.shopList[this.shoppingIndex]);
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
-          console.log('saved transaction', _this10.shopList[_this10.shoppingIndex], _);
-          _this10.setShoppingIndex(_this10.shoppingIndex + 1);
-        });
-      }
-    };
-
-    shopping.prototype.addBasketToShoppingList = function addBasketToShoppingList(basket) {
-      var letter = void 0,
-          number = void 0;
-
-      if (basket.letter) {
-        letter = basket.letter;
-        number = basket.number;
-      } else {
-        letter = basket.slice(0, 1);
-        number = basket.slice(1);
-      }
-
-      this.shopList[this.shoppingIndex].extra.basketLetter = letter;
-      this.shopList[this.shoppingIndex].extra.basketNumber = number;
-      this.shopList[this.shoppingIndex].extra.fullBasket = letter + number;
-      this.basketSaved = true;
-    };
-
-    shopping.prototype.setPickingStepUrl = function setPickingStepUrl(stepNumber) {
-      if (!this.isValidGroupName()) {
-        console.log('not setting step ' + stepNumber);
-        return false;
-      }
-
-      var url = '#/picking/' + this.groupName + '/step/' + stepNumber;
-
-      if (this.pickingOnloadFired === true) {
-        history.pushState(null, null, url);
-      } else {
-        console.log('replacing state');
-        history.replaceState(null, null, url);
-        this.pickingOnloadFired = true;
-      }
-    };
-
-    shopping.prototype.isValidGroupName = function isValidGroupName() {
-      var isValid = !!this.groupName && this.groupName.length && this.groupName !== 'undefined';
-
-      return isValid;
-    };
-
-    shopping.prototype.loadGroupSelectionPage = function loadGroupSelectionPage() {
-
-      var reload = window.location.hash !== '#/picking';
-
-      history.replaceState(null, null, '#/picking');
-
-      if (reload === true) {
-        window.location.reload();
-      }
-    };
-
-    shopping.prototype.setShoppingIndex = function setShoppingIndex(index) {
-      var _this11 = this;
-
-      if (index !== 0 && !index) {
-        alert('no index');
-        console.trace();
-        return false;
-      }
-
-      if (!this.isValidGroupName()) {
-        this.loadGroupSelectionPage();
-        return false;
-      }
-
-      console.log('setShoppingIndex requesting : ' + this.groupName + '/' + (index + 1) + '/' + index + ' (group/step/shoppingIndex)');
-
-      var goToIndex = function goToIndex() {
-
-        console.log('goToIndex', 'new', index, 'old', _this11.shoppingIndex);
-        console.log('goToIndex', _this11.groupData);
-        console.log('goToIndex', _this11.shopList[index]);
-        console.log('goToIndex', _this11.shopList[index].raw.drug.generic);
-
-        _this11.shoppingIndex = index;
-
-        var genericName = _this11.shopList[index].raw.drug.generic.replace(/\s/g, '');
-
-        if (_this11.basketSaved !== true) {
-          _this11.basketSaved = _this11.groupData.baskets && _this11.groupData.baskets.length && _this11.groupData.basketsByGeneric[genericName] && _this11.groupData.basketsByGeneric[genericName].length;
-        }
-
-        console.log('setShoppingIndex picking.basketSaved ', _this11.basketSaved);
-
-        if (index < 0 && _this11.basketSaved) {
-          _this11.shoppingIndex = _this11.currentShoppingIndex();
-        }
-
-        if (_this11.basketSaved && _this11.groupData.basketsByGeneric && _this11.groupData.basketsByGeneric[genericName]) {
-          var basket = _this11.groupData.basketsByGeneric[genericName].slice(-1);
-          _this11.addBasketToShoppingList(basket);
-        }
-        if (_this11.shoppingIndex + 1 === _this11.shopList.length) {
-          _this11.setNextToSave();
-        } else {
-          _this11.setNextToNext();
-        }
-
-        _this11.formComplete = !!_this11.shopList[_this11.shoppingIndex].extra.fullBasket && _this11.someOutcomeSelected(_this11.shopList[_this11.shoppingIndex].extra.outcome);
-        console.log('setShoppingIndex formComplete', _this11.formComplete);
-        _this11.setPickingStepUrl(_this11.shoppingIndex + 1);
-      };
-
-      if (!this.shopList.length) {
-
-        this.db.account.picking.post({ groupName: this.groupName, action: 'load' }).then(function (res) {
-
-          if (!res.groupData || !res.shopList) {
-            console.error('setShoppingIndex() ! res.shopList || ! res.groupData', res);
-            throw res;
-          }
-
-          _this11.groupData = res.groupData;
-          _this11.shopList = res.shopList;
-          _this11.initializeShopper();
-          goToIndex();
-        });
-      } else {
-        goToIndex();
-      }
-    };
-
-    shopping.prototype.moveShoppingBackward = function moveShoppingBackward() {
-      if (this.shoppingIndex == 0) return;
-
-      if (this.shopList[this.shoppingIndex - 1].raw && this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic);
-
-      this.setShoppingIndex(this.shoppingIndex -= 1);
-      this.formComplete = true;
-    };
-
-    shopping.prototype.pauseShopping = function pauseShopping(groupName) {
-
-      this.resetShopper();
-      this.unlockGroup(groupName);
-
-      this.refreshPendedGroups();
-
-      this.loadGroupSelectionPage();
-    };
-
-    shopping.prototype.selectShoppingOption = function selectShoppingOption(key) {
-      if (this.shopList[this.shoppingIndex].extra.outcome[key]) return;
-      this.formComplete = true;
-
-      for (var outcome_option in this.shopList[this.shoppingIndex].extra.outcome) {
-        if (outcome_option !== key) {
-          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = false;
-        } else {
-          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = true;
-        }
-      }
-
-      if (key == 'missing') {
-        this.setNextToNext();
-      } else if (this.shoppingIndex + 1 === this.shopList.length) {
-        this.setNextToSave();
-      }
-    };
-
-    shopping.prototype.arrayMove = function arrayMove(arr, fromIndex, toIndex) {
-      var res = arr.slice(0);
-      var element = res[fromIndex];
-      res.splice(fromIndex, 1);
-      res.splice(toIndex, 0, element);
-      return res;
-    };
-
-    shopping.prototype.formatExp = function formatExp(rawStr) {
-      if (!rawStr) return null;
-
-      var substr_arr = rawStr.slice(2, 7).split("-");
-      return substr_arr[1] + "/" + substr_arr[0];
-    };
-
-    shopping.prototype.someOutcomeSelected = function someOutcomeSelected(outcomeObj) {
-      return ~Object.values(outcomeObj).indexOf(true);
-    };
-
-    shopping.prototype.warnAboutRequired = function warnAboutRequired() {
-      this.snackbar.show('Basket number and outcome are required');
-    };
-
-    shopping.prototype.setNextToLoading = function setNextToLoading() {
-      this.nextButtonText = 'Updating';
-    };
-
-    shopping.prototype.setNextToSave = function setNextToSave() {
-      this.nextButtonText = 'Complete';
-    };
-
-    shopping.prototype.setNextToNext = function setNextToNext() {
-      this.nextButtonText = 'Next';
-    };
-
-    shopping.prototype.getOutcome = function getOutcome(extraItemData) {
-      var res = '';
-      for (var possibility in extraItemData.outcome) {
-        if (extraItemData.outcome[possibility]) res += possibility;
-      }
-      return res;
-    };
-
-    return shopping;
-  }()) || _class);
-
-  var pendedFilterValueConverter = exports.pendedFilterValueConverter = function () {
-    function pendedFilterValueConverter() {
-      _classCallCheck(this, pendedFilterValueConverter);
-    }
-
-    pendedFilterValueConverter.prototype.toView = function toView() {
-      var pended = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var term = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-      if (term.length < 3) return pended;
-
-      term = term.toLowerCase();
-      var matches = [];
-
-      if (term.trim().length == 0) {
-        matches = pended;
-      } else {
-
-        for (var i = 0; i < pended.length; i++) {
-
-          if (~pended[i].name.toLowerCase().indexOf(term) || term.trim().length == 0) {
-            matches.unshift(pended[i]);
-            continue;
-          } else if (pended[i].baskets.length > 0) {
-            for (var n = 0; n < pended[i].baskets.length; n++) {
-              if (~pended[i].baskets[n].toLowerCase().indexOf(term)) {
-                matches.unshift(pended[i]);
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      return matches;
-    };
-
-    return pendedFilterValueConverter;
-  }();
-});
 define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../libs/csv', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _csv, _helpers) {
   'use strict';
 
@@ -4298,6 +3219,1154 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     return pendedFilterValueConverter;
   }();
+});
+define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.join = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var join = exports.join = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router, _aureliaHttpClient.HttpClient), _dec(_class = function () {
+    function join(db, router, http) {
+      _classCallCheck(this, join);
+
+      this.db = db;
+      this.router = router;
+      this.http = http;
+
+      this.account = {
+        name: '',
+        license: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+        ordered: {}
+      };
+
+      this.user = {
+        name: { first: '', last: '' },
+        phone: ''
+      };
+      this.canActivate = _helpers.canActivate;
+    }
+
+    join.prototype.join = function join() {
+      var _this = this;
+
+      this.disabled = true;
+      this.user.account = { _id: this.account.phone };
+
+      this.db.user.post(this.user).then(function (res) {
+        console.log('this.db.user.post success', res, _this.user);
+        return _this.db.account.post(_this.account);
+      }).then(function (res) {
+        console.log('this.db.account.post success', res, _this.account);
+        return new Promise(function (resolve) {
+          return setTimeout(resolve, 5000);
+        });
+      }).then(function (_) {
+        return _this.db.user.session.post(_this.user);
+      }).then(function (loading) {
+        console.log('this.db.user.session.post success', loading);
+
+        _this.loading = loading.resources;
+        _this.progress = loading.progress;
+
+        return Promise.all(loading.syncing);
+      }).then(function (_) {
+        console.log('join success', _);
+        return _this.router.navigate('shipments');
+      }).catch(function (err) {
+        _this.disabled = false;
+
+        err.account = _this.account;
+        err.user = _this.user;
+
+        if (err.message == "Document update conflict") err.message = "phone number must be unique";
+
+        _this.snackbar.error('Join failed', err);
+      });
+    };
+
+    return join;
+  }()) || _class);
+});
+define('client/src/views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.login = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var login = exports.login = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router), _dec(_class = function () {
+    function login(db, router) {
+      _classCallCheck(this, login);
+
+      this.db = db;
+      this.router = router;
+      this.phone = '';
+      this.password = '';
+      this.canActivate = _helpers.canActivate;
+    }
+
+    login.prototype.login = function login() {
+      var _this = this;
+
+      this.db.user.session.post({ phone: this.phone, password: this.password }).then(function (loading) {
+        _this.disabled = true;
+
+        _this.loading = loading.resources;
+        _this.progress = loading.progress;
+
+        return Promise.all(loading.syncing);
+      }).then(function (resources) {
+        _this.router.navigate('picking');
+      }).catch(function (err) {
+        _this.disabled = false;
+        _this.snackbar.error('Login failed', err);
+      });
+    };
+
+    return login;
+  }()) || _class);
+});
+define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.pendedFilterValueConverter = exports.shopping = undefined;
+
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var shopping = exports.shopping = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router), _dec(_class = function () {
+    function shopping(db, router) {
+      _classCallCheck(this, shopping);
+
+      window.addEventListener('popstate', function (event) {
+        console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
+
+        var groupAndStep = document.location.href.split('picking/')[1];
+        if (groupAndStep) {
+          var _groupAndStep$split = groupAndStep.split('step/'),
+              group = _groupAndStep$split[0],
+              step = _groupAndStep$split[1];
+
+          console.log(group, step);
+        }
+      });
+
+      this.db = db;
+      this.router = router;
+
+      this.groups = [];
+      this.shopList = [];
+      this.shoppingIndex = -1;
+      this.nextButtonText = '';
+      this.orderSelectedToShop = false;
+      this.formComplete = false;
+      this.basketSaved = false;
+      this.currentCart = '';
+      this.basketOptions = ['S', 'R', 'G', 'B'];
+      this.focusInput = _helpers.focusInput;
+
+      this.canActivate = _helpers.canActivate;
+      this.currentDate = _helpers.currentDate;
+      this.clearNextProperty = _helpers.clearNextProperty;
+    }
+
+    shopping.prototype.deactivate = function deactivate() {};
+
+    shopping.prototype.canDeactivate = function canDeactivate() {
+      return confirm('Confirm you want to leave page');
+    };
+
+    shopping.prototype.activate = function activate(params) {
+      var _this = this;
+
+      this.groupName = params.groupName;
+
+      if (this.groupName) {
+        this.orderSelectedToShop = true;
+      }
+
+      return this.db.user.session.get().then(function (session) {
+        console.log('user acquired');
+        _this.user = { _id: session._id };
+        _this.account = { _id: session.account._id };
+
+        _this.db.user.get(_this.user._id).then(function (user) {
+          _this.router.routes[2].navModel.setTitle(user.name.first);
+        });
+
+        if (!_this.account.hazards) _this.account.hazards = {};
+        console.log('about to call refresh first time');
+        _this.refreshPendedGroups();
+
+        if (_this.isValidGroupName()) {
+          return _this.db.account.picking.post({ groupName: params.groupName, action: 'group_info' }).then(function (res) {
+            console.log('GROUP LOADED:' + params.groupName, 'stepNumber', params.stepNumber, res);
+
+            if (!res.groupData || !res.shopList) {
+              console.error('activate()  ! res.shopList || ! res.groupData', res);
+              throw res;
+            }
+
+            _this.shopList = res.shopList;
+            _this.groupData = res.groupData;
+            _this.groupLoaded = true;
+
+            _this.requestedPickingStep = params.stepNumber ? params.stepNumber : _this.currentShoppingIndex() + 1;
+
+            _this.manageShoppingIndex();
+          });
+        } else {
+          _this.groupLoaded = false;
+          console.error('activate() group loaded is false', params);
+        }
+      }).catch(function (err) {
+        console.log("error getting user session:", err);
+        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+      });
+    };
+
+    shopping.prototype.addPreviousPickInfoIfExists = function addPreviousPickInfoIfExists(shopList) {
+      for (var _iterator = Object.keys(shopList), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref = _i.value;
+        }
+
+        var i = _ref;
+
+        var transaction = shopList[i].raw;
+
+        if (transaction.next && transaction.next[0]) {
+          var next = transaction.next;
+
+          if (next[0].pickedArchive && next[0].pickedArchive.user._id === this.user._id) {
+            next[0].picked = next[0].pickedArchive;
+            transaction.next = next;
+          }
+        }
+      }
+
+      return shopList;
+    };
+
+    shopping.prototype.updatePickedCount = function updatePickedCount() {
+      var _this2 = this;
+
+      var date = new Date();
+
+      var _date$toJSON$split$0$ = date.toJSON().split('T')[0].split('-'),
+          year = _date$toJSON$split$0$[0],
+          month = _date$toJSON$split$0$[1],
+          day = _date$toJSON$split$0$[2];
+
+      this.db.transaction.query('picked-by-user-from-shipment', { startkey: [this.account._id, this.user._id, year, month, day], endkey: [this.account._id, this.user._id, year, month, day, {}] }).then(function (res) {
+        console.log(res);
+        _this2.pickedCount = res.rows[0] ? res.rows[0].value[0].count : 0;
+      });
+    };
+
+    shopping.prototype.firstUnsavedIndex = function firstUnsavedIndex() {
+      var max = 0;
+
+      for (var _iterator2 = Object.entries(this.shopList), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+        var _ref2;
+
+        if (_isArray2) {
+          if (_i2 >= _iterator2.length) break;
+          _ref2 = _iterator2[_i2++];
+        } else {
+          _i2 = _iterator2.next();
+          if (_i2.done) break;
+          _ref2 = _i2.value;
+        }
+
+        var _ref3 = _ref2,
+            index = _ref3[0],
+            transaction = _ref3[1];
+
+
+        if (!transaction.extra || !transaction.extra.saved) {
+          console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList);
+          return max;
+        }
+
+        max++;
+      }
+
+      console.log('firstUnsavedIndex ALL SAVED', max, 'of', this.shopList.length, this.shopList);
+      return null;
+    };
+
+    shopping.prototype.manageShoppingIndex = function manageShoppingIndex() {
+      var firstUnsavedIndex = this.firstUnsavedIndex();
+
+      if (firstUnsavedIndex == null) {
+        this.loadGroupSelectionPage();
+      } else if (this.requestedPickingStep > firstUnsavedIndex + 1) {
+        console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+        this.requestedPickingStep = firstUnsavedIndex + 1;
+        this.setShoppingIndex(firstUnsavedIndex);
+        alert('Please complete step ' + this.requestedPickingStep + ' first');
+      } else if (this.requestedPickingStep <= this.shopList.length && this.requestedPickingStep > 0) {
+        console.log('manageShoppingIndex m1', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+        this.setShoppingIndex(this.requestedPickingStep - 1);
+      } else if (this.requestedPickingStep === 'basket') {
+        console.log('manageShoppingIndex m2', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+        this.basketSaved = false;
+        this.initializeShopper();
+      } else if (this.groupLoaded === true) {
+        console.log('manageShoppingIndex m3', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+        this.setShoppingIndex(0);
+      }
+    };
+
+    shopping.prototype.refreshPendedGroups = function refreshPendedGroups() {
+      var _this3 = this;
+
+      console.log('refreshing');
+
+      this.updatePickedCount();
+
+      this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
+        _this3.groups = res;
+      }).catch(function (err) {
+        console.log("error refreshing pended groups:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+      });
+    };
+
+    shopping.prototype.unlockGroup = function unlockGroup(groupName, el) {
+      var _this4 = this;
+
+      for (var i = 0; i < this.groups.length; i++) {
+        if (this.groups[i].name == groupName) this.groups[i].locked = 'unlocking';
+      }
+
+      var start = Date.now();
+
+      this.db.account.picking.post({ groupName: groupName, action: 'unlock' }).then(function (res) {
+        _this4.groups = res;
+      }).catch(function (err) {
+        console.log("error unlocking order:", (Date.now() - start) / 1000, 'seconds', JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+      });
+    };
+
+    shopping.prototype.navigate = function navigate(groupName, stepNumber) {
+
+      var previousStepNumber = stepNumber - 1;
+      this.groupName = groupName;
+
+      if (previousStepNumber === 0) {}
+
+      this.router.navigate('picking/' + groupName + '/step/' + stepNumber);
+
+      return true;
+    };
+
+    shopping.prototype.getOutcomeName = function getOutcomeName(outcomeObject) {
+      var match = Object.entries(outcomeObject).filter(function (entry) {
+        return entry[1] == true ? entry[1] : null;
+      });
+
+      return match.length ? match[0][0] : null;
+    };
+
+    shopping.prototype.selectGroup = function selectGroup(groupName, isLocked, isLockedByCurrentUser) {
+      var _this5 = this;
+
+      console.log('locking status on select', groupName, isLocked, isLockedByCurrentUser);
+
+      if (isLocked && !isLockedByCurrentUser || groupName.length === 0) return null;
+
+      this.groupLoaded = false;
+      this.orderSelectedToShop = true;
+      this.groupName = groupName;
+
+      var start = Date.now();
+
+      this.db.account.picking.post({ groupName: groupName, action: 'load' }).then(function (res) {
+        console.log("selectGroup: result of loading: " + res.length, (Date.now() - start) / 1000, 'seconds');
+        console.log('selectGroup:', res, 'shippingIndex', _this5.shippingIndex);
+
+        if (!res.shopList || !res.groupData) {
+          console.error('selectGroup() ! res.shopList || ! res.groupData', res);
+          throw res;
+        }
+
+        _this5.shopList = res.shopList;
+        _this5.groupData = res.groupData;
+        _this5.pendedFilter = '';
+        _this5.filter = {};
+
+        var currentShoppingIndex = _this5.currentShoppingIndex();
+
+        _this5.setPickingStepUrl(currentShoppingIndex + 1);
+
+        if (currentShoppingIndex == 0) {
+          _this5.initializeShopper();
+        }
+
+        var genericName = _this5.shopList[currentShoppingIndex].raw.drug.generic.replace(/\s/g, '');
+
+        if (_this5.basketSaved && _this5.groupData.basketsByGeneric && _this5.groupData.basketsByGeneric[genericName]) {
+          var basket = _this5.groupData.basketsByGeneric[genericName].slice(-1);
+          _this5.addBasketToShoppingList(basket);
+          _this5.basketSaved = true;
+        }
+      }).catch(function (err) {
+        if (~err.message.indexOf('Unexpected end of JSON input') || ~err.message.indexOf('Unexpected EOF')) {
+          var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
+          _this5.refreshPendedGroups();
+          _this5.resetShopper();
+        } else {
+          console.log("error loading order:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+          return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        }
+      });
+    };
+
+    shopping.prototype.initializeShopper = function initializeShopper() {
+
+      console.log('initializeShopper before:', 'shoppingIndex', this.shoppingIndex, 'groupLoaded', this.groupLoaded, 'shopList', this.shopList);
+
+      this.shoppingIndex = this.currentShoppingIndex();
+      this.groupLoaded = true;
+
+      if (this.shoppingIndex + 1 === this.shopList.length) {
+        this.setNextToSave();
+      } else {
+        this.setNextToNext();
+      }
+
+      this.addBasket(this.shoppingIndex);
+    };
+
+    shopping.prototype.resetShopper = function resetShopper() {
+      this.orderSelectedToShop = false;
+      this.formComplete = false;
+      this.updatePickedCount();
+    };
+
+    shopping.prototype.updateRevs = function updateRevs(res) {
+      var _this6 = this;
+
+      var results = {};
+      res.forEach(function (transaction) {
+        results[transaction._id || transaction.id] = transaction;
+      });
+
+      this.shopList.forEach(function (shopListItem, index) {
+        if (results[shopListItem.raw._id]) {
+          _this6.shopList[index].raw._rev = results[shopListItem.raw._id].rev;
+          console.log(shopListItem.raw._id + ' => ' + shopListItem.raw._rev);
+        }
+      });
+
+      return results;
+    };
+
+    shopping.prototype.saveShoppingResults = function saveShoppingResults(arr_enriched_transactions, key) {
+      var _this7 = this;
+
+      var transactions_to_save = this.prepResultsToSave(arr_enriched_transactions, key);
+
+      console.log("attempting to save these transactions", transactions_to_save);
+      var startTime = new Date().getTime();
+
+      if (!transactions_to_save || !transactions_to_save.length) {
+        console.log('nothing to save');
+        return Promise.resolve();
+      }
+
+      return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
+        var completeTime = new Date().getTime();
+        var results = _this7.updateRevs(res);
+        console.log("save (" + key + ") results of saving in " + (completeTime - startTime) + " ms", results);
+      }).catch(function (err) {
+
+        var completeTime = new Date().getTime();
+        console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+
+        if (err.status == 0) {
+
+          console.log("going to try and save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save));
+
+          return _this7.delay(3000).then(function (_) {
+
+            console.log("waiting finished, sending again");
+
+            return _this7.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
+              var finalTime = new Date().getTime();
+              console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
+            }).catch(function (err) {
+              console.log("saving: empty object error the second time");
+              return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+            });
+          });
+        } else {
+
+          _this7.snackbar.error('Error loading/saving. Contact Adam', err);
+          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        }
+      });
+    };
+
+    shopping.ifExists = function ifExists(obj, path) {
+      var currentNode = obj;
+      path = path.split('.');
+
+      for (var _iterator3 = path, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+        var _ref4;
+
+        if (_isArray3) {
+          if (_i3 >= _iterator3.length) break;
+          _ref4 = _iterator3[_i3++];
+        } else {
+          _i3 = _iterator3.next();
+          if (_i3.done) break;
+          _ref4 = _i3.value;
+        }
+
+        var part = _ref4;
+
+        currentNode = currentNode[part];
+
+        if (!currentNode) break;
+      }
+
+      return currentNode;
+    };
+
+    shopping.outcomeChanged = function outcomeChanged(transaction, outcome) {
+      var data = transaction.next[0];
+
+      console.log('comparing outcomes', outcome, shopping.ifExists(data, 'pickedArchive.matchType'));
+
+      if (!data.picked || !data.pickedArchive) {
+        return true;
+      }
+
+      if (data && data.picked && data.pickedArchive) {
+        return outcome !== data.pickedArchive.matchType;
+      }
+
+      return false;
+    };
+
+    shopping.canChangeOutcome = function canChangeOutcome(transaction) {
+      var data = transaction.next[0];
+
+      if (data.pickedArchive) {
+        return data.pickedArchive.matchType !== 'missing';
+      }
+
+      return true;
+    };
+
+    shopping.prototype.prepResultsToSave = function prepResultsToSave(arr_enriched_transactions, key) {
+
+      if (arr_enriched_transactions.length == 0) {
+        console.log('no transactions to save');
+        return;
+      }
+
+      var transactions_to_save = [];
+
+      for (var i = 0; i < arr_enriched_transactions.length; i++) {
+
+        var reformated_transaction = arr_enriched_transactions[i].raw;
+        var next = reformated_transaction.next;
+
+        if (next[0]) {
+          if (key == 'shopped') {
+            var outcome = this.getOutcome(arr_enriched_transactions[i].extra);
+
+            if (!shopping.canChangeOutcome(reformated_transaction)) {
+              console.log(reformated_transaction._id, 'Outcome === missing. Updates not allowed.');
+              continue;
+            }
+
+            if (!shopping.outcomeChanged(reformated_transaction, outcome)) {
+              console.log(reformated_transaction._id, 'Same outcome. Not saving.');
+              continue;
+            }
+
+            next[0].picked = {
+              _id: new Date().toJSON(),
+              basket: arr_enriched_transactions[i].extra.fullBasket,
+              repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from,
+              matchType: outcome,
+              user: this.user
+            };
+
+            next[0].pickedArchive = next[0].picked;
+          } else if (key == 'unlock') {
+
+            delete next[0].picked;
+          } else if (key == 'lockdown') {
+
+            next[0].picked = {};
+          }
+        }
+
+        reformated_transaction.next = next;
+        transactions_to_save.push(reformated_transaction);
+      }
+
+      if (!transactions_to_save.length) {
+        console.log('no transactions to save');
+        return;
+      }
+
+      return transactions_to_save;
+    };
+
+    shopping.prototype.saveBasketNumber = function saveBasketNumber() {
+      var _this8 = this;
+
+      console.log('saveBasketNumber called', this.shoppingIndex, this.shopList[this.shoppingIndex], this.shopList);
+
+      this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber;
+
+      if (this.shopList[this.shoppingIndex].extra.basketLetter != 'G' && this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0]) {
+        this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0];
+      }
+
+      if (this.shopList[this.shoppingIndex].raw) this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
+
+      var extra = this.shopList[this.shoppingIndex].extra;
+
+      var basket = {
+        letter: extra.basketLetter,
+        number: extra.basketNumber,
+        fullBasket: extra.fullBasket
+      };
+
+      var idData = {
+        _id: this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._id,
+        _rev: this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._rev
+      };
+
+      this.db.account.picking.post({
+        id: idData,
+        groupName: this.groupName,
+        basket: basket,
+        action: 'save_basket_number'
+      }).then(function (res) {
+        var results = _this8.updateRevs([res]);
+
+        if (Object.keys(results).length > 0) {
+          _this8.basketSaved = true;
+          _this8.addBasketToShoppingList(basket);
+        }
+      });
+
+      this.setShoppingIndex(this.currentShoppingIndex());
+    };
+
+    shopping.prototype.currentShoppingIndex = function currentShoppingIndex() {
+
+      console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, _typeof(this.shoppingIndex), 'shopListMaxIndex', this.shopList.length, 'groupData', this.groupData, 'shopList', this.shopList);
+
+      if (typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopList.length - 1) {
+        console.log('currentShoppingIndex provided', this.shoppingIndex, this.shopList);
+        return this.shoppingIndex;
+      }
+
+      var firstUnsavedIndex = this.firstUnsavedIndex();
+      console.log('currentShoppingIndex firstUnsavedIndex', 'groupData', this.groupData, 'shopList', this.shopList, 'firstUnsavedIndex', firstUnsavedIndex);
+      return firstUnsavedIndex;
+    };
+
+    shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
+      var list_of_baskets = '';
+      for (var i = 0; i < this.shopList.length; i++) {
+        if (this.shopList[i].extra.fullBasket && !~list_of_baskets.indexOf(this.shopList[i].extra.fullBasket) && (!this.shopList[i].raw || this.shopList[i].raw.drug.generic == generic)) list_of_baskets += ',' + this.shopList[i].extra.fullBasket;
+      }
+      this.currentGenericBaskets = list_of_baskets;
+    };
+
+    shopping.prototype.addBasket = function addBasket(index) {
+      if (!this.shopList || !this.shopList[index]) {
+        console.error('addBasket() ! res.shopList || ! res.groupData', this.shopList, index);
+        return;
+      }
+
+      this.basketSaved = false;
+
+      if (this.shopList[index].extra.basketLetter != 'G') {
+        this.shopList[index].extra.basketNumber = this.currentCart;
+      }
+    };
+
+    shopping.prototype.delay = function delay(ms) {
+      return new Promise(function (resolve) {
+        return setTimeout(resolve, ms);
+      });
+    };
+
+    shopping.prototype.moveShoppingForward = function moveShoppingForward() {
+      var _this9 = this;
+
+      if (this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing' || this.shopList[this.shoppingIndex].extra.saved == 'missing') {
+        return this.advanceShopping();
+      }
+
+      this.formComplete = false;
+      this.setNextToLoading();
+
+      console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
+
+      this.db.account.picking['post']({
+        groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group,
+        action: 'missing_transaction',
+        ndc: this.shopList[this.shoppingIndex].raw.drug._id,
+        generic: this.shopList[this.shoppingIndex].raw.drug.generic,
+        qty: this.shopList[this.shoppingIndex].raw.qty.to,
+        repackQty: this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty
+      }).then(function (res) {
+
+        if (res.length > 0) {
+
+          _this9.shopList[_this9.shoppingIndex].extra.saved = 'missing';
+          _this9.groupData.numTransactions += res.length;
+
+          for (var j = 0; j < res.length; j++) {
+
+            var n = _this9.shoppingIndex - (_this9.shopList[_this9.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
+            if (n < 0) n = 0;
+            var inserted = false;
+
+            for (n; n < _this9.shopList.length; n++) {
+
+              if (_this9.shopList[n].raw.drug.generic == res[j].raw.drug.generic) {
+                _this9.shopList[n].extra.genericIndex.relative_index[1]++;
+              } else {
+                res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
+                _this9.shopList.splice(n, 0, res[j]);
+                inserted = true;
+                n = _this9.shopList.length;
+              }
+            }
+
+            if (!inserted) {
+              res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
+              _this9.shopList.push(res[j]);
+            }
+          }
+        } else {
+          console.log("couldn't find item with same or greater qty to replace this");
+        }
+
+        _this9.advanceShopping();
+      }).catch(function (err) {
+        console.log("error compensating for missing:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+      });
+    };
+
+    shopping.prototype.advanceShopping = function advanceShopping() {
+      var _this10 = this;
+
+      if (this.shoppingIndex + 1 === this.shopList.length) {
+
+        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
+
+          console.log('advanceShopping completed', _);
+
+          _this10.resetShopper();
+          _this10.unlockGroup(_this10.shopList[_this10.shoppingIndex].raw.next[0].pended.group);
+          _this10.refreshPendedGroups();
+          _this10.loadGroupSelectionPage();
+        });
+
+        for (var i = this.groups.length - 1; i >= 0; i--) {
+          if (this.groups[i].name == this.shopList[this.shoppingIndex].raw.next[0].pended.group) {
+            this.groups.splice(i, 1);
+            break;
+          }
+        }
+      } else {
+
+        if (!this.shopList[this.shoppingIndex + 1].extra.fullBasket) {
+          if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
+            this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter;
+            this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket;
+          } else {
+            this.addBasket(this.shoppingIndex + 1);
+          }
+        } else if (this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex + 1].raw && this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
+          this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic);
+        }
+
+        console.log('saving transaction', this.shopList[this.shoppingIndex]);
+        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
+          console.log('saved transaction', _this10.shopList[_this10.shoppingIndex], _);
+          _this10.setShoppingIndex(_this10.shoppingIndex + 1);
+        });
+      }
+    };
+
+    shopping.prototype.addBasketToShoppingList = function addBasketToShoppingList(basket) {
+      var letter = void 0,
+          number = void 0;
+
+      if (basket.letter) {
+        letter = basket.letter;
+        number = basket.number;
+      } else {
+        letter = basket.slice(0, 1);
+        number = basket.slice(1);
+      }
+
+      this.shopList[this.shoppingIndex].extra.basketLetter = letter;
+      this.shopList[this.shoppingIndex].extra.basketNumber = number;
+      this.shopList[this.shoppingIndex].extra.fullBasket = letter + number;
+      this.basketSaved = true;
+    };
+
+    shopping.prototype.setPickingStepUrl = function setPickingStepUrl(stepNumber) {
+      if (!this.isValidGroupName()) {
+        console.log('not setting step ' + stepNumber);
+        return false;
+      }
+
+      var url = '#/picking/' + this.groupName + '/step/' + stepNumber;
+
+      if (this.pickingOnloadFired === true) {
+        history.pushState(null, null, url);
+      } else {
+        console.log('replacing state');
+        history.replaceState(null, null, url);
+        this.pickingOnloadFired = true;
+      }
+    };
+
+    shopping.prototype.isValidGroupName = function isValidGroupName() {
+      var isValid = !!this.groupName && this.groupName.length && this.groupName !== 'undefined';
+
+      return isValid;
+    };
+
+    shopping.prototype.loadGroupSelectionPage = function loadGroupSelectionPage() {
+
+      var reload = window.location.hash !== '#/picking';
+
+      history.replaceState(null, null, '#/picking');
+
+      if (reload === true) {
+        window.location.reload();
+      }
+    };
+
+    shopping.prototype.setShoppingIndex = function setShoppingIndex(index) {
+      var _this11 = this;
+
+      if (index !== 0 && !index) {
+        alert('no index');
+        console.trace();
+        return false;
+      }
+
+      if (!this.isValidGroupName()) {
+        this.loadGroupSelectionPage();
+        return false;
+      }
+
+      console.log('setShoppingIndex requesting : ' + this.groupName + '/' + (index + 1) + '/' + index + ' (group/step/shoppingIndex)');
+
+      var goToIndex = function goToIndex() {
+
+        console.log('goToIndex', 'new', index, 'old', _this11.shoppingIndex);
+        console.log('goToIndex', _this11.groupData);
+        console.log('goToIndex', _this11.shopList[index]);
+        console.log('goToIndex', _this11.shopList[index].raw.drug.generic);
+
+        _this11.shoppingIndex = index;
+
+        var genericName = _this11.shopList[index].raw.drug.generic.replace(/\s/g, '');
+
+        if (_this11.basketSaved !== true) {
+          _this11.basketSaved = _this11.groupData.baskets && _this11.groupData.baskets.length && _this11.groupData.basketsByGeneric[genericName] && _this11.groupData.basketsByGeneric[genericName].length;
+        }
+
+        console.log('setShoppingIndex picking.basketSaved ', _this11.basketSaved);
+
+        if (index < 0 && _this11.basketSaved) {
+          _this11.shoppingIndex = _this11.currentShoppingIndex();
+        }
+
+        if (_this11.basketSaved && _this11.groupData.basketsByGeneric && _this11.groupData.basketsByGeneric[genericName]) {
+          var basket = _this11.groupData.basketsByGeneric[genericName].slice(-1);
+          _this11.addBasketToShoppingList(basket);
+        }
+        if (_this11.shoppingIndex + 1 === _this11.shopList.length) {
+          _this11.setNextToSave();
+        } else {
+          _this11.setNextToNext();
+        }
+
+        _this11.formComplete = !!_this11.shopList[_this11.shoppingIndex].extra.fullBasket && _this11.someOutcomeSelected(_this11.shopList[_this11.shoppingIndex].extra.outcome);
+        console.log('setShoppingIndex formComplete', _this11.formComplete);
+        _this11.setPickingStepUrl(_this11.shoppingIndex + 1);
+      };
+
+      if (!this.shopList.length) {
+
+        this.db.account.picking.post({ groupName: this.groupName, action: 'load' }).then(function (res) {
+
+          if (!res.groupData || !res.shopList) {
+            console.error('setShoppingIndex() ! res.shopList || ! res.groupData', res);
+            throw res;
+          }
+
+          _this11.groupData = res.groupData;
+          _this11.shopList = res.shopList;
+          _this11.initializeShopper();
+          goToIndex();
+        });
+      } else {
+        goToIndex();
+      }
+    };
+
+    shopping.prototype.moveShoppingBackward = function moveShoppingBackward() {
+      if (this.shoppingIndex == 0) return;
+
+      if (this.shopList[this.shoppingIndex - 1].raw && this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic);
+
+      this.setShoppingIndex(this.shoppingIndex -= 1);
+      this.formComplete = true;
+    };
+
+    shopping.prototype.pauseShopping = function pauseShopping(groupName) {
+
+      this.resetShopper();
+      this.unlockGroup(groupName);
+
+      this.refreshPendedGroups();
+
+      this.loadGroupSelectionPage();
+    };
+
+    shopping.prototype.selectShoppingOption = function selectShoppingOption(key) {
+      if (this.shopList[this.shoppingIndex].extra.outcome[key]) return;
+      this.formComplete = true;
+
+      for (var outcome_option in this.shopList[this.shoppingIndex].extra.outcome) {
+        if (outcome_option !== key) {
+          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = false;
+        } else {
+          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = true;
+        }
+      }
+
+      if (key == 'missing') {
+        this.setNextToNext();
+      } else if (this.shoppingIndex + 1 === this.shopList.length) {
+        this.setNextToSave();
+      }
+    };
+
+    shopping.prototype.arrayMove = function arrayMove(arr, fromIndex, toIndex) {
+      var res = arr.slice(0);
+      var element = res[fromIndex];
+      res.splice(fromIndex, 1);
+      res.splice(toIndex, 0, element);
+      return res;
+    };
+
+    shopping.prototype.formatExp = function formatExp(rawStr) {
+      if (!rawStr) return null;
+
+      var substr_arr = rawStr.slice(2, 7).split("-");
+      return substr_arr[1] + "/" + substr_arr[0];
+    };
+
+    shopping.prototype.someOutcomeSelected = function someOutcomeSelected(outcomeObj) {
+      return ~Object.values(outcomeObj).indexOf(true);
+    };
+
+    shopping.prototype.warnAboutRequired = function warnAboutRequired() {
+      this.snackbar.show('Basket number and outcome are required');
+    };
+
+    shopping.prototype.setNextToLoading = function setNextToLoading() {
+      this.nextButtonText = 'Updating';
+    };
+
+    shopping.prototype.setNextToSave = function setNextToSave() {
+      this.nextButtonText = 'Complete';
+    };
+
+    shopping.prototype.setNextToNext = function setNextToNext() {
+      this.nextButtonText = 'Next';
+    };
+
+    shopping.prototype.getOutcome = function getOutcome(extraItemData) {
+      var res = '';
+      for (var possibility in extraItemData.outcome) {
+        if (extraItemData.outcome[possibility]) res += possibility;
+      }
+      return res;
+    };
+
+    return shopping;
+  }()) || _class);
+
+  var pendedFilterValueConverter = exports.pendedFilterValueConverter = function () {
+    function pendedFilterValueConverter() {
+      _classCallCheck(this, pendedFilterValueConverter);
+    }
+
+    pendedFilterValueConverter.prototype.toView = function toView() {
+      var pended = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var term = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+      if (term.length < 3) return pended;
+
+      term = term.toLowerCase();
+      var matches = [];
+
+      if (term.trim().length == 0) {
+        matches = pended;
+      } else {
+
+        for (var i = 0; i < pended.length; i++) {
+
+          if (~pended[i].name.toLowerCase().indexOf(term) || term.trim().length == 0) {
+            matches.unshift(pended[i]);
+            continue;
+          } else if (pended[i].baskets.length > 0) {
+            for (var n = 0; n < pended[i].baskets.length; n++) {
+              if (~pended[i].baskets[n].toLowerCase().indexOf(term)) {
+                matches.unshift(pended[i]);
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      return matches;
+    };
+
+    return pendedFilterValueConverter;
+  }();
+});
+define('client/src/views/routes',['exports'], function (exports) {
+    'use strict';
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    }
+
+    var App = exports.App = function () {
+        function App() {
+            _classCallCheck(this, App);
+        }
+
+        App.prototype.configureRouter = function configureRouter(config, router) {
+            this.routes = router.navigation;
+            config.title = 'SIRUM';
+
+            config.map([{
+                route: 'login',
+                moduleId: 'client/src/views/login',
+                title: 'Login',
+                nav: true
+            }, {
+                route: 'join',
+                moduleId: 'client/src/views/join',
+                title: 'Join',
+                nav: true
+            }, {
+                route: 'account',
+                moduleId: 'client/src/views/account',
+                title: 'Account',
+                nav: true,
+                roles: ["user"]
+            }, {
+                route: ['picking', 'picking/:groupName/step/:stepNumber'],
+                name: 'picking',
+                moduleId: 'client/src/views/picking',
+                title: 'Picking',
+                nav: true,
+                roles: ["user"]
+            }, {
+                route: 'inventory',
+                moduleId: 'client/src/views/inventory',
+                title: 'Inventory',
+                nav: true,
+                roles: ["user"]
+            }, {
+                route: ['shipments', 'shipments/:id', ''],
+                moduleId: 'client/src/views/shipments',
+                title: 'Shipments',
+                nav: true,
+                roles: ["user"]
+            }, {
+                route: ['drugs', 'drugs/:id'],
+                moduleId: 'client/src/views/drugs',
+                title: 'Drugs',
+                nav: true,
+                roles: ["user"]
+            }]);
+        };
+
+        return App;
+    }();
 });
 define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client', '../libs/csv', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient, _csv, _helpers) {
   'use strict';
