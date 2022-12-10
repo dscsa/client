@@ -275,7 +275,7 @@
               <th style="width:48px"></th>
             </tr>
           </thead>
-          <tr class="${transaction.highlighted}" name="pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter:term" input.delegate="saveAndReconcileTransaction(transaction) & debounce:1000">
+          <tr class="${transaction.highlighted} test" name="pro_transaction" repeat.for="transaction of transactions | inventoryFilter:filter:term" input.delegate="saveAndReconcileTransaction(transaction) & debounce:1000">
             <td style="padding:0">
               <md-checkbox name = "pro_transaction_checkbox" click.delegate="toggleCheck(transaction)" checked.bind="transaction.isChecked"></md-checkbox>
             </td>
