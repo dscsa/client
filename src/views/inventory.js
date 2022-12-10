@@ -290,6 +290,8 @@ export class inventory {
   }
 
   selectInventory(type, key, limit) {
+
+    this.type = type
     this.term = key
 
     let opts = {include_docs:true, limit, reduce:false}
@@ -327,10 +329,10 @@ export class inventory {
 
       //so that we correctly display the 'show all' option
       if (res.rows.length == limit) {
-        this.type = type
+        this.showMore = true
         this.snackbar.show(`Displaying first 100 results`)
       } else {
-        this.type = null
+        this.showMore = false
       }
 
       //Service inventory.qty includes everything that WAS in inventory at that date if this
@@ -340,9 +342,25 @@ export class inventory {
       //var removedAt  = require('nextAt')(doc) || require('expiredAt')(doc)
       //But not sure how this would affect other views.  Would need to test on test server
       let docs = []
+      let oneMonthFromNow = this.currentDate(1)
+
       for (let row of res.rows) {
-        if (!row.doc.next.length || (type == 'bin' && row.doc.next[0].pended && !row.doc.next[0].picked)) docs.push(row.doc)
-        else console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
+
+        let isOrdered = this.account.ordered[row.doc.drug.generic]
+
+        //Color text of expired inventory so they can be more easily spotted an removed by staff
+        let exp = row.doc.exp.to || row.doc.exp.from || oneMonthFromNow
+        if(type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow) {
+            row.doc.highlighted = row.doc.destroyedMessage ? 'mdl-color-text--accent' : 'mdl-color-text'
+        }
+
+        if (!row.doc.next.length) { //Actually in inventory
+            docs.push(row.doc)
+        } else if(type == 'bin' && row.doc.next[0].pended && !row.doc.next[0].picked) { //Not in inventory BUT still physically in the inventory bin
+            docs.push(row.doc)
+        } else {
+            console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
+        }
       }
 
       return this.setTransactions(docs, type)
