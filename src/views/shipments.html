@@ -224,7 +224,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="${transaction.highlighted ? 'mdl-color-text--accent' : '' }" style="padding-top:7px;" name = "pro_transaction" repeat.for="transaction of transactions" input.delegate="saveTransaction(transaction) & debounce:1500">
+            <tr style="padding-top:7px;" name = "pro_transaction" repeat.for="transaction of transactions" input.delegate="saveTransaction(transaction) & debounce:1500">
               <td style="padding:0 0 0 8px">
                 <!-- if you are selecting new items you received to add to inventory, do not confuse these with the currently checked items -->
                 <!-- if you are selecting items to move to a new shipment, do not allow selection of items already verified by recipient e.g do not mix saving new items and removing old items, you must do one at a time -->
