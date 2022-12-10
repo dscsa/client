@@ -351,9 +351,9 @@ export class inventory {
         //Color text of expired inventory so they can be more easily spotted an removed by staff
         let exp = row.doc.exp.to || row.doc.exp.from || oneMonthFromNow
 
-        console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, row.doc)
+        console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, row.doc, isOrdered)
         if(type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow) {
-            row.doc.highlighted = row.doc.destroyedMessage ? 'mdl-color-text--accent' : 'mdl-color-text'
+            row.doc.highlighted = isOrdered.destroyedMessage ? 'mdl-color-text--accent' : 'mdl-color-text--primary'
         }
 
         if (!row.doc.next.length) { //Actually in inventory
