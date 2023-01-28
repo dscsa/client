@@ -222,7 +222,7 @@ export class inventory {
   setTransactions(transactions = [], type) {
 
     //Sort X00 bin alphabetically per Cindy's request.
-    if ( ~ ['M00', 'T00', 'W00', 'R00', 'F00', 'X00', 'Y00', 'Z00'].indexOf(this.term))
+    if ( ~ ['M00', 'T00', 'W00', 'R00', 'F00'].indexOf(this.term))
       transactions = transactions.sort((a,b) => {
         if (a.drug.generic < b.drug.generic) return -1
         if (b.drug.generic < a.drug.generic) return 1
@@ -272,6 +272,14 @@ export class inventory {
 
     if (transactions)
       this.term = 'Pended '+pendedKey
+
+    for (let transaction of transactions) {
+      let isOrdered = this.account.ordered[transaction.drug.generic]
+      console.log('destruction highlighting', 'pend', transaction, isOrdered)
+      if (isOrdered.destroyedMessage) {
+        transaction.highlighted = 'mdl-color-text--accent'
+      }
+    }
 
     transactions.sort(this.sortPended.bind(this))
 
