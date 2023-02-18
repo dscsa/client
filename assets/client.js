@@ -8,6 +8,786 @@ define('client/src/environment',["exports"], function (exports) {
     debug: true,
     testing: false };
 });
+define('client/src/elems/form',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.FormCustomAttribute = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _class;
+
+  var FormCustomAttribute = exports.FormCustomAttribute = (_dec = (0, _aureliaFramework.bindable)('disabled'), _dec2 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = function () {
+    function FormCustomAttribute(element) {
+      _classCallCheck(this, FormCustomAttribute);
+
+      this.element = element;
+      this.change = this.change.bind(this);
+    }
+
+    FormCustomAttribute.prototype.change = function change() {
+
+      if (this.value == 'onchange' && this.serialize() == this.initialValue) return this.inputElement.disabled = true;
+
+      var valid = this.formElement && this.formElement.checkValidity();
+      this.inputElement.disabled = !valid;
+    };
+
+    FormCustomAttribute.prototype.attached = function attached() {
+      this.formElement = this.element.closest('form');
+      this.formElement.addEventListener('change', this.debounce(this.change, 150));
+      this.formElement.addEventListener('input', this.debounce(this.change, 150));
+
+      this.inputElement = this.element.querySelector('input,button,select') || this.element;
+
+      this.initialValue = this.serialize();
+
+      setTimeout(this.change);
+    };
+
+    FormCustomAttribute.prototype.serialize = function serialize() {
+      var s = [];
+      for (var _iterator = this.formElement.elements, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref = _i.value;
+        }
+
+        var field = _ref;
+
+        if (field.type != 'select-multiple') s.push(field.value);else {
+          for (var _iterator2 = field.options, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+            var _ref2;
+
+            if (_isArray2) {
+              if (_i2 >= _iterator2.length) break;
+              _ref2 = _iterator2[_i2++];
+            } else {
+              _i2 = _iterator2.next();
+              if (_i2.done) break;
+              _ref2 = _i2.value;
+            }
+
+            var _option = _ref2;
+
+            if (_option.selected) s.push(_option.value);
+          }
+        }
+      }
+      return s.join('&');
+    };
+
+    FormCustomAttribute.prototype.debounce = function debounce(func, wait) {
+      var timeout = void 0;
+      return function () {
+        var _this = this,
+            _arguments = arguments;
+
+        clearTimeout(timeout);
+        timeout = setTimeout(function (_) {
+          timeout = null;
+          func.apply(_this, _arguments);
+        }, wait);
+      };
+    };
+
+    return FormCustomAttribute;
+  }()) || _class) || _class);
+});
+define('client/src/elems/md-autocomplete',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdAutocompleteCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _class;
+
+  var MdAutocompleteCustomElement = exports.MdAutocompleteCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('placeholder'), _dec(_class = _dec2(_class = _dec3(_class = function () {
+    function MdAutocompleteCustomElement() {
+      _classCallCheck(this, MdAutocompleteCustomElement);
+    }
+
+    MdAutocompleteCustomElement.prototype.toggleResults = function toggleResults($event) {
+      var _this = this;
+
+      setTimeout(function () {
+        return _this.showResults = !_this.showResults;
+      }, 200);
+    };
+
+    return MdAutocompleteCustomElement;
+  }()) || _class) || _class) || _class);
+});
+define('client/src/elems/md-button',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdButtonCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
+
+  var MdButtonCustomElement = exports.MdButtonCustomElement = (_dec = (0, _aureliaFramework.bindable)('form'), _dec2 = (0, _aureliaFramework.bindable)('class'), _dec3 = (0, _aureliaFramework.bindable)('raised'), _dec4 = (0, _aureliaFramework.bindable)('fab'), _dec5 = (0, _aureliaFramework.bindable)('disabled'), _dec6 = (0, _aureliaFramework.bindable)('color'), _dec7 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
+    function MdButtonCustomElement(element) {
+      _classCallCheck(this, MdButtonCustomElement);
+
+      this.element = element;
+      this.change = this.change.bind(this);
+    }
+
+    MdButtonCustomElement.prototype.click = function click($event) {
+      this.disabled && $event.stopPropagation();
+    };
+
+    MdButtonCustomElement.prototype.disabledChanged = function disabledChanged() {
+      this.button && this.change();
+    };
+
+    MdButtonCustomElement.prototype.change = function change(input) {
+      this.disabled = this.disabled || this.disabled === '';
+    };
+
+    MdButtonCustomElement.prototype.attached = function attached() {
+      var _button$classList;
+
+      setTimeout(this.change);
+
+      this.class && (_button$classList = this.button.classList).add.apply(_button$classList, this.class.split(' '));
+
+      if (typeof this.color == 'string' && this.color.slice(0, 4) != 'mdl-') {
+        this.color = 'mdl-button--' + (this.color || 'colored');
+      }
+
+      if (this.fab > 0) {
+        this.button.classList.add('mdl-button--fab');
+        this.button.style.height = this.fab + 'px';
+        this.button.style.width = this.fab + 'px';
+        this.button.style['min-width'] = this.button.style.width;
+        this.button.style['font-size'] = this.fab * .75 + 'px';
+        this.button.style['line-height'] = this.fab + 'px';
+      }
+
+      if (this.element.parentElement.tagName == 'MD-DRAWER') {
+        this.button.style.width = "100%";
+        this.button.style.height = "auto";
+        this.button.style.padding = "16px 8px";
+        this.button.style['line-height'] = "18px";
+      }
+    };
+
+    return MdButtonCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-checkbox',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdCheckboxCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _class;
+
+  var MdCheckboxCustomElement = exports.MdCheckboxCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element, _aureliaFramework.TaskQueue), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
+    function MdCheckboxCustomElement(element, taskQueue) {
+      var _this = this;
+
+      _classCallCheck(this, MdCheckboxCustomElement);
+
+      this.tabindex = element.tabIndex;
+      this.taskQueue = taskQueue;
+
+      element.addEventListener('click', function (e) {
+        return _this.disabled && e.stopPropagation();
+      });
+    }
+
+    MdCheckboxCustomElement.prototype.stopPropogation = function stopPropogation() {
+      return true;
+    };
+
+    MdCheckboxCustomElement.prototype.checkedChanged = function checkedChanged() {
+      var _this2 = this;
+
+      this.checked = !!this.checked;
+      this.taskQueue.queueTask(function (_) {
+        return _this2.label && _this2.label.MaterialCheckbox && _this2.label.MaterialCheckbox.checkToggleState();
+      });
+    };
+
+    MdCheckboxCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this3 = this;
+
+      this.taskQueue.queueTask(function (_) {
+        return _this3.label && _this3.label.MaterialCheckbox && _this3.label.MaterialCheckbox.checkDisabled();
+      });
+    };
+
+    MdCheckboxCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.label);
+      this.checkedChanged();
+    };
+
+    return MdCheckboxCustomElement;
+  }()) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-drawer',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdDrawerCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var drawer = document.createElement('nav');
+  drawer.classList.add("mdl-layout__drawer");
+  var MdDrawerCustomElement = exports.MdDrawerCustomElement = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
+    function MdDrawerCustomElement(element) {
+      _classCallCheck(this, MdDrawerCustomElement);
+
+      element.classList.add("mdl-navigation");
+      element.style['padding-top'] = '6px';
+
+      this.autofocus = element.hasAttribute('autofocus');
+
+      drawer.appendChild(element);
+    }
+
+    MdDrawerCustomElement.prototype.attached = function attached() {
+      this.header = document.querySelector('.mdl-layout__header');
+      this.header.parentNode.insertBefore(drawer, this.header.nextSibling);
+
+      componentHandler.upgradeAllRegistered();
+
+      this.button = document.querySelector('.mdl-layout__drawer-button');
+
+      if (this.button) this.button.style.display = 'block';
+
+      if (this.autofocus && this.header.firstChild && this.header.firstChild.click) this.header.firstChild.click();
+    };
+
+    MdDrawerCustomElement.prototype.detached = function detached() {
+      if (drawer.children.length == 1 && this.button) this.button.style.display = 'none';
+
+      drawer.removeChild(drawer.firstChild);
+    };
+
+    return MdDrawerCustomElement;
+  }()) || _class);
+});
+define('client/src/elems/md-input',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdInputCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _class;
+
+  var MdInputCustomElement = exports.MdInputCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('pattern'), _dec4 = (0, _aureliaFramework.bindable)('step'), _dec5 = (0, _aureliaFramework.bindable)('type'), _dec6 = (0, _aureliaFramework.bindable)('placeholder'), _dec7 = (0, _aureliaFramework.bindable)('input'), _dec8 = (0, _aureliaFramework.bindable)('max'), _dec9 = (0, _aureliaFramework.bindable)('min'), _dec10 = (0, _aureliaFramework.bindable)('required'), _dec11 = (0, _aureliaFramework.bindable)('minlength'), _dec12 = (0, _aureliaFramework.bindable)('maxlength'), _dec13 = (0, _aureliaFramework.bindable)('autofocus'), _dec14 = (0, _aureliaFramework.inject)(_aureliaFramework.TaskQueue), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = _dec8(_class = _dec9(_class = _dec10(_class = _dec11(_class = _dec12(_class = _dec13(_class = _dec14(_class = function () {
+    function MdInputCustomElement(taskQueue) {
+      _classCallCheck(this, MdInputCustomElement);
+
+      this.taskQueue = taskQueue;
+    }
+
+    MdInputCustomElement.prototype.valueChanged = function valueChanged() {
+      this.changed('checkDirty');
+    };
+
+    MdInputCustomElement.prototype.disabledChanged = function disabledChanged() {
+      this.changed('checkDisabled');
+    };
+
+    MdInputCustomElement.prototype.maxChanged = function maxChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.minChanged = function minChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.maxlengthChanged = function maxlengthChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.minlengthChanged = function minlengthChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.requiredChanged = function requiredChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.patternChanged = function patternChanged() {
+      this.changed();
+    };
+
+    MdInputCustomElement.prototype.changed = function changed(methodName) {
+      var _this = this;
+
+      this.taskQueue.queueTask(function (_) {
+        if (!_this.div || !_this.div.MaterialTextfield) return;
+
+        methodName && _this.div.MaterialTextfield[methodName]();
+
+        _this.div.MaterialTextfield.checkValidity();
+
+        if (!_this.input.validity.valid) console.log('invalid input:', _this.input.value, _this.input.pattern, _this.input.validity);
+
+        _this.div.MaterialTextfield.input_.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    };
+
+    MdInputCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+
+      if (!this.placeholder && this.type != 'date') this.div.classList.remove('has-placeholder');
+
+      if (this.autofocus || this.autofocus === '') this.div.MaterialTextfield.input_.focus();
+    };
+
+    return MdInputCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-loading',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdLoadingCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdLoadingCustomElement = exports.MdLoadingCustomElement = (_dec = (0, _aureliaFramework.bindable)('value'), _dec(_class = function () {
+    function MdLoadingCustomElement() {
+      _classCallCheck(this, MdLoadingCustomElement);
+    }
+
+    MdLoadingCustomElement.prototype.valueChanged = function valueChanged(val) {
+      var _this = this;
+
+      setTimeout(function (_) {
+        return _this.div && _this.div.MaterialProgress.setProgress(Math.min(val, 100));
+      });
+    };
+
+    MdLoadingCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+    };
+
+    return MdLoadingCustomElement;
+  }()) || _class);
+});
+define('client/src/elems/md-menu',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdMenuCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdMenuCustomElement = exports.MdMenuCustomElement = (_dec = (0, _aureliaFramework.inject)(_aureliaFramework.ObserverLocator, Element), _dec(_class = function () {
+    function MdMenuCustomElement(observer, element) {
+      _classCallCheck(this, MdMenuCustomElement);
+
+      this.id = 'id' + Date.now();
+      this.element = element;
+      this.observer = observer;
+    }
+
+    MdMenuCustomElement.prototype.click = function click($event) {
+      if ($event.target.tagName != 'INPUT' && !$event.target.disabled) return true;
+
+      $event.stopImmediatePropagation();
+    };
+
+    MdMenuCustomElement.prototype.setDisabled = function setDisabled(li, disabled) {
+      disabled ? li.setAttribute('disabled', '') : li.removeAttribute('disabled');
+    };
+
+    MdMenuCustomElement.prototype.resize = function resize() {
+      var height = this.ul.getBoundingClientRect().height;
+      var width = this.ul.getBoundingClientRect().width;
+
+      console.log('resize', height, width);
+
+      this.ul.MaterialMenu.container_.style.width = width + 'px';
+      this.ul.MaterialMenu.container_.style.height = height + 'px';
+      this.ul.MaterialMenu.outline_.style.width = width + 'px';
+      this.ul.MaterialMenu.outline_.style.height = height + 'px';
+      this.ul.style.clip = 'rect(0 ' + width + 'px ' + height + 'px 0)';
+    };
+
+    MdMenuCustomElement.prototype.attached = function attached() {
+      var _this = this;
+
+      var _loop = function _loop() {
+        if (_isArray) {
+          if (_i >= _iterator.length) return 'break';
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) return 'break';
+          _ref = _i.value;
+        }
+
+        var li = _ref;
+
+        li.classList.add('mdl-menu__item');
+        _this.setDisabled(li, li.disabled);
+        _this.observer.getObserver(li, 'disabled').subscribe(function (disabled) {
+          _this.setDisabled(li, disabled);
+        });
+      };
+
+      for (var _iterator = this.element.querySelectorAll('li'), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        var _ret = _loop();
+
+        if (_ret === 'break') break;
+      }
+
+      this.element.resize = function (opts) {
+        return setTimeout(function (_) {
+          return _this.resize(opts);
+        }, 100);
+      };
+    };
+
+    return MdMenuCustomElement;
+  }()) || _class);
+});
+define('client/src/elems/md-select',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdSelectCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class;
+
+  var MdSelectCustomElement = exports.MdSelectCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('style'), _dec3 = (0, _aureliaFramework.bindable)('options'), _dec4 = (0, _aureliaFramework.bindable)('disabled'), _dec5 = (0, _aureliaFramework.bindable)('default'), _dec6 = (0, _aureliaFramework.bindable)('required'), _dec7 = (0, _aureliaFramework.bindable)('property'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = function () {
+    function MdSelectCustomElement() {
+      _classCallCheck(this, MdSelectCustomElement);
+    }
+
+    MdSelectCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this = this;
+
+      setTimeout(function (_) {
+        return _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDisabled();
+      });
+    };
+
+    MdSelectCustomElement.prototype.valueChanged = function valueChanged() {
+      var _this2 = this;
+
+      setTimeout(function (_) {
+        return _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDirty();
+      });
+    };
+
+    MdSelectCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+    };
+
+    return MdSelectCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-shadow',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdShadowCustomAttribute = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdShadowCustomAttribute = exports.MdShadowCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function MdShadowCustomAttribute(element) {
+    _classCallCheck(this, MdShadowCustomAttribute);
+
+    element.classList.add("mdl-shadow--" + element.getAttribute('md-shadow') + "dp");
+  }) || _class);
+});
+define('client/src/elems/md-snackbar',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdSnackbarCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _class;
+
+  var MdSnackbarCustomElement = exports.MdSnackbarCustomElement = (_dec = (0, _aureliaFramework.bindable)('show'), _dec2 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = function () {
+    function MdSnackbarCustomElement(element) {
+      _classCallCheck(this, MdSnackbarCustomElement);
+
+      this.element = element;
+    }
+
+    MdSnackbarCustomElement.prototype.attached = function attached() {
+      var _this = this;
+
+      componentHandler.upgradeElement(this.element);
+      this.element.show = function (opts) {
+        if (typeof opts == 'string') opts = { message: opts, timeout: 5000 };
+
+        _this.element.MaterialSnackbar.showSnackbar(opts);
+      };
+      this.element.error = function (msg, err) {
+        if (!err) {
+          err = msg;
+          msg = '';
+        }
+        msg = msg + ' ' + err.message;
+        _this.element.show(msg);
+        console.error(msg, err);
+        return err;
+      };
+    };
+
+    return MdSnackbarCustomElement;
+  }()) || _class) || _class);
+});
+define('client/src/elems/md-switch',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdSwitchCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _class;
+
+  var MdSwitchCustomElement = exports.MdSwitchCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'checked', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('required'), _dec4 = (0, _aureliaFramework.inject)(Element), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = function () {
+    function MdSwitchCustomElement(elem) {
+      var _this = this;
+
+      _classCallCheck(this, MdSwitchCustomElement);
+
+      elem.addEventListener('click', function (e) {
+        return _this.disabled && e.stopPropagation();
+      });
+    }
+
+    MdSwitchCustomElement.prototype.stopPropogation = function stopPropogation() {
+      return true;
+    };
+
+    MdSwitchCustomElement.prototype.checkedChanged = function checkedChanged() {
+      var _this2 = this;
+
+      this.checked = !!this.checked;
+      setTimeout(function (_) {
+        return _this2.label && _this2.label.MaterialSwitch.checkToggleState();
+      });
+    };
+
+    MdSwitchCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this3 = this;
+
+      setTimeout(function (_) {
+        return _this3.label && _this3.label.MaterialSwitch.checkDisabled();
+      });
+    };
+
+    MdSwitchCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.label);
+      this.checkedChanged();
+      this.disabledChanged();
+    };
+
+    return MdSwitchCustomElement;
+  }()) || _class) || _class) || _class) || _class);
+});
+define('client/src/elems/md-table',["exports", "aurelia-framework"], function (exports, _aureliaFramework) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdTableCustomAttribute = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var MdTableCustomAttribute = exports.MdTableCustomAttribute = (_dec = (0, _aureliaFramework.inject)(Element), _dec(_class = function () {
+    function MdTableCustomAttribute(element) {
+      _classCallCheck(this, MdTableCustomAttribute);
+
+      element.classList.add("mdl-data-table");
+      element.classList.add("mdl-js-data-table");
+      element.style.border = "none";
+
+      if (element.getAttribute('md-table')) element.classList.add("mdl-data-table--selectable");
+
+      this.element = element;
+    }
+
+    MdTableCustomAttribute.prototype.valueChanged = function valueChanged(selectable) {
+
+      var checkboxes = this.element.querySelectorAll('input[type="checkbox"]');
+
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].disabled = selectable == 'false';
+      }
+    };
+
+    MdTableCustomAttribute.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.element);
+    };
+
+    return MdTableCustomAttribute;
+  }()) || _class);
+});
+define('client/src/elems/md-text',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.MdTextCustomElement = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _dec3, _dec4, _dec5, _class;
+
+  var MdTextCustomElement = exports.MdTextCustomElement = (_dec = (0, _aureliaFramework.bindable)({ name: 'value', defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec2 = (0, _aureliaFramework.bindable)('disabled'), _dec3 = (0, _aureliaFramework.bindable)('placeholder'), _dec4 = (0, _aureliaFramework.bindable)('required'), _dec5 = (0, _aureliaFramework.bindable)('autofocus'), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = function () {
+    function MdTextCustomElement() {
+      _classCallCheck(this, MdTextCustomElement);
+    }
+
+    MdTextCustomElement.prototype.valueChanged = function valueChanged() {
+      var _this = this;
+
+      setTimeout(function (_) {
+        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkDirty();
+        _this.div && _this.div.MaterialTextfield && _this.div.MaterialTextfield.checkValidity();
+      });
+    };
+
+    MdTextCustomElement.prototype.disabledChanged = function disabledChanged() {
+      var _this2 = this;
+
+      setTimeout(function (_) {
+        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkDisabled();
+        _this2.div && _this2.div.MaterialTextfield && _this2.div.MaterialTextfield.checkValidity();
+      });
+    };
+
+    MdTextCustomElement.prototype.attached = function attached() {
+      componentHandler.upgradeElement(this.div);
+
+      if (!this.placeholder) this.div.classList.remove('has-placeholder');
+
+      if (this.autofocus || this.autofocus === '') this.div.MaterialTextfield.input_.focus();
+    };
+
+    return MdTextCustomElement;
+  }()) || _class) || _class) || _class) || _class) || _class);
+});
 define('client/src/libs/csv',["exports"], function (exports) {
   "use strict";
 
@@ -1292,1662 +2072,6 @@ define('client/src/views/index',['exports'], function (exports) {
     });
   }
 });
-define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.join = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var join = exports.join = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router, _aureliaHttpClient.HttpClient), _dec(_class = function () {
-    function join(db, router, http) {
-      _classCallCheck(this, join);
-
-      this.db = db;
-      this.router = router;
-      this.http = http;
-
-      this.account = {
-        name: '',
-        license: '',
-        street: '',
-        city: '',
-        state: '',
-        zip: '',
-        ordered: {}
-      };
-
-      this.user = {
-        name: { first: '', last: '' },
-        phone: ''
-      };
-      this.canActivate = _helpers.canActivate;
-    }
-
-    join.prototype.join = function join() {
-      var _this = this;
-
-      this.disabled = true;
-      this.user.account = { _id: this.account.phone };
-
-      this.db.user.post(this.user).then(function (res) {
-        console.log('this.db.user.post success', res, _this.user);
-        return _this.db.account.post(_this.account);
-      }).then(function (res) {
-        console.log('this.db.account.post success', res, _this.account);
-        return new Promise(function (resolve) {
-          return setTimeout(resolve, 5000);
-        });
-      }).then(function (_) {
-        return _this.db.user.session.post(_this.user);
-      }).then(function (loading) {
-        console.log('this.db.user.session.post success', loading);
-
-        _this.loading = loading.resources;
-        _this.progress = loading.progress;
-
-        return Promise.all(loading.syncing);
-      }).then(function (_) {
-        console.log('join success', _);
-        return _this.router.navigate('shipments');
-      }).catch(function (err) {
-        _this.disabled = false;
-
-        err.account = _this.account;
-        err.user = _this.user;
-
-        if (err.message == "Document update conflict") err.message = "phone number must be unique";
-
-        _this.snackbar.error('Join failed', err);
-      });
-    };
-
-    return join;
-  }()) || _class);
-});
-define('client/src/views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.login = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var login = exports.login = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router), _dec(_class = function () {
-    function login(db, router) {
-      _classCallCheck(this, login);
-
-      this.db = db;
-      this.router = router;
-      this.phone = '';
-      this.password = '';
-      this.canActivate = _helpers.canActivate;
-    }
-
-    login.prototype.login = function login() {
-      var _this = this;
-
-      this.db.user.session.post({ phone: this.phone, password: this.password }).then(function (loading) {
-        _this.disabled = true;
-
-        _this.loading = loading.resources;
-        _this.progress = loading.progress;
-
-        return Promise.all(loading.syncing);
-      }).then(function (resources) {
-        _this.router.navigate('picking');
-      }).catch(function (err) {
-        _this.disabled = false;
-        _this.snackbar.error('Login failed', err);
-      });
-    };
-
-    return login;
-  }()) || _class);
-});
-define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.pendedFilterValueConverter = exports.shopping = undefined;
-
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-    return typeof obj;
-  } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-  };
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var shopping = exports.shopping = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router), _dec(_class = function () {
-    function shopping(db, router) {
-      _classCallCheck(this, shopping);
-
-      window.addEventListener('popstate', function (event) {
-        console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
-
-        var groupAndStep = document.location.href.split('picking/')[1];
-        if (groupAndStep) {
-          var _groupAndStep$split = groupAndStep.split('step/'),
-              group = _groupAndStep$split[0],
-              step = _groupAndStep$split[1];
-
-          console.log(group, step);
-        }
-      });
-
-      this.db = db;
-      this.router = router;
-
-      this.groups = [];
-      this.shopList = [];
-      this.shoppingIndex = -1;
-      this.nextButtonText = '';
-      this.orderSelectedToShop = false;
-      this.formComplete = false;
-      this.basketSaved = false;
-      this.currentCart = '';
-      this.basketOptions = ['S', 'R', 'G', 'B'];
-      this.focusInput = _helpers.focusInput;
-
-      this.canActivate = _helpers.canActivate;
-      this.currentDate = _helpers.currentDate;
-      this.clearNextProperty = _helpers.clearNextProperty;
-    }
-
-    shopping.prototype.deactivate = function deactivate() {};
-
-    shopping.prototype.canDeactivate = function canDeactivate() {
-      return confirm('Confirm you want to leave page');
-    };
-
-    shopping.prototype.activate = function activate(params) {
-      var _this = this;
-
-      this.groupName = params.groupName;
-
-      if (this.groupName) {
-        this.orderSelectedToShop = true;
-      }
-
-      return this.db.user.session.get().then(function (session) {
-        console.log('user acquired');
-        _this.user = { _id: session._id };
-        _this.account = { _id: session.account._id };
-
-        _this.db.user.get(_this.user._id).then(function (user) {
-          _this.router.routes[2].navModel.setTitle(user.name.first);
-        });
-
-        if (!_this.account.hazards) _this.account.hazards = {};
-        console.log('about to call refresh first time');
-        _this.refreshPendedGroups();
-
-        if (_this.isValidGroupName()) {
-          return _this.db.account.picking.post({ groupName: params.groupName, action: 'group_info' }).then(function (res) {
-            console.log('GROUP LOADED:' + params.groupName, 'stepNumber', params.stepNumber, res);
-
-            if (!res.groupData || !res.shopList) {
-              console.error('activate()  ! res.shopList || ! res.groupData', res);
-              throw res;
-            }
-
-            _this.shopList = res.shopList;
-            _this.groupData = res.groupData;
-            _this.groupLoaded = true;
-
-            _this.requestedPickingStep = params.stepNumber ? params.stepNumber : _this.currentShoppingIndex() + 1;
-
-            _this.manageShoppingIndex();
-          });
-        } else {
-          _this.groupLoaded = false;
-          console.error('activate() group loaded is false', params);
-        }
-      }).catch(function (err) {
-        console.log("error getting user session:", err);
-        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.addPreviousPickInfoIfExists = function addPreviousPickInfoIfExists(shopList) {
-      for (var _iterator = Object.keys(shopList), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-        var _ref;
-
-        if (_isArray) {
-          if (_i >= _iterator.length) break;
-          _ref = _iterator[_i++];
-        } else {
-          _i = _iterator.next();
-          if (_i.done) break;
-          _ref = _i.value;
-        }
-
-        var i = _ref;
-
-        var transaction = shopList[i].raw;
-
-        if (transaction.next && transaction.next[0]) {
-          var next = transaction.next;
-
-          if (next[0].pickedArchive && next[0].pickedArchive.user._id === this.user._id) {
-            next[0].picked = next[0].pickedArchive;
-            transaction.next = next;
-          }
-        }
-      }
-
-      return shopList;
-    };
-
-    shopping.prototype.updatePickedCount = function updatePickedCount() {
-      var _this2 = this;
-
-      var date = new Date();
-
-      var _date$toJSON$split$0$ = date.toJSON().split('T')[0].split('-'),
-          year = _date$toJSON$split$0$[0],
-          month = _date$toJSON$split$0$[1],
-          day = _date$toJSON$split$0$[2];
-
-      this.db.transaction.query('picked-by-user-from-shipment', { startkey: [this.account._id, this.user._id, year, month, day], endkey: [this.account._id, this.user._id, year, month, day, {}] }).then(function (res) {
-        console.log(res);
-        _this2.pickedCount = res.rows[0] ? res.rows[0].value[0].count : 0;
-      });
-    };
-
-    shopping.prototype.firstUnsavedIndex = function firstUnsavedIndex() {
-      var max = 0;
-
-      for (var _iterator2 = Object.entries(this.shopList), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-        var _ref2;
-
-        if (_isArray2) {
-          if (_i2 >= _iterator2.length) break;
-          _ref2 = _iterator2[_i2++];
-        } else {
-          _i2 = _iterator2.next();
-          if (_i2.done) break;
-          _ref2 = _i2.value;
-        }
-
-        var _ref3 = _ref2,
-            index = _ref3[0],
-            transaction = _ref3[1];
-
-
-        if (!transaction.extra || !transaction.extra.saved) {
-          console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList);
-          return max;
-        }
-
-        max++;
-      }
-
-      console.log('firstUnsavedIndex ALL SAVED', max, 'of', this.shopList.length, this.shopList);
-      return null;
-    };
-
-    shopping.prototype.manageShoppingIndex = function manageShoppingIndex() {
-      var firstUnsavedIndex = this.firstUnsavedIndex();
-
-      if (firstUnsavedIndex == null) {
-        this.loadGroupSelectionPage();
-      } else if (this.requestedPickingStep > firstUnsavedIndex + 1) {
-        console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
-        this.requestedPickingStep = firstUnsavedIndex + 1;
-        this.setShoppingIndex(firstUnsavedIndex);
-        alert('Please complete step ' + this.requestedPickingStep + ' first');
-      } else if (this.requestedPickingStep <= this.shopList.length && this.requestedPickingStep > 0) {
-        console.log('manageShoppingIndex m1', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
-        this.setShoppingIndex(this.requestedPickingStep - 1);
-      } else if (this.requestedPickingStep === 'basket') {
-        console.log('manageShoppingIndex m2', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
-        this.basketSaved = false;
-        this.initializeShopper();
-      } else if (this.groupLoaded === true) {
-        console.log('manageShoppingIndex m3', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
-        this.setShoppingIndex(0);
-      }
-    };
-
-    shopping.prototype.refreshPendedGroups = function refreshPendedGroups() {
-      var _this3 = this;
-
-      console.log('refreshing');
-
-      this.updatePickedCount();
-
-      this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
-        _this3.groups = res;
-      }).catch(function (err) {
-        console.log("error refreshing pended groups:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.unlockGroup = function unlockGroup(groupName, el) {
-      var _this4 = this;
-
-      for (var i = 0; i < this.groups.length; i++) {
-        if (this.groups[i].name == groupName) this.groups[i].locked = 'unlocking';
-      }
-
-      var start = Date.now();
-
-      this.db.account.picking.post({ groupName: groupName, action: 'unlock' }).then(function (res) {
-        _this4.groups = res;
-      }).catch(function (err) {
-        console.log("error unlocking order:", (Date.now() - start) / 1000, 'seconds', JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.navigate = function navigate(groupName, stepNumber) {
-
-      var previousStepNumber = stepNumber - 1;
-      this.groupName = groupName;
-
-      if (previousStepNumber === 0) {}
-
-      this.router.navigate('picking/' + groupName + '/step/' + stepNumber);
-
-      return true;
-    };
-
-    shopping.prototype.getOutcomeName = function getOutcomeName(outcomeObject) {
-      var match = Object.entries(outcomeObject).filter(function (entry) {
-        return entry[1] == true ? entry[1] : null;
-      });
-
-      return match.length ? match[0][0] : null;
-    };
-
-    shopping.prototype.selectGroup = function selectGroup(groupName, isLocked, isLockedByCurrentUser) {
-      var _this5 = this;
-
-      console.log('locking status on select', groupName, isLocked, isLockedByCurrentUser);
-
-      if (isLocked && !isLockedByCurrentUser || groupName.length === 0) return null;
-
-      this.groupLoaded = false;
-      this.orderSelectedToShop = true;
-      this.groupName = groupName;
-
-      var start = Date.now();
-
-      this.db.account.picking.post({ groupName: groupName, action: 'load' }).then(function (res) {
-        console.log("selectGroup: result of loading: " + res.length, (Date.now() - start) / 1000, 'seconds');
-        console.log('selectGroup:', res, 'shippingIndex', _this5.shippingIndex);
-
-        if (!res.shopList || !res.groupData) {
-          console.error('selectGroup() ! res.shopList || ! res.groupData', res);
-          throw res;
-        }
-
-        _this5.shopList = res.shopList;
-        _this5.groupData = res.groupData;
-        _this5.pendedFilter = '';
-        _this5.filter = {};
-
-        var currentShoppingIndex = _this5.currentShoppingIndex();
-
-        _this5.setPickingStepUrl(currentShoppingIndex + 1);
-
-        if (currentShoppingIndex == 0) {
-          _this5.initializeShopper();
-        }
-
-        var genericName = _this5.shopList[currentShoppingIndex].raw.drug.generic.replace(/\s/g, '');
-
-        if (_this5.basketSaved && _this5.groupData.basketsByGeneric && _this5.groupData.basketsByGeneric[genericName]) {
-          var basket = _this5.groupData.basketsByGeneric[genericName].slice(-1);
-          _this5.addBasketToShoppingList(basket);
-          _this5.basketSaved = true;
-        }
-      }).catch(function (err) {
-        if (~err.message.indexOf('Unexpected end of JSON input') || ~err.message.indexOf('Unexpected EOF')) {
-          var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
-          _this5.refreshPendedGroups();
-          _this5.resetShopper();
-        } else {
-          console.log("error loading order:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-          return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        }
-      });
-    };
-
-    shopping.prototype.initializeShopper = function initializeShopper() {
-
-      console.log('initializeShopper before:', 'shoppingIndex', this.shoppingIndex, 'groupLoaded', this.groupLoaded, 'shopList', this.shopList);
-
-      this.shoppingIndex = this.currentShoppingIndex();
-      this.groupLoaded = true;
-
-      if (this.shoppingIndex + 1 === this.shopList.length) {
-        this.setNextToSave();
-      } else {
-        this.setNextToNext();
-      }
-
-      this.addBasket(this.shoppingIndex);
-    };
-
-    shopping.prototype.resetShopper = function resetShopper() {
-      this.orderSelectedToShop = false;
-      this.formComplete = false;
-      this.updatePickedCount();
-    };
-
-    shopping.prototype.updateRevs = function updateRevs(res) {
-      var _this6 = this;
-
-      var results = {};
-      res.forEach(function (transaction) {
-        results[transaction._id || transaction.id] = transaction;
-      });
-
-      this.shopList.forEach(function (shopListItem, index) {
-        if (results[shopListItem.raw._id]) {
-          _this6.shopList[index].raw._rev = results[shopListItem.raw._id].rev;
-          console.log(shopListItem.raw._id + ' => ' + shopListItem.raw._rev);
-        }
-      });
-
-      return results;
-    };
-
-    shopping.prototype.saveShoppingResults = function saveShoppingResults(arr_enriched_transactions, key) {
-      var _this7 = this;
-
-      var transactions_to_save = this.prepResultsToSave(arr_enriched_transactions, key);
-
-      console.log("attempting to save these transactions", transactions_to_save);
-      var startTime = new Date().getTime();
-
-      if (!transactions_to_save || !transactions_to_save.length) {
-        console.log('nothing to save');
-        return Promise.resolve();
-      }
-
-      return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-        var completeTime = new Date().getTime();
-        var results = _this7.updateRevs(res);
-        console.log("save (" + key + ") results of saving in " + (completeTime - startTime) + " ms", results);
-      }).catch(function (err) {
-
-        var completeTime = new Date().getTime();
-        console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-
-        if (err.status == 0) {
-
-          console.log("going to try and save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save));
-
-          return _this7.delay(3000).then(function (_) {
-
-            console.log("waiting finished, sending again");
-
-            return _this7.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
-              var finalTime = new Date().getTime();
-              console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
-            }).catch(function (err) {
-              console.log("saving: empty object error the second time");
-              return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-            });
-          });
-        } else {
-
-          _this7.snackbar.error('Error loading/saving. Contact Adam', err);
-          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        }
-      });
-    };
-
-    shopping.ifExists = function ifExists(obj, path) {
-      var currentNode = obj;
-      path = path.split('.');
-
-      for (var _iterator3 = path, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-        var _ref4;
-
-        if (_isArray3) {
-          if (_i3 >= _iterator3.length) break;
-          _ref4 = _iterator3[_i3++];
-        } else {
-          _i3 = _iterator3.next();
-          if (_i3.done) break;
-          _ref4 = _i3.value;
-        }
-
-        var part = _ref4;
-
-        currentNode = currentNode[part];
-
-        if (!currentNode) break;
-      }
-
-      return currentNode;
-    };
-
-    shopping.outcomeChanged = function outcomeChanged(transaction, outcome) {
-      var data = transaction.next[0];
-
-      console.log('comparing outcomes', outcome, shopping.ifExists(data, 'pickedArchive.matchType'));
-
-      if (!data.picked || !data.pickedArchive) {
-        return true;
-      }
-
-      if (data && data.picked && data.pickedArchive) {
-        return outcome !== data.pickedArchive.matchType;
-      }
-
-      return false;
-    };
-
-    shopping.canChangeOutcome = function canChangeOutcome(transaction) {
-      var data = transaction.next[0];
-
-      if (data.pickedArchive) {
-        return data.pickedArchive.matchType !== 'missing';
-      }
-
-      return true;
-    };
-
-    shopping.prototype.prepResultsToSave = function prepResultsToSave(arr_enriched_transactions, key) {
-
-      if (arr_enriched_transactions.length == 0) {
-        console.log('no transactions to save');
-        return;
-      }
-
-      var transactions_to_save = [];
-
-      for (var i = 0; i < arr_enriched_transactions.length; i++) {
-
-        var reformated_transaction = arr_enriched_transactions[i].raw;
-        var next = reformated_transaction.next;
-
-        if (next[0]) {
-          if (key == 'shopped') {
-            var outcome = this.getOutcome(arr_enriched_transactions[i].extra);
-
-            if (!shopping.canChangeOutcome(reformated_transaction)) {
-              console.log(reformated_transaction._id, 'Outcome === missing. Updates not allowed.');
-              continue;
-            }
-
-            if (!shopping.outcomeChanged(reformated_transaction, outcome)) {
-              console.log(reformated_transaction._id, 'Same outcome. Not saving.');
-              continue;
-            }
-
-            next[0].picked = {
-              _id: new Date().toJSON(),
-              basket: arr_enriched_transactions[i].extra.fullBasket,
-              repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from,
-              matchType: outcome,
-              user: this.user
-            };
-
-            next[0].pickedArchive = next[0].picked;
-          } else if (key == 'unlock') {
-
-            delete next[0].picked;
-          } else if (key == 'lockdown') {
-
-            next[0].picked = {};
-          }
-        }
-
-        reformated_transaction.next = next;
-        transactions_to_save.push(reformated_transaction);
-      }
-
-      if (!transactions_to_save.length) {
-        console.log('no transactions to save');
-        return;
-      }
-
-      return transactions_to_save;
-    };
-
-    shopping.prototype.saveBasketNumber = function saveBasketNumber() {
-      var _this8 = this;
-
-      console.log('saveBasketNumber called', this.shoppingIndex, this.shopList[this.shoppingIndex], this.shopList);
-
-      this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber;
-
-      if (this.shopList[this.shoppingIndex].extra.basketLetter != 'G' && this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0]) {
-        this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0];
-      }
-
-      if (this.shopList[this.shoppingIndex].raw) this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
-
-      var extra = this.shopList[this.shoppingIndex].extra;
-
-      var basket = {
-        letter: extra.basketLetter,
-        number: extra.basketNumber,
-        fullBasket: extra.fullBasket
-      };
-
-      var idData = {
-        _id: this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._id,
-        _rev: this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._rev
-      };
-
-      this.db.account.picking.post({
-        id: idData,
-        groupName: this.groupName,
-        basket: basket,
-        action: 'save_basket_number'
-      }).then(function (res) {
-        var results = _this8.updateRevs([res]);
-
-        if (Object.keys(results).length > 0) {
-          _this8.basketSaved = true;
-          _this8.addBasketToShoppingList(basket);
-        }
-      });
-
-      this.setShoppingIndex(this.currentShoppingIndex());
-    };
-
-    shopping.prototype.currentShoppingIndex = function currentShoppingIndex() {
-
-      console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, _typeof(this.shoppingIndex), 'shopListMaxIndex', this.shopList.length, 'groupData', this.groupData, 'shopList', this.shopList);
-
-      if (typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopList.length - 1) {
-        console.log('currentShoppingIndex provided', this.shoppingIndex, this.shopList);
-        return this.shoppingIndex;
-      }
-
-      var firstUnsavedIndex = this.firstUnsavedIndex();
-      console.log('currentShoppingIndex firstUnsavedIndex', 'groupData', this.groupData, 'shopList', this.shopList, 'firstUnsavedIndex', firstUnsavedIndex);
-      return firstUnsavedIndex;
-    };
-
-    shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
-      var list_of_baskets = '';
-      for (var i = 0; i < this.shopList.length; i++) {
-        if (this.shopList[i].extra.fullBasket && !~list_of_baskets.indexOf(this.shopList[i].extra.fullBasket) && (!this.shopList[i].raw || this.shopList[i].raw.drug.generic == generic)) list_of_baskets += ',' + this.shopList[i].extra.fullBasket;
-      }
-      this.currentGenericBaskets = list_of_baskets;
-    };
-
-    shopping.prototype.addBasket = function addBasket(index) {
-      if (!this.shopList || !this.shopList[index]) {
-        console.error('addBasket() ! res.shopList || ! res.groupData', this.shopList, index);
-        return;
-      }
-
-      this.basketSaved = false;
-
-      if (this.shopList[index].extra.basketLetter != 'G') {
-        this.shopList[index].extra.basketNumber = this.currentCart;
-      }
-    };
-
-    shopping.prototype.delay = function delay(ms) {
-      return new Promise(function (resolve) {
-        return setTimeout(resolve, ms);
-      });
-    };
-
-    shopping.prototype.moveShoppingForward = function moveShoppingForward() {
-      var _this9 = this;
-
-      if (this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing' || this.shopList[this.shoppingIndex].extra.saved == 'missing') {
-        return this.advanceShopping();
-      }
-
-      this.formComplete = false;
-      this.setNextToLoading();
-
-      console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
-
-      this.db.account.picking['post']({
-        groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group,
-        action: 'missing_transaction',
-        ndc: this.shopList[this.shoppingIndex].raw.drug._id,
-        generic: this.shopList[this.shoppingIndex].raw.drug.generic,
-        qty: this.shopList[this.shoppingIndex].raw.qty.to,
-        repackQty: this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty
-      }).then(function (res) {
-
-        if (res.length > 0) {
-
-          _this9.shopList[_this9.shoppingIndex].extra.saved = 'missing';
-          _this9.groupData.numTransactions += res.length;
-
-          for (var j = 0; j < res.length; j++) {
-
-            var n = _this9.shoppingIndex - (_this9.shopList[_this9.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
-            if (n < 0) n = 0;
-            var inserted = false;
-
-            for (n; n < _this9.shopList.length; n++) {
-
-              if (_this9.shopList[n].raw.drug.generic == res[j].raw.drug.generic) {
-                _this9.shopList[n].extra.genericIndex.relative_index[1]++;
-              } else {
-                res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
-                _this9.shopList.splice(n, 0, res[j]);
-                inserted = true;
-                n = _this9.shopList.length;
-              }
-            }
-
-            if (!inserted) {
-              res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
-              _this9.shopList.push(res[j]);
-            }
-          }
-        } else {
-          console.log("couldn't find item with same or greater qty to replace this");
-        }
-
-        _this9.advanceShopping();
-      }).catch(function (err) {
-        console.log("error compensating for missing:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
-      });
-    };
-
-    shopping.prototype.advanceShopping = function advanceShopping() {
-      var _this10 = this;
-
-      if (this.shoppingIndex + 1 === this.shopList.length) {
-
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
-
-          console.log('advanceShopping completed', _);
-
-          _this10.resetShopper();
-          _this10.unlockGroup(_this10.shopList[_this10.shoppingIndex].raw.next[0].pended.group);
-          _this10.refreshPendedGroups();
-          _this10.loadGroupSelectionPage();
-        });
-
-        for (var i = this.groups.length - 1; i >= 0; i--) {
-          if (this.groups[i].name == this.shopList[this.shoppingIndex].raw.next[0].pended.group) {
-            this.groups.splice(i, 1);
-            break;
-          }
-        }
-      } else {
-
-        if (!this.shopList[this.shoppingIndex + 1].extra.fullBasket) {
-          if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
-            this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter;
-            this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket;
-          } else {
-            this.addBasket(this.shoppingIndex + 1);
-          }
-        } else if (this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex + 1].raw && this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
-          this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic);
-        }
-
-        console.log('saving transaction', this.shopList[this.shoppingIndex]);
-        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
-          console.log('saved transaction', _this10.shopList[_this10.shoppingIndex], _);
-          _this10.setShoppingIndex(_this10.shoppingIndex + 1);
-        });
-      }
-    };
-
-    shopping.prototype.addBasketToShoppingList = function addBasketToShoppingList(basket) {
-      var letter = void 0,
-          number = void 0;
-
-      if (basket.letter) {
-        letter = basket.letter;
-        number = basket.number;
-      } else {
-        letter = basket.slice(0, 1);
-        number = basket.slice(1);
-      }
-
-      this.shopList[this.shoppingIndex].extra.basketLetter = letter;
-      this.shopList[this.shoppingIndex].extra.basketNumber = number;
-      this.shopList[this.shoppingIndex].extra.fullBasket = letter + number;
-      this.basketSaved = true;
-    };
-
-    shopping.prototype.setPickingStepUrl = function setPickingStepUrl(stepNumber) {
-      if (!this.isValidGroupName()) {
-        console.log('not setting step ' + stepNumber);
-        return false;
-      }
-
-      var url = '#/picking/' + this.groupName + '/step/' + stepNumber;
-
-      if (this.pickingOnloadFired === true) {
-        history.pushState(null, null, url);
-      } else {
-        console.log('replacing state');
-        history.replaceState(null, null, url);
-        this.pickingOnloadFired = true;
-      }
-    };
-
-    shopping.prototype.isValidGroupName = function isValidGroupName() {
-      var isValid = !!this.groupName && this.groupName.length && this.groupName !== 'undefined';
-
-      return isValid;
-    };
-
-    shopping.prototype.loadGroupSelectionPage = function loadGroupSelectionPage() {
-
-      var reload = window.location.hash !== '#/picking';
-
-      history.replaceState(null, null, '#/picking');
-
-      if (reload === true) {
-        window.location.reload();
-      }
-    };
-
-    shopping.prototype.setShoppingIndex = function setShoppingIndex(index) {
-      var _this11 = this;
-
-      if (index !== 0 && !index) {
-        alert('no index');
-        console.trace();
-        return false;
-      }
-
-      if (!this.isValidGroupName()) {
-        this.loadGroupSelectionPage();
-        return false;
-      }
-
-      console.log('setShoppingIndex requesting : ' + this.groupName + '/' + (index + 1) + '/' + index + ' (group/step/shoppingIndex)');
-
-      var goToIndex = function goToIndex() {
-
-        console.log('goToIndex', 'new', index, 'old', _this11.shoppingIndex);
-        console.log('goToIndex', _this11.groupData);
-        console.log('goToIndex', _this11.shopList[index]);
-        console.log('goToIndex', _this11.shopList[index].raw.drug.generic);
-
-        _this11.shoppingIndex = index;
-
-        var genericName = _this11.shopList[index].raw.drug.generic.replace(/\s/g, '');
-
-        if (_this11.basketSaved !== true) {
-          _this11.basketSaved = _this11.groupData.baskets && _this11.groupData.baskets.length && _this11.groupData.basketsByGeneric[genericName] && _this11.groupData.basketsByGeneric[genericName].length;
-        }
-
-        console.log('setShoppingIndex picking.basketSaved ', _this11.basketSaved);
-
-        if (index < 0 && _this11.basketSaved) {
-          _this11.shoppingIndex = _this11.currentShoppingIndex();
-        }
-
-        if (_this11.basketSaved && _this11.groupData.basketsByGeneric && _this11.groupData.basketsByGeneric[genericName]) {
-          var basket = _this11.groupData.basketsByGeneric[genericName].slice(-1);
-          _this11.addBasketToShoppingList(basket);
-        }
-        if (_this11.shoppingIndex + 1 === _this11.shopList.length) {
-          _this11.setNextToSave();
-        } else {
-          _this11.setNextToNext();
-        }
-
-        _this11.formComplete = !!_this11.shopList[_this11.shoppingIndex].extra.fullBasket && _this11.someOutcomeSelected(_this11.shopList[_this11.shoppingIndex].extra.outcome);
-        console.log('setShoppingIndex formComplete', _this11.formComplete);
-        _this11.setPickingStepUrl(_this11.shoppingIndex + 1);
-      };
-
-      if (!this.shopList.length) {
-
-        this.db.account.picking.post({ groupName: this.groupName, action: 'load' }).then(function (res) {
-
-          if (!res.groupData || !res.shopList) {
-            console.error('setShoppingIndex() ! res.shopList || ! res.groupData', res);
-            throw res;
-          }
-
-          _this11.groupData = res.groupData;
-          _this11.shopList = res.shopList;
-          _this11.initializeShopper();
-          goToIndex();
-        });
-      } else {
-        goToIndex();
-      }
-    };
-
-    shopping.prototype.moveShoppingBackward = function moveShoppingBackward() {
-      if (this.shoppingIndex == 0) return;
-
-      if (this.shopList[this.shoppingIndex - 1].raw && this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic);
-
-      this.setShoppingIndex(this.shoppingIndex -= 1);
-      this.formComplete = true;
-    };
-
-    shopping.prototype.pauseShopping = function pauseShopping(groupName) {
-
-      this.resetShopper();
-      this.unlockGroup(groupName);
-
-      this.refreshPendedGroups();
-
-      this.loadGroupSelectionPage();
-    };
-
-    shopping.prototype.selectShoppingOption = function selectShoppingOption(key) {
-      if (this.shopList[this.shoppingIndex].extra.outcome[key]) return;
-      this.formComplete = true;
-
-      for (var outcome_option in this.shopList[this.shoppingIndex].extra.outcome) {
-        if (outcome_option !== key) {
-          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = false;
-        } else {
-          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = true;
-        }
-      }
-
-      if (key == 'missing') {
-        this.setNextToNext();
-      } else if (this.shoppingIndex + 1 === this.shopList.length) {
-        this.setNextToSave();
-      }
-    };
-
-    shopping.prototype.arrayMove = function arrayMove(arr, fromIndex, toIndex) {
-      var res = arr.slice(0);
-      var element = res[fromIndex];
-      res.splice(fromIndex, 1);
-      res.splice(toIndex, 0, element);
-      return res;
-    };
-
-    shopping.prototype.formatExp = function formatExp(rawStr) {
-      if (!rawStr) return null;
-
-      var substr_arr = rawStr.slice(2, 7).split("-");
-      return substr_arr[1] + "/" + substr_arr[0];
-    };
-
-    shopping.prototype.someOutcomeSelected = function someOutcomeSelected(outcomeObj) {
-      return ~Object.values(outcomeObj).indexOf(true);
-    };
-
-    shopping.prototype.warnAboutRequired = function warnAboutRequired() {
-      this.snackbar.show('Basket number and outcome are required');
-    };
-
-    shopping.prototype.setNextToLoading = function setNextToLoading() {
-      this.nextButtonText = 'Updating';
-    };
-
-    shopping.prototype.setNextToSave = function setNextToSave() {
-      this.nextButtonText = 'Complete';
-    };
-
-    shopping.prototype.setNextToNext = function setNextToNext() {
-      this.nextButtonText = 'Next';
-    };
-
-    shopping.prototype.getOutcome = function getOutcome(extraItemData) {
-      var res = '';
-      for (var possibility in extraItemData.outcome) {
-        if (extraItemData.outcome[possibility]) res += possibility;
-      }
-      return res;
-    };
-
-    return shopping;
-  }()) || _class);
-
-  var pendedFilterValueConverter = exports.pendedFilterValueConverter = function () {
-    function pendedFilterValueConverter() {
-      _classCallCheck(this, pendedFilterValueConverter);
-    }
-
-    pendedFilterValueConverter.prototype.toView = function toView() {
-      var pended = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var term = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-      if (term.length < 3) return pended;
-
-      term = term.toLowerCase();
-      var matches = [];
-
-      if (term.trim().length == 0) {
-        matches = pended;
-      } else {
-
-        for (var i = 0; i < pended.length; i++) {
-
-          if (~pended[i].name.toLowerCase().indexOf(term) || term.trim().length == 0) {
-            matches.unshift(pended[i]);
-            continue;
-          } else if (pended[i].baskets.length > 0) {
-            for (var n = 0; n < pended[i].baskets.length; n++) {
-              if (~pended[i].baskets[n].toLowerCase().indexOf(term)) {
-                matches.unshift(pended[i]);
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      return matches;
-    };
-
-    return pendedFilterValueConverter;
-  }();
-});
-define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client', '../libs/csv', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient, _csv, _helpers) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.shipments = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var shipments = exports.shipments = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router, _aureliaHttpClient.HttpClient), _dec(_class = function () {
-    function shipments(db, router, http) {
-      _classCallCheck(this, shipments);
-
-      this.csv = _csv.csv;
-      this.db = db;
-      this.drugs = [];
-      this.router = router;
-      this.http = http;
-      this.stati = ['pickup', 'shipped', 'received'];
-      this.shipments = {};
-      this.term = '';
-
-      this.waitForDrugsToIndex = _helpers.waitForDrugsToIndex;
-      this.expShortcutsKeydown = _helpers.expShortcuts;
-      this.qtyShortcutsKeydown = _helpers.qtyShortcuts;
-      this.removeTransactionIfQty0 = _helpers.removeTransactionIfQty0;
-      this.incrementBin = _helpers.incrementBin;
-      this.saveTransaction = _helpers.saveTransaction;
-      this.focusInput = _helpers.focusInput;
-      this.scrollSelect = _helpers.scrollSelect;
-      this.toggleDrawer = _helpers.toggleDrawer;
-      this.drugSearch = _helpers.drugSearch;
-      this.canActivate = _helpers.canActivate;
-      this.instructionsText = 'Filter shipments';
-
-      this.shipmentDrawerYearChoices = [new Date().getFullYear()];
-      this.shipmentDrawerYear = null;
-    }
-
-    shipments.prototype.activate = function activate(params) {
-      var _this = this;
-
-      return this.db.user.session.get().then(function (session) {
-        _this.user = session._id;
-        return _this.db.account.get(session.account._id);
-      }).then(function (account) {
-        var _this$ordered;
-
-        _this.db.user.get(_this.user).then(function (user) {
-          _this.router.routes[2].navModel.setTitle(user.name.first);
-        });
-
-        _this.account = account;
-
-        _this.ordered = (_this$ordered = {}, _this$ordered[account._id] = account.ordered, _this$ordered);
-
-        _this.initializeDrawer();
-
-        _this.gatherShipments(params).then(function (_) {
-          return _this.setInstructionsText("", true);
-        });
-      }).catch(function (err) {
-        console.error('Could not get session for user.  Please verify user registration and login are functioning properly');
-      });
-    };
-
-    shipments.prototype.setInstructionsText = function setInstructionsText(str) {
-      var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-      this.instructionsText = reset ? "Filter shipments " + this.role.accounts + " you" : str;
-    };
-
-    shipments.prototype.selectShipment = function selectShipment(shipment, toggleDrawer) {
-      if (toggleDrawer) this.toggleDrawer();
-
-      if (!shipment) return this.emptyShipment();
-      this.setUrl('/' + shipment._id);
-      this.setShipment(shipment);
-      this.setTransactions(shipment._id);
-    };
-
-    shipments.prototype.initializeDrawer = function initializeDrawer() {
-      var _this2 = this;
-
-      this.shipmentDrawerYear = this.shipmentDrawerYearChoices[0];
-      this.db.shipment.query('account.to._id', { startkey: [this.account._id], endkey: [this.account._id + '\uFFFF'], group_level: 2 }).then(function (res) {
-        var years = res.rows.map(function (row) {
-          return row.key[1];
-        });
-        var currentYear = new Date().getFullYear().toString();
-        if (!years.includes(currentYear)) years.push(currentYear);
-        _this2.shipmentDrawerYearChoices = years.sort(function (a, b) {
-          return b - a;
-        });
-      });
-    };
-
-    shipments.prototype.refocusWithNewShipments = function refocusWithNewShipments() {
-      this.setInstructionsText("...Loading shipments...", false);
-      this.filter = '';
-      this.shipments = {};
-      this.focusInput('#drawer_filter');
-    };
-
-    shipments.prototype.gatherShipments = function gatherShipments() {
-      var _this3 = this;
-
-      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-
-      var senderAccounts = this.db.account.allDocs({ keys: this.account.authorized, include_docs: true });
-
-      var shipmentsReceived = this.db.shipment.query('account.to._id', { startkey: [this.account._id, this.shipmentDrawerYear.toString() + '\uFFFF'], endkey: [this.account._id, this.shipmentDrawerYear.toString()], descending: true, reduce: false, include_docs: true });
-
-      return Promise.all([senderAccounts, shipmentsReceived]).then(function (all) {
-        senderAccounts = all[0].rows;
-        shipmentsReceived = all[1].rows;
-
-        var selected = void 0,
-            map = { to: {}, from: {} };
-
-        _this3.accounts = {
-          from: [''].concat(senderAccounts.map(function (account) {
-            var doc = account.doc;
-
-            if (!doc) {
-              console.error('doc property is not set', account, senderAccounts);
-              return {};
-            }
-
-            _this3.ordered[doc._id] = doc.ordered;
-            return map.from[doc._id] = { _id: doc._id, name: doc.name };
-          }).sort(function (a, b) {
-            if (a.name > b.name) return 1;
-            if (a.name < b.name) return -1;
-          }))
-        };
-
-        _this3.shipment = {};
-
-        var accountRef = function accountRef(role) {
-          return function (_ref) {
-            var doc = _ref.doc;
-
-            _this3.setStatus(doc);
-
-            if (map[role][doc.account[role]._id]) doc.account[role] = map[role][doc.account[role]._id];
-
-            if (params.id === doc._id) selected = doc;
-
-            return doc;
-          };
-        };
-
-        _this3.role = selected ? { accounts: 'to', shipments: 'from' } : { accounts: 'from', shipments: 'to' };
-
-        _this3.shipments.to = shipmentsReceived.map(accountRef('from'));
-
-        _this3.setInstructionsText("", true);
-
-        _this3.selectShipment(selected);
-      }).catch(function (err) {
-        return console.log('promise all err', err);
-      });
-    };
-
-    shipments.prototype.emptyShipment = function emptyShipment() {
-      this.setUrl('');
-
-      if (this.role.shipments == 'to') {
-        this.setShipment({ account: { to: { _id: this.account._id, name: this.account.name }, from: {} } });
-        this.setTransactions();
-      } else {
-        this.setShipment({ account: { from: { _id: this.account._id, name: this.account.name }, to: {} } });
-        this.setTransactions(this.account._id);
-      }
-    };
-
-    shipments.prototype.setShipment = function setShipment(shipment) {
-      this.shipment = shipment;
-      this.shipmentId = shipment._id;
-      this.attachment = null;
-    };
-
-    shipments.prototype.setUrl = function setUrl(url) {
-      this.router.navigate('shipments' + url, { trigger: false });
-    };
-
-    shipments.prototype.setTransactions = function setTransactions(shipmentId) {
-      var _this4 = this;
-
-      this.diffs = [];
-
-      if (!shipmentId) return this.transactions = [];
-
-      this.db.transaction.query('shipment._id', { key: [this.account._id, shipmentId], include_docs: true, descending: true }).then(function (res) {
-        _this4.transactions = res.rows.map(function (row) {
-          return row.doc;
-        });
-        _this4.setCheckboxes();
-      }).catch(function (err) {
-        return console.log('err', err);
-      });
-    };
-
-    shipments.prototype.setCheckboxes = function setCheckboxes() {
-      for (var _iterator = this.transactions, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-        var _ref2;
-
-        if (_isArray) {
-          if (_i >= _iterator.length) break;
-          _ref2 = _iterator[_i++];
-        } else {
-          _i = _iterator.next();
-          if (_i.done) break;
-          _ref2 = _i.value;
-        }
-
-        var transaction = _ref2;
-
-        transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt;
-      }
-    };
-
-    shipments.prototype.setStatus = function setStatus(shipment) {
-      shipment.status = this.stati.reduce(function (prev, curr) {
-        return shipment[curr + 'At'] ? curr : prev;
-      });
-    };
-
-    shipments.prototype.swapRole = function swapRole() {
-      var _ref3 = [this.role.shipments, this.role.accounts];
-      this.role.accounts = _ref3[0];
-      this.role.shipments = _ref3[1];
-
-      this.selectShipment();
-      return true;
-    };
-
-    shipments.prototype.saveShipment = function saveShipment() {
-      var _this5 = this;
-
-      return this.db.shipment.put(this.shipment).then(function (res) {
-        _this5.setStatus(_this5.shipment);
-      });
-    };
-
-    shipments.prototype.moveTransactionsToShipment = function moveTransactionsToShipment(shipment) {
-      var _this6 = this;
-
-      Promise.all(this.transactions.map(function (transaction) {
-        if (transaction.isChecked) {
-          transaction.shipment = { _id: shipment._id };
-          return _this6.db.transaction.put(transaction);
-        }
-      })).then(function (_) {
-        return _this6.selectShipment(shipment);
-      });
-    };
-
-    shipments.prototype.createShipment = function createShipment() {
-      var _this7 = this;
-
-      if (this.shipment.tracking == 'New Tracking #') delete this.shipment.tracking;
-
-      this.shipments[this.role.shipments].unshift(this.shipment);
-      this.setStatus(this.shipment);
-
-      this.db.shipment.post(this.shipment).then(function (res) {
-        return _this7.moveTransactionsToShipment(_this7.shipment);
-      }).catch(function (err) {
-        return console.error('createShipment error', err, _this7.shipment);
-      });
-    };
-
-    shipments.prototype.expShortcutsInput = function expShortcutsInput($index) {
-      this.autoCheck($index);
-    };
-
-    shipments.prototype.qtyShortcutsInput = function qtyShortcutsInput($event, $index) {
-      this.removeTransactionIfQty0($event, $index) && this.autoCheck($index);
-    };
-
-    shipments.prototype.binShortcuts = function binShortcuts($event, $index) {
-      if ($event.which == 13) return this.focusInput('md-autocomplete');
-
-      return this.incrementBin($event, this.transactions[$index]);
-    };
-
-    shipments.prototype.getBin = function getBin(transaction) {
-      return (this.getOrder(transaction) || {}).defaultBin || this._bin;
-    };
-
-    shipments.prototype.setBin = function setBin(transaction) {
-      if (this.getBin(transaction) != transaction.bin) this._bin = transaction.bin;
-    };
-
-    shipments.prototype.aboveMinQty = function aboveMinQty(order, transaction) {
-      var qty = transaction.qty[this.role.shipments];
-      if (!qty) return false;
-      console.log('aboveMinQty', transaction);
-      var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
-      var minQty = +order.minQty || this.account.default.minQty;
-      var aboveMinQty = qty >= minQty;
-      if (!aboveMinQty) console.log('Ordered drug but qty', qty, 'is less than', minQty);
-      return aboveMinQty;
-    };
-
-    shipments.prototype.aboveMinExp = function aboveMinExp(order, transaction) {
-      var exp = transaction.exp[this.role.shipments];
-      var minDays = order.minDays || this.account.default.minDays;
-      if (!exp) return !minDays;
-      var days = (new Date(exp) - Date.now()) / 24 / 60 / 60 / 1000;
-      var aboveMinExp = days >= minDays;
-      if (!aboveMinExp) console.log('Ordered drug but expiration', exp, 'is in', days, 'days and is before min days of', minDays);
-      return aboveMinExp;
-    };
-
-    shipments.prototype.belowMaxInventory = function belowMaxInventory(order, transaction) {
-      var newInventory = transaction.qty[this.role.shipments] + order.indateInventory;
-      var maxInventory = order.maxInventory || this.account.default.maxInventory;
-      var belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory;
-      if (!belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory);
-      return belowMaxInventory;
-    };
-
-    shipments.prototype.getOrder = function getOrder(transaction) {
-      return this.ordered[this.shipment.account.to._id][transaction.drug.generic];
-    };
-
-    shipments.prototype.isWanted = function isWanted(order, transaction) {
-      return order ? this.belowMaxInventory(order, transaction) && this.aboveMinQty(order, transaction) && this.aboveMinExp(order, transaction) : false;
-    };
-
-    shipments.prototype.destroyedColor = function destroyedColor(destroyedMessage) {
-      if (!destroyedMessage) return 'mdl-color-text--green-900';
-
-      if (~destroyedMessage.indexOf('RCRA')) return 'mdl-color-text--red-900';
-
-      return 'mdl-color-text--yellow-900';
-    };
-
-    shipments.prototype.setDestroyedMessage = function setDestroyedMessage(order) {
-      var _this8 = this;
-
-      if (order && order.destroyedMessage && !this.destroyedMessage) {
-        this.destroyedMessage = setTimeout(function (_) {
-          delete _this8.destroyedMessage;
-          _this8.snackbarColor = _this8.destroyedColor(order.destroyedMessage);
-          _this8.snackbar.show(order.destroyedMessage);
-        }, 500);
-      }
-    };
-
-    shipments.prototype.clearDestroyedMessage = function clearDestroyedMessage() {
-      clearTimeout(this.destroyedMessage);
-      delete this.destroyedMessage;
-    };
-
-    shipments.prototype.autoCheck = function autoCheck($index) {
-      var transaction = this.transactions[$index];
-      var isChecked = transaction.isChecked;
-      var order = this.getOrder(transaction);
-
-      if (this.isWanted(order, transaction) == isChecked) {
-        if (!isChecked && transaction.qty.to > 0) {
-          this.setDestroyedMessage(order);
-        }
-        console.log('autoCheck unchanged', this.isWanted(order, transaction), isChecked, transaction);
-      } else if (isChecked) {
-        this.setDestroyedMessage(order);
-        console.log('autoCheck isChecked', transaction);
-        this.manualCheck($index);
-      } else if (!isChecked) {
-        this.snackbar.show(order && order.verifiedMessage || 'Drug is ordered');
-        this.clearDestroyedMessage();
-        console.log('autoCheck unChecked', transaction);
-        this.manualCheck($index);
-      }
-    };
-
-    shipments.prototype.manualCheck = function manualCheck($index) {
-      var transaction = this.transactions[$index];
-      transaction.isChecked = !transaction.isChecked;
-
-      this.moveItemsButton.offsetParent ? this.toggleSelectedCheck(transaction) : this.toggleVerifiedCheck(transaction);
-    };
-
-    shipments.prototype.toggleVerifiedCheck = function toggleVerifiedCheck(transaction) {
-
-      var next = transaction.next;
-      var verifiedAt = transaction.verifiedAt;
-
-      if (verifiedAt) {
-        transaction.verifiedAt = null;
-        transaction.next = [{ disposed: { _id: new Date().toJSON(), user: { _id: this.user } } }];
-        transaction.bin = null;
-
-        transaction.highlighted = this.destroyedColor(this.destroyedMessage);
-      } else {
-        transaction.verifiedAt = new Date().toJSON();
-        transaction.next = [];
-        transaction.bin = transaction.bin || this.getBin(transaction);
-      }
-
-      this.saveTransaction(transaction).catch(function (err) {
-        transaction.next = next;
-        transaction.verifiedAt = verifiedAt;
-      });
-    };
-
-    shipments.prototype.toggleSelectedCheck = function toggleSelectedCheck(transaction) {
-      var index = this.diffs.indexOf(transaction);
-      ~index ? this.diffs.splice(index, 1) : this.diffs.push(transaction);
-    };
-
-    shipments.prototype.search = function search() {
-      var _this9 = this;
-
-      this.drugSearch().then(function (drugs) {
-        _this9.drugs = drugs;
-        _this9.drug = drugs[0];
-      });
-    };
-
-    shipments.prototype.autocompleteShortcuts = function autocompleteShortcuts($event) {
-      var _this10 = this;
-
-      this.scrollSelect($event, this.drug, this.drugs, function (drug) {
-        _this10.scrolled = true;
-        _this10.drug = drug;
-      });
-
-      if ($event.which == 13) {
-        Promise.resolve(this._search).then(function (_) {
-          if (_this10.scrolled || _this10.drugs.length == 1) _this10.addTransaction(_this10.drug);
-        });
-        return false;
-      }
-
-      if ($event.which == 106 || $event.shiftKey && $event.which == 56) this.term = "";
-
-      return true;
-    };
-
-    shipments.prototype.addTransaction = function addTransaction(drug, transaction) {
-      var _this11 = this;
-
-      if (!drug) return this.snackbar.show('Cannot find drug matching this search');
-
-      this.drug = drug;
-
-      if (drug.warning) this.dialog.showModal();
-
-      transaction = transaction || {
-        qty: { from: null, to: null },
-        exp: {
-          from: this.transactions[0] ? this.transactions[0].exp.from : null,
-          to: this.transactions[0] ? this.transactions[0].exp.to : null
-        },
-        next: [{ disposed: { _id: new Date().toJSON(), user: { _id: this.user } } }]
-      };
-
-      transaction.drug = {
-        _id: drug._id,
-        brand: drug.brand,
-        gsns: drug.gsns,
-        generic: drug.generic,
-        generics: drug.generics,
-        form: drug.form,
-        price: drug.price,
-        pkg: drug.pkg
-      };
-
-      transaction.user = { _id: this.user };
-      transaction.shipment = { _id: this.shipment._rev ? this.shipment._id : this.account._id };
-
-      this.term = '';
-      this.scrolled = false;
-
-      this.transactions.unshift(transaction);
-
-      var order = this.getOrder(transaction);
-
-      if (order) {
-
-        var minDays = order.minDays || this.account.default && this.account.default.minDays || 30;
-        var date = new Date();
-        date.setDate(+minDays + date.getDate());
-        date = date.toJSON().slice(0, 10).split('-');
-
-        this.db.transaction.query('inventory-by-generic', { startkey: [this.account._id, 'month', date[0], date[1], drug.generic], endkey: [this.account._id, 'month', date[0], date[1], drug.generic, {}] }).then(function (inventory) {
-          console.log('indate inventory', minDays, date, inventory);
-          var row = inventory.rows[0];
-          order.indateInventory = row ? row.value[0].sum : 0;
-          console.log('order.inventory', _this11.indateInventory);
-        });
-      }
-
-      setTimeout(function (_) {
-        return _this11.focusInput('#exp_0');
-      }, 50);
-
-      return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
-        return _this11.db.transaction.post(transaction).catch(function (err) {
-          _this11.snackbar.error('Transaction could not be added: ', err);
-          _this11.transactions.shift();
-        });
-      });
-    };
-
-    shipments.prototype.dialogClose = function dialogClose() {
-      this.dialog.close();
-      this.focusInput('#exp_0');
-    };
-
-    shipments.prototype.exportCSV = function exportCSV() {
-
-      var shipment = JSON.parse(JSON.stringify(this.shipment));
-      var name = 'Shipment ' + this.shipment._id + '.csv';
-
-      delete shipment.account.to.authorized;
-      delete shipment.account.to.ordered;
-      delete shipment.account.from.authorized;
-      delete shipment.account.from.ordered;
-
-      this.csv.fromJSON(name, this.transactions.map(function (transaction) {
-        return {
-          '': transaction,
-          'next': JSON.stringify(transaction.next || []),
-          'drug._id': " " + transaction.drug._id,
-          'drug.generics': transaction.drug.generics.map(function (generic) {
-            return generic.name + " " + generic.strength;
-          }).join(';'),
-          shipment: shipment
-        };
-      }));
-    };
-
-    shipments.prototype.importCSV = function importCSV() {
-      var _this12 = this;
-
-      this.csv.toJSON(this.$file.files[0], function (parsed) {
-        _this12.$file.value = '';
-        return Promise.all(parsed.map(function (transaction) {
-          transaction._err = undefined;
-          transaction._id = undefined;
-          transaction._rev = undefined;
-          transaction.shipment._id = _this12.shipment._id;
-          transaction.next = JSON.parse(transaction.next);
-
-          return _this12.db.drug.get(transaction.drug._id).then(function (drug) {
-            return _this12.addTransaction(drug, transaction);
-          }).then(function (_) {
-            return undefined;
-          }).catch(function (err) {
-            transaction._err = 'Upload Error: ' + JSON.stringify(err);
-            return transaction;
-          });
-        }));
-      }).then(function (rows) {
-        return _this12.snackbar.show('Import Succesful');
-      }).catch(function (err) {
-        return _this12.snackbar.error('Import Error', err);
-      });
-    };
-
-    return shipments;
-  }()) || _class);
-});
 define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../libs/csv', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _csv, _helpers) {
   'use strict';
 
@@ -4132,6 +3256,1731 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
     return pendedFilterValueConverter;
   }();
+});
+define('client/src/views/join',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.join = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var join = exports.join = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router, _aureliaHttpClient.HttpClient), _dec(_class = function () {
+    function join(db, router, http) {
+      _classCallCheck(this, join);
+
+      this.db = db;
+      this.router = router;
+      this.http = http;
+
+      this.account = {
+        name: '',
+        license: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+        ordered: {}
+      };
+
+      this.user = {
+        name: { first: '', last: '' },
+        phone: ''
+      };
+      this.canActivate = _helpers.canActivate;
+    }
+
+    join.prototype.join = function join() {
+      var _this = this;
+
+      this.disabled = true;
+      this.user.account = { _id: this.account.phone };
+
+      this.db.user.post(this.user).then(function (res) {
+        console.log('this.db.user.post success', res, _this.user);
+        return _this.db.account.post(_this.account);
+      }).then(function (res) {
+        console.log('this.db.account.post success', res, _this.account);
+        return new Promise(function (resolve) {
+          return setTimeout(resolve, 5000);
+        });
+      }).then(function (_) {
+        return _this.db.user.session.post(_this.user);
+      }).then(function (loading) {
+        console.log('this.db.user.session.post success', loading);
+
+        _this.loading = loading.resources;
+        _this.progress = loading.progress;
+
+        return Promise.all(loading.syncing);
+      }).then(function (_) {
+        console.log('join success', _);
+        return _this.router.navigate('shipments');
+      }).catch(function (err) {
+        _this.disabled = false;
+
+        err.account = _this.account;
+        err.user = _this.user;
+
+        if (err.message == "Document update conflict") err.message = "phone number must be unique";
+
+        _this.snackbar.error('Join failed', err);
+      });
+    };
+
+    return join;
+  }()) || _class);
+});
+define('client/src/views/login',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.login = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var login = exports.login = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router), _dec(_class = function () {
+    function login(db, router) {
+      _classCallCheck(this, login);
+
+      this.db = db;
+      this.router = router;
+      this.phone = '';
+      this.password = '';
+      this.canActivate = _helpers.canActivate;
+    }
+
+    login.prototype.login = function login() {
+      var _this = this;
+
+      this.db.user.session.post({ phone: this.phone, password: this.password }).then(function (loading) {
+        _this.disabled = true;
+
+        _this.loading = loading.resources;
+        _this.progress = loading.progress;
+
+        return Promise.all(loading.syncing);
+      }).then(function (resources) {
+        _this.router.navigate('picking');
+      }).catch(function (err) {
+        _this.disabled = false;
+        _this.snackbar.error('Login failed', err);
+      });
+    };
+
+    return login;
+  }()) || _class);
+});
+define('client/src/views/picking',['exports', 'aurelia-framework', '../libs/pouch', 'aurelia-router', '../resources/helpers'], function (exports, _aureliaFramework, _pouch, _aureliaRouter, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.pendedFilterValueConverter = exports.shopping = undefined;
+
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var shopping = exports.shopping = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router), _dec(_class = function () {
+    function shopping(db, router) {
+      _classCallCheck(this, shopping);
+
+      window.addEventListener('popstate', function (event) {
+        console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
+
+        var groupAndStep = document.location.href.split('picking/')[1];
+        if (groupAndStep) {
+          var _groupAndStep$split = groupAndStep.split('step/'),
+              group = _groupAndStep$split[0],
+              step = _groupAndStep$split[1];
+
+          console.log(group, step);
+        }
+      });
+
+      this.db = db;
+      this.router = router;
+
+      this.groups = [];
+      this.shopList = [];
+      this.shoppingIndex = -1;
+      this.nextButtonText = '';
+      this.orderSelectedToShop = false;
+      this.formComplete = false;
+      this.basketSaved = false;
+      this.currentCart = '';
+      this.basketOptions = ['S', 'R', 'G', 'B'];
+      this.focusInput = _helpers.focusInput;
+
+      this.canActivate = _helpers.canActivate;
+      this.currentDate = _helpers.currentDate;
+      this.clearNextProperty = _helpers.clearNextProperty;
+    }
+
+    shopping.prototype.deactivate = function deactivate() {};
+
+    shopping.prototype.canDeactivate = function canDeactivate() {
+      return confirm('Confirm you want to leave page');
+    };
+
+    shopping.prototype.activate = function activate(params) {
+      var _this = this;
+
+      this.groupName = params.groupName;
+
+      if (this.groupName) {
+        this.orderSelectedToShop = true;
+      }
+
+      return this.db.user.session.get().then(function (session) {
+        console.log('user acquired');
+        _this.user = { _id: session._id };
+        _this.account = { _id: session.account._id };
+
+        _this.db.user.get(_this.user._id).then(function (user) {
+          _this.router.routes[2].navModel.setTitle(user.name.first);
+        });
+
+        if (!_this.account.hazards) _this.account.hazards = {};
+        console.log('about to call refresh first time');
+        _this.refreshPendedGroups();
+
+        if (_this.isValidGroupName()) {
+          return _this.db.account.picking.post({ groupName: params.groupName, action: 'group_info' }).then(function (res) {
+            console.log('GROUP LOADED:' + params.groupName, 'stepNumber', params.stepNumber, res);
+
+            if (!res.groupData || !res.shopList) {
+              console.error('activate()  ! res.shopList || ! res.groupData', res);
+              throw res;
+            }
+
+            _this.shopList = res.shopList;
+            _this.groupData = res.groupData;
+            _this.groupLoaded = true;
+
+            _this.requestedPickingStep = params.stepNumber ? params.stepNumber : _this.currentShoppingIndex() + 1;
+
+            _this.manageShoppingIndex();
+          });
+        } else {
+          _this.groupLoaded = false;
+          console.error('activate() group loaded is false', params);
+        }
+      }).catch(function (err) {
+        console.log("error getting user session:", err);
+        return confirm('Error getting user session, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+      });
+    };
+
+    shopping.prototype.addPreviousPickInfoIfExists = function addPreviousPickInfoIfExists(shopList) {
+      for (var _iterator = Object.keys(shopList), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref = _i.value;
+        }
+
+        var i = _ref;
+
+        var transaction = shopList[i].raw;
+
+        if (transaction.next && transaction.next[0]) {
+          var next = transaction.next;
+
+          if (next[0].pickedArchive && next[0].pickedArchive.user._id === this.user._id) {
+            next[0].picked = next[0].pickedArchive;
+            transaction.next = next;
+          }
+        }
+      }
+
+      return shopList;
+    };
+
+    shopping.prototype.updatePickedCount = function updatePickedCount() {
+      var _this2 = this;
+
+      var date = new Date();
+
+      var _date$toJSON$split$0$ = date.toJSON().split('T')[0].split('-'),
+          year = _date$toJSON$split$0$[0],
+          month = _date$toJSON$split$0$[1],
+          day = _date$toJSON$split$0$[2];
+
+      this.db.transaction.query('picked-by-user-from-shipment', { startkey: [this.account._id, this.user._id, year, month, day], endkey: [this.account._id, this.user._id, year, month, day, {}] }).then(function (res) {
+        console.log(res);
+        _this2.pickedCount = res.rows[0] ? res.rows[0].value[0].count : 0;
+      });
+    };
+
+    shopping.prototype.firstUnsavedIndex = function firstUnsavedIndex() {
+      var max = 0;
+
+      for (var _iterator2 = Object.entries(this.shopList), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+        var _ref2;
+
+        if (_isArray2) {
+          if (_i2 >= _iterator2.length) break;
+          _ref2 = _iterator2[_i2++];
+        } else {
+          _i2 = _iterator2.next();
+          if (_i2.done) break;
+          _ref2 = _i2.value;
+        }
+
+        var _ref3 = _ref2,
+            index = _ref3[0],
+            transaction = _ref3[1];
+
+
+        if (!transaction.extra || !transaction.extra.saved) {
+          console.log('firstUnsavedIndex', max, 'of', this.shopList.length, this.shopList);
+          return max;
+        }
+
+        max++;
+      }
+
+      console.log('firstUnsavedIndex ALL SAVED', max, 'of', this.shopList.length, this.shopList);
+      return null;
+    };
+
+    shopping.prototype.manageShoppingIndex = function manageShoppingIndex() {
+      var firstUnsavedIndex = this.firstUnsavedIndex();
+
+      if (firstUnsavedIndex == null) {
+        this.loadGroupSelectionPage();
+      } else if (this.requestedPickingStep > firstUnsavedIndex + 1) {
+        console.log('manageShoppingIndex m0', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+        this.requestedPickingStep = firstUnsavedIndex + 1;
+        this.setShoppingIndex(firstUnsavedIndex);
+        alert('Please complete step ' + this.requestedPickingStep + ' first');
+      } else if (this.requestedPickingStep <= this.shopList.length && this.requestedPickingStep > 0) {
+        console.log('manageShoppingIndex m1', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+        this.setShoppingIndex(this.requestedPickingStep - 1);
+      } else if (this.requestedPickingStep === 'basket') {
+        console.log('manageShoppingIndex m2', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+        this.basketSaved = false;
+        this.initializeShopper();
+      } else if (this.groupLoaded === true) {
+        console.log('manageShoppingIndex m3', 'this.shopList.length', this.shopList.length, 'requestedPickingStep', this.requestedPickingStep, 'firstUnsavedIndex', firstUnsavedIndex);
+        this.setShoppingIndex(0);
+      }
+    };
+
+    shopping.prototype.refreshPendedGroups = function refreshPendedGroups() {
+      var _this3 = this;
+
+      console.log('refreshing');
+
+      this.updatePickedCount();
+
+      this.db.account.picking['post']({ action: 'refresh' }).then(function (res) {
+        _this3.groups = res;
+      }).catch(function (err) {
+        console.log("error refreshing pended groups:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        return confirm('Error refreshing pended groups, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+      });
+    };
+
+    shopping.prototype.unlockGroup = function unlockGroup(groupName, el) {
+      var _this4 = this;
+
+      for (var i = 0; i < this.groups.length; i++) {
+        if (this.groups[i].name == groupName) this.groups[i].locked = 'unlocking';
+      }
+
+      var start = Date.now();
+
+      this.db.account.picking.post({ groupName: groupName, action: 'unlock' }).then(function (res) {
+        _this4.groups = res;
+      }).catch(function (err) {
+        console.log("error unlocking order:", (Date.now() - start) / 1000, 'seconds', JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        return confirm('Error unlocking order, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+      });
+    };
+
+    shopping.prototype.navigate = function navigate(groupName, stepNumber) {
+
+      var previousStepNumber = stepNumber - 1;
+      this.groupName = groupName;
+
+      if (previousStepNumber === 0) {}
+
+      this.router.navigate('picking/' + groupName + '/step/' + stepNumber);
+
+      return true;
+    };
+
+    shopping.prototype.getOutcomeName = function getOutcomeName(outcomeObject) {
+      var match = Object.entries(outcomeObject).filter(function (entry) {
+        return entry[1] == true ? entry[1] : null;
+      });
+
+      return match.length ? match[0][0] : null;
+    };
+
+    shopping.prototype.selectGroup = function selectGroup(groupName, isLocked, isLockedByCurrentUser) {
+      var _this5 = this;
+
+      console.log('locking status on select', groupName, isLocked, isLockedByCurrentUser);
+
+      if (isLocked && !isLockedByCurrentUser || groupName.length === 0) return null;
+
+      this.groupLoaded = false;
+      this.orderSelectedToShop = true;
+      this.groupName = groupName;
+
+      var start = Date.now();
+
+      this.db.account.picking.post({ groupName: groupName, action: 'load' }).then(function (res) {
+        console.log("selectGroup: result of loading: " + res.length, (Date.now() - start) / 1000, 'seconds');
+        console.log('selectGroup:', res, 'shippingIndex', _this5.shippingIndex);
+
+        if (!res.shopList || !res.groupData) {
+          console.error('selectGroup() ! res.shopList || ! res.groupData', res);
+          throw res;
+        }
+
+        _this5.shopList = res.shopList;
+        _this5.groupData = res.groupData;
+        _this5.pendedFilter = '';
+        _this5.filter = {};
+
+        var currentShoppingIndex = _this5.currentShoppingIndex();
+
+        _this5.setPickingStepUrl(currentShoppingIndex + 1);
+
+        if (currentShoppingIndex == 0) {
+          _this5.initializeShopper();
+        }
+
+        var genericName = _this5.shopList[currentShoppingIndex].raw.drug.generic.replace(/\s/g, '');
+
+        if (_this5.basketSaved && _this5.groupData.basketsByGeneric && _this5.groupData.basketsByGeneric[genericName]) {
+          var basket = _this5.groupData.basketsByGeneric[genericName].slice(-1);
+          _this5.addBasketToShoppingList(basket);
+          _this5.basketSaved = true;
+        }
+      }).catch(function (err) {
+        if (~err.message.indexOf('Unexpected end of JSON input') || ~err.message.indexOf('Unexpected EOF')) {
+          var res = confirm("Seems this order is no longer available to shop or someone locked it down. Click OK to refresh available groups. If this persists, contact Adam / Aminata");
+          _this5.refreshPendedGroups();
+          _this5.resetShopper();
+        } else {
+          console.log("error loading order:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+          return confirm('Error loading group, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        }
+      });
+    };
+
+    shopping.prototype.initializeShopper = function initializeShopper() {
+
+      console.log('initializeShopper before:', 'shoppingIndex', this.shoppingIndex, 'groupLoaded', this.groupLoaded, 'shopList', this.shopList);
+
+      this.shoppingIndex = this.currentShoppingIndex();
+      this.groupLoaded = true;
+
+      if (this.shoppingIndex + 1 === this.shopList.length) {
+        this.setNextToSave();
+      } else {
+        this.setNextToNext();
+      }
+
+      this.addBasket(this.shoppingIndex);
+    };
+
+    shopping.prototype.resetShopper = function resetShopper() {
+      this.orderSelectedToShop = false;
+      this.formComplete = false;
+      this.updatePickedCount();
+    };
+
+    shopping.prototype.updateRevs = function updateRevs(res) {
+      var _this6 = this;
+
+      var results = {};
+      res.forEach(function (transaction) {
+        results[transaction._id || transaction.id] = transaction;
+      });
+
+      this.shopList.forEach(function (shopListItem, index) {
+        if (results[shopListItem.raw._id]) {
+          _this6.shopList[index].raw._rev = results[shopListItem.raw._id].rev;
+          console.log(shopListItem.raw._id + ' => ' + shopListItem.raw._rev);
+        }
+      });
+
+      return results;
+    };
+
+    shopping.prototype.saveShoppingResults = function saveShoppingResults(arr_enriched_transactions, key) {
+      var _this7 = this;
+
+      var transactions_to_save = this.prepResultsToSave(arr_enriched_transactions, key);
+
+      console.log("attempting to save these transactions", transactions_to_save);
+      var startTime = new Date().getTime();
+
+      if (!transactions_to_save || !transactions_to_save.length) {
+        console.log('nothing to save');
+        return Promise.resolve();
+      }
+
+      return this.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
+        var completeTime = new Date().getTime();
+        var results = _this7.updateRevs(res);
+        console.log("save (" + key + ") results of saving in " + (completeTime - startTime) + " ms", results);
+      }).catch(function (err) {
+
+        var completeTime = new Date().getTime();
+        console.log("error saving in " + (completeTime - startTime) + "ms:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+
+        if (err.status == 0) {
+
+          console.log("going to try and save one more time, in case it was just connectivity " + JSON.stringify(transactions_to_save));
+
+          return _this7.delay(3000).then(function (_) {
+
+            console.log("waiting finished, sending again");
+
+            return _this7.db.transaction.bulkDocs(transactions_to_save).then(function (res) {
+              var finalTime = new Date().getTime();
+              console.log("succesful second saving in " + (finalTime - completeTime) + " ms", JSON.stringify(res));
+            }).catch(function (err) {
+              console.log("saving: empty object error the second time");
+              return confirm('Error saving item on second attempt. Error object: ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+            });
+          });
+        } else {
+
+          _this7.snackbar.error('Error loading/saving. Contact Adam', err);
+          return confirm('Error saving item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        }
+      });
+    };
+
+    shopping.ifExists = function ifExists(obj, path) {
+      var currentNode = obj;
+      path = path.split('.');
+
+      for (var _iterator3 = path, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+        var _ref4;
+
+        if (_isArray3) {
+          if (_i3 >= _iterator3.length) break;
+          _ref4 = _iterator3[_i3++];
+        } else {
+          _i3 = _iterator3.next();
+          if (_i3.done) break;
+          _ref4 = _i3.value;
+        }
+
+        var part = _ref4;
+
+        currentNode = currentNode[part];
+
+        if (!currentNode) break;
+      }
+
+      return currentNode;
+    };
+
+    shopping.outcomeChanged = function outcomeChanged(transaction, outcome) {
+      var data = transaction.next[0];
+
+      console.log('comparing outcomes', outcome, shopping.ifExists(data, 'pickedArchive.matchType'));
+
+      if (!data.picked || !data.pickedArchive) {
+        return true;
+      }
+
+      if (data && data.picked && data.pickedArchive) {
+        return outcome !== data.pickedArchive.matchType;
+      }
+
+      return false;
+    };
+
+    shopping.canChangeOutcome = function canChangeOutcome(transaction) {
+      var data = transaction.next[0];
+
+      if (data.pickedArchive) {
+        return data.pickedArchive.matchType !== 'missing';
+      }
+
+      return true;
+    };
+
+    shopping.prototype.prepResultsToSave = function prepResultsToSave(arr_enriched_transactions, key) {
+
+      if (arr_enriched_transactions.length == 0) {
+        console.log('no transactions to save');
+        return;
+      }
+
+      var transactions_to_save = [];
+
+      for (var i = 0; i < arr_enriched_transactions.length; i++) {
+
+        var reformated_transaction = arr_enriched_transactions[i].raw;
+        var next = reformated_transaction.next;
+
+        if (next[0]) {
+          if (key == 'shopped') {
+            var outcome = this.getOutcome(arr_enriched_transactions[i].extra);
+
+            if (!shopping.canChangeOutcome(reformated_transaction)) {
+              console.log(reformated_transaction._id, 'Outcome === missing. Updates not allowed.');
+              continue;
+            }
+
+            if (!shopping.outcomeChanged(reformated_transaction, outcome)) {
+              console.log(reformated_transaction._id, 'Same outcome. Not saving.');
+              continue;
+            }
+
+            next[0].picked = {
+              _id: new Date().toJSON(),
+              basket: arr_enriched_transactions[i].extra.fullBasket,
+              repackQty: next[0].pended.repackQty ? next[0].pended.repackQty : reformated_transaction.qty.to ? reformated_transaction.qty.to : reformated_transaction.qty.from,
+              matchType: outcome,
+              user: this.user
+            };
+
+            next[0].pickedArchive = next[0].picked;
+          } else if (key == 'unlock') {
+
+            delete next[0].picked;
+          } else if (key == 'lockdown') {
+
+            next[0].picked = {};
+          }
+        }
+
+        reformated_transaction.next = next;
+        transactions_to_save.push(reformated_transaction);
+      }
+
+      if (!transactions_to_save.length) {
+        console.log('no transactions to save');
+        return;
+      }
+
+      return transactions_to_save;
+    };
+
+    shopping.prototype.saveBasketNumber = function saveBasketNumber() {
+      var _this8 = this;
+
+      console.log('saveBasketNumber called', this.shoppingIndex, this.shopList[this.shoppingIndex], this.shopList);
+
+      this.shopList[this.shoppingIndex].extra.fullBasket = this.shopList[this.shoppingIndex].extra.basketLetter + this.shopList[this.shoppingIndex].extra.basketNumber;
+
+      if (this.shopList[this.shoppingIndex].extra.basketLetter != 'G' && this.currentCart != this.shopList[this.shoppingIndex].extra.basketNumber[0]) {
+        this.currentCart = this.shopList[this.shoppingIndex].extra.basketNumber[0];
+      }
+
+      if (this.shopList[this.shoppingIndex].raw) this.gatherBaskets(this.shopList[this.shoppingIndex].raw.drug.generic);
+
+      var extra = this.shopList[this.shoppingIndex].extra;
+
+      var basket = {
+        letter: extra.basketLetter,
+        number: extra.basketNumber,
+        fullBasket: extra.fullBasket
+      };
+
+      var idData = {
+        _id: this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._id,
+        _rev: this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex].raw._rev
+      };
+
+      this.db.account.picking.post({
+        id: idData,
+        groupName: this.groupName,
+        basket: basket,
+        action: 'save_basket_number'
+      }).then(function (res) {
+        var results = _this8.updateRevs([res]);
+
+        if (Object.keys(results).length > 0) {
+          _this8.basketSaved = true;
+          _this8.addBasketToShoppingList(basket);
+        }
+      });
+
+      this.setShoppingIndex(this.currentShoppingIndex());
+    };
+
+    shopping.prototype.currentShoppingIndex = function currentShoppingIndex() {
+
+      console.log('currentShoppingIndex before', 'shoppingIndex', this.shoppingIndex, _typeof(this.shoppingIndex), 'shopListMaxIndex', this.shopList.length, 'groupData', this.groupData, 'shopList', this.shopList);
+
+      if (typeof this.shoppingIndex !== 'undefined' && this.shoppingIndex >= 0 && this.shoppingIndex <= this.shopList.length - 1) {
+        console.log('currentShoppingIndex provided', this.shoppingIndex, this.shopList);
+        return this.shoppingIndex;
+      }
+
+      var firstUnsavedIndex = this.firstUnsavedIndex();
+      console.log('currentShoppingIndex firstUnsavedIndex', 'groupData', this.groupData, 'shopList', this.shopList, 'firstUnsavedIndex', firstUnsavedIndex);
+      return firstUnsavedIndex;
+    };
+
+    shopping.prototype.gatherBaskets = function gatherBaskets(generic) {
+      var list_of_baskets = '';
+      for (var i = 0; i < this.shopList.length; i++) {
+        if (this.shopList[i].extra.fullBasket && !~list_of_baskets.indexOf(this.shopList[i].extra.fullBasket) && (!this.shopList[i].raw || this.shopList[i].raw.drug.generic == generic)) list_of_baskets += ',' + this.shopList[i].extra.fullBasket;
+      }
+      this.currentGenericBaskets = list_of_baskets;
+    };
+
+    shopping.prototype.addBasket = function addBasket(index) {
+      if (!this.shopList || !this.shopList[index]) {
+        console.error('addBasket() ! res.shopList || ! res.groupData', this.shopList, index);
+        return;
+      }
+
+      this.basketSaved = false;
+
+      if (this.shopList[index].extra.basketLetter != 'G') {
+        this.shopList[index].extra.basketNumber = this.currentCart;
+      }
+    };
+
+    shopping.prototype.delay = function delay(ms) {
+      return new Promise(function (resolve) {
+        return setTimeout(resolve, ms);
+      });
+    };
+
+    shopping.prototype.moveShoppingForward = function moveShoppingForward() {
+      var _this9 = this;
+
+      if (this.getOutcome(this.shopList[this.shoppingIndex].extra) != 'missing' || this.shopList[this.shoppingIndex].extra.saved == 'missing') {
+        return this.advanceShopping();
+      }
+
+      this.formComplete = false;
+      this.setNextToLoading();
+
+      console.log("missing item! sending request to server to compensate for:", this.shopList[this.shoppingIndex].raw.drug.generic);
+
+      this.db.account.picking['post']({
+        groupName: this.shopList[this.shoppingIndex].raw.next[0].pended.group,
+        action: 'missing_transaction',
+        ndc: this.shopList[this.shoppingIndex].raw.drug._id,
+        generic: this.shopList[this.shoppingIndex].raw.drug.generic,
+        qty: this.shopList[this.shoppingIndex].raw.qty.to,
+        repackQty: this.shopList[this.shoppingIndex].raw.next[0].pended.repackQty
+      }).then(function (res) {
+
+        if (res.length > 0) {
+
+          _this9.shopList[_this9.shoppingIndex].extra.saved = 'missing';
+          _this9.groupData.numTransactions += res.length;
+
+          for (var j = 0; j < res.length; j++) {
+
+            var n = _this9.shoppingIndex - (_this9.shopList[_this9.shoppingIndex].extra.genericIndex.relative_index[0] - 1);
+            if (n < 0) n = 0;
+            var inserted = false;
+
+            for (n; n < _this9.shopList.length; n++) {
+
+              if (_this9.shopList[n].raw.drug.generic == res[j].raw.drug.generic) {
+                _this9.shopList[n].extra.genericIndex.relative_index[1]++;
+              } else {
+                res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
+                _this9.shopList.splice(n, 0, res[j]);
+                inserted = true;
+                n = _this9.shopList.length;
+              }
+            }
+
+            if (!inserted) {
+              res[j].extra.genericIndex = { global_index: _this9.shopList[n - 1].extra.genericIndex.global_index, relative_index: [_this9.shopList[n - 1].extra.genericIndex.relative_index[0] + 1, _this9.shopList[n - 1].extra.genericIndex.relative_index[1]] };
+              _this9.shopList.push(res[j]);
+            }
+          }
+        } else {
+          console.log("couldn't find item with same or greater qty to replace this");
+        }
+
+        _this9.advanceShopping();
+      }).catch(function (err) {
+        console.log("error compensating for missing:", JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+        return confirm('Error handling a missing item, info below or console. Click OK to continue. ' + JSON.stringify({ status: err.status, message: err.message, reason: err.reason, stack: err.stack }));
+      });
+    };
+
+    shopping.prototype.advanceShopping = function advanceShopping() {
+      var _this10 = this;
+
+      if (this.shoppingIndex + 1 === this.shopList.length) {
+
+        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
+
+          console.log('advanceShopping completed', _);
+
+          _this10.resetShopper();
+          _this10.unlockGroup(_this10.shopList[_this10.shoppingIndex].raw.next[0].pended.group);
+          _this10.refreshPendedGroups();
+          _this10.loadGroupSelectionPage();
+        });
+
+        for (var i = this.groups.length - 1; i >= 0; i--) {
+          if (this.groups[i].name == this.shopList[this.shoppingIndex].raw.next[0].pended.group) {
+            this.groups.splice(i, 1);
+            break;
+          }
+        }
+      } else {
+
+        if (!this.shopList[this.shoppingIndex + 1].extra.fullBasket) {
+          if (this.shopList[this.shoppingIndex].raw.drug.generic == this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
+            this.shopList[this.shoppingIndex + 1].extra.basketLetter = this.shopList[this.shoppingIndex].extra.basketLetter;
+            this.shopList[this.shoppingIndex + 1].extra.fullBasket = this.shopList[this.shoppingIndex].extra.fullBasket;
+          } else {
+            this.addBasket(this.shoppingIndex + 1);
+          }
+        } else if (this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex + 1].raw && this.shopList[this.shoppingIndex].raw.drug.generic != this.shopList[this.shoppingIndex + 1].raw.drug.generic) {
+          this.gatherBaskets(this.shopList[this.shoppingIndex + 1].raw.drug.generic);
+        }
+
+        console.log('saving transaction', this.shopList[this.shoppingIndex]);
+        this.saveShoppingResults([this.shopList[this.shoppingIndex]], 'shopped').then(function (_) {
+          console.log('saved transaction', _this10.shopList[_this10.shoppingIndex], _);
+          _this10.setShoppingIndex(_this10.shoppingIndex + 1);
+        });
+      }
+    };
+
+    shopping.prototype.addBasketToShoppingList = function addBasketToShoppingList(basket) {
+      var letter = void 0,
+          number = void 0;
+
+      if (basket.letter) {
+        letter = basket.letter;
+        number = basket.number;
+      } else {
+        letter = basket.slice(0, 1);
+        number = basket.slice(1);
+      }
+
+      this.shopList[this.shoppingIndex].extra.basketLetter = letter;
+      this.shopList[this.shoppingIndex].extra.basketNumber = number;
+      this.shopList[this.shoppingIndex].extra.fullBasket = letter + number;
+      this.basketSaved = true;
+    };
+
+    shopping.prototype.setPickingStepUrl = function setPickingStepUrl(stepNumber) {
+      if (!this.isValidGroupName()) {
+        console.log('not setting step ' + stepNumber);
+        return false;
+      }
+
+      var url = '#/picking/' + this.groupName + '/step/' + stepNumber;
+
+      if (this.pickingOnloadFired === true) {
+        history.pushState(null, null, url);
+      } else {
+        console.log('replacing state');
+        history.replaceState(null, null, url);
+        this.pickingOnloadFired = true;
+      }
+    };
+
+    shopping.prototype.isValidGroupName = function isValidGroupName() {
+      var isValid = !!this.groupName && this.groupName.length && this.groupName !== 'undefined';
+
+      return isValid;
+    };
+
+    shopping.prototype.loadGroupSelectionPage = function loadGroupSelectionPage() {
+
+      var reload = window.location.hash !== '#/picking';
+
+      history.replaceState(null, null, '#/picking');
+
+      if (reload === true) {
+        window.location.reload();
+      }
+    };
+
+    shopping.prototype.setShoppingIndex = function setShoppingIndex(index) {
+      var _this11 = this;
+
+      if (index !== 0 && !index) {
+        alert('no index');
+        console.trace();
+        return false;
+      }
+
+      if (!this.isValidGroupName()) {
+        this.loadGroupSelectionPage();
+        return false;
+      }
+
+      console.log('setShoppingIndex requesting : ' + this.groupName + '/' + (index + 1) + '/' + index + ' (group/step/shoppingIndex)');
+
+      var goToIndex = function goToIndex() {
+
+        console.log('goToIndex', 'new', index, 'old', _this11.shoppingIndex);
+        console.log('goToIndex', _this11.groupData);
+        console.log('goToIndex', _this11.shopList[index]);
+        console.log('goToIndex', _this11.shopList[index].raw.drug.generic);
+
+        _this11.shoppingIndex = index;
+
+        var genericName = _this11.shopList[index].raw.drug.generic.replace(/\s/g, '');
+
+        if (_this11.basketSaved !== true) {
+          _this11.basketSaved = _this11.groupData.baskets && _this11.groupData.baskets.length && _this11.groupData.basketsByGeneric[genericName] && _this11.groupData.basketsByGeneric[genericName].length;
+        }
+
+        console.log('setShoppingIndex picking.basketSaved ', _this11.basketSaved);
+
+        if (index < 0 && _this11.basketSaved) {
+          _this11.shoppingIndex = _this11.currentShoppingIndex();
+        }
+
+        if (_this11.basketSaved && _this11.groupData.basketsByGeneric && _this11.groupData.basketsByGeneric[genericName]) {
+          var basket = _this11.groupData.basketsByGeneric[genericName].slice(-1);
+          _this11.addBasketToShoppingList(basket);
+        }
+        if (_this11.shoppingIndex + 1 === _this11.shopList.length) {
+          _this11.setNextToSave();
+        } else {
+          _this11.setNextToNext();
+        }
+
+        _this11.formComplete = !!_this11.shopList[_this11.shoppingIndex].extra.fullBasket && _this11.someOutcomeSelected(_this11.shopList[_this11.shoppingIndex].extra.outcome);
+        console.log('setShoppingIndex formComplete', _this11.formComplete);
+        _this11.setPickingStepUrl(_this11.shoppingIndex + 1);
+      };
+
+      if (!this.shopList.length) {
+
+        this.db.account.picking.post({ groupName: this.groupName, action: 'load' }).then(function (res) {
+
+          if (!res.groupData || !res.shopList) {
+            console.error('setShoppingIndex() ! res.shopList || ! res.groupData', res);
+            throw res;
+          }
+
+          _this11.groupData = res.groupData;
+          _this11.shopList = res.shopList;
+          _this11.initializeShopper();
+          goToIndex();
+        });
+      } else {
+        goToIndex();
+      }
+    };
+
+    shopping.prototype.moveShoppingBackward = function moveShoppingBackward() {
+      if (this.shoppingIndex == 0) return;
+
+      if (this.shopList[this.shoppingIndex - 1].raw && this.shopList[this.shoppingIndex].raw && this.shopList[this.shoppingIndex - 1].raw.drug.generic != this.shopList[this.shoppingIndex].raw.drug.generic) this.gatherBaskets(this.shopList[this.shoppingIndex - 1].raw.drug.generic);
+
+      this.setShoppingIndex(this.shoppingIndex -= 1);
+      this.formComplete = true;
+    };
+
+    shopping.prototype.pauseShopping = function pauseShopping(groupName) {
+
+      this.resetShopper();
+      this.unlockGroup(groupName);
+
+      this.refreshPendedGroups();
+
+      this.loadGroupSelectionPage();
+    };
+
+    shopping.prototype.selectShoppingOption = function selectShoppingOption(key) {
+      if (this.shopList[this.shoppingIndex].extra.outcome[key]) return;
+      this.formComplete = true;
+
+      for (var outcome_option in this.shopList[this.shoppingIndex].extra.outcome) {
+        if (outcome_option !== key) {
+          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = false;
+        } else {
+          this.shopList[this.shoppingIndex].extra.outcome[outcome_option] = true;
+        }
+      }
+
+      if (key == 'missing') {
+        this.setNextToNext();
+      } else if (this.shoppingIndex + 1 === this.shopList.length) {
+        this.setNextToSave();
+      }
+    };
+
+    shopping.prototype.arrayMove = function arrayMove(arr, fromIndex, toIndex) {
+      var res = arr.slice(0);
+      var element = res[fromIndex];
+      res.splice(fromIndex, 1);
+      res.splice(toIndex, 0, element);
+      return res;
+    };
+
+    shopping.prototype.formatExp = function formatExp(rawStr) {
+      if (!rawStr) return null;
+
+      var substr_arr = rawStr.slice(2, 7).split("-");
+      return substr_arr[1] + "/" + substr_arr[0];
+    };
+
+    shopping.prototype.someOutcomeSelected = function someOutcomeSelected(outcomeObj) {
+      return ~Object.values(outcomeObj).indexOf(true);
+    };
+
+    shopping.prototype.warnAboutRequired = function warnAboutRequired() {
+      this.snackbar.show('Basket number and outcome are required');
+    };
+
+    shopping.prototype.setNextToLoading = function setNextToLoading() {
+      this.nextButtonText = 'Updating';
+    };
+
+    shopping.prototype.setNextToSave = function setNextToSave() {
+      this.nextButtonText = 'Complete';
+    };
+
+    shopping.prototype.setNextToNext = function setNextToNext() {
+      this.nextButtonText = 'Next';
+    };
+
+    shopping.prototype.getOutcome = function getOutcome(extraItemData) {
+      var res = '';
+      for (var possibility in extraItemData.outcome) {
+        if (extraItemData.outcome[possibility]) res += possibility;
+      }
+      return res;
+    };
+
+    return shopping;
+  }()) || _class);
+
+  var pendedFilterValueConverter = exports.pendedFilterValueConverter = function () {
+    function pendedFilterValueConverter() {
+      _classCallCheck(this, pendedFilterValueConverter);
+    }
+
+    pendedFilterValueConverter.prototype.toView = function toView() {
+      var pended = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var term = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+      if (term.length < 3) return pended;
+
+      term = term.toLowerCase();
+      var matches = [];
+
+      if (term.trim().length == 0) {
+        matches = pended;
+      } else {
+
+        for (var i = 0; i < pended.length; i++) {
+
+          if (~pended[i].name.toLowerCase().indexOf(term) || term.trim().length == 0) {
+            matches.unshift(pended[i]);
+            continue;
+          } else if (pended[i].baskets.length > 0) {
+            for (var n = 0; n < pended[i].baskets.length; n++) {
+              if (~pended[i].baskets[n].toLowerCase().indexOf(term)) {
+                matches.unshift(pended[i]);
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      return matches;
+    };
+
+    return pendedFilterValueConverter;
+  }();
+});
+define('client/src/views/routes',['exports'], function (exports) {
+    'use strict';
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    }
+
+    var App = exports.App = function () {
+        function App() {
+            _classCallCheck(this, App);
+        }
+
+        App.prototype.configureRouter = function configureRouter(config, router) {
+            this.routes = router.navigation;
+            config.title = 'SIRUM';
+
+            config.map([{
+                route: 'login',
+                moduleId: 'client/src/views/login',
+                title: 'Login',
+                nav: true
+            }, {
+                route: 'join',
+                moduleId: 'client/src/views/join',
+                title: 'Join',
+                nav: true
+            }, {
+                route: 'account',
+                moduleId: 'client/src/views/account',
+                title: 'Account',
+                nav: true,
+                roles: ["user"]
+            }, {
+                route: ['picking', 'picking/:groupName/step/:stepNumber'],
+                name: 'picking',
+                moduleId: 'client/src/views/picking',
+                title: 'Picking',
+                nav: true,
+                roles: ["user"]
+            }, {
+                route: 'inventory',
+                moduleId: 'client/src/views/inventory',
+                title: 'Inventory',
+                nav: true,
+                roles: ["user"]
+            }, {
+                route: ['shipments', 'shipments/:id', ''],
+                moduleId: 'client/src/views/shipments',
+                title: 'Shipments',
+                nav: true,
+                roles: ["user"]
+            }, {
+                route: ['drugs', 'drugs/:id'],
+                moduleId: 'client/src/views/drugs',
+                title: 'Drugs',
+                nav: true,
+                roles: ["user"]
+            }]);
+        };
+
+        return App;
+    }();
+});
+define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-router', '../libs/pouch', 'aurelia-http-client', '../libs/csv', '../resources/helpers'], function (exports, _aureliaFramework, _aureliaRouter, _pouch, _aureliaHttpClient, _csv, _helpers) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.shipments = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var shipments = exports.shipments = (_dec = (0, _aureliaFramework.inject)(_pouch.Pouch, _aureliaRouter.Router, _aureliaHttpClient.HttpClient), _dec(_class = function () {
+    function shipments(db, router, http) {
+      _classCallCheck(this, shipments);
+
+      this.csv = _csv.csv;
+      this.db = db;
+      this.drugs = [];
+      this.router = router;
+      this.http = http;
+      this.stati = ['pickup', 'shipped', 'received'];
+      this.shipments = {};
+      this.term = '';
+
+      this.waitForDrugsToIndex = _helpers.waitForDrugsToIndex;
+      this.expShortcutsKeydown = _helpers.expShortcuts;
+      this.qtyShortcutsKeydown = _helpers.qtyShortcuts;
+      this.removeTransactionIfQty0 = _helpers.removeTransactionIfQty0;
+      this.incrementBin = _helpers.incrementBin;
+      this.saveTransaction = _helpers.saveTransaction;
+      this.focusInput = _helpers.focusInput;
+      this.scrollSelect = _helpers.scrollSelect;
+      this.toggleDrawer = _helpers.toggleDrawer;
+      this.drugSearch = _helpers.drugSearch;
+      this.canActivate = _helpers.canActivate;
+      this.instructionsText = 'Filter shipments';
+
+      this.shipmentDrawerYearChoices = [new Date().getFullYear()];
+      this.shipmentDrawerYear = null;
+    }
+
+    shipments.prototype.activate = function activate(params) {
+      var _this = this;
+
+      return this.db.user.session.get().then(function (session) {
+        _this.user = session._id;
+        return _this.db.account.get(session.account._id);
+      }).then(function (account) {
+        var _this$ordered;
+
+        _this.db.user.get(_this.user).then(function (user) {
+          _this.router.routes[2].navModel.setTitle(user.name.first);
+        });
+
+        _this.account = account;
+
+        _this.ordered = (_this$ordered = {}, _this$ordered[account._id] = account.ordered, _this$ordered);
+
+        _this.initializeDrawer();
+
+        _this.gatherShipments(params).then(function (_) {
+          return _this.setInstructionsText("", true);
+        });
+      }).catch(function (err) {
+        console.error('Could not get session for user.  Please verify user registration and login are functioning properly');
+      });
+    };
+
+    shipments.prototype.setInstructionsText = function setInstructionsText(str) {
+      var reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      this.instructionsText = reset ? "Filter shipments " + this.role.accounts + " you" : str;
+    };
+
+    shipments.prototype.selectShipment = function selectShipment(shipment, toggleDrawer) {
+      if (toggleDrawer) this.toggleDrawer();
+
+      if (!shipment) return this.emptyShipment();
+      this.setUrl('/' + shipment._id);
+      this.setShipment(shipment);
+      this.setTransactions(shipment._id);
+    };
+
+    shipments.prototype.initializeDrawer = function initializeDrawer() {
+      var _this2 = this;
+
+      this.shipmentDrawerYear = this.shipmentDrawerYearChoices[0];
+      this.db.shipment.query('account.to._id', { startkey: [this.account._id], endkey: [this.account._id + '\uFFFF'], group_level: 2 }).then(function (res) {
+        var years = res.rows.map(function (row) {
+          return row.key[1];
+        });
+        var currentYear = new Date().getFullYear().toString();
+        if (!years.includes(currentYear)) years.push(currentYear);
+        _this2.shipmentDrawerYearChoices = years.sort(function (a, b) {
+          return b - a;
+        });
+      });
+    };
+
+    shipments.prototype.refocusWithNewShipments = function refocusWithNewShipments() {
+      this.setInstructionsText("...Loading shipments...", false);
+      this.filter = '';
+      this.shipments = {};
+      this.focusInput('#drawer_filter');
+    };
+
+    shipments.prototype.gatherShipments = function gatherShipments() {
+      var _this3 = this;
+
+      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+
+      var senderAccounts = this.db.account.allDocs({ keys: this.account.authorized, include_docs: true });
+
+      var shipmentsReceived = this.db.shipment.query('account.to._id', { startkey: [this.account._id, this.shipmentDrawerYear.toString() + '\uFFFF'], endkey: [this.account._id, this.shipmentDrawerYear.toString()], descending: true, reduce: false, include_docs: true });
+
+      return Promise.all([senderAccounts, shipmentsReceived]).then(function (all) {
+        senderAccounts = all[0].rows;
+        shipmentsReceived = all[1].rows;
+
+        var selected = void 0,
+            map = { to: {}, from: {} };
+
+        _this3.accounts = {
+          from: [''].concat(senderAccounts.map(function (account) {
+            var doc = account.doc;
+
+            if (!doc) {
+              console.error('doc property is not set', account, senderAccounts);
+              return {};
+            }
+
+            _this3.ordered[doc._id] = doc.ordered;
+            return map.from[doc._id] = { _id: doc._id, name: doc.name };
+          }).sort(function (a, b) {
+            if (a.name > b.name) return 1;
+            if (a.name < b.name) return -1;
+          }))
+        };
+
+        _this3.shipment = {};
+
+        var accountRef = function accountRef(role) {
+          return function (_ref) {
+            var doc = _ref.doc;
+
+            _this3.setStatus(doc);
+
+            if (map[role][doc.account[role]._id]) doc.account[role] = map[role][doc.account[role]._id];
+
+            if (params.id === doc._id) selected = doc;
+
+            return doc;
+          };
+        };
+
+        _this3.role = selected ? { accounts: 'to', shipments: 'from' } : { accounts: 'from', shipments: 'to' };
+
+        _this3.shipments.to = shipmentsReceived.map(accountRef('from'));
+
+        _this3.setInstructionsText("", true);
+
+        _this3.selectShipment(selected);
+      }).catch(function (err) {
+        return console.log('promise all err', err);
+      });
+    };
+
+    shipments.prototype.emptyShipment = function emptyShipment() {
+      this.setUrl('');
+
+      if (this.role.shipments == 'to') {
+        this.setShipment({ account: { to: { _id: this.account._id, name: this.account.name }, from: {} } });
+        this.setTransactions();
+      } else {
+        this.setShipment({ account: { from: { _id: this.account._id, name: this.account.name }, to: {} } });
+        this.setTransactions(this.account._id);
+      }
+    };
+
+    shipments.prototype.setShipment = function setShipment(shipment) {
+      this.shipment = shipment;
+      this.shipmentId = shipment._id;
+      this.attachment = null;
+    };
+
+    shipments.prototype.setUrl = function setUrl(url) {
+      this.router.navigate('shipments' + url, { trigger: false });
+    };
+
+    shipments.prototype.setTransactions = function setTransactions(shipmentId) {
+      var _this4 = this;
+
+      this.diffs = [];
+
+      if (!shipmentId) return this.transactions = [];
+
+      this.db.transaction.query('shipment._id', { key: [this.account._id, shipmentId], include_docs: true, descending: true }).then(function (res) {
+        _this4.transactions = res.rows.map(function (row) {
+          return row.doc;
+        });
+        _this4.setCheckboxes();
+      }).catch(function (err) {
+        return console.log('err', err);
+      });
+    };
+
+    shipments.prototype.setCheckboxes = function setCheckboxes() {
+      for (var _iterator = this.transactions, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref2;
+
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref2 = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref2 = _i.value;
+        }
+
+        var transaction = _ref2;
+
+        transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt;
+      }
+    };
+
+    shipments.prototype.setStatus = function setStatus(shipment) {
+      shipment.status = this.stati.reduce(function (prev, curr) {
+        return shipment[curr + 'At'] ? curr : prev;
+      });
+    };
+
+    shipments.prototype.swapRole = function swapRole() {
+      var _ref3 = [this.role.shipments, this.role.accounts];
+      this.role.accounts = _ref3[0];
+      this.role.shipments = _ref3[1];
+
+      this.selectShipment();
+      return true;
+    };
+
+    shipments.prototype.saveShipment = function saveShipment() {
+      var _this5 = this;
+
+      return this.db.shipment.put(this.shipment).then(function (res) {
+        _this5.setStatus(_this5.shipment);
+      });
+    };
+
+    shipments.prototype.moveTransactionsToShipment = function moveTransactionsToShipment(shipment) {
+      var _this6 = this;
+
+      Promise.all(this.transactions.map(function (transaction) {
+        if (transaction.isChecked) {
+          transaction.shipment = { _id: shipment._id };
+          return _this6.db.transaction.put(transaction);
+        }
+      })).then(function (_) {
+        return _this6.selectShipment(shipment);
+      });
+    };
+
+    shipments.prototype.createShipment = function createShipment() {
+      var _this7 = this;
+
+      if (this.shipment.tracking == 'New Tracking #') delete this.shipment.tracking;
+
+      this.shipments[this.role.shipments].unshift(this.shipment);
+      this.setStatus(this.shipment);
+
+      this.db.shipment.post(this.shipment).then(function (res) {
+        return _this7.moveTransactionsToShipment(_this7.shipment);
+      }).catch(function (err) {
+        return console.error('createShipment error', err, _this7.shipment);
+      });
+    };
+
+    shipments.prototype.expShortcutsInput = function expShortcutsInput($index) {
+      this.autoCheck($index);
+    };
+
+    shipments.prototype.qtyShortcutsInput = function qtyShortcutsInput($event, $index) {
+      this.removeTransactionIfQty0($event, $index) && this.autoCheck($index);
+    };
+
+    shipments.prototype.binShortcuts = function binShortcuts($event, $index) {
+      if ($event.which == 13) return this.focusInput('md-autocomplete');
+
+      return this.incrementBin($event, this.transactions[$index]);
+    };
+
+    shipments.prototype.getBin = function getBin(transaction) {
+      return (this.getOrder(transaction) || {}).defaultBin || this._bin;
+    };
+
+    shipments.prototype.setBin = function setBin(transaction) {
+      if (this.getBin(transaction) != transaction.bin) this._bin = transaction.bin;
+    };
+
+    shipments.prototype.aboveMinQty = function aboveMinQty(order, transaction) {
+      var qty = transaction.qty[this.role.shipments];
+      if (!qty) return false;
+      console.log('aboveMinQty', transaction);
+      var price = transaction.drug.price.goodrx || transaction.drug.price.nadac || 0;
+      var minQty = +order.minQty || this.account.default.minQty;
+      var aboveMinQty = qty >= minQty;
+      if (!aboveMinQty) console.log('Ordered drug but qty', qty, 'is less than', minQty);
+      return aboveMinQty;
+    };
+
+    shipments.prototype.aboveMinExp = function aboveMinExp(order, transaction) {
+      var exp = transaction.exp[this.role.shipments];
+      var minDays = order.minDays || this.account.default.minDays;
+      if (!exp) return !minDays;
+      var days = (new Date(exp) - Date.now()) / 24 / 60 / 60 / 1000;
+      var aboveMinExp = days >= minDays;
+      if (!aboveMinExp) console.log('Ordered drug but expiration', exp, 'is in', days, 'days and is before min days of', minDays);
+      return aboveMinExp;
+    };
+
+    shipments.prototype.belowMaxInventory = function belowMaxInventory(order, transaction) {
+      var newInventory = transaction.qty[this.role.shipments] + order.indateInventory;
+      var maxInventory = order.maxInventory || this.account.default.maxInventory;
+      var belowMaxInventory = isNaN(newInventory) ? true : newInventory < maxInventory;
+      if (!belowMaxInventory) console.log('Ordered drug but inventory', newInventory, 'would be above max of', maxInventory);
+      return belowMaxInventory;
+    };
+
+    shipments.prototype.getOrder = function getOrder(transaction) {
+      return this.ordered[this.shipment.account.to._id][transaction.drug.generic];
+    };
+
+    shipments.prototype.isWanted = function isWanted(order, transaction) {
+      return order ? this.belowMaxInventory(order, transaction) && this.aboveMinQty(order, transaction) && this.aboveMinExp(order, transaction) : false;
+    };
+
+    shipments.prototype.destroyedColor = function destroyedColor(destroyedMessage) {
+      if (!destroyedMessage) return 'mdl-color-text--green-900';
+
+      if (~destroyedMessage.indexOf('RCRA')) return 'mdl-color-text--red-900';
+
+      return 'mdl-color-text--yellow-900';
+    };
+
+    shipments.prototype.setDestroyedMessage = function setDestroyedMessage(order) {
+      var _this8 = this;
+
+      if (order && order.destroyedMessage && !this.destroyedMessage) {
+        this.destroyedMessage = setTimeout(function (_) {
+          delete _this8.destroyedMessage;
+          _this8.snackbarColor = _this8.destroyedColor(order.destroyedMessage);
+          _this8.snackbar.show(order.destroyedMessage);
+        }, 500);
+      }
+    };
+
+    shipments.prototype.clearDestroyedMessage = function clearDestroyedMessage() {
+      clearTimeout(this.destroyedMessage);
+      delete this.destroyedMessage;
+    };
+
+    shipments.prototype.autoCheck = function autoCheck($index) {
+      var transaction = this.transactions[$index];
+      var isChecked = transaction.isChecked;
+      var order = this.getOrder(transaction);
+
+      if (this.isWanted(order, transaction) == isChecked) {
+        if (!isChecked && transaction.qty.to > 0) {
+          this.setDestroyedMessage(order);
+        }
+        console.log('autoCheck unchanged', this.isWanted(order, transaction), isChecked, transaction);
+      } else if (isChecked) {
+        this.setDestroyedMessage(order);
+        console.log('autoCheck isChecked', transaction);
+        this.manualCheck($index);
+      } else if (!isChecked) {
+        this.snackbar.show(order && order.verifiedMessage || 'Drug is ordered');
+        this.clearDestroyedMessage();
+        console.log('autoCheck unChecked', transaction);
+        this.manualCheck($index);
+      }
+    };
+
+    shipments.prototype.manualCheck = function manualCheck($index) {
+      var transaction = this.transactions[$index];
+      transaction.isChecked = !transaction.isChecked;
+
+      this.moveItemsButton.offsetParent ? this.toggleSelectedCheck(transaction) : this.toggleVerifiedCheck(transaction);
+    };
+
+    shipments.prototype.toggleVerifiedCheck = function toggleVerifiedCheck(transaction) {
+
+      var next = transaction.next;
+      var verifiedAt = transaction.verifiedAt;
+
+      if (verifiedAt) {
+        transaction.verifiedAt = null;
+        transaction.next = [{ disposed: { _id: new Date().toJSON(), user: { _id: this.user } } }];
+        transaction.bin = null;
+
+        transaction.highlighted = this.destroyedColor(this.destroyedMessage);
+      } else {
+        transaction.verifiedAt = new Date().toJSON();
+        transaction.next = [];
+        transaction.bin = transaction.bin || this.getBin(transaction);
+      }
+
+      this.saveTransaction(transaction).catch(function (err) {
+        transaction.next = next;
+        transaction.verifiedAt = verifiedAt;
+      });
+    };
+
+    shipments.prototype.toggleSelectedCheck = function toggleSelectedCheck(transaction) {
+      var index = this.diffs.indexOf(transaction);
+      ~index ? this.diffs.splice(index, 1) : this.diffs.push(transaction);
+    };
+
+    shipments.prototype.search = function search() {
+      var _this9 = this;
+
+      this.drugSearch().then(function (drugs) {
+        _this9.drugs = drugs;
+        _this9.drug = drugs[0];
+      });
+    };
+
+    shipments.prototype.autocompleteShortcuts = function autocompleteShortcuts($event) {
+      var _this10 = this;
+
+      this.scrollSelect($event, this.drug, this.drugs, function (drug) {
+        _this10.scrolled = true;
+        _this10.drug = drug;
+      });
+
+      if ($event.which == 13) {
+        Promise.resolve(this._search).then(function (_) {
+          if (_this10.scrolled || _this10.drugs.length == 1) _this10.addTransaction(_this10.drug);
+        });
+        return false;
+      }
+
+      if ($event.which == 106 || $event.shiftKey && $event.which == 56) this.term = "";
+
+      return true;
+    };
+
+    shipments.prototype.addTransaction = function addTransaction(drug, transaction) {
+      var _this11 = this;
+
+      if (!drug) return this.snackbar.show('Cannot find drug matching this search');
+
+      this.drug = drug;
+
+      if (drug.warning) this.dialog.showModal();
+
+      transaction = transaction || {
+        qty: { from: null, to: null },
+        exp: {
+          from: this.transactions[0] ? this.transactions[0].exp.from : null,
+          to: this.transactions[0] ? this.transactions[0].exp.to : null
+        },
+        next: [{ disposed: { _id: new Date().toJSON(), user: { _id: this.user } } }]
+      };
+
+      transaction.drug = {
+        _id: drug._id,
+        brand: drug.brand,
+        gsns: drug.gsns,
+        generic: drug.generic,
+        generics: drug.generics,
+        form: drug.form,
+        price: drug.price,
+        pkg: drug.pkg
+      };
+
+      transaction.user = { _id: this.user };
+      transaction.shipment = { _id: this.shipment._rev ? this.shipment._id : this.account._id };
+
+      this.term = '';
+      this.scrolled = false;
+
+      this.transactions.unshift(transaction);
+
+      var order = this.getOrder(transaction);
+
+      if (order) {
+
+        var minDays = order.minDays || this.account.default && this.account.default.minDays || 30;
+        var date = new Date();
+        date.setDate(+minDays + date.getDate());
+        date = date.toJSON().slice(0, 10).split('-');
+
+        this.db.transaction.query('inventory-by-generic', { startkey: [this.account._id, 'month', date[0], date[1], drug.generic], endkey: [this.account._id, 'month', date[0], date[1], drug.generic, {}] }).then(function (inventory) {
+          console.log('indate inventory', minDays, date, inventory);
+          var row = inventory.rows[0];
+          order.indateInventory = row ? row.value[0].sum : 0;
+          console.log('order.inventory', _this11.indateInventory);
+        });
+      }
+
+      setTimeout(function (_) {
+        return _this11.focusInput('#exp_0');
+      }, 50);
+
+      return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
+        return _this11.db.transaction.post(transaction).catch(function (err) {
+          _this11.snackbar.error('Transaction could not be added: ', err);
+          _this11.transactions.shift();
+        });
+      });
+    };
+
+    shipments.prototype.dialogClose = function dialogClose() {
+      this.dialog.close();
+      this.focusInput('#exp_0');
+    };
+
+    shipments.prototype.exportCSV = function exportCSV() {
+
+      var shipment = JSON.parse(JSON.stringify(this.shipment));
+      var name = 'Shipment ' + this.shipment._id + '.csv';
+
+      delete shipment.account.to.authorized;
+      delete shipment.account.to.ordered;
+      delete shipment.account.from.authorized;
+      delete shipment.account.from.ordered;
+
+      this.csv.fromJSON(name, this.transactions.map(function (transaction) {
+        return {
+          '': transaction,
+          'next': JSON.stringify(transaction.next || []),
+          'drug._id': " " + transaction.drug._id,
+          'drug.generics': transaction.drug.generics.map(function (generic) {
+            return generic.name + " " + generic.strength;
+          }).join(';'),
+          shipment: shipment
+        };
+      }));
+    };
+
+    shipments.prototype.importCSV = function importCSV() {
+      var _this12 = this;
+
+      this.csv.toJSON(this.$file.files[0], function (parsed) {
+        _this12.$file.value = '';
+        return Promise.all(parsed.map(function (transaction) {
+          transaction._err = undefined;
+          transaction._id = undefined;
+          transaction._rev = undefined;
+          transaction.shipment._id = _this12.shipment._id;
+          transaction.next = JSON.parse(transaction.next);
+
+          return _this12.db.drug.get(transaction.drug._id).then(function (drug) {
+            return _this12.addTransaction(drug, transaction);
+          }).then(function (_) {
+            return undefined;
+          }).catch(function (err) {
+            transaction._err = 'Upload Error: ' + JSON.stringify(err);
+            return transaction;
+          });
+        }));
+      }).then(function (rows) {
+        return _this12.snackbar.show('Import Succesful');
+      }).catch(function (err) {
+        return _this12.snackbar.error('Import Error', err);
+      });
+    };
+
+    return shipments;
+  }()) || _class);
 });
 define('text!client/src/elems/md-autocomplete.html', ['module'], function(module) { module.exports = "<template style=\"box-shadow:none\">\n  <!-- z-index of 2 is > than checkboxes which have z-index of 1 -->\n  <md-autocomplete-wrap\n    ref=\"form\"\n    class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\"\n    style=\"z-index:2; width:100%; padding-top:10px\">\n    <input class=\"md-input mdl-textfield__input\"\n      name = \"pro_input_field\"\n      value.bind=\"value\"\n      disabled.bind=\"disabled\"\n      placeholder.bind=\"placeholder || ''\"\n      focus.trigger=\"toggleResults()\"\n      focusout.delegate=\"toggleResults($event)\"\n      style=\"font-size:20px;\">\n    <div show.bind=\"showResults\"\n      tabindex=\"-1\"\n      style=\"width:100%; overflow-y:scroll; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); max-height: 400px !important;\"\n      class=\"md-autocomplete-suggestions\">\n      <slot></slot>\n    </div>\n  </md-autocomplete-wrap>\n  <style>\n  @-webkit-keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @keyframes md-autocomplete-list-out {\n    0% {\n      -webkit-animation-timing-function: linear;\n              animation-timing-function: linear; }\n\n    50% {\n      opacity: 0;\n      height: 40px;\n      -webkit-animation-timing-function: ease-in;\n              animation-timing-function: ease-in; }\n\n    100% {\n      height: 0;\n      opacity: 0; } }\n\n  @-webkit-keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  @keyframes md-autocomplete-list-in {\n    0% {\n      opacity: 0;\n      height: 0;\n      -webkit-animation-timing-function: ease-out;\n              animation-timing-function: ease-out; }\n\n    50% {\n      opacity: 0;\n      height: 40px; }\n\n    100% {\n      opacity: 1;\n      height: 40px; } }\n\n  md-autocomplete {\n    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);\n    border-radius: 2px;\n    display: block;\n    height: 40px;\n    position: relative;\n    overflow: visible;\n    min-width: 190px; }\n    md-autocomplete[md-floating-label] {\n      padding-bottom: 26px;\n      box-shadow: none;\n      border-radius: 0;\n      background: transparent;\n      height: auto; }\n      md-autocomplete[md-floating-label] md-input-container {\n        padding-bottom: 0; }\n      md-autocomplete[md-floating-label] md-autocomplete-wrap {\n        height: auto; }\n      md-autocomplete[md-floating-label] button {\n        top: auto;\n        bottom: 5px; }\n    md-autocomplete md-autocomplete-wrap {\n      display: block;\n      position: relative;\n      overflow: visible;\n      height: 40px; }\n      md-autocomplete md-autocomplete-wrap md-progress-linear {\n        position: absolute;\n        bottom: 0;\n        left: 0;\n        width: 100%;\n        height: 3px;\n        transition: none; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear .md-container {\n          transition: none;\n          top: auto;\n          height: 3px; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-enter.ng-enter-active {\n            opacity: 1; }\n        md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave {\n          transition: opacity 0.15s linear; }\n          md-autocomplete md-autocomplete-wrap md-progress-linear.ng-leave.ng-leave-active {\n            opacity: 0; }\n    md-autocomplete input:not(.md-input) {\n      position: absolute;\n      left: 0;\n      top: 0;\n      width: 100%;\n      box-sizing: border-box;\n      border: none;\n      box-shadow: none;\n      padding: 0 15px;\n      font-size: 14px;\n      line-height: 40px;\n      height: 40px;\n      outline: none;\n      background: transparent; }\n      md-autocomplete input:not(.md-input)::-ms-clear {\n        display: none; }\n    md-autocomplete button {\n      position: absolute;\n      top: 10px;\n      right: 10px;\n      line-height: 20px;\n      text-align: center;\n      width: 20px;\n      height: 20px;\n      cursor: pointer;\n      border: none;\n      border-radius: 50%;\n      padding: 0;\n      font-size: 12px;\n      background: transparent; }\n      md-autocomplete button:after {\n        content: '';\n        position: absolute;\n        top: -6px;\n        right: -6px;\n        bottom: -6px;\n        left: -6px;\n        border-radius: 50%;\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        opacity: 0;\n        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }\n      md-autocomplete button:focus {\n        outline: none; }\n        md-autocomplete button:focus:after {\n          -webkit-transform: scale(1);\n                  transform: scale(1);\n          opacity: 1; }\n      md-autocomplete button md-icon {\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        -webkit-transform: translate3d(-50%, -50%, 0) scale(0.9);\n                transform: translate3d(-50%, -50%, 0) scale(0.9); }\n        md-autocomplete button md-icon path {\n          stroke-width: 0; }\n      md-autocomplete button.ng-enter {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-enter.ng-enter-active {\n          -webkit-transform: scale(1);\n                  transform: scale(1); }\n      md-autocomplete button.ng-leave {\n        transition: -webkit-transform 0.15s ease-out;\n        transition: transform 0.15s ease-out; }\n        md-autocomplete button.ng-leave.ng-leave-active {\n          -webkit-transform: scale(0);\n                  transform: scale(0); }\n    @media screen and (-ms-high-contrast: active) {\n      md-autocomplete input {\n        border: 1px solid #fff; }\n      md-autocomplete li:focus {\n        color: #fff; } }\n\n  .md-autocomplete-suggestions table, .md-autocomplete-suggestions ul {\n    table-layout:auto;  //added by adam\n    width:100%;         //added by adam\n    background:white;   //added by adam\n    position: relative;\n    margin: 0;\n    list-style: none;\n    padding: 0;\n    z-index: 100; }\n    .md-autocomplete-suggestions li {\n      line-height: 48px; //separated by adam\n    }\n    .md-autocomplete-suggestions li, .md-autocomplete-suggestions tr {\n      /*added by adam */\n      width:100%;\n      text-align: left;\n      position: static !important;\n      text-transform: none;\n      /* end addition */\n      cursor: pointer;\n      font-size: 14px;\n      overflow: hidden;\n\n      transition: background 0.15s linear;\n      text-overflow: ellipsis; }\n      .md-autocomplete-suggestions li.ng-enter, .md-autocomplete-suggestions li.ng-hide-remove {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-in 0.2s;\n                animation: md-autocomplete-list-in 0.2s; }\n      .md-autocomplete-suggestions li.ng-leave, .md-autocomplete-suggestions li.ng-hide-add {\n        transition: none;\n        -webkit-animation: md-autocomplete-list-out 0.2s;\n                animation: md-autocomplete-list-out 0.2s; }\n      .md-autocomplete-suggestions li:focus {\n        outline: none; }\n  </style>\n</template>\n"; });
 define('text!client/src/elems/md-button.html', ['module'], function(module) { module.exports = "<template style=\"display:inline-block; height:36px; line-height:36px\">\n  <button\n    ref=\"button\"\n    type=\"button\"\n    disabled.two-way=\"disabled\"\n    click.delegate=\"click($event)\"\n    class=\"mdl-button mdl-js-button mdl-js-ripple-effect ${ color } ${ (raised || raised === '') && 'mdl-button--raised' } \"\n    style=\"width:100%; height:inherit; line-height:inherit\">\n    <slot style=\"padding:auto\"></slot>\n  </button>\n</template>\n<!-- type=\"button\" because a button inside a form has its type implicitly set to submit. And the spec says that the first button or input with type=\"submit\" is triggered on enter -->\n<!-- two-way because FormCustomAttribute can set button's disabled property directly -->\n"; });
