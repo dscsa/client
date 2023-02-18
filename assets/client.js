@@ -4775,7 +4775,6 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
 
     shipments.prototype.clearDestroyedMessage = function clearDestroyedMessage() {
       clearTimeout(this.destroyedMessage);
-      this.snackbarColor = '';
       delete this.destroyedMessage;
     };
 
@@ -4794,6 +4793,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         console.log('autoCheck isChecked', transaction);
         this.manualCheck($index);
       } else if (!isChecked) {
+        this.snackbarColor = 'mdl-color--black';
         this.snackbar.show(order && order.verifiedMessage || 'Drug is ordered');
         this.clearDestroyedMessage();
         console.log('autoCheck unChecked', transaction);
@@ -4870,7 +4870,10 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
     shipments.prototype.addTransaction = function addTransaction(drug, transaction) {
       var _this11 = this;
 
-      if (!drug) return this.snackbar.show('Cannot find drug matching this search');
+      if (!drug) {
+        this.snackbarColor = 'mdl-color--black';
+        return this.snackbar.show('Cannot find drug matching this search');
+      }
 
       this.drug = drug;
 
@@ -4927,6 +4930,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
 
       return this._saveTransaction = Promise.resolve(this._saveTransaction).then(function (_) {
         return _this11.db.transaction.post(transaction).catch(function (err) {
+          _this11.snackbarColor = 'mdl-color--black';
           _this11.snackbar.error('Transaction could not be added: ', err);
           _this11.transactions.shift();
         });
@@ -4966,6 +4970,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
 
       this.csv.toJSON(this.$file.files[0], function (parsed) {
         _this12.$file.value = '';
+        _this12.snackbarColor = 'mdl-color--black';
         return Promise.all(parsed.map(function (transaction) {
           transaction._err = undefined;
           transaction._id = undefined;

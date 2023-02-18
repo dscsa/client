@@ -363,7 +363,6 @@ export class shipments {
 
   clearDestroyedMessage() {
     clearTimeout(this.destroyedMessage)
-    this.snackbarColor = ''
     delete this.destroyedMessage
   }
 
@@ -386,6 +385,7 @@ export class shipments {
       this.manualCheck($index)
 
     } else if ( ! isChecked) {//manual check has not switched the boolean yet
+      this.snackbarColor = 'mdl-color--black'
       this.snackbar.show((order && order.verifiedMessage) || 'Drug is ordered')
       this.clearDestroyedMessage()
       console.log('autoCheck unChecked', transaction)
@@ -470,8 +470,10 @@ export class shipments {
 
   addTransaction(drug, transaction) {
 
-    if ( ! drug)
+    if ( ! drug) {
+      this.snackbarColor = 'mdl-color--black'
       return this.snackbar.show(`Cannot find drug matching this search`)
+    }
 
     this.drug = drug
 
@@ -535,6 +537,7 @@ export class shipments {
     return this._saveTransaction = Promise.resolve(this._saveTransaction).then(_ => {
       return this.db.transaction.post(transaction)
       .catch(err => {
+        this.snackbarColor = 'mdl-color--black'
         this.snackbar.error(`Transaction could not be added: `, err)
         this.transactions.shift()
       })
@@ -569,7 +572,8 @@ export class shipments {
 
   importCSV() {
     this.csv.toJSON(this.$file.files[0], parsed => {
-      this.$file.value = ''
+      this.$file.value   = ''
+      this.snackbarColor = 'mdl-color--black'
       return Promise.all(parsed.map(transaction => {
         transaction._err        = undefined
         transaction._id          = undefined
