@@ -211,7 +211,9 @@ export class shipments {
       //Verified will be set even with disposed == true, if we accepted on shipment page but then disposed it on inventory page.
       transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt
 
-      if ( ! transaction.isChecked) {
+      if (transaction.isChecked) {
+          delete transaction.highlighted 
+      } else {
           let isOrdered = this.getOrder(transaction)
           transaction.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
       }
