@@ -335,7 +335,7 @@ export class shipments {
       if ( ! destroyedMessage)
           return 'mdl-color-text--green-900'
 
-      if ( ~ destroyedMessage.indexOf('RCRA')) {
+      if ( ~ destroyedMessage.indexOf('RCRA'))
           return 'mdl-color-text--red-900'
 
       return 'mdl-color-text--yellow-900'
