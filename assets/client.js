@@ -4635,7 +4635,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt;
 
         if (transaction.isChecked) {
-          delete transaction.highlighted;
+          transaction.highlighted = null;
         } else {
           var isOrdered = this.getOrder(transaction);
           transaction.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '');

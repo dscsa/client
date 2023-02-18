@@ -212,7 +212,7 @@ export class shipments {
       transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt
 
       if (transaction.isChecked) {
-          delete transaction.highlighted 
+          transaction.highlighted = null
       } else {
           let isOrdered = this.getOrder(transaction)
           transaction.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
