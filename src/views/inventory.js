@@ -276,7 +276,7 @@ export class inventory {
       let isOrdered = this.account.ordered[transactions[0].drug.generic]
 
       console.log('destruction highlighting', 'pend', transactions[0], isOrdered)
-      this.termColor = this.destroyedColor(isOrdered.destroyedMessage)
+      this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
 
       transactions.sort(this.sortPended.bind(this))
     }
@@ -331,7 +331,7 @@ export class inventory {
       opts.endkey   = [this.account._id, 'month', year, month, key, {}] //Use of {} rather than \uffff so we don't combine different drug.forms
 
       let isOrdered  = this.account.ordered[key]
-      this.termColor = this.destroyedColor(isOrdered.destroyedMessage)
+      this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
     }
 
     const setTransactions = res => {
@@ -362,7 +362,7 @@ export class inventory {
 
         console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, row.doc, isOrdered)
         if(type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow) {
-            row.doc.highlighted = this.destroyedColor(isOrdered.destroyedMessage)
+            row.doc.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
         }
 
         if (!row.doc.next.length) { //Actually in inventory

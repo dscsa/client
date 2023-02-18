@@ -212,8 +212,8 @@ export class shipments {
       transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt
 
       if ( ! transaction.isChecked) {
-          let order = this.getOrder(transaction)
-          transaction.highlighted = this.destroyedColor(order.destroyedMessage)
+          let isOrdered = this.getOrder(transaction)
+          transaction.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
       }
     }
   }
@@ -411,8 +411,8 @@ export class shipments {
       transaction.next = [{disposed:{_id:new Date().toJSON(), user:{_id:this.user}}}]
       transaction.bin = null
 
-      transaction.highlighted = this.destroyedColor(this.destroyedMessage)
-
+      let isOrdered = this.getOrder(transaction)
+      transaction.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
     } else {
       transaction.verifiedAt = new Date().toJSON()
       transaction.next = []

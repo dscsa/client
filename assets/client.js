@@ -2365,7 +2365,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         var isOrdered = this.account.ordered[transactions[0].drug.generic];
 
         console.log('destruction highlighting', 'pend', transactions[0], isOrdered);
-        this.termColor = this.destroyedColor(isOrdered.destroyedMessage);
+        this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '');
 
         transactions.sort(this.sortPended.bind(this));
       }
@@ -2425,7 +2425,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         opts.endkey = [this.account._id, 'month', year, month, key, {}];
 
         var isOrdered = this.account.ordered[key];
-        this.termColor = this.destroyedColor(isOrdered.destroyedMessage);
+        this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '');
       }
 
       var setTransactions = function setTransactions(res) {
@@ -2460,7 +2460,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
           console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, row.doc, _isOrdered);
           if (type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow) {
-            row.doc.highlighted = _this8.destroyedColor(_isOrdered.destroyedMessage);
+            row.doc.highlighted = _this8.destroyedColor(_isOrdered ? _isOrdered.destroyedMessage : '');
           }
 
           if (!row.doc.next.length) {
@@ -4635,8 +4635,8 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         transaction.isChecked = this.shipmentId == this.shipment._id && transaction.verifiedAt;
 
         if (!transaction.isChecked) {
-          var order = this.getOrder(transaction);
-          transaction.highlighted = this.destroyedColor(order.destroyedMessage);
+          var isOrdered = this.getOrder(transaction);
+          transaction.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '');
         }
       }
     };
@@ -4815,7 +4815,8 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         transaction.next = [{ disposed: { _id: new Date().toJSON(), user: { _id: this.user } } }];
         transaction.bin = null;
 
-        transaction.highlighted = this.destroyedColor(this.destroyedMessage);
+        var isOrdered = this.getOrder(transaction);
+        transaction.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '');
       } else {
         transaction.verifiedAt = new Date().toJSON();
         transaction.next = [];
