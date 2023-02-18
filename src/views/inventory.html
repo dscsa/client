@@ -119,6 +119,7 @@
       <md-autocomplete
         name = "pro_searchbar"
         placeholder.bind="placeholder"
+        class.bind="termColor"
         value.bind="term"
         input.delegate="search() & debounce"
         keyup.delegate="scrollGroups($event) & debounce:50"

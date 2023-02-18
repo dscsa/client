@@ -270,18 +270,16 @@ export class inventory {
 
     let transactions = this.extractTransactions(pendId, label);
 
-    if (transactions)
+    if (transactions) {
       this.term = 'Pended '+pendedKey
 
-    for (let transaction of transactions) {
-      let isOrdered = this.account.ordered[transaction.drug.generic]
-      console.log('destruction highlighting', 'pend', transaction, isOrdered)
-      if (isOrdered.destroyedMessage) {
-        transaction.highlighted = 'mdl-color-text--accent'
-      }
-    }
+      let isOrdered = this.account.ordered[transactions[0].drug.generic]
 
-    transactions.sort(this.sortPended.bind(this))
+      console.log('destruction highlighting', 'pend', transactions[0], isOrdered)
+      this.termColor = this.destroyedColor(isOrdered.destroyedMessage)
+
+      transactions.sort(this.sortPended.bind(this))
+    }
 
     this.setTransactions(transactions)
     this.toggleDrawer()
@@ -331,6 +329,9 @@ export class inventory {
       var [year, month] = this.currentDate(limit ? 1 : 0, true)
       opts.startkey = [this.account._id, 'month', year, month, key]
       opts.endkey   = [this.account._id, 'month', year, month, key, {}] //Use of {} rather than \uffff so we don't combine different drug.forms
+
+      let isOrdered  = this.account.ordered[key]
+      this.termColor = this.destroyedColor(isOrdered.destroyedMessage)
     }
 
     const setTransactions = res => {
@@ -361,7 +362,7 @@ export class inventory {
 
         console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, row.doc, isOrdered)
         if(type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow) {
-            row.doc.highlighted = isOrdered.destroyedMessage ? 'mdl-color-text--accent' : 'mdl-color-text--primary'
+            row.doc.highlighted = this.destroyedColor(isOrdered.destroyedMessage)
         }
 
         if (!row.doc.next.length) { //Actually in inventory
@@ -377,6 +378,16 @@ export class inventory {
 
     }
     this.db.transaction.query(query, opts).then(setTransactions)
+  }
+
+  destroyedColor(destroyedMessage) {
+      if ( ! destroyedMessage)
+          return 'mdl-color-text--green-900'
+
+      if ( ~ destroyedMessage.indexOf('RCRA')) {
+          return 'mdl-color-text--red-900'
+
+      return 'mdl-color-text--yellow-900'
   }
 
   selectTerm(type, key) {

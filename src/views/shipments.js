@@ -331,6 +331,16 @@ export class shipments {
     return order ? this.belowMaxInventory(order, transaction) && this.aboveMinQty(order, transaction) && this.aboveMinExp(order, transaction) : false
   }
 
+  destroyedColor(destroyedMessage) {
+      if ( ! destroyedMessage)
+          return 'mdl-color-text--green-900'
+
+      if ( ~ destroyedMessage.indexOf('RCRA')) {
+          return 'mdl-color-text--red-900'
+
+      return 'mdl-color-text--yellow-900'
+  }
+
   //If qty is 30 and user types "3" then destroyed message will display before user can type "0"
   //this code puts a delay on the destroyed message and then clears it out if the user does type a "0"
   //an alternative would be wait to trigger autocheck until enter is pressed but this would delay all messages
@@ -338,6 +348,7 @@ export class shipments {
     if (order && order.destroyedMessage && ! this.destroyedMessage) {
       this.destroyedMessage = setTimeout(_ => {
         delete this.destroyedMessage
+        this.snackbarColor = this.destroyedColor(order.destroyedMessage)
         this.snackbar.show(order.destroyedMessage)
       }, 500)
     }
@@ -372,8 +383,6 @@ export class shipments {
       console.log('autoCheck unChecked', transaction)
       this.manualCheck($index)
     }
-
-    transaction.highlighted = this.destroyedMessage ? 'mdl-color-text--accent' : ''
   }
 
   manualCheck($index) {
@@ -391,10 +400,14 @@ export class shipments {
     let next = transaction.next
     let verifiedAt = transaction.verifiedAt
 
+    //This was verified, but was toggled to unverified
     if (verifiedAt) {
       transaction.verifiedAt = null
       transaction.next = [{disposed:{_id:new Date().toJSON(), user:{_id:this.user}}}]
       transaction.bin = null
+
+      transaction.highlighted = this.destroyedColor(this.destroyedMessage)
+
     } else {
       transaction.verifiedAt = new Date().toJSON()
       transaction.next = []
