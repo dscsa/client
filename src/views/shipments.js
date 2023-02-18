@@ -355,7 +355,7 @@ export class shipments {
     if (order && order.destroyedMessage && ! this.destroyedMessage) {
       this.destroyedMessage = setTimeout(_ => {
         delete this.destroyedMessage
-        this.snackbarColor = this.destroyedColor(order.destroyedMessage)
+        this.snackbarColor = this.destroyedColor(order.destroyedMessage).replace('-text', '')
         this.snackbar.show(order.destroyedMessage)
       }, 500)
     }

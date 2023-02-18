@@ -4767,7 +4767,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
       if (order && order.destroyedMessage && !this.destroyedMessage) {
         this.destroyedMessage = setTimeout(function (_) {
           delete _this8.destroyedMessage;
-          _this8.snackbarColor = _this8.destroyedColor(order.destroyedMessage);
+          _this8.snackbarColor = _this8.destroyedColor(order.destroyedMessage).replace('-text', '');
           _this8.snackbar.show(order.destroyedMessage);
         }, 500);
       }
