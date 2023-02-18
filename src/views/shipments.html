@@ -252,11 +252,11 @@
                   name = "pro_exp"
                   id.bind="'exp_'+$index"
                   required
-                  keydown.delegate="expShortcutsKeydown($event, $index)"
-                  input.trigger="expShortcutsInput($index)"
+                  keydown.delegate="expShortcutsKeydown($event, $index) & debounce:200"
+                  input.trigger="expShortcutsInput($index) & debounce:200"
                   disabled.bind="transaction.isChecked && transaction.next[0]"
                   pattern="(0?[1-9]|1[012])/(1\d|2\d)"
-                  value.bind="transaction.exp[role.shipments] | date & debounce:200"
+                  value.bind="transaction.exp[role.shipments] | date & debounce:100"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>
