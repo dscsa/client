@@ -357,12 +357,13 @@ export class shipments {
         delete this.destroyedMessage
         this.snackbarColor = this.destroyedColor(order.destroyedMessage).replace('-text', '')
         this.snackbar.show(order.destroyedMessage)
-      }, 500)
+      }, 300)
     }
   }
 
   clearDestroyedMessage() {
     clearTimeout(this.destroyedMessage)
+    this.snackbarColor = ''
     delete this.destroyedMessage
   }
 

@@ -256,7 +256,7 @@
                   input.trigger="expShortcutsInput($index)"
                   disabled.bind="transaction.isChecked && transaction.next[0]"
                   pattern="(0?[1-9]|1[012])/(1\d|2\d)"
-                  value.bind="transaction.exp[role.shipments] | date"
+                  value.bind="transaction.exp[role.shipments] | date & debounce:200"
                   style="width:40px; margin-bottom:-8px"
                   placeholder>
                 </md-input>
