@@ -4823,7 +4823,7 @@ define('client/src/views/shipments',['exports', 'aurelia-framework', 'aurelia-ro
         transaction.verifiedAt = new Date().toJSON();
         transaction.next = [];
         transaction.bin = transaction.bin || this.getBin(transaction);
-        delete transaction.highlighted;
+        transaction.highlighted = null;
       }
 
       this.saveTransaction(transaction).catch(function (err) {

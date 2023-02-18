@@ -419,7 +419,7 @@ export class shipments {
       transaction.verifiedAt = new Date().toJSON()
       transaction.next = []
       transaction.bin = transaction.bin || this.getBin(transaction)
-      delete transaction.highlighted
+      transaction.highlighted = null
     }
 
     this.saveTransaction(transaction).catch(err => {
