@@ -278,6 +278,9 @@ export class inventory {
       if(label) {
           let isOrdered = this.account.ordered[transactions[0].drug.generic]
           this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
+          for (let transaction of transactions) {
+              transaction.highlighted = null
+          }
       } else {
           this.termColor = null
           for (let transaction of transactions) {
