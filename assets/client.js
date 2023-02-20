@@ -2364,7 +2364,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         this.term = 'Pended ' + pendedKey;
 
         console.log('destruction highlighting', 'pend', pendId, label, transactions[0]);
-        if (label != '') {
+        if (label) {
           var isOrdered = this.account.ordered[transactions[0].drug.generic];
           this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '');
         } else {
