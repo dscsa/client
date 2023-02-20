@@ -2368,6 +2368,7 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           var isOrdered = this.account.ordered[transactions[0].drug.generic];
           this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '');
         } else {
+          this.termColor = null;
           for (var _iterator2 = transactions, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
             var _ref2;
 
