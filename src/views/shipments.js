@@ -340,7 +340,7 @@ export class shipments {
 
   destroyedColor(destroyedMessage) {
       if ( ! destroyedMessage)
-          return 'mdl-color-text--green-900'
+          return 'mdl-color-text--green-600'
 
       if ( ~ destroyedMessage.indexOf('RCRA'))
           return 'mdl-color-text--red-900'
@@ -375,6 +375,7 @@ export class shipments {
     //isChecked may have never alternated for a destroyed drug so need to check
     if(this.isWanted(order, transaction) == isChecked) {
         if( ! isChecked && transaction.qty.to > 0) {
+            transaction.highlighted = this.destroyedColor(order ? order.destroyedMessage : '')
             this.setDestroyedMessage(order)
         }
         console.log('autoCheck unchanged', this.isWanted(order, transaction), isChecked, transaction)

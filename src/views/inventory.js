@@ -236,6 +236,7 @@ export class inventory {
   search() {
 
     console.log('search', this.term)
+    this.termColor = null
 
     if (this.isBin(this.term))
       return this.selectTerm('bin', this.term)
@@ -273,10 +274,16 @@ export class inventory {
     if (transactions) {
       this.term = 'Pended '+pendedKey
 
-      let isOrdered = this.account.ordered[transactions[0].drug.generic]
-
       console.log('destruction highlighting', 'pend', transactions[0], isOrdered)
-      this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
+      if(label != '') {
+          let isOrdered = this.account.ordered[transactions[0].drug.generic]
+          this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
+      } else {
+          for (let transaction of transactions) {
+              let isOrdered = this.account.ordered[transaction.drug.generic]
+              transaction.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
+          }
+      }
 
       transactions.sort(this.sortPended.bind(this))
     }
@@ -382,7 +389,7 @@ export class inventory {
 
   destroyedColor(destroyedMessage) {
       if ( ! destroyedMessage)
-          return 'mdl-color-text--green-900'
+          return 'mdl-color-text--green-600'
 
       if ( ~ destroyedMessage.indexOf('RCRA'))
           return 'mdl-color-text--red-900'
