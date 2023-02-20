@@ -2363,10 +2363,10 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
       if (transactions) {
         this.term = 'Pended ' + pendedKey;
 
-        console.log('destruction highlighting', 'pend', transactions[0], isOrdered);
+        console.log('destruction highlighting', 'pend', pendId, label, transactions[0]);
         if (label != '') {
-          var _isOrdered = this.account.ordered[transactions[0].drug.generic];
-          this.termColor = this.destroyedColor(_isOrdered ? _isOrdered.destroyedMessage : '');
+          var isOrdered = this.account.ordered[transactions[0].drug.generic];
+          this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '');
         } else {
           for (var _iterator2 = transactions, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
             var _ref2;
@@ -2382,8 +2382,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
 
             var transaction = _ref2;
 
-            var _isOrdered2 = this.account.ordered[transaction.drug.generic];
-            transaction.highlighted = this.destroyedColor(_isOrdered2 ? _isOrdered2.destroyedMessage : '');
+            var _isOrdered = this.account.ordered[transaction.drug.generic];
+            transaction.highlighted = this.destroyedColor(_isOrdered ? _isOrdered.destroyedMessage : '');
           }
         }
 
@@ -2444,8 +2444,8 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
         opts.startkey = [this.account._id, 'month', year, month, key];
         opts.endkey = [this.account._id, 'month', year, month, key, {}];
 
-        var _isOrdered3 = this.account.ordered[key];
-        this.termColor = this.destroyedColor(_isOrdered3 ? _isOrdered3.destroyedMessage : '');
+        var isOrdered = this.account.ordered[key];
+        this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '');
       }
 
       var setTransactions = function setTransactions(res) {
@@ -2474,13 +2474,13 @@ define('client/src/views/inventory',['exports', 'aurelia-framework', '../libs/po
           var row = _ref3;
 
 
-          var _isOrdered4 = _this8.account.ordered[row.doc.drug.generic];
+          var _isOrdered2 = _this8.account.ordered[row.doc.drug.generic];
 
           var exp = row.doc.exp.to || row.doc.exp.from || oneMonthFromNow;
 
-          console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, row.doc, _isOrdered4);
+          console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, row.doc, _isOrdered2);
           if (type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow) {
-            row.doc.highlighted = _this8.destroyedColor(_isOrdered4 ? _isOrdered4.destroyedMessage : '');
+            row.doc.highlighted = _this8.destroyedColor(_isOrdered2 ? _isOrdered2.destroyedMessage : '');
           }
 
           if (!row.doc.next.length) {

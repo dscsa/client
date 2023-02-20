@@ -274,7 +274,7 @@ export class inventory {
     if (transactions) {
       this.term = 'Pended '+pendedKey
 
-      console.log('destruction highlighting', 'pend', transactions[0], isOrdered)
+      console.log('destruction highlighting', 'pend', pendId, label, transactions[0])
       if(label != '') {
           let isOrdered = this.account.ordered[transactions[0].drug.generic]
           this.termColor = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
