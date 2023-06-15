@@ -1,5 +1,5 @@
 import {inject} from 'aurelia-framework';
-import {Pouch}     from '../libs/pouch'
+import Pouch     from '../libs/pouch/pouch'
 import {Router} from 'aurelia-router'
 import {canActivate} from '../resources/helpers'
 

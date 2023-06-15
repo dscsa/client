@@ -1,10 +1,10 @@
 <template>
-  <require from='client/src/elems/md-shadow'></require>
-  <require from="client/src/elems/md-input"></require>
-  <require from="client/src/elems/md-button"></require>
-  <require from="client/src/elems/md-snackbar"></require>
-  <require from="client/src/elems/md-loading"></require>
-  <require from="client/src/elems/form"></require>
+  <require from='elems/md-shadow'></require>
+  <require from="elems/md-input"></require>
+  <require from="elems/md-button"></require>
+  <require from="elems/md-snackbar"></require>
+  <require from="elems/md-loading"></require>
+  <require from="elems/form"></require>
   <section class="mdl-grid" style="margin-top:30vh;">
     <form md-shadow="2" class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
       <md-input name = "pro_phone" value.bind="phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>

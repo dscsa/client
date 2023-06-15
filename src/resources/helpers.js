@@ -341,16 +341,13 @@ import {Redirect} from 'aurelia-router'
 
 export function canActivate(_, next, {router}) {
   return this.db.user.session.get().then(session => {
-
     let loggedIn = session && session.account
-
     for (let route of router.navigation)
         route.isVisible = loggedIn
           ? route.config.roles && ~route.config.roles.indexOf('user')
           : ! route.config.roles
 
     let canActivate = next.navModel.isVisible || ! next.nav
-
     return canActivate || router.currentInstruction
       ? canActivate
       : new Redirect(loggedIn ? 'shipments' : 'login')

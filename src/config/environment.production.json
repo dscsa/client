@@ -1,0 +1,5 @@
+{
+  "debug": false,
+  "testing": false,
+  "apiUrl": "https://v2.goodpill.org/"
+}

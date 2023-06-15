@@ -1,6 +1,6 @@
 import {inject}     from 'aurelia-framework'
 import {Router}     from 'aurelia-router'
-import {Pouch}         from '../libs/pouch'
+import Pouch         from '../libs/pouch/pouch'
 import {HttpClient} from 'aurelia-http-client'
 import {csv}        from '../libs/csv'
 import {canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, scrollSelect, toggleDrawer, drugSearch, waitForDrugsToIndex} from '../resources/helpers'

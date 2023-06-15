@@ -1,4 +1,4 @@
- import {toJsonDate, parseUserDate} from '../resources/helpers'
+ import {toJsonDate, parseUserDate} from './helpers'
 
 //http://stackoverflow.com/questions/32017532/observe-property-on-an-array-of-objects-for-any-changes
 export class jsonValueConverter {
