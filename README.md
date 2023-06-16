@@ -4,16 +4,23 @@ This project is bootstrapped by [aurelia-cli](https://github.com/aurelia/cli).
 
 For more information, go to https://aurelia.io/docs/cli/webpack
 
-## Local Development
+## Local Development Quickstart
+```shell
+# Run these locally (not in a container)
 cp .env.example .env
-By default will connect to API running locally on port 8081
-To override, cp src/config/environment.development.json.example to src/config/environment.development.json and modify apiUrl 
-npm watch
-docker compose up will run client only
-docker compose --profile fullstack up will run w/ server (assumes server is in ../server)
+npm install
+npm build:dev
+# Alternatively, you can run `npm watch` to allow automatic rebuilds on file changes
+docker compose up
+```
+The client will now be available at http://0.0.0.0:8082 (the port can be customized via the .env file)
 
-## Running w/ local server
+By default the UI will connect to API running locally on port 8081 (see https://github.com/dscsa/server for more info).
+To override, `cp src/config/environment.development.json.example src/config/environment.development.json` and modify `apiUrl`
+
+### Running w/ local server
+See documentation in https://github.com/dscsa/server
 
 ## Production Deployment
-npm build
-Serve files from dist folder
+TODO: This
+

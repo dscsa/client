@@ -2,28 +2,15 @@ version: '2'
 
 services:
   client:
-    profiles:
-      - client
-      - full
     build:
-      dockerfile: ./build/Dockerfile
+      context: ./build
+      dockerfile: Dockerfile
     ports:
       - "${V2_CLIENT_PORT}:${V2_CLIENT_PORT}"
     environment:
       - V2_CLIENT_PORT=${V2_CLIENT_PORT}
     volumes:
       - ./build/etc/nginx/templates:/etc/nginx/templates
-      - ./dist:/var/www/html
-  server:
-    profiles:
-      - server
-      - full
-    build:
-      dockerfile: ./build/Dockerfile
-    ports:
-      - "8082:8082"
-    volumes:
-      - ./build/etc/v2-client.conf:/etc/nginx/conf.d/default.conf
       - ./dist:/var/www/html
 networks:
   v2-local:

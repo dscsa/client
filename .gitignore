@@ -36,3 +36,4 @@ node_modules
 /dist
 /test/coverage-jest
 src/config/environment.development.json
+.env
