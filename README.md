@@ -13,7 +13,9 @@ npm build:dev
 # Alternatively, you can run `npm watch` to allow automatic rebuilds on file changes
 docker compose up
 ```
-The client will now be available at http://0.0.0.0:8082 (the port can be customized via the .env file)
+The client will now be available at http://0.0.0.0:8082 (the port can be customized via the .env file).
+
+**NOTE: The first login will be very slow due to the UI loading all drugs into browser local storage.  Subsequent logins will be much faster**
 
 By default the UI will connect to API running locally on port 8081 (see https://github.com/dscsa/server for more info).
 To override the server host/port:
