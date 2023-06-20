@@ -9,7 +9,7 @@ For more information, go to https://aurelia.io/docs/cli/webpack
 # Run these locally (not in a container)
 cp .env.example .env
 npm install
-npm build:dev
+npm run build:dev
 # Alternatively, you can run `npm watch` to allow automatic rebuilds on file changes
 docker compose up
 ```
