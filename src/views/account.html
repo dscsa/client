@@ -33,7 +33,7 @@
     <dialog ref="dialog" class="mdl-dialog" style="width:800px; top:3%; height:35%;">
       <section class="mdl-grid" style="margin-top:10vh;">
         <form class="mdl-card mdl-cell mdl-cell--6-col mdl-cell--middle" style="width:100%; margin:-75px auto 0; padding:48px 96px 28px 96px; max-width:450px">
-          <md-input name = "pro_phone" value.bind="phone" type="tel" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
+          <md-input name = "pro_phone" value.bind="phone" type="tel" pattern="^\d{3}[\.\-]?\d{3}[\.\-]?\d{4}$" required>Phone</md-input>
           <md-input name = "pro_password" value.bind="password" type="password" required minlength="4">Password</md-input>
           <md-button
             name = "pro_switch_button"
@@ -60,7 +60,7 @@
         <md-input style="width:49%" value.bind="user.name.first" name = "pro_first_name" required>First Name</md-input>
         <md-input style="width:49%" value.bind="user.name.last" name = "pro_last_name" required>Last Name</md-input>
         <md-input style="width:100%" value.bind="user.email" type="email" name = "pro_email" pattern="[\w._]{2,}@\w{3,}\.(com|org|net|gov)" required>Email</md-input>
-        <md-input style="width:100%" value.bind="user.phone" type="tel" name = "pro_phone" pattern="^\d{3}[.-]?\d{3}[.-]?\d{4}$" required>Phone</md-input>
+        <md-input style="width:100%" value.bind="user.phone" type="tel" name = "pro_phone" pattern="^\d{3}[\.\-]?\d{3}[\.\-]?\d{4}$" required>Phone</md-input>
         <md-input style="width:100%" value.bind="user.password" name = "pro_password" if.bind=" ! user._rev" required>Password ${user._rev}</md-input>
       </div>
       <div class="mdl-card__actions">
