@@ -258,7 +258,7 @@ export class inventory {
 
   //Prepack, New Aisle, Old Shelves
   isBin(term) { //unlike shipment page allow for B00* to search all sections within large B00 bin but don't include repacks
-    return /[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d[\d*]|[A-Za-z][0-6]\d[\d*]/.test(term)
+    return /(^RPCK)|[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d[\d*]|[A-Za-z][0-6]\d[\d*]/.test(term)
   }
 
   isExp(term) {
@@ -346,9 +346,16 @@ export class inventory {
     }
 
     const setTransactions = res => {
+      console.log(res)
+      let res_items = ''
+      if (res.rows) {
+        res_items = res.rows
+      } else {
+        res_items = res.docs
+      }
 
       //so that we correctly display the 'show all' option
-      if (res.rows.length == limit) {
+      if (res_items.length == limit) {
         this.showMore = true
         this.snackbar.show(`Displaying first 100 results`)
       } else {
@@ -364,31 +371,57 @@ export class inventory {
       let docs = []
       let oneMonthFromNow = this.currentDate(1)
 
-      for (let row of res.rows) {
-
-        let isOrdered = this.account.ordered[row.doc.drug.generic]
-
-        //Color text of expired inventory so they can be more easily spotted an removed by staff
-        let exp = row.doc.exp.to || row.doc.exp.from || oneMonthFromNow
-
-        console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, row.doc, isOrdered)
-        if(type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow) {
-            row.doc.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
+      for (let item of res_items) {
+        let doc = '';
+        if (item.doc) {
+          doc = item.doc
+        } else {
+          doc = item
         }
 
-        if (!row.doc.next.length) { //Actually in inventory
-            docs.push(row.doc)
-        } else if(type == 'bin' && row.doc.next[0].pended && !row.doc.next[0].picked) { //Not in inventory BUT still physically in the inventory bin
-            docs.push(row.doc)
+        let isOrdered = this.account.ordered[doc.drug.generic]
+
+        //Color text of expired inventory so they can be more easily spotted an removed by staff
+        let exp = doc.exp.to || doc.exp.from || oneMonthFromNow
+
+        console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, doc, isOrdered)
+        if(type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow) {
+            doc.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
+        }
+
+        if (doc.next && !doc.next.length) { //Actually in inventory
+            docs.push(doc)
+        } else if(type == 'bin' && doc.next && doc.next[0].pended && doc.next[0].picked) { //Not in inventory BUT still physically in the inventory bin
+            docs.push(doc)
         } else {
-            console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
+            console.log('Excluded from inventory list due to next prop:', doc.next, doc)
         }
       }
 
       return this.setTransactions(docs, type)
 
     }
-    this.db.transaction.query(query, opts).then(setTransactions)
+
+    let incrementString = function (s) {
+      return String.fromCharCode(s.charCodeAt(0) + 1);
+    }
+
+    if (type == 'bin') {
+      this.db.transaction.find(
+          {
+            selector: {
+              $and:[
+                  {bin: {$gte: key}},
+                  {bin: {$lt: key.slice(0, -1) + incrementString(key[key.length - 1])}},
+                  {bin: {$regex: '^' + key}}
+              ]
+            }
+          }
+          ).then(setTransactions)
+    } else {
+      this.db.transaction.query(query, opts).then(setTransactions)
+    }
+
   }
 
   destroyedColor(destroyedMessage) {
