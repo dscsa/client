@@ -1,4 +1,5 @@
 export let csv = {toJSON, fromJSON}
+import Papa from 'papaparse'
 
 function flat2nested(obj) {
     var res = {}
