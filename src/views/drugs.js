@@ -1,6 +1,6 @@
 import {inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router'
-import {Pouch}     from '../libs/pouch'
+import Pouch     from '../libs/pouch/pouch'
 import {csv}    from '../libs/csv'
 import {canActivate, scrollSelect, toggleDrawer, drugSearch, drugName, groupDrugs, focusInput, currentDate} from '../resources/helpers'
 

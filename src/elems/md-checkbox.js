@@ -1,4 +1,5 @@
 import {bindable, bindingMode, inject, TaskQueue} from 'aurelia-framework';
+import componentHandler from '../libs/material'
 
 @bindable({name:'checked', defaultBindingMode: bindingMode.twoWay})
 @bindable('disabled')

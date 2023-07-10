@@ -1,5 +1,5 @@
 import {inject} from 'aurelia-framework';
-import {Pouch}     from '../libs/pouch'
+import Pouch     from '../libs/pouch/pouch'
 import {Router} from 'aurelia-router';
 import {csv}    from '../libs/csv'
 import {clearNextProperty, canActivate, expShortcuts, qtyShortcuts, removeTransactionIfQty0, incrementBin, saveTransaction, focusInput, drugSearch, groupDrugs, drugName, waitForDrugsToIndex, toggleDrawer, getHistory, currentDate} from '../resources/helpers'

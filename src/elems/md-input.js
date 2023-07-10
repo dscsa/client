@@ -1,5 +1,5 @@
 import {inject, bindable, bindingMode, TaskQueue} from 'aurelia-framework';
-
+import componentHandler from '../libs/material'
 @bindable({name:'value', defaultBindingMode: bindingMode.twoWay})
 @bindable('disabled')
 @bindable('pattern')

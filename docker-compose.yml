@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+  client:
+    build:
+      context: ./build
+      dockerfile: Dockerfile
+    ports:
+      - "${V2_CLIENT_PORT}:${V2_CLIENT_PORT}"
+    environment:
+      - V2_CLIENT_PORT=${V2_CLIENT_PORT}
+    volumes:
+      - ./build/etc/nginx/templates:/etc/nginx/templates
+      - ./dist:/var/www/html
+networks:
+  v2-local:
+    driver: bridge

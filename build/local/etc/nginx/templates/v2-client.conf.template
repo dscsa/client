@@ -1,0 +1,11 @@
+server {
+    listen ${V2_CLIENT_PORT};
+    index index.html;
+    error_log  /var/log/nginx/error.log;
+    access_log /var/log/nginx/access.log;
+    root /var/www/html;
+
+    location / {
+        try_files $uri $uri/ /index.html?$query_string;
+    }
+}

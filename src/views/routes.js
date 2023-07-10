@@ -1,4 +1,5 @@
 //@pageState()
+import {PLATFORM} from 'aurelia-pal';
 export class App {
 
     configureRouter(config, router) {
@@ -11,19 +12,19 @@ export class App {
         config.map([
             {
                 route: 'login',
-                moduleId: 'client/src/views/login',
+                moduleId: PLATFORM.moduleName('./login'),
                 title: 'Login',
                 nav: true
             },
             {
                 route: 'join',
-                moduleId: 'client/src/views/join',
+                moduleId: PLATFORM.moduleName('./join'),
                 title: 'Join',
                 nav: true
             },
             {
                 route: 'account',
-                moduleId: 'client/src/views/account',
+                moduleId: PLATFORM.moduleName('./account'),
                 title: 'Account',
                 nav: true,
                 roles: ["user"]
@@ -31,28 +32,28 @@ export class App {
             {
                 route: ['picking', 'picking/:groupName/step/:stepNumber'],
                 name: 'picking',
-                moduleId: 'client/src/views/picking',
+                moduleId: PLATFORM.moduleName('./picking'),
                 title: 'Picking',
                 nav: true,
                 roles: ["user"]
             },
             {
                 route: 'inventory',
-                moduleId: 'client/src/views/inventory',
+                moduleId: PLATFORM.moduleName('./inventory'),
                 title: 'Inventory',
                 nav: true,
                 roles: ["user"]
             },
             {
                 route: ['shipments', 'shipments/:id', ''],
-                moduleId: 'client/src/views/shipments',
+                moduleId: PLATFORM.moduleName('./shipments'),
                 title: 'Shipments',
                 nav: true,
                 roles: ["user"]
             },
             {
                 route: ['drugs', 'drugs/:id'],
-                moduleId: 'client/src/views/drugs',
+                moduleId: PLATFORM.moduleName('./drugs'),
                 title: 'Drugs',
                 nav: true,
                 roles: ["user"]
