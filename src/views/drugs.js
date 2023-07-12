@@ -195,7 +195,7 @@ export class drugs {
   //TODO: Warn on delete since we won't save save any of the preferences?
   order() {
     console.log('before order()', this.group.generic, this.drug.generic)
-
+    alert(`You have changed the "Ordered" status for ${this.group.generic}. If this was not intended, please update the field.`)
     if (this.account.ordered[this.group.generic]) {
       //Delete this group from the drawer drawer
       this.drawer.ordered = this.drawer.ordered.filter(generic => {
