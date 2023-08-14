@@ -258,7 +258,7 @@ export class inventory {
 
   //Prepack, New Aisle, Old Shelves
   isBin(term) { //unlike shipment page allow for B00* to search all sections within large B00 bin but don't include repacks
-    return /[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d[\d*]|[A-Za-z][0-6]\d[\d*]/.test(term)
+    return /[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d[\d*]|[A-Za-z][0-6]\d[\d*]|\d{1,2}[A-Z]\d{3}/.test(term)
   }
 
   isExp(term) {
@@ -313,16 +313,23 @@ export class inventory {
 
     let opts = {include_docs:true, limit, reduce:false}
 
+    var newBinFormat = key.match(/^(\d{1,2})([A-Z])(\d{2})(\d)$/);
+
     if (type == 'bin' && key.length == 3) {
       var query  = 'inventory-by-bin-verifiedat'
       var bin    = key.split('')
       opts.startkey = [this.account._id, '', bin[0], bin[2], bin[1]]
       opts.endkey   = [this.account._id, '', bin[0], bin[2], bin[1], {}]
     } else if (type == 'bin' && key[3] == '*') {
+      var query = 'inventory-by-bin-verifiedat'
+      var bin = key.split('')
+      opts.startkey = [this.account._id, '1' + bin[0], bin[2], bin[1]]
+      opts.endkey = [this.account._id, '1' + bin[0], bin[2], bin[1], {}]
+    } else if (type == 'bin' && newBinFormat) {
       var query  = 'inventory-by-bin-verifiedat'
       var bin    = key.split('')
-      opts.startkey = [this.account._id, '1'+bin[0], bin[2], bin[1]]
-      opts.endkey   = [this.account._id, '1'+bin[0], bin[2], bin[1], {}]
+      opts.startkey = [this.account._id, '2'+newBinFormat[1], newBinFormat[2], newBinFormat[3], newBinFormat[4]]
+      opts.endkey   = [this.account._id, '2'+newBinFormat[1], newBinFormat[2], newBinFormat[3], newBinFormat[4], {}]
     } else if (type == 'bin' && key.length == 4) {
       var query  = 'inventory-by-bin-verifiedat'
       var bin    = key.split('')

@@ -907,6 +907,21 @@ export class shopping {
     return substr_arr[1]+"/"+substr_arr[0]
   }
 
+  formatBin(rawStr){
+    if (!rawStr)
+      return null;
+
+    if (rawStr.length == 3)
+      return rawStr;
+
+    var newBinFormat = rawStr.match(/^(\d{1,2})([A-Z])(\d{2})(\d)$/);
+    if (newBinFormat) {
+      return newBinFormat[1] + '-' + newBinFormat[2] + '-' + newBinFormat[3] + '-' + newBinFormat[4];
+    }
+
+    return rawStr.slice(0,3) + '-' + rawStr.slice(3,4);
+  }
+
   //shortcut to look at the outcome object and check if any values are set to true
   someOutcomeSelected(outcomeObj){
     return ~Object.values(outcomeObj).indexOf(true)

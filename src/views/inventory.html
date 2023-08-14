@@ -272,7 +272,7 @@
               <th style="width:100px" class="mdl-data-table__cell--non-numeric">Ndc</th>
               <th style="text-align:left; width:60px;">Exp</th>
               <th style="text-align:left; width:60px;">Qty</th>
-              <th style="text-align:left; width:60px;">Bin</th>
+              <th style="text-align:left; width:80px;">Bin</th>
               <th style="width:48px"></th>
             </tr>
           </thead>
@@ -323,10 +323,10 @@
                 id.bind="'bin_'+$index"
                 required
                 keydown.delegate="binShortcuts($event, $index)"
-                pattern="[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d{2}|[A-Za-z][0-6]\d{2}"
+                pattern="[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d{2}|[A-Za-z][0-6]\d{2}|\d{1,2}[A-Z]\d{3}"
                 value.bind="transaction.bin"
-                style="width:40px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px"
-                maxlength.bind="5"
+                style="width:60px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px"
+                maxlength.bind="6"
                 placeholder>
               </md-input>
             </td>
