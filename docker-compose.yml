@@ -6,12 +6,15 @@ services:
       context: ./build
       dockerfile: Dockerfile
     ports:
-      - "${V2_CLIENT_PORT}:${V2_CLIENT_PORT}"
+      - "${V2_CLIENT_PORT:-8092}:${V2_CLIENT_PORT:-8092}"
     environment:
-      - V2_CLIENT_PORT=${V2_CLIENT_PORT}
+      - V2_CLIENT_PORT=${V2_CLIENT_PORT:-8092}
     volumes:
       - ./build/etc/nginx/templates:/etc/nginx/templates
       - ./dist:/var/www/html
+    networks:
+      - sirum
 networks:
-  v2-local:
+  sirum:
     driver: bridge
+    name: sirum
