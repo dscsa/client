@@ -264,9 +264,9 @@ export class inventory {
     return /[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d[\d*]|[A-Za-z][0-6]\d[\d*]/.test(term)
   }
 
-  // New bin format
+  // New bin format (optional slot)
   isNewBin(term) {
-    return /\d{1,2}[A-Z][0-6]\d[\d*]/.test(term);
+    return /\d{2}[A-Z][0-6]\d\d?/.test(term);
   }
 
   isExp(term) {
@@ -333,9 +333,15 @@ export class inventory {
       opts.endkey = [this.account._id, '1' + bin[0], bin[2], bin[1], {}]
     } else if (type == 'newBin') {
       var query  = 'inventory-by-bin-verifiedat'
-      var bin    = key.match(/^(\d{1,2})([A-Z])(\d{2})(\d)$/);
-      opts.startkey = [this.account._id, '2'+bin[1], bin[2], bin[3], bin[4]]
-      opts.endkey   = [this.account._id, '2'+bin[1], bin[2], bin[3], bin[4], {}]
+      var bin    = key.match(/^(\d{2})([A-Z])(\d{2})(\d?)$/);
+      // If there is a slot include it, otherwise dont
+      if (bin[4]) {
+        opts.startkey = [this.account._id, '2' + bin[1], bin[2], bin[3], bin[4]]
+        opts.endkey = [this.account._id, '2' + bin[1], bin[2], bin[3], bin[4], {}]
+      } else {
+        opts.startkey = [this.account._id, '2' + bin[1], bin[2], bin[3]]
+        opts.endkey = [this.account._id, '2' + bin[1], bin[2], bin[3], {}]
+      }
     } else if (type == 'bin' && key.length == 4) {
       var query  = 'inventory-by-bin-verifiedat'
       var bin    = key.split('')

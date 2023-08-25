@@ -914,7 +914,7 @@ export class shopping {
     if (rawStr.length == 3)
       return rawStr;
 
-    var newBinFormat = rawStr.match(/^(\d{1,2})([A-Z])([0-6]\d)(\d*)$/);
+    var newBinFormat = rawStr.match(/^(\d{2})([A-Z])([0-6]\d)(\d?)$/);
     if (newBinFormat) {
       var binStr = newBinFormat[1] + '-' + newBinFormat[2] + newBinFormat[3];
       if (newBinFormat[4]) {

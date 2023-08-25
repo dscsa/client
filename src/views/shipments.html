@@ -288,7 +288,7 @@
                   disabled.bind=" ! transaction.isChecked || transaction.next[0] || shipment._id != shipmentId"
                   keyup.delegate="setBin(transaction) & debounce:1500"
                   keydown.delegate="binShortcuts($event, $index)"
-                  pattern.bind="shipment._rev ? '[A-Z][1-6][0-6]\\d{2}|[A-Za-z][0-6]\\d{2}|\\d{1,2}[A-Z][0-6]\\d[\\d*]' : '[A-Za-z]\\d{2}|[A-Z][1-6][0-6]\\d{2}|[A-Za-z][0-6]\\d{2}|\\d{1,2}[A-Z][0-6]\\d[\\d*]'"
+                  pattern.bind="shipment._rev ? '[A-Z][1-6][0-6]\\d{2}|[A-Za-z][0-6]\\d{2}|\\d{2}[A-Z][0-6]\\d[\\d?]' : '[A-Za-z]\\d{2}|[A-Z][1-6][0-6]\\d{2}|[A-Za-z][0-6]\\d{2}|\\d{2}[A-Z][0-6]\\d[\\d?]'"
                   maxlength.bind="6"
                   value.bind="transaction.bin"
                   style="width:60px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px"
