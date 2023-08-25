@@ -238,6 +238,9 @@ export class inventory {
     console.log('search', this.term)
     this.termColor = null
 
+    if (this.isNewBin(this.term))
+      return this.selectTerm('newBin', this.term)
+
     if (this.isBin(this.term))
       return this.selectTerm('bin', this.term)
 
@@ -259,6 +262,11 @@ export class inventory {
   //Prepack, New Aisle, Old Shelves
   isBin(term) { //unlike shipment page allow for B00* to search all sections within large B00 bin but don't include repacks
     return /[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d[\d*]|[A-Za-z][0-6]\d[\d*]/.test(term)
+  }
+
+  // New bin format (optional slot)
+  isNewBin(term) {
+    return /\d{2}[A-Z][0-6]\d\d?/.test(term);
   }
 
   isExp(term) {
@@ -319,10 +327,21 @@ export class inventory {
       opts.startkey = [this.account._id, '', bin[0], bin[2], bin[1]]
       opts.endkey   = [this.account._id, '', bin[0], bin[2], bin[1], {}]
     } else if (type == 'bin' && key[3] == '*') {
+      var query = 'inventory-by-bin-verifiedat'
+      var bin = key.split('')
+      opts.startkey = [this.account._id, '1' + bin[0], bin[2], bin[1]]
+      opts.endkey = [this.account._id, '1' + bin[0], bin[2], bin[1], {}]
+    } else if (type == 'newBin') {
       var query  = 'inventory-by-bin-verifiedat'
-      var bin    = key.split('')
-      opts.startkey = [this.account._id, '1'+bin[0], bin[2], bin[1]]
-      opts.endkey   = [this.account._id, '1'+bin[0], bin[2], bin[1], {}]
+      var bin    = key.match(/^(\d{2})([A-Z])(\d{2})(\d?)$/);
+      // If there is a slot include it, otherwise dont
+      if (bin[4]) {
+        opts.startkey = [this.account._id, '2' + bin[1], bin[2], bin[3], bin[4]]
+        opts.endkey = [this.account._id, '2' + bin[1], bin[2], bin[3], bin[4], {}]
+      } else {
+        opts.startkey = [this.account._id, '2' + bin[1], bin[2], bin[3]]
+        opts.endkey = [this.account._id, '2' + bin[1], bin[2], bin[3], {}]
+      }
     } else if (type == 'bin' && key.length == 4) {
       var query  = 'inventory-by-bin-verifiedat'
       var bin    = key.split('')
@@ -371,14 +390,16 @@ export class inventory {
         //Color text of expired inventory so they can be more easily spotted an removed by staff
         let exp = row.doc.exp.to || row.doc.exp.from || oneMonthFromNow
 
-        console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow, row.doc, isOrdered)
-        if(type == 'bin' && exp.slice(0, 7) <= oneMonthFromNow) {
+        let isBinType = (type == 'bin' || type == 'newBin');
+
+        console.log('destruction highlighting', type, exp.slice(0, 7), oneMonthFromNow, isBinType && exp.slice(0, 7) <= oneMonthFromNow, row.doc, isOrdered)
+        if(isBinType && exp.slice(0, 7) <= oneMonthFromNow) {
             row.doc.highlighted = this.destroyedColor(isOrdered ? isOrdered.destroyedMessage : '')
         }
 
         if (!row.doc.next.length) { //Actually in inventory
             docs.push(row.doc)
-        } else if(type == 'bin' && row.doc.next[0].pended && !row.doc.next[0].picked) { //Not in inventory BUT still physically in the inventory bin
+        } else if(isBinType && row.doc.next[0].pended && !row.doc.next[0].picked) { //Not in inventory BUT still physically in the inventory bin
             docs.push(row.doc)
         } else {
             console.log('Excluded from inventory list due to next prop:', row.doc.next, row.doc)
