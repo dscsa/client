@@ -22,6 +22,7 @@ function flat2nested(obj) {
 
 var nested2flat = function (obj) {
     var flat = {}
+    var key = null
     for (var i in obj) {
         if (obj[i] === null || typeof obj[i] != 'object') {
             flat[i] = obj[i]; continue
