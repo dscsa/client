@@ -333,7 +333,7 @@ export class inventory {
       opts.endkey = [this.account._id, '1' + bin[0], bin[2], bin[1], {}]
     } else if (type == 'newBin') {
       var query  = 'inventory-by-bin-verifiedat'
-      var bin    = key.match(/^(\d{2})([A-Z])(\d{2})(\d?)$/);
+      var bin    = key.match(/^(\d{2})([A-Z])(\d{2})(\d?)\*?$/);
       // If there is a slot include it, otherwise dont
       if (bin[4]) {
         opts.startkey = [this.account._id, '2' + bin[1], bin[2], bin[3], bin[4]]
@@ -1106,7 +1106,8 @@ export class inventoryFilterValueConverter {
     let checkVisible    = true
     let oneMonthFromNow = currentDate(1)
     let isBin           = inventory.prototype.isBin(term)
-    let defaultCheck    = isBin || inventory.prototype.isExp(term)
+    let isNewBin        = inventory.prototype.isNewBin(term)
+    let defaultCheck    = isBin || isNewBin || inventory.prototype.isExp(term)
 
     filter.checked = filter.checked || {}
     filter.checked.qty = filter.checked.qty || 0
@@ -1129,7 +1130,7 @@ export class inventoryFilterValueConverter {
       }
 
       if ( ! expFilter[isExp]) {
-        expFilter[isExp] = {isChecked:filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : ((isBin && isExp == 'Unexpired' && term[3] == '*') ? false : true), count:0, qty:0} //if someone search for 'A00*' show only the expired items by default (this will help data entry people purging expireds)
+        expFilter[isExp] = {isChecked:filter.exp && filter.exp[isExp] ? filter.exp[isExp].isChecked : (((isBin || isNewBin) && isExp == 'Unexpired' && term.slice(-1) == '*') ? false : true), count:0, qty:0} //if someone search for 'A00*' show only the expired items by default (this will help data entry people purging expireds)
       }
 
       if ( ! ndcFilter[ndc])
