@@ -266,7 +266,7 @@ export class inventory {
 
   // New bin format (optional slot)
   isNewBin(term) {
-    return /\d{2}[A-Z][0-6]\d\d?/.test(term);
+    return /\d{2}[A-Z]\d\d\d?/.test(term);
   }
 
   isExp(term) {
