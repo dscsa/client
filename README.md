@@ -10,7 +10,7 @@ For more information, go to https://aurelia.io/docs/cli/webpack
 cp .env.example .env
 npm install
 npm run build:dev
-# Alternatively, you can run `npm watch` to allow automatic rebuilds on file changes
+# Alternatively, you can run `npm run watch` to allow automatic rebuilds on file changes
 docker compose up
 ```
 The client will now be available at http://0.0.0.0:8082 (the port can be customized via the .env file).
