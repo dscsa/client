@@ -78,7 +78,7 @@ function pouchSchema(pouchModel, microSecond, methods = {}) {
         .pattern(/^20[12]/) //We were getting malformed dates like 0201-06
       .ensure('bin')
         //Prepack, New Aisle, Old Shelf
-        .pattern(/[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d{2}|[A-Za-z][0-6]\d{2}/)
+        .pattern(/[A-Za-z]\d{2}|[A-Z][1-6][0-6]\d{2}|[A-Za-z][0-6]\d{2}|[A-Z]{4}\/\d\d\d[A-Z]\d/)
         .custom(doc => /[A-Za-z]\d{2}/.test(doc.bin) || doc.verifiedAt).withMessage('a nonrepack bin can only be set when verifiedAt is set')
       .ensure('updatedAt').set(_ => new Date().toJSON())
       .methods(methods.transaction),

@@ -220,7 +220,7 @@
               <th style="text-align:left; width:60px;">Exp</th>
               <th style="text-align:left; width:60px">Qty</th>
               <!-- 84px account for the 24px of padding-right on index.html's css td:last-child -->
-              <th style="text-align:left; width:84px;">Bin</th>
+              <th style="text-align:left; width:130px;">Bin</th>
             </tr>
           </thead>
           <tbody>
@@ -288,10 +288,10 @@
                   disabled.bind=" ! transaction.isChecked || transaction.next[0] || shipment._id != shipmentId"
                   keyup.delegate="setBin(transaction) & debounce:1500"
                   keydown.delegate="binShortcuts($event, $index)"
-                  pattern.bind="shipment._rev ? '[A-Z][1-6][0-6]\\d{2}|[A-Za-z][0-6]\\d{2}|\\d{2}[A-Z]\\d\\d[\\d?]' : '[A-Za-z]\\d{2}|[A-Z][1-6][0-6]\\d{2}|[A-Za-z][0-6]\\d{2}|\\d{2}[A-Z]\\d\\d[\\d?]'"
-                  maxlength.bind="6"
+                  pattern.bind="shipment._rev ? '[A-Z][1-6][0-6]\\d{2}|[A-Za-z][0-6]\\d{2}|\\d{2}[A-Z]\\d\\d[\\d?]|[A-Z]{4}\\/\\d\\d\\d[A-Z]\\d' : '[A-Za-z]\\d{2}|[A-Z][1-6][0-6]\\d{2}|[A-Za-z][0-6]\\d{2}|\\d{2}[A-Z]\\d\\d[\\d?]|[A-Z]{4}\\/\\d\\d\\d[A-Z]\\d'"
+                  maxlength.bind="12"
                   value.bind="transaction.bin"
-                  style="width:60px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px"
+                  style="width:90px; margin-bottom:-8px; font-family:PT Mono; font-size:12.5px"
                   placeholder>
                 </md-input>
               </td>
